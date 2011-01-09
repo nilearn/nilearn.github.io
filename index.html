@@ -1,0 +1,579 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>scikits.learn: machine learning in Python &mdash; Scikit-learn tutorial</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2010',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Scikit-learn tutorial" href="#" /> 
+  </head>
+  <body>
+    <div class="header-wrapper">
+      <div class="header">
+          <p class="logo"><a href="#">
+            <img src="_static/scikitlearn.png" alt="Logo"/>
+          </a>
+          </p><div class="navbar">
+
+
+
+
+</div>
+
+          </div> <!-- end navbar --></div>
+    </div>
+
+    <div class="content-wrapper">
+
+    <div class="sphinxsidebar">
+
+    <div class="rel">
+    </div>
+
+    <h3>Contents</h3>
+        <ul>
+<li><a class="reference internal" href="#">Scikits-learn for fMRI data analysis</a><ul>
+<li><a class="reference internal" href="#objectives">Objectives</a><ul>
+<li><a class="reference internal" href="#what-is-scikits-learn">What is Scikits-learn?</a></li>
+<li><a class="reference internal" href="#installation-of-the-required-materials">Installation of the required materials</a><ul>
+<li><a class="reference internal" href="#the-data">The data</a></li>
+<li><a class="reference internal" href="#nibabel">Nibabel</a></li>
+<li><a class="reference internal" href="#id1">Scikits-learn</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#first-step-looking-at-the-data-always-interesting">First step: looking at the data (always interesting...)</a></li>
+<li><a class="reference internal" href="#second-step-basic-but-state-of-the-art-decoding-analysis">Second step: basic (but state of the art) decoding analysis</a><ul>
+<li><a class="reference internal" href="#prediction-function">Prediction function</a></li>
+<li><a class="reference internal" href="#dimension-reduction">Dimension reduction</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#third-step-launch-it-on-real-data">Third step: launch it on real data</a><ul>
+<li><a class="reference internal" href="#fit-train-and-predict-test">Fit (train) and predict (test):</a></li>
+<li><a class="reference internal" href="#cross-validation">Cross-validation</a></li>
+<li><a class="reference internal" href="#prediction-accuracy">Prediction accuracy</a><ul>
+<li><a class="reference internal" href="#exercise">Exercise</a></li>
+<li><a class="reference internal" href="#solution">Solution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#final-script">Final script</a></li>
+<li><a class="reference internal" href="#going-further-with-scikits-learn">Going further with scikits-learn</a><ul>
+<li><a class="reference internal" href="#example-of-the-simplicity-of-scikits-learn">Example of the simplicity of scikits-learn</a></li>
+<li><a class="reference internal" href="#changing-the-prediction-function">Changing the prediction function</a></li>
+<li><a class="reference internal" href="#changing-the-feature-selection">Changing the feature selection</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#any-questions">Any questions ?</a></li>
+</ul>
+</li>
+</ul>
+
+
+    </div>
+
+    <div class="content">
+        
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="scikits-learn-for-fmri-data-analysis">
+<h1><a class="reference external" href="http://scikit-learn.sourceforge.net/">Scikits-learn</a> for fMRI data analysis<a class="headerlink" href="#scikits-learn-for-fmri-data-analysis" title="Permalink to this headline">¶</a></h1>
+<p>INRIA Parietal Project Team and scikits-learn folks, among which <strong>V. Michel, A. Gramfort, G. Varoquaux, F. Pedregosa and B. Thirion</strong></p>
+<p>Thanks to M. Hanke and Y. Halchenko for data and packaging.</p>
+<div class="section" id="objectives">
+<h2>Objectives<a class="headerlink" href="#objectives" title="Permalink to this headline">¶</a></h2>
+<p>At the end of this session you will be able to:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>Install and use the required tools (Nibabel and scikits-learn).</li>
+<li>Load fMRI volumes in python.</li>
+<li>Perform a state-of-the-art decoding analysis of fMRI data.</li>
+<li>Perform even more sophisticated analyzes of fMRI data.</li>
+</ol>
+</blockquote>
+<div class="section" id="what-is-scikits-learn">
+<h3>What is Scikits-learn?<a class="headerlink" href="#what-is-scikits-learn" title="Permalink to this headline">¶</a></h3>
+<p>Scikits-learn is a Python library for machine learning.</p>
+<p>Principal features:</p>
+<ul class="simple">
+<li>Easy to use.</li>
+<li>Easy to install.</li>
+<li>Well documented.</li>
+<li>Provide standard machine learning methods for non-experts.</li>
+</ul>
+<p>Technical choices:</p>
+<ul class="simple">
+<li>Python: general-purpose, high-level language.</li>
+<li>Simple data structures (numpy arrays).</li>
+<li>BSD license : reuse even in commercial settings</li>
+</ul>
+</div>
+<div class="section" id="installation-of-the-required-materials">
+<h3>Installation of the required materials<a class="headerlink" href="#installation-of-the-required-materials" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="the-data">
+<h4>The data<a class="headerlink" href="#the-data" title="Permalink to this headline">¶</a></h4>
+<p>We use here the <em>Haxby 2001</em> dataset  [Haxby et al. (2001)], that has been
+reanalyzed in [Hanson et al (2004), O&#8217;Toole et al. (2005)].</p>
+<p>In short, we have:</p>
+<blockquote>
+<ul class="simple">
+<li>8 objects presented once in 12 sessions</li>
+<li>864 volumes containing 39912 voxels</li>
+</ul>
+</blockquote>
+<p>Additional information : <a class="reference external" href="http://www.sciencemag.org/content/293/5539/2425">http://www.sciencemag.org/content/293/5539/2425</a></p>
+<p>Download the data:</p>
+<div class="highlight-python"><pre>$ wget http://www.pymvpa.org/files/pymvpa_exampledata.tar.bz2</pre>
+</div>
+<p>decompress them:</p>
+<div class="highlight-python"><pre>$ tar xjfv pymvpa_exampledata.tar.bz2</pre>
+</div>
+<p>and go to the data directory:</p>
+<div class="highlight-python"><pre>$ cd pymvpa-exampledata</pre>
+</div>
+</div>
+<div class="section" id="nibabel">
+<h4>Nibabel<a class="headerlink" href="#nibabel" title="Permalink to this headline">¶</a></h4>
+<p>Easy to use reader of ANALYZE (plain, SPM99, SPM2), GIFTI, NIfTI1, MINC
+(former PyNIfTI):</p>
+<div class="highlight-python"><pre>$ easy_install nibabel</pre>
+</div>
+<p>and if you can not be root:</p>
+<div class="highlight-python"><pre>$ easy_install --prefix=~/usr nibabel</pre>
+</div>
+</div>
+<div class="section" id="id1">
+<h4>Scikits-learn<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>(Quick) installation:</p>
+<div class="highlight-python"><pre>$ easy_install scikits.learn</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="first-step-looking-at-the-data-always-interesting">
+<h2>First step: looking at the data (always interesting...)<a class="headerlink" href="#first-step-looking-at-the-data-always-interesting" title="Permalink to this headline">¶</a></h2>
+<p>Now, launch ipython:</p>
+<div class="highlight-python"><pre>$ ipython</pre>
+</div>
+<p>First, we load the data. We have to import the nibabel module and the numpy
+module (basic array manipulations):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nibabel</span> <span class="kn">as</span> <span class="nn">ni</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<p>... load the fMRI volumes (what we will call X)</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;bold.nii.gz&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>... the mask</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;mask.nii.gz&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>... and the target (that we will call y), and the session index:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s">&quot;attributes.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&quot;int&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+</pre></div>
+</div>
+<p>Check the dimensions of the data:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(40, 64, 64, 1452)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(40, 64, 64)</span>
+</pre></div>
+</div>
+<p>Mask the data X and transpose the matrix, so that its shape becomes (n_samples,
+n_features):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">mask</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(1452, 39912)</span>
+</pre></div>
+</div>
+<p>and we (hopefully) retrieve the correct number of voxels (39912).</p>
+<p>Finally, we can detrend the data (for each session separately):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+<span class="go">        X[session==s] = signal.detrend(X[session==s], axis=0)</span>
+</pre></div>
+</div>
+<p>Now, we take a look to the target y:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(1452,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<span class="go">array([0, 1, 2, 3, 4, 5, 6, 7, 8])</span>
+</pre></div>
+</div>
+<p>where 0 is rest period, and [1..8] is the label of each object.</p>
+<blockquote>
+<ol class="arabic simple">
+<li>Extract the period of activity from the data (i.e. remove the remainder).</li>
+</ol>
+</blockquote>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">y</span><span class="o">!=</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">y</span><span class="o">!=</span><span class="mi">0</span><span class="p">],</span> <span class="n">session</span><span class="p">[</span><span class="n">y</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>We can check that:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n_samples</span>
+<span class="go">864</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n_features</span>
+<span class="go">39912</span>
+</pre></div>
+</div>
+<p>and we have the 8 conditions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">n_conditions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n_conditions</span>
+<span class="go">8</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="second-step-basic-but-state-of-the-art-decoding-analysis">
+<h2>Second step: basic (but state of the art) decoding analysis<a class="headerlink" href="#second-step-basic-but-state-of-the-art-decoding-analysis" title="Permalink to this headline">¶</a></h2>
+<p>In a decoding analysis we construct a model, so that one can predict
+a value of y given a set X of images.</p>
+<div class="section" id="prediction-function">
+<h3>Prediction function<a class="headerlink" href="#prediction-function" title="Permalink to this headline">¶</a></h3>
+<p>We define here a simple Support Vector Classification (or SVC) with C=1, and a
+linear kernel. We first import the correct module from scikits-learn:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scikits.learn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
+</pre></div>
+</div>
+<p>and we define the classifier:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">clf</span> <span class="o">=</span> <span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clf</span>
+<span class="go">SVC(kernel=&#39;linear&#39;, C=1.0, probability=False, degree=3, coef0=0.0,</span>
+<span class="go">eps=0.001, cache_size=100.0, shrinking=True, gamma=0.0)</span>
+</pre></div>
+</div>
+<p>Need some doc ?</p>
+<div class="highlight-python"><pre>&gt;&gt;&gt; clf ?
+Type:             SVC
+Base Class:       &lt;class 'scikits.learn.svm.libsvm.SVC'&gt;
+String Form:
+SVC(kernel=linear, C=1.0, probability=False, degree=3, coef0=0.0, eps=0.001,
+cache_size=100.0, shrinking=True, gamma=0.0)
+Namespace:        Interactive
+Docstring:
+    C-Support Vector Classification.
+    Parameters
+    ----------
+    C : float, optional (default=1.0)
+        penalty parameter C of the error term.
+...</pre>
+</div>
+<p>Or go to the <a class="reference external" href="http://scikit-learn.sourceforge.net/modules/svm.html">scikits-learn
+documentation</a></p>
+<p>We use a SVC here, but we can use
+<a class="reference external" href="http://scikit-learn.sourceforge.net/supervised_learning.html">many other
+classifiers</a></p>
+</div>
+<div class="section" id="dimension-reduction">
+<h3>Dimension reduction<a class="headerlink" href="#dimension-reduction" title="Permalink to this headline">¶</a></h3>
+<p>But a classification with few samples and many features is plagued by the
+<em>curse of dimensionality</em>. Let us add a feature selection procedure.</p>
+<p>For this, we need to import the correct module:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scikits.learn.feature_selection</span> <span class="kn">import</span> <span class="n">SelectKBest</span><span class="p">,</span> <span class="n">f_classif</span>
+</pre></div>
+</div>
+<p>and define a simple F-score based feature selection (a.k.a. Anova):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">feature_selection</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">f_classif</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">feature_selection</span>
+<span class="go">SelectKBest(k=500, score_func=&lt;function f_classif at 0x8c93684&gt;)</span>
+</pre></div>
+</div>
+<p>We have our classifier (SVC), our feature selection (SelectKBest), and now, we
+can plug them together in a <em>pipeline</em> that performs the two operations
+successively:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scikits.learn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">anova_svc</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s">&#39;anova&#39;</span><span class="p">,</span> <span class="n">feature_selection</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;svc&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">anova_svc</span>
+<span class="go">Pipeline(steps=[(&#39;anova&#39;, SelectKBest(k=500, score_func=&lt;function</span>
+<span class="go">f_classif at 0x8c93684&gt;)), (&#39;svc&#39;, SVC(kernel=&#39;linear&#39;, C=1.0,</span>
+<span class="go">probability=False, degree=3, coef0=0.0, eps=0.001,</span>
+<span class="go">cache_size=100.0, shrinking=True, gamma=0.0))])</span>
+</pre></div>
+</div>
+<p>We use a univariate feature selection, but we can use other dimension
+reduction such as
+<a class="reference external" href="http://scikit-learn.sourceforge.net/modules/generated/scikits.learn.feature_selection.rfe.RFE.html">RFE</a></p>
+</div>
+</div>
+<div class="section" id="third-step-launch-it-on-real-data">
+<h2>Third step: launch it on real data<a class="headerlink" href="#third-step-launch-it-on-real-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fit-train-and-predict-test">
+<h3>Fit (train) and predict (test):<a class="headerlink" href="#fit-train-and-predict-test" title="Permalink to this headline">¶</a></h3>
+<p>In scikits-learn, prediction function have a very simple API:</p>
+<blockquote>
+<ul class="simple">
+<li>a <em>fit</em> function that &#8220;learn&#8221; the parameters of the model from the data.</li>
+</ul>
+<p>Thus, we need to give some training data to <em>fit</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">anova_svc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="go">Pipeline(steps=[(&#39;anova&#39;, SelectKBest(k=500, score_func=&lt;function f_classif</span>
+<span class="go">at 0x8c93684&gt;)), (&#39;svc&#39;, SVC(kernel=&#39;linear&#39;, C=1.0, probability=False,</span>
+<span class="go">degree=3, coef0=0.0, eps=0.001,</span>
+<span class="go">cache_size=100.0, shrinking=True, gamma=0.0))])</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>a <em>predict</em> function that &#8220;predict&#8221; a target from new data.</li>
+</ul>
+<p>Here, we just have to give the new set of images (as the target should be
+unknown).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">anova_svc</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(864,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(864, 39912)</span>
+</pre></div>
+</div>
+<p><strong>Warning ! Do not do this at home !</strong> the score that we obtain here is
+heavily biased (see next paragraph). This is used here to check that
+we have one predicted value per image.</p>
+<p>Note that you could have done this in only 1 line:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">anova_svc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></div>
+</div>
+</blockquote>
+</div>
+<div class="section" id="cross-validation">
+<h3>Cross-validation<a class="headerlink" href="#cross-validation" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>However, the last analysis is <em>wrong</em>, as we have learned and testeddd
+on the same set of data.
+We need to use a cross-validation to split the data into different sets.</p>
+<p>Let us define a Leave-one-session-out cross-validation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scikits.learn.cross_val</span> <span class="kn">import</span> <span class="n">LeaveOneLabelOut</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cv</span> <span class="o">=</span> <span class="n">LeaveOneLabelOut</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In scikits-learn, a cross-validation is simply a function that generates
+the index of the folds within a loop.
+So, now, we can apply the previously defined <em>pipeline</em> with the
+cross-validation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> <span class="o">=</span> <span class="p">[]</span> <span class="c"># will store the number of correct predictions in each</span>
+</pre></div>
+</div>
+</blockquote>
+<dl class="docutils">
+<dt>fold</dt>
+<dd><div class="first highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="ow">in</span> <span class="n">cv</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">anova_svc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">train</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">train</span><span class="p">])</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">test</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">cv_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="n">y</span><span class="p">[</span><span class="n">test</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>But we are lazy people, so there is a specific
+function, <em>cross_val_score</em> that computes for you the results for the
+different folds of cross-validation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scikits.learn.cross_val</span> <span class="kn">import</span> <span class="n">cross_val_score</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">anova_svc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="go">                        verbose=1, iid=True)</span>
+</pre></div>
+</div>
+<p>n_jobs = 1 means that the computation is not parallel.
+But, if you are the happy owner of a multiple processors computer, you can
+even speed up the computation:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">anova_svc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="go">                        verbose=1, iid=True)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="prediction-accuracy">
+<h3>Prediction accuracy<a class="headerlink" href="#prediction-accuracy" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<p>We can take a look to the results of the <em>cross_val_score</em> function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span>
+<span class="go">array([ 60.,  59.,  65.,  49.,  57.,  56.,  52.,  44.,  54.,  47.,  49.,</span>
+<span class="go">    51.])</span>
+</pre></div>
+</div>
+<p>This is simply the number of correct predictions for each fold.</p>
+</blockquote>
+<div class="section" id="exercise">
+<h4>Exercise<a class="headerlink" href="#exercise" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<ol class="arabic simple">
+<li>Compute the mean prediction accuracy using <em>cv_scores</em></li>
+</ol>
+</blockquote>
+</div>
+<div class="section" id="solution">
+<h4>Solution<a class="headerlink" href="#solution" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">classification_accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cv_scores</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">classification_accuracy</span>
+<span class="go">0.74421296296296291</span>
+</pre></div>
+</div>
+<p>We have a total prediction accuracy of 74% across the different folds.</p>
+<p>We can add a line to print the results:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&quot;Classification accuracy: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">classification_accuracy</span><span class="p">,</span> \
+<span class="go">    &quot; / Chance level: %f&quot; % (1. / n_conditions)</span>
+<span class="go">Classification accuracy: 0.744213  / Chance level: 0.125000</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="final-script">
+<h2>Final script<a class="headerlink" href="#final-script" title="Permalink to this headline">¶</a></h2>
+<p>An thus, the global script is:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">### All the imports</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
+<span class="kn">import</span> <span class="nn">nibabel</span> <span class="kn">as</span> <span class="nn">ni</span>
+<span class="kn">from</span> <span class="nn">scikits.learn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
+<span class="kn">from</span> <span class="nn">scikits.learn.feature_selection</span> <span class="kn">import</span> <span class="n">SelectKBest</span>
+<span class="kn">from</span> <span class="nn">scikits.learn.feature_selection</span> <span class="kn">import</span> <span class="n">f_classif</span>
+<span class="kn">from</span> <span class="nn">scikits.learn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">scikits.learn.cross_val</span> <span class="kn">import</span> <span class="n">LeaveOneLabelOut</span>
+<span class="kn">from</span> <span class="nn">scikits.learn.cross_val</span> <span class="kn">import</span> <span class="n">cross_val_score</span>
+
+<span class="c">### Load data</span>
+<span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s">&quot;attributes.txt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&quot;int&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;bold.nii.gz&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;mask.nii.gz&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+
+<span class="c"># Process the data in order to have a two-dimensional design matrix X of</span>
+<span class="c"># shape (nb_samples, nb_features).</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">mask</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+
+<span class="c"># Detrend data on each session independently</span>
+<span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+    <span class="n">X</span><span class="p">[</span><span class="n">session</span><span class="o">==</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">session</span><span class="o">==</span><span class="n">s</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c"># Remove volumes corresponding to rest</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">y</span><span class="o">!=</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">y</span><span class="o">!=</span><span class="mi">0</span><span class="p">],</span> <span class="n">session</span><span class="p">[</span><span class="n">y</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">n_conditions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+
+<span class="c">### Define the prediction function to be used.</span>
+<span class="c"># Here we use a Support Vector Classification, with a linear kernel and C=1</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
+
+<span class="c">### Define the dimension reduction to be used.</span>
+<span class="c"># Here we use a classical univariate feature selection based on F-test,</span>
+<span class="c"># namely Anova. We set the number of features to be selected to 500</span>
+<span class="n">feature_selection</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">f_classif</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+
+<span class="c">### We combine the dimension reduction and the prediction function</span>
+<span class="n">anova_svc</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s">&#39;anova&#39;</span><span class="p">,</span> <span class="n">feature_selection</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;svc&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="p">)])</span>
+
+<span class="c">### Define the cross-validation scheme used for validation.</span>
+<span class="c"># Here we use a LeaveOneLabelOut cross-validation on the session, which</span>
+<span class="c"># corresponds to a leave-one-session-out</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">LeaveOneLabelOut</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+
+<span class="c">### Compute the prediction accuracy for the different folds (i.e. session)</span>
+<span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">anova_svc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                            <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iid</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c">### Return the corresponding mean prediction accuracy</span>
+<span class="n">classification_accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cv_scores</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;Classification accuracy: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">classification_accuracy</span><span class="p">,</span> \
+    <span class="s">&quot; / Chance level: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">n_conditions</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, you just have to publish the results :)</p>
+</div>
+<div class="section" id="going-further-with-scikits-learn">
+<h2>Going further with scikits-learn<a class="headerlink" href="#going-further-with-scikits-learn" title="Permalink to this headline">¶</a></h2>
+<p>We have seen a very simple analysis with scikits-learn.</p>
+<p><a class="reference external" href="http://scikit-learn.sourceforge.net/modules/glm.html">Other prediction functions with
+Scikits-learn</a></p>
+<p><a class="reference external" href="http://scikit-learn.sourceforge.net/modules/clustering.html">Unsupervised learning (e.g. clustering, PCA, ICA) with
+Scikits-learn</a></p>
+<div class="section" id="example-of-the-simplicity-of-scikits-learn">
+<h3>Example of the simplicity of scikits-learn<a class="headerlink" href="#example-of-the-simplicity-of-scikits-learn" title="Permalink to this headline">¶</a></h3>
+<p>One of the major assets of scikits-learn is the real simplicity of use.</p>
+</div>
+<div class="section" id="changing-the-prediction-function">
+<h3>Changing the prediction function<a class="headerlink" href="#changing-the-prediction-function" title="Permalink to this headline">¶</a></h3>
+<p>We now see how one can easily change the prediction function, if needed.
+We can try the Linear Discriminant Analysis
+(LDA) <a class="reference external" href="http://scikit-learn.sourceforge.net/auto_examples/plot_lda_qda.html">http://scikit-learn.sourceforge.net/auto_examples/plot_lda_qda.html</a></p>
+<p>Import the module:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scikits.learn.lda</span> <span class="kn">import</span> <span class="n">LDA</span>
+</pre></div>
+</div>
+<p>Construct the new prediction function and use it in a pipeline:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lda</span> <span class="o">=</span> <span class="n">LDA</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">anova_lda</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s">&#39;anova&#39;</span><span class="p">,</span> <span class="n">feature_selection</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;LDA&#39;</span><span class="p">,</span> <span class="n">lda</span><span class="p">)])</span>
+</pre></div>
+</div>
+<p>and recompute the cross-validation score:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">anova_lda</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="go">                        verbose=1, iid=True)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">classification_accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cv_scores</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&quot;Classification accuracy: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">classification_accuracy</span><span class="p">,</span> \
+<span class="go">    &quot; / Chance level: %f&quot; % (1. / n_conditions)</span>
+<span class="go">Classification accuracy: 0.728009   / Chance level: 0.125000</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="changing-the-feature-selection">
+<h3>Changing the feature selection<a class="headerlink" href="#changing-the-feature-selection" title="Permalink to this headline">¶</a></h3>
+<p>Let&#8217;s say that you want a more sophisticated feature selection, for example a
+<a class="reference external" href="http://scikit-learn.sourceforge.net/modules/generated/scikits.learn.feature_selection.rfe.RFE.html">Recursive Feature Elimination
+(RFE)</a></p>
+<p>Import the module:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scikits.learn.feature_selection</span> <span class="kn">import</span> <span class="n">RFE</span>
+</pre></div>
+</div>
+<p>Construct your new fancy selection:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">rfe</span> <span class="o">=</span> <span class="n">RFE</span><span class="p">(</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">),</span> <span class="n">n_features</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">percentage</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and create a new pipeline:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">rfe_svc</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s">&#39;rfe&#39;</span><span class="p">,</span> <span class="n">rfe</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;svc&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="p">)])</span>
+</pre></div>
+</div>
+<p>and recompute the cross-validation score:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">rfe_svc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="go">                        verbose=1, iid=True)</span>
+</pre></div>
+</div>
+<p>But, be aware that this can take A WHILE...</p>
+</div>
+</div>
+<div class="section" id="any-questions">
+<h2>Any questions ?<a class="headerlink" href="#any-questions" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<a class="reference external" href="http://scikit-learn.sourceforge.net/">http://scikit-learn.sourceforge.net/</a></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+    <div class="clearer"></div>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright INRIA Parietal 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1pre/1f40a2bc5294 after a design by <a href="http://webylimonada.com">Web y Limonada</a>.
+    </div>
+  </body>
+</html>
