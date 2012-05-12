@@ -1,0 +1,504 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>NeuroImaging with the Scikit-learn: fMRI decoding tutorial &mdash; NeuroImaging with the scikit-learn</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2010',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="NeuroImaging with the scikit-learn" href="../index.html" />
+    <link rel="next" title="Examples" href="../auto_examples/index.html" />
+    <link rel="prev" title="Contents" href="../index.html" />
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-22606712-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+  </head>
+  <body>
+
+    <div class="header-wrapper">
+      <div class="header">
+          <p class="logo"><a href="../index.html">
+            <img src="../_static/scikit-learn-logo-small.png" alt="Logo"/>
+          </a>
+          </p><div class="navbar">
+          <ul>
+          <!--	  
+	    <li><a href="../install.html">Download</a></li>
+            <li><a href="../support.html">Support</a></li>
+            <li><a href="../user_guide.html">User Guide</a></li>
+	  -->
+            <li><a href="../auto_examples/index.html">Examples</a></li>
+          <!--	  
+	    <li><a href="../modules/classes.html">Reference</a></li>
+	  -->
+       </ul>
+
+<div class="search_form">
+
+<div id="cse" style="width: 100%;"></div>
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">
+  google.load('search', '1', {language : 'en'});
+  google.setOnLoadCallback(function() {
+    var customSearchControl = new google.search.CustomSearchControl('016639176250731907682:tjtqbvtvij0');
+    customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+    var options = new google.search.DrawOptions();
+    options.setAutoComplete(true);
+    customSearchControl.draw('cse', options);
+  }, true);
+</script>
+
+</div>
+          </div> <!-- end navbar --></div>
+    </div>
+
+    <div class="content-wrapper">
+
+      <div class="sphinxsidebar">
+	<div class="sphinxsidebarwrapper">
+	   <div class="rel rellarge">
+	     
+	<!-- rellinks[1:] is an ugly hack to avoid link to module
+	    index  -->
+	<div class="rellink">
+	<a href="../index.html" title="Contents"
+	    accesskey="P">Previous
+	    <br>
+	    <span class="smallrellink">
+	    Contents
+	    </span>
+	    <span class="hiddenrellink">
+	    Contents
+	    </span>
+	    
+	    </a>
+	</div>
+	<!-- Ad a link to the 'up' page -->
+    </div>
+    <h3>This page</h3>
+	<ul>
+<li><a class="reference internal" href="#">NeuroImaging with the Scikit-learn: fMRI decoding tutorial</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li><a class="reference internal" href="#what-is-the-scikit-learn">What is the scikit-learn?</a></li>
+<li><a class="reference internal" href="#installation-of-the-required-materials">Installation of the required materials</a><ul>
+<li><a class="reference internal" href="#the-data">The data</a></li>
+<li><a class="reference internal" href="#nibabel">Nibabel</a></li>
+<li><a class="reference internal" href="#scikits-learn">Scikits-learn</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#first-step-looking-at-the-data">First step: looking at the data</a></li>
+<li><a class="reference internal" href="#second-step-decoding-analysis">Second step: decoding analysis</a><ul>
+<li><a class="reference internal" href="#prediction-function">Prediction function</a></li>
+<li><a class="reference internal" href="#dimension-reduction">Dimension reduction</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#third-step-launch-it-on-real-data">Third step: launch it on real data</a><ul>
+<li><a class="reference internal" href="#fit-train-and-predict-test">Fit (train) and predict (test)</a></li>
+<li><a class="reference internal" href="#visualisation">Visualisation</a></li>
+<li><a class="reference internal" href="#cross-validation">Cross-validation</a></li>
+<li><a class="reference internal" href="#prediction-accuracy">Prediction accuracy</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#final-script">Final script</a></li>
+<li><a class="reference internal" href="#going-further-with-scikit-learn">Going further with scikit-learn</a><ul>
+<li><a class="reference internal" href="#example-of-the-simplicity-of-scikit-learn">Example of the simplicity of scikit-learn</a></li>
+<li><a class="reference internal" href="#changing-the-prediction-function">Changing the prediction function</a></li>
+<li><a class="reference internal" href="#changing-the-feature-selection">Changing the feature selection</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#any-questions">Any questions ?</a></li>
+</ul>
+</li>
+</ul>
+
+    
+    </div>
+	  </div>
+
+
+      <div class="content">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="neuroimaging-with-the-scikit-learn-fmri-decoding-tutorial">
+<h1>NeuroImaging with the <a class="reference external" href="http://scikit-learn.org/">Scikit-learn</a>: fMRI decoding tutorial<a class="headerlink" href="#neuroimaging-with-the-scikit-learn-fmri-decoding-tutorial" title="Permalink to this headline">¶</a></h1>
+<p><strong>Autors:</strong> <a class="reference external" href="https://parietal.saclay.inria.fr/">INRIA Parietal Project Team</a> and <a class="reference external" href="http://scikit-learn.org/">scikit-learn</a> folks, among which <strong>A.
+Gramfort, V. Michel, G. Varoquaux, F. Pedregosa and B. Thirion</strong></p>
+<p>Thanks to M. Hanke and Y. Halchenko for data and packaging.</p>
+<div class="topic">
+<p class="topic-title first">Objectives</p>
+<p>At the end of this tutorial you will be able to:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Install and use the required tools (Nibabel and scikits-learn).</li>
+<li>Load fMRI volumes in Python.</li>
+<li>Perform a state-of-the-art decoding analysis of fMRI data.</li>
+<li>Perform even more sophisticated analyzes of fMRI data.</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="what-is-the-scikit-learn">
+<h3>What is the scikit-learn?<a class="headerlink" href="#what-is-the-scikit-learn" title="Permalink to this headline">¶</a></h3>
+<p>Scikit-learn is a Python library for machine learning.</p>
+<p>Principal features:</p>
+<ul class="simple">
+<li>Easy to use.</li>
+<li>Easy to install.</li>
+<li>Well documented.</li>
+<li>Provide standard machine learning methods for non-experts.</li>
+</ul>
+<p>Technical choices:</p>
+<ul class="simple">
+<li>Python: general-purpose, high-level language.</li>
+<li>Simple data structures (numpy arrays).</li>
+<li>BSD license : reuse even in commercial settings</li>
+</ul>
+</div>
+<div class="section" id="installation-of-the-required-materials">
+<h3>Installation of the required materials<a class="headerlink" href="#installation-of-the-required-materials" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="the-data">
+<h4>The data<a class="headerlink" href="#the-data" title="Permalink to this headline">¶</a></h4>
+<p>We use here the <em>Haxby 2001</em> dataset used in <a class="reference external" href="http://www.sciencemag.org/content/293/5539/2425.full">Distributed and Overlapping Representations
+of Faces and Objects in Ventral Temporal Cortex</a>, Haxby et al. (2001),
+that has been reanalyzed in <a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S105381190400299X">Combinatorial codes in ventral temporal lobe for object
+recognition: Haxby (2001) revisited: is there a “face” area?</a>, Hanson et al (2004)
+and <a class="reference external" href="http://www.mitpressjournals.org/doi/abs/10.1162/0898929053467550?journalCode=jocn">Partially Distributed Representations of Objects and Faces in Ventral Temporal Cortex</a>, O&#8217;Toole et al. (2005).</p>
+<p>In short, we have:</p>
+<blockquote>
+<div><ul class="simple">
+<li>8 objects presented once in 12 sessions</li>
+<li>864 volumes containing 39912 voxels</li>
+</ul>
+</div></blockquote>
+<p>Additional information : <a class="reference external" href="http://www.sciencemag.org/content/293/5539/2425">http://www.sciencemag.org/content/293/5539/2425</a></p>
+</div>
+<div class="section" id="nibabel">
+<h4>Nibabel<a class="headerlink" href="#nibabel" title="Permalink to this headline">¶</a></h4>
+<p>Easy to use reader of ANALYZE (plain, SPM99, SPM2), GIFTI, NIfTI1, MINC
+(former PyNIfTI):</p>
+<div class="highlight-python"><pre>$ easy_install -U nibabel</pre>
+</div>
+<p>and if you can not be root:</p>
+<div class="highlight-python"><pre>$ easy_install -U --prefix=~/usr nibabel</pre>
+</div>
+</div>
+<div class="section" id="scikits-learn">
+<h4>Scikits-learn<a class="headerlink" href="#scikits-learn" title="Permalink to this headline">¶</a></h4>
+<p>(Quick) installation:</p>
+<div class="highlight-python"><pre>$ easy_install -U scikit-learn</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="first-step-looking-at-the-data">
+<h2>First step: looking at the data<a class="headerlink" href="#first-step-looking-at-the-data" title="Permalink to this headline">¶</a></h2>
+<p>Now, launch ipython:</p>
+<div class="highlight-python"><pre>$ ipython</pre>
+</div>
+<p>First, we load the data. Nisl provides an easy way to download and preprocess
+data. Simply call:</p>
+<p>Then we preprocess the data to get make it handier:</p>
+<ul class="simple">
+<li>compute the mean of the image to replace anatomic data</li>
+<li>check its dimension (1452 trials of 40x64x64 voxels)</li>
+<li>mask the data X and transpose the matrix, so that its shape becomes
+(n_samples, n_features)</li>
+<li>finally detrend the data for each session</li>
+</ul>
+<div class="topic">
+<p class="topic-title first">Exercise</p>
+<ol class="arabic simple">
+<li>Extract the period of activity from the data (i.e. remove the remainder).</li>
+</ol>
+</div>
+<div class="topic">
+<p class="topic-title first">Solution</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">y</span><span class="o">!=</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">y</span><span class="o">!=</span><span class="mi">0</span><span class="p">],</span> <span class="n">session</span><span class="p">[</span><span class="n">y</span><span class="o">!=</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<p>We can check and look at our 8 conditions:</p>
+</div>
+<div class="section" id="second-step-decoding-analysis">
+<h2>Second step: decoding analysis<a class="headerlink" href="#second-step-decoding-analysis" title="Permalink to this headline">¶</a></h2>
+<p>In a decoding analysis we construct a model, so that one can predict
+a value of y given a set X of images.</p>
+<div class="section" id="prediction-function">
+<h3>Prediction function<a class="headerlink" href="#prediction-function" title="Permalink to this headline">¶</a></h3>
+<p>We define here a simple Support Vector Classification (or SVC) with C=1,
+and a linear kernel. We first import the correct module from
+scikits-learn and we define the classifier:</p>
+<p>Need some doc ?</p>
+<div class="highlight-python"><pre>&gt;&gt;&gt; clf ? 
+Type:             SVC
+Base Class:       &lt;class 'sklearn.svm.libsvm.SVC'&gt;
+String Form:
+SVC(kernel=linear, C=1.0, probability=False, degree=3, coef0=0.0, eps=0.001,
+cache_size=100.0, shrinking=True, gamma=0.0)
+Namespace:        Interactive
+Docstring:
+    C-Support Vector Classification.
+    Parameters
+    ----------
+    C : float, optional (default=1.0)
+        penalty parameter C of the error term.
+...</pre>
+</div>
+<p>Or go to the <a class="reference external" href="http://scikit-learn.org/modules/svm.html">scikits-learn
+documentation</a></p>
+<p>We use a SVC here, but we can use
+<a class="reference external" href="http://scikit-learn.org/supervised_learning.html">many other
+classifiers</a></p>
+</div>
+<div class="section" id="dimension-reduction">
+<h3>Dimension reduction<a class="headerlink" href="#dimension-reduction" title="Permalink to this headline">¶</a></h3>
+<p>But a classification with few samples and many features is plagued by the
+<em>curse of dimensionality</em>. Let us add a feature selection procedure.</p>
+<p>For this, we need to import the correct module and define a simple F-score
+based feature selection (a.k.a. Anova):</p>
+<p>We have our classifier (SVC), our feature selection (SelectKBest), and now, we
+can plug them together in a <em>pipeline</em> that performs the two operations
+successively:</p>
+<p>We use a univariate feature selection, but we can use other dimension
+reduction such as <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.rfe.RFE.html">RFE</a></p>
+</div>
+</div>
+<div class="section" id="third-step-launch-it-on-real-data">
+<h2>Third step: launch it on real data<a class="headerlink" href="#third-step-launch-it-on-real-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="fit-train-and-predict-test">
+<h3>Fit (train) and predict (test)<a class="headerlink" href="#fit-train-and-predict-test" title="Permalink to this headline">¶</a></h3>
+<p>In scikits-learn, prediction function have a very simple API:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a <em>fit</em> function that &#8220;learn&#8221; the parameters of the model from the data.
+Thus, we need to give some training data to <em>fit</em></li>
+<li>a <em>predict</em> function that &#8220;predict&#8221; a target from new data.
+Here, we just have to give the new set of images (as the target should be
+unknown):</li>
+</ul>
+</div></blockquote>
+<p><strong>Warning ! Do not do this at home !</strong> the score that we obtain here is
+heavily biased (see next paragraph). This is used here to check that
+we have one predicted value per image.</p>
+<p>Note that you could have done this in only 1 line:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">anova_svc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="visualisation">
+<h3>Visualisation<a class="headerlink" href="#visualisation" title="Permalink to this headline">¶</a></h3>
+<p>We can visualize the result of our algorithm:</p>
+<blockquote>
+<div><ul class="simple">
+<li>we first get the support vectors of the SVC and revert the feature
+selection mechanism</li>
+<li>we remove the mask</li>
+<li>then we overlay our mean image computed before with our support vectors</li>
+</ul>
+</div></blockquote>
+<div class="figure align-center">
+<a class="reference external image-reference" href="../auto_examples/plot_haxby_visualisation.html"><img alt="../_images/plot_haxby_visualisation_1.png" src="../_images/plot_haxby_visualisation_1.png" /></a>
+</div>
+</div>
+<div class="section" id="cross-validation">
+<h3>Cross-validation<a class="headerlink" href="#cross-validation" title="Permalink to this headline">¶</a></h3>
+<p>However, the last analysis is <em>wrong</em>, as we have learned and tested on
+the same set of data. We need to use a cross-validation to split the data
+into different sets.</p>
+<p>In scikit-learn, a cross-validation is simply a function that generates
+the index of the folds within a loop.
+So, now, we can apply the previously defined <em>pipeline</em> with the
+cross-validation:</p>
+<p>But we are lazy people, so there is a specific
+function, <em>cross_val_score</em> that computes for you the results for the
+different folds of cross-validation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">cross_val_score</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">anova_svc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>n_jobs = 1 means that the computation run sequentially.  But, if
+you are the happy owner of a multiple processors computer you can
+speed up the computation by using n_jobs=-1, which will spread the
+computation equally across all processors (python version 2.6 or
+newer is required):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">anova_svc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="prediction-accuracy">
+<h3>Prediction accuracy<a class="headerlink" href="#prediction-accuracy" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p>We can take a look to the results of the <em>cross_val_score</em> function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> 
+<span class="go">array([ 0.81944444,  0.81944444,  0.90277778,  0.68055556,  0.79166667,</span>
+<span class="go">        0.79166667,  0.70833333,  0.59722222,  0.75      ,  0.63888889,</span>
+<span class="go">        0.68055556,  0.70833333])</span>
+</pre></div>
+</div>
+<p>This is simply the prediction score for each fold.</p>
+</div></blockquote>
+<div class="topic">
+<p class="topic-title first">Exercise</p>
+<ol class="arabic simple">
+<li>Compute the mean prediction accuracy using <em>cv_scores</em></li>
+</ol>
+</div>
+<div class="topic">
+<p class="topic-title first">Solution</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">classification_accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cv_scores</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">classification_accuracy</span> 
+<span class="go">0.74421296296296291</span>
+</pre></div>
+</div>
+</div>
+<p>We have a total prediction accuracy of 74% across the different folds.</p>
+<p>We can add a line to print the results:</p>
+</div>
+</div>
+<div class="section" id="final-script">
+<h2>Final script<a class="headerlink" href="#final-script" title="Permalink to this headline">¶</a></h2>
+<p>An thus, the complete script is (<tt class="xref download docutils literal"><span class="pre">decoding_example.py</span></tt>):</p>
+<p>Now, you just have to publish the results :)</p>
+</div>
+<div class="section" id="going-further-with-scikit-learn">
+<h2>Going further with scikit-learn<a class="headerlink" href="#going-further-with-scikit-learn" title="Permalink to this headline">¶</a></h2>
+<p>We have seen a very simple analysis with scikits-learn.</p>
+<p><a class="reference external" href="http://scikit-learn.org/supervised_learning.html">Other prediction functions for supervised learning: Linear models,
+Support vector machines, Nearest Neighbor, etc.</a></p>
+<p><a class="reference external" href="http://scikit-learn.org/modules/clustering.html">Unsupervised learning (e.g. clustering, PCA, ICA) with
+Scikits-learn</a></p>
+<div class="section" id="example-of-the-simplicity-of-scikit-learn">
+<h3>Example of the simplicity of scikit-learn<a class="headerlink" href="#example-of-the-simplicity-of-scikit-learn" title="Permalink to this headline">¶</a></h3>
+<p>One of the major assets of scikits-learn is the real simplicity of use.</p>
+</div>
+<div class="section" id="changing-the-prediction-function">
+<h3>Changing the prediction function<a class="headerlink" href="#changing-the-prediction-function" title="Permalink to this headline">¶</a></h3>
+<p>We now see how one can easily change the prediction function, if needed.
+We can try the Linear Discriminant Analysis
+(LDA) <a class="reference external" href="http://scikit-learn.org/auto_examples/plot_lda_qda.html">http://scikit-learn.org/auto_examples/plot_lda_qda.html</a></p>
+<p>Import the module:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.lda</span> <span class="kn">import</span> <span class="n">LDA</span>
+</pre></div>
+</div>
+<p>Construct the new prediction function and use it in a pipeline:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">lda</span> <span class="o">=</span> <span class="n">LDA</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">anova_lda</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s">&#39;anova&#39;</span><span class="p">,</span> <span class="n">feature_selection</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;LDA&#39;</span><span class="p">,</span> <span class="n">lda</span><span class="p">)])</span>
+</pre></div>
+</div>
+<p>and recompute the cross-validation score:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">anova_lda</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">classification_accuracy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cv_scores</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&quot;Classification accuracy: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">classification_accuracy</span><span class="p">,</span> \
+<span class="gp">... </span>    <span class="s">&quot; / Chance level: </span><span class="si">%f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">n_conditions</span><span class="p">)</span> 
+<span class="go">Classification accuracy: 0.728009   / Chance level: 0.125000</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="changing-the-feature-selection">
+<h3>Changing the feature selection<a class="headerlink" href="#changing-the-feature-selection" title="Permalink to this headline">¶</a></h3>
+<p>Let&#8217;s say that you want a more sophisticated feature selection, for example a
+<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.rfe.RFE.html">Recursive Feature Elimination
+(RFE)</a></p>
+<p>Import the module:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">RFE</span>
+</pre></div>
+</div>
+<p>Construct your new fancy selection:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">rfe</span> <span class="o">=</span> <span class="n">RFE</span><span class="p">(</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">),</span> <span class="mi">50</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and create a new pipeline:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">rfe_svc</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s">&#39;rfe&#39;</span><span class="p">,</span> <span class="n">rfe</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;svc&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="p">)])</span>
+</pre></div>
+</div>
+<p>and recompute the cross-validation score:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">rfe_svc</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> 
+</pre></div>
+</div>
+<p>But, be aware that this can take A WHILE...</p>
+</div>
+</div>
+<div class="section" id="any-questions">
+<h2>Any questions ?<a class="headerlink" href="#any-questions" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><a class="reference external" href="http://scikit-learn.org/">http://scikit-learn.org/</a></div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+  
+
+    <div class="footer">
+        &copy; INRIA Parietal 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7. Design by <a href="http://webylimonada.com">Web y Limonada</a>.
+    <span style="padding-left: 5ex;">
+    <a href="../_sources/tutorial/index.txt"
+	    rel="nofollow">Show this page source</a>
+    </span>
+    </div>
+     <div class="rel rellarge">
+    
+    <div class="buttonPrevious">
+      <a href="../index.html">
+        Previous
+      </a>  
+    </div>
+    
+     </div>
+     <script type="text/javascript">
+       $("div.buttonNext, div.buttonPrevious").hover(
+           function () {
+               $(this).css('background-color', '#FF9C34');
+           },
+           function () {
+               $(this).css('background-color', '#A7D6E2');
+           }
+       );
+     </script>
+  </body>
+</html>
