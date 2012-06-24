@@ -1,16 +1,18 @@
+.. for doctests to run, we need to define variables that are define in
+   the literal includes
+    >>> import numpy as np
+    >>> from sklearn import datasets
+    >>> iris = datasets.load_iris()
+    >>> X = iris.data
+    >>> y = iris.target
+    >>> y += 1
+    >>> session = np.ones_like(y)
+    >>> n_samples = len(y)
 
 
 ================================================================================
 fMRI decoding: predicting which objects a subject is viewing 
 ================================================================================
-
-**Autors:** `INRIA Parietal Project Team
-<https://parietal.saclay.inria.fr/>`_ and `scikit-learn
-<http://scikit-learn.org/>`_ folks, among which **A.
-Gramfort, V. Michel, G. Varoquaux, F. Pedregosa and B. Thirion**
-
-Thanks to M. Hanke and Y. Halchenko for data and packaging.
-
 
 .. topic:: Objectives
 
@@ -47,7 +49,7 @@ First step: looking at the data
 
 Now, launch ipython::
 
-  $ ipython
+  $ ipython -pylab
 
 First, we load the data. Nisl provides an easy way to download and preprocess
 data. Simply call:
@@ -66,21 +68,24 @@ Then we preprocess the data to get make it handier:
 
 .. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Preprocess data ########################################################### 
-        :end-before: ### Remove rest period ########################################################
+        :end-before: ### Restrict to faces and houses ##############################################
 
-.. topic:: Exercise
+.. topic:: **Exercise**
+   :class: green
 
-  1. Extract the period of activity from the data (i.e. remove the remainder).
-
+   1. Extract the period of activity from the data (i.e. remove the remainder).
 
 .. topic:: Solution
 
-    >>> X, y, session = X[y!=0], y[y!=0], session[y!=0]
+    As 'y == 0' in rest, we want to keep only time points for which 
+    `y != 0`::
 
-We can check and look at our 8 conditions:
+     >>> X, y, session = X[y!=0], y[y!=0], session[y!=0]
+
+Here, we limit to face and house conditions:
 
 .. literalinclude:: ../plot_haxby_decoding.py
-        :start-after: ### Remove rest period ########################################################
+        :start-after: ### Restrict to faces and houses ##############################################
         :end-before: ### Prediction function #######################################################
 
 Second step: decoding analysis
@@ -136,15 +141,6 @@ based feature selection (a.k.a. Anova):
 
 .. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Dimension reduction #######################################################
-        :end-before: ### Pipeline ##################################################################
-
-
-We have our classifier (SVC), our feature selection (SelectKBest), and now, we
-can plug them together in a *pipeline* that performs the two operations
-successively:
-
-.. literalinclude:: ../plot_haxby_decoding.py
-        :start-after: ### Pipeline ##################################################################
         :end-before: ### Fit and predict ###########################################################
 
 We use a univariate feature selection, but we can use other dimension
@@ -173,6 +169,10 @@ In scikit-learn, prediction function have a very simple API:
 heavily biased (see next paragraph). This is used here to check that 
 we have one predicted value per image.
 
+.. for doctests (smoke testing):
+    >>> from sklearn.svm import LinearSVC, SVC
+    >>> anova_svc = LinearSVC()
+
 Note that you could have done this in only 1 line::
 
     >>> y_pred = anova_svc.fit(X, y).predict(X)
@@ -190,6 +190,7 @@ We can visualize the result of our algorithm:
 .. figure:: auto_examples/images/plot_haxby_decoding_1.png
    :target: auto_examples/plot_haxby_decoding.html
    :align: center
+   :scale: 60
 
 .. literalinclude:: ../plot_haxby_decoding.py
         :start-after: ### Visualisation #############################################################
@@ -212,40 +213,42 @@ cross-validation:
         :start-after: ### Cross validation ########################################################## 
         :end-before: ### Print results #############################################################
 
+.. for doctests:
+   >>> cv = 2
+
 But we are lazy people, so there is a specific
 function, *cross_val_score* that computes for you the results for the
 different folds of cross-validation::
 
-    >>> from sklearn.cross_validation import cross_val_score
-    >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=1,
-    ...     verbose=1)
+  >>> from sklearn.cross_validation import cross_val_score
+  >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, verbose=10)
 
-n_jobs = 1 means that the computation run sequentially.  But, if
-you are the happy owner of a multiple processors computer you can
+If you are the happy owner of a multiple processors computer you can
 speed up the computation by using n_jobs=-1, which will spread the
-computation equally across all processors (python version 2.6 or
-newer is required)::
+computation equally across all processors (this will probably not work
+under Windows)::
 
-    >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1,
-    ...     verbose=1)
+ >>> cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=10)
 
 
 Prediction accuracy
 -------------------
 
-    We can take a look to the results of the *cross_val_score* function:
+We can take a look to the results of the *cross_val_score* function::
 
-    >>> cv_scores # doctest: +SKIP
-    array([ 0.81944444,  0.81944444,  0.90277778,  0.68055556,  0.79166667,
-            0.79166667,  0.70833333,  0.59722222,  0.75      ,  0.63888889,
-            0.68055556,  0.70833333])
+  >>> cv_scores # doctest: +SKIP
+  array([ 1.        ,  1.        ,  1.        ,  1.        ,  1.        ,
+          1.        ,  1.        ,  0.83333333,  1.        ,  1.        ,
+          1.        ,  1.        ])
 
-    This is simply the prediction score for each fold.
+This is simply the prediction score for each fold, i.e. the fraction of
+correct predictions on the left-out data.
 
 
-.. topic:: Exercise
+.. topic:: **Exercise**
+   :class: green
 
-  1. Compute the mean prediction accuracy using *cv_scores*
+   1. Compute the mean prediction accuracy using *cv_scores*
 
 .. topic:: Solution
 
@@ -262,14 +265,11 @@ We can add a line to print the results:
         :start-after: ### Print results #############################################################
 
 
-Final script
-============
+.. topic:: Final script
 
-An thus, the complete script is (:download:`decoding_example.py <../plot_haxby_decoding.py>`):
-
-.. literalinclude:: ../plot_haxby_decoding.py
-
-Now, you just have to publish the results :)
+    The complete script can be found as 
+    :ref:`an example <example_tutorial_plot_haxby_decoding.py>`
+    Now, you just have to publish the results :)
 
 Going further with scikit-learn
 ===================================
@@ -292,6 +292,11 @@ One of the major assets of scikit-learn is the real simplicity of use.
 Changing the prediction function
 --------------------------------
 
+.. for doctest:
+    >>> from sklearn.feature_selection import SelectKBest, f_classif
+    >>> feature_selection = SelectKBest(f_classif, k=4)
+    >>> clf = LinearSVC()
+
 We now see how one can easily change the prediction function, if needed.
 We can try the Linear Discriminant Analysis
 (LDA) `<http://scikit-learn.org/auto_examples/plot_lda_qda.html>`_
@@ -302,13 +307,13 @@ Import the module::
 
 Construct the new prediction function and use it in a pipeline::
 
+    >>> from sklearn.pipeline import Pipeline
     >>> lda = LDA()
     >>> anova_lda = Pipeline([('anova', feature_selection), ('LDA', lda)])
 
 and recompute the cross-validation score::
 
-    >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, n_jobs=-1,
-    ...     verbose=1)
+    >>> cv_scores = cross_val_score(anova_lda, X, y, cv=cv, verbose=1)
     >>> classification_accuracy = np.sum(cv_scores) / float(n_samples)
     >>> print "Classification accuracy: %f" % classification_accuracy, \
     ...     " / Chance level: %f" % (1. / n_conditions) # doctest: +SKIP

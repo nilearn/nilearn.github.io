@@ -4,36 +4,31 @@ The haxby dataset: face vs house in object recognition
 
 """
 
-
 ### Load Haxby dataset ########################################################
 from nisl import datasets
-dataset = datasets.fetch_haxby_data()
-X = dataset.data
+dataset = datasets.fetch_haxby()
+fmri_data = dataset.data
 mask = dataset.mask
 y = dataset.target
 session = dataset.session
 
+# fmri_data.shape is (40, 64, 64, 1452)
+# and mask.shape is (40, 64, 64)
+
 ### Preprocess data ###########################################################
 import numpy as np
-from scipy import signal
 
 # Build the mean image because we have no anatomic data
-mean_img = X.mean(axis=-1)
-
-X.shape
-# (40, 64, 64, 1452)
-mask.shape
-# (40, 64, 64)
+mean_img = fmri_data.mean(axis=-1)
 
 # Process the data in order to have a two-dimensional design matrix X of
-# shape (nb_samples, nb_features).
-X = X[mask != 0].T
+# shape (n_samples, n_features).
+X = fmri_data[mask].T
 
-X.shape
-# (1452, 39912)
+# X.shape is (1452, 39912)
 
 # Detrend data on each session independently
-print "detrending data"
+from scipy import signal
 for s in np.unique(session):
     X[session == s] = signal.detrend(X[session == s], axis=0)
 
@@ -43,16 +38,8 @@ for s in np.unique(session):
 # Remove volumes corresponding to rest
 X, y, session = X[y != 0], y[y != 0], session[y != 0]
 
-# We can check that
+# We now have n_samples, n_features = X.shape = 864, 39912
 n_samples, n_features = X.shape
-n_samples
-# 864
-n_features
-# 39912
-
-# Look at target y
-y.shape
-# (1452,)
 
 # Check conditions:
 # - 0 is the rest period
@@ -62,21 +49,13 @@ np.unique(y)
 
 # We have the 8 conditions
 n_conditions = np.size(np.unique(y))
-n_conditions
-# 8
-
 
 ### Prediction function #######################################################
 
-from sklearn.svm import SVC
-
 ### Define the prediction function to be used.
 # Here we use a Support Vector Classification, with a linear kernel and C=1
+from sklearn.svm import SVC
 clf = SVC(kernel='linear', C=1.)
-clf
-# SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0, degree=3, gamma=0.0,
-#   kernel='linear', probability=False, scale_C=True, shrinking=True,
-#   tol=0.001, verbose=False)
 
 ### Dimension reduction #######################################################
 
@@ -86,39 +65,20 @@ from sklearn.feature_selection import SelectKBest, f_classif
 # Here we use a classical univariate feature selection based on F-test,
 # namely Anova. We set the number of features to be selected to 500
 feature_selection = SelectKBest(f_classif, k=500)
-# >>> feature_selection
-# SelectKBest(k=500, score_func=<function f_classif at 0x...>)
 
-### Pipeline ##################################################################
-
+# We have our classifier (SVC), our feature selection (SelectKBest), and now,
+# we can plug them together in a *pipeline* that performs the two operations
+# successively:
 from sklearn.pipeline import Pipeline
-
-### We combine the dimension reduction and the prediction function
 anova_svc = Pipeline([('anova', feature_selection), ('svc', clf)])
-anova_svc
-# Pipeline(steps=[('anova', SelectKBest(k=500, score_func=<function
-#   f_classif at ...>)), ('svc', SVC(C=1.0, cache_size=200, class_weight=None,
-#   coef0=0.0, degree=3, gamma=0.0, kernel='linear', probability=False,
-#   scale_C=True, shrinking=True, tol=0.001, verbose=False))])
-
 
 ### Fit and predict ###########################################################
 
 anova_svc.fit(X, y)
-# Pipeline(steps=[('anova', SelectKBest(k=500, score_func=<function
-#   f_classif at ...>)), ('svc', SVC(C=1.0, cache_size=200, class_weight=None,
-#   coef0=0.0, degree=3, gamma=0.0, kernel='linear', probability=False,
-#   scale_C=True, shrinking=True, tol=0.001, verbose=False))])
-
 y_pred = anova_svc.predict(X)
-y_pred.shape
-# (864,)
-X.shape
-# (864, 39912)
 
 ### Visualisation #############################################################
 
-from matplotlib import pyplot as plt
 
 ### Look at the discriminating weights
 svc = clf.support_vectors_
@@ -129,12 +89,15 @@ act = np.zeros(mean_img.shape)
 act[mask != 0] = svc[0]
 act = np.ma.masked_array(act, act == 0)
 
-### Create the figure on z=20
-plt.axis('off')
-plt.title('SVM vectors')
-plt.imshow(mean_img[:, 20, :], cmap=plt.cm.gray, interpolation=None)
-plt.imshow(act[:, 20, :], cmap=plt.cm.hot, interpolation=None)
-plt.show()
+### Create the figure on z=23
+import pylab as pl
+pl.axis('off')
+pl.title('SVM vectors')
+pl.imshow(np.rot90(mean_img[..., 23]), cmap=pl.cm.gray,
+          interpolation='nearest')
+pl.imshow(np.rot90(act[..., 23]), cmap=pl.cm.hot,
+          interpolation='nearest')
+pl.show()
 
 
 ### Cross validation ##########################################################
@@ -147,7 +110,6 @@ from sklearn.cross_validation import LeaveOneLabelOut
 cv = LeaveOneLabelOut(session)
 
 ### Compute the prediction accuracy for the different folds (i.e. session)
-#cv_scores = cross_val_score(anova_svc, X, y, cv=cv, n_jobs=-1, verbose=1)
 cv_scores = []
 for train, test in cv:
     y_pred = anova_svc.fit(X[train], y[train]).predict(X[test])

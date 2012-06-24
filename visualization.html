@@ -1,0 +1,369 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2. Basic dataset manipulation: loading and visualisation &mdash; NeuroImaging with the scikit-learn</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2010',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="NeuroImaging with the scikit-learn" href="index.html" />
+    <link rel="next" title="2.2.1. nisl.datasets.fetch_haxby" href="generated/nisl.datasets.fetch_haxby.html" />
+    <link rel="prev" title="1. Introduction" href="introduction.html" />
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-22606712-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+  </head>
+  <body>
+
+    <div class="header-wrapper">
+      <div class="header">
+          <p class="logo"><a href="index.html">
+            <img src="_static/scikit-learn-logo-small.png" alt="Logo"/>
+          </a>
+          </p><div class="navbar">
+          <ul>
+          <!--	  
+	    <li><a href="install.html">Download</a></li>
+            <li><a href="support.html">Support</a></li>
+	  -->
+            <li><a href="haxby_decoding.html">fMRI decoding</a></li>
+            <li><a href="auto_examples/index.html">Examples</a></li>
+          <!--	  
+	    <li><a href="modules/classes.html">Reference</a></li>
+	  -->
+       </ul>
+
+<div class="search_form">
+
+<div id="cse" style="width: 100%;"></div>
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">
+  google.load('search', '1', {language : 'en'});
+  google.setOnLoadCallback(function() {
+    var customSearchControl = new google.search.CustomSearchControl('016639176250731907682:tjtqbvtvij0');
+    customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+    var options = new google.search.DrawOptions();
+    options.setAutoComplete(true);
+    customSearchControl.draw('cse', options);
+  }, true);
+</script>
+
+</div>
+          </div> <!-- end navbar --></div>
+    </div>
+
+    <div class="content-wrapper">
+
+      <div class="sphinxsidebar">
+	<div class="sphinxsidebarwrapper">
+	   <div class="rel rellarge">
+	     
+	<!-- XXX: when we have a 'module index' that appears in the link
+	     bar, we will need to use the following ugly hack to avoid it
+	     rellinks[1:]|reverse
+	    -->
+	<div class="rellink">
+	<a href="introduction.html" title="1. Introduction"
+	    accesskey="P">Previous
+	    <br>
+	    <span class="smallrellink">
+	    1. Introduction
+	    </span>
+	    <span class="hiddenrellink">
+	    1. Introduction
+	    </span>
+	    
+	    </a>
+	</div>
+	    <div class="spacer">
+	    &nbsp;
+	    </div>
+	
+	<div class="rellink">
+	<a href="generated/nisl.datasets.fetch_haxby.html" title="2.2.1. nisl.datasets.fetch_haxby"
+	    accesskey="N">Next
+	    <br>
+	    <span class="smallrellink">
+	    2.2.1. nisl.data...
+	    </span>
+	    <span class="hiddenrellink">
+	    2.2.1. nisl.datasets.fetch_haxby
+	    </span>
+	    
+	    </a>
+	</div>
+	<!-- Ad a link to the 'up' page -->
+    </div>
+    <h3>This page</h3>
+	<ul>
+<li><a class="reference internal" href="#">2. Basic dataset manipulation: loading and visualisation</a><ul>
+<li><a class="reference internal" href="#dataset-formatting">2.1. Dataset formatting</a></li>
+<li><a class="reference internal" href="#some-downloading-utilities">2.2. Some downloading utilities</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#nifti-and-analyse-files">2.3. NIfTI and Analyse files</a><ul>
+<li><a class="reference internal" href="#specifications">2.3.1. Specifications</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#loading-nifti-or-analyze-files">2.4. Loading Nifti or analyze files</a></li>
+<li><a class="reference internal" href="#visualizing-brain-images">2.5. Visualizing brain images</a></li>
+<li><a class="reference internal" href="#masking-the-data">2.6. Masking the data</a><ul>
+<li><a class="reference internal" href="#extracting-a-brain-mask">2.6.1. Extracting a brain mask</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#from-4d-to-2d-arrays">2.6.2. From 4D to 2D arrays</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+    
+    </div>
+	  </div>
+
+
+      <div class="content">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="basic-dataset-manipulation-loading-and-visualisation">
+<span id="datasets"></span><h1>2. Basic dataset manipulation: loading and visualisation<a class="headerlink" href="#basic-dataset-manipulation-loading-and-visualisation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dataset-formatting">
+<h2>2.1. Dataset formatting<a class="headerlink" href="#dataset-formatting" title="Permalink to this headline">¶</a></h2>
+<p>Even though standard format exists, some people prefer to stick with custom
+data formatting. That is why special processing is sometimes required.</p>
+<p>We can find two main representations for MRI scans:</p>
+<ul class="simple">
+<li>a big 4D matrix representing 3D MRI along time</li>
+<li>several 3D matrices representing each volume (time point) of the session</li>
+</ul>
+<p>These scans can be grouped by sessions and by subjects.</p>
+</div>
+<div class="section" id="some-downloading-utilities">
+<h2>2.2. Some downloading utilities<a class="headerlink" href="#some-downloading-utilities" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">nisl.datasets</span></tt> package embeds tools to fetch and load datasets. It comes
+with a set of several datasets that are not always formatted the same way.</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/nisl.datasets.fetch_haxby.html#nisl.datasets.fetch_haxby" title="nisl.datasets.fetch_haxby"><tt class="xref py py-obj docutils literal"><span class="pre">fetch_haxby</span></tt></a>([data_dir])</td>
+<td>Returns the haxby dataset</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="generated/nisl.datasets.fetch_nyu_rest.html#nisl.datasets.fetch_nyu_rest" title="nisl.datasets.fetch_nyu_rest"><tt class="xref py py-obj docutils literal"><span class="pre">fetch_nyu_rest</span></tt></a>([n_subjects,&nbsp;data_dir])</td>
+<td>Returns the NYU Test Retest dataset</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="generated/nisl.datasets.fetch_star_plus.html#nisl.datasets.fetch_star_plus" title="nisl.datasets.fetch_star_plus"><tt class="xref py py-obj docutils literal"><span class="pre">fetch_star_plus</span></tt></a>([data_dir])</td>
+<td>Function returning the starplus data, downloading them if needed</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="nifti-and-analyse-files">
+<h2>2.3. NIfTI and Analyse files<a class="headerlink" href="#nifti-and-analyse-files" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="specifications">
+<h3>2.3.1. Specifications<a class="headerlink" href="#specifications" title="Permalink to this headline">¶</a></h3>
+<p>NIfTI files (or Analyze files) are the standard way of sharing data in
+neuroimaging. For our purposes, we may are interested in the following
+three main components:</p>
+<ul class="simple">
+<li><em>data</em>: raw scans bundled in a numpy array</li>
+<li><em>affine</em>: allows to switch between voxel index and spatial location</li>
+<li><em>header</em>: informations about the data (slice duration...)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="loading-nifti-or-analyze-files">
+<h2>2.4. Loading Nifti or analyze files<a class="headerlink" href="#loading-nifti-or-analyze-files" title="Permalink to this headline">¶</a></h2>
+<p>NIfTI data can be loaded simply thanks to <a class="reference external" href="http://nipy.sourceforge.net/nibabel/">nibabel</a>. Once the file is
+downloaded, a single line is needed to load it.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
+<span class="n">haxby</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">()</span>
+
+<span class="c"># Get the files relative to this dataset</span>
+<span class="n">files</span> <span class="o">=</span> <span class="n">haxby</span><span class="o">.</span><span class="n">files</span>
+<span class="n">bold</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c"># Load the NIfTI data</span>
+<span class="kn">import</span> <span class="nn">nibabel</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">bold</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="visualizing-brain-images">
+<h2>2.5. Visualizing brain images<a class="headerlink" href="#visualizing-brain-images" title="Permalink to this headline">¶</a></h2>
+<p>Once that NIfTI data is loaded, visualization is simply the display of the
+desired slice. For haxby, data is rotated so we have to turn each image
+counter clockwise.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">131</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Coronal&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">data</span><span class="p">[:,</span> <span class="mi">32</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">100</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">132</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Sagittal&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">100</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">133</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Axial&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">100</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure align-center">
+<a class="reference external image-reference" href="auto_examples/plot_visualization.html"><img alt="_images/plot_visualization_1.png" src="_images/plot_visualization_1.png" style="width: 480.0px; height: 360.0px;" /></a>
+</div>
+</div>
+<div class="section" id="masking-the-data">
+<h2>2.6. Masking the data<a class="headerlink" href="#masking-the-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="extracting-a-brain-mask">
+<h3>2.6.1. Extracting a brain mask<a class="headerlink" href="#extracting-a-brain-mask" title="Permalink to this headline">¶</a></h3>
+<p>If we do not have a mask of the relevant regions available, a brain mask
+can be easily extracted from the fMRI data using the
+<a class="reference internal" href="generated/nisl.masking.compute_mask.html#nisl.masking.compute_mask" title="nisl.masking.compute_mask"><tt class="xref py py-func docutils literal"><span class="pre">nisl.masking.compute_mask</span></tt></a> function:</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="generated/nisl.masking.compute_mask.html#nisl.masking.compute_mask" title="nisl.masking.compute_mask"><tt class="xref py py-obj docutils literal"><span class="pre">compute_mask</span></tt></a>(epi_img[,&nbsp;lower_cutoff,&nbsp;...])</td>
+<td>Compute a brain mask from fMRI data in 3D or 4D ndarrays.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Simple computation of a mask from the fMRI data</span>
+<span class="kn">from</span> <span class="nn">nisl.masking</span> <span class="kn">import</span> <span class="n">compute_mask</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">compute_mask</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="c"># We create a new figure</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="c"># A plot the axial view of the mask to compare with the axial</span>
+<span class="c"># view of the raw data displayed previously</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mask</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">32</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure align-center">
+<a class="reference external image-reference" href="auto_examples/plot_visualization.html"><img alt="_images/plot_visualization_2.png" src="_images/plot_visualization_2.png" style="width: 400.0px; height: 300.0px;" /></a>
+</div>
+</div>
+<div class="section" id="from-4d-to-2d-arrays">
+<h3>2.6.2. From 4D to 2D arrays<a class="headerlink" href="#from-4d-to-2d-arrays" title="Permalink to this headline">¶</a></h3>
+<p>FMRI data is naturally represented as a 4D block of data: 3 spatial
+dimensions and time. In practice, we are most often only interested in
+working only on the time-series of the voxels in the brain. It is
+convenient to apply a brain mask and go from a 4D array to a 2D array,
+<cite>voxel x time</cite>, as depicted below:</p>
+<img alt="_images/masking.jpg" class="align-center" src="_images/masking.jpg" style="width: 100%;" />
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Applying the mask is just a simple array manipulation</span>
+<span class="n">masked_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+<span class="c"># masked_data is now a voxel x time matrix. We can plot the first 10</span>
+<span class="c"># lines: they correspond to time-series of 10 voxels on the side of the</span>
+<span class="c"># brain</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">masked_data</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Time&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Voxel&#39;</span><span class="p">)</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="figure align-center">
+<a class="reference external image-reference" href="auto_examples/plot_visualization.html"><img alt="_images/plot_visualization_3.png" src="_images/plot_visualization_3.png" style="width: 400.0px; height: 300.0px;" /></a>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+  
+
+    <div class="footer">
+        &copy; INRIA Parietal 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3. Design by <a href="http://webylimonada.com">Web y Limonada</a>.
+    <span style="padding-left: 5ex;">
+    <a href="_sources/visualization.txt"
+	    rel="nofollow">Show this page source</a>
+    </span>
+    </div>
+     <div class="rel rellarge">
+    
+	<!-- XXX: when we have a 'module index' that appears in the link
+	     bar, we will need to use the following ugly hack to avoid it
+	rellinks[1:]|reverse
+	-->
+    <div class="buttonPrevious">
+      <a href="introduction.html">
+        Previous
+      </a>  
+    </div>
+    <div class="buttonNext">
+      <a href="generated/nisl.datasets.fetch_haxby.html">
+        Next
+      </a>  
+    </div>
+    
+     </div>
+     <script type="text/javascript">
+       $("div.buttonNext, div.buttonPrevious").hover(
+           function () {
+               $(this).css('background-color', '#FF9C34');
+           },
+           function () {
+               $(this).css('background-color', '#A7D6E2');
+           }
+       );
+     </script>
+  </body>
+</html>
