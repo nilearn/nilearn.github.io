@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>5.3. Learning a brain parcellation from rest fMRI &mdash; NeuroImaging with the scikit-learn</title>
+    <title>5.3. Hierachical clustering to learn a brain parcellation from rest fMRI &mdash; NeuroImaging with the scikit-learn</title>
     
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -145,7 +145,7 @@
     </div>
     <h3>This page</h3>
 	<ul>
-<li><a class="reference internal" href="#">5.3. Learning a brain parcellation from rest fMRI</a></li>
+<li><a class="reference internal" href="#">5.3. Hierachical clustering to learn a brain parcellation from rest fMRI</a></li>
 </ul>
 
     
@@ -159,8 +159,16 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="learning-a-brain-parcellation-from-rest-fmri">
-<span id="example-tutorial-plot-rest-clustering-py"></span><h1>5.3. Learning a brain parcellation from rest fMRI<a class="headerlink" href="#learning-a-brain-parcellation-from-rest-fmri" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="hierachical-clustering-to-learn-a-brain-parcellation-from-rest-fmri">
+<span id="example-tutorial-plot-rest-clustering-py"></span><h1>5.3. Hierachical clustering to learn a brain parcellation from rest fMRI<a class="headerlink" href="#hierachical-clustering-to-learn-a-brain-parcellation-from-rest-fmri" title="Permalink to this headline">¶</a></h1>
+<p>We use spatial-constrained Ward-clustering to create a set of
+parcels. These parcels are particularly interesting for creating a
+&#8216;compressed&#8217; representation of the data, replacing the data in the fMRI
+images by mean on the parcellation.</p>
+<p>This parcellation may be useful in a supervised learning, see for
+instance: <a class="reference external" href="http://hal.inria.fr/inria-00589201">A supervised clustering approach for fMRI-based inference of
+brain states</a>, Michel et al,
+Pattern Recognition 2011.</p>
 <ul class="horizontal">
 <li><a class="first reference internal image-reference" href="../_images/plot_rest_clustering_2.png"><img alt="../_images/plot_rest_clustering_2.png" src="../_images/plot_rest_clustering_2.png" style="width: 376.0px; height: 282.0px;" /></a>
 </li>
@@ -177,17 +185,19 @@
 
 <span class="c">### Mask ######################################################################</span>
 
-<span class="n">epi_img</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="c"># Compute the mask</span>
+<span class="n">fmri_data</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
+<span class="c"># Compute a brain mask</span>
 <span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">masking</span>
-<span class="n">mask</span> <span class="o">=</span> <span class="n">masking</span><span class="o">.</span><span class="n">compute_mask</span><span class="p">(</span><span class="n">epi_img</span><span class="p">)</span>
-<span class="c"># Mask data</span>
-<span class="n">epi_masked</span> <span class="o">=</span> <span class="n">epi_img</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">masking</span><span class="o">.</span><span class="n">compute_mask</span><span class="p">(</span><span class="n">fmri_data</span><span class="p">)</span>
+
+<span class="c"># Mask data: go from a 4D dataset to a 2D dataset with only the voxels</span>
+<span class="c"># in the mask</span>
+<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
 
 <span class="c">### Ward ######################################################################</span>
 
-<span class="c"># Compute connectivity matrix</span>
+<span class="c"># Compute connectivity matrix: which voxel is connected to which</span>
 <span class="kn">from</span> <span class="nn">sklearn.feature_extraction</span> <span class="kn">import</span> <span class="n">image</span>
 <span class="n">shape</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span>
 <span class="n">connectivity</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">grid_to_graph</span><span class="p">(</span><span class="n">n_x</span><span class="o">=</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n_y</span><span class="o">=</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
@@ -199,21 +209,20 @@
 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 <span class="n">ward</span> <span class="o">=</span> <span class="n">WardAgglomeration</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">,</span>
                          <span class="n">memory</span><span class="o">=</span><span class="s">&#39;nisl_cache&#39;</span><span class="p">)</span>
-<span class="n">ward</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epi_masked</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="n">ward</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_masked</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 <span class="k">print</span> <span class="s">&quot;Ward agglomeration 500 clusters: </span><span class="si">%.2f</span><span class="s">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
 
-<span class="c"># Compute the ward with more clusters, should be faster</span>
+<span class="c"># Compute the ward with more clusters, should be faster as we are using</span>
+<span class="c"># the caching mechanism</span>
 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 <span class="n">ward</span> <span class="o">=</span> <span class="n">WardAgglomeration</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">,</span>
                          <span class="n">memory</span><span class="o">=</span><span class="s">&#39;nisl_cache&#39;</span><span class="p">)</span>
-<span class="n">ward</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epi_masked</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="n">ward</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_masked</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 <span class="k">print</span> <span class="s">&quot;Ward agglomeration 1000 clusters: </span><span class="si">%.2f</span><span class="s">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
-
-<span class="c">### Prepare output ############################################################</span>
 
 <span class="c">### Show result ###############################################################</span>
 
-<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">pl</span>
+<span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
 
 <span class="c"># Display the labels</span>
 <span class="c"># Unmask data</span>
@@ -221,7 +230,9 @@
 <span class="n">labels</span> <span class="o">=</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 <span class="n">labels</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">labels_</span>
 
+<span class="c"># Cut at z=20</span>
 <span class="n">cut</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">20</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+<span class="c"># Assign random colors to each cluster</span>
 <span class="n">colors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">ward</span><span class="o">.</span><span class="n">n_clusters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="n">colors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -231,32 +242,38 @@
 
 <span class="c"># Display the original data</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">first_epi_img</span> <span class="o">=</span> <span class="n">epi_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">first_epi_img</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">mask</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">first_epi_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">20</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">spectral</span><span class="p">)</span>
+<span class="n">first_fmri_img</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">first_fmri_img</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">mask</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">vmax</span> <span class="o">=</span> <span class="n">first_fmri_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">first_fmri_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">20</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">spectral</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Original&#39;</span><span class="p">)</span>
 
+<span class="c"># A reduced data can be create by taking the parcel-level average:</span>
+<span class="c"># Note that, as many objects in the scikit-learn, the ward object exposes</span>
+<span class="c"># a transform method that modifies input features. Here it reduces their</span>
+<span class="c"># dimension</span>
+<span class="n">fmri_reduced</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">fmri_masked</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
 <span class="c"># Display the corresponding data compressed using the parcellation</span>
-<span class="n">X_r</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">epi_masked</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-<span class="n">X_c</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">X_r</span><span class="p">)</span>
+<span class="n">fmri_compressed</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">fmri_reduced</span><span class="p">)</span>
 <span class="n">compressed_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">compressed_img</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">X_c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">compressed_img</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">fmri_compressed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">compressed_img</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">20</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">spectral</span><span class="p">)</span>
+           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">spectral</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Compressed representation&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 <p><strong>Script output</strong>:</p>
-<div class="highlight-python"><pre>Ward agglomeration 500 clusters: 0.61s
-Ward agglomeration 1000 clusters: 0.61s</pre>
+<div class="highlight-python"><pre>Ward agglomeration 500 clusters: 0.58s
+Ward agglomeration 1000 clusters: 0.60s</pre>
 </div>
-<p><strong>Total running time of the example:</strong>   17 seconds</p>
+<p><strong>Total running time of the example:</strong>   16 seconds</p>
 </div>
 
 
