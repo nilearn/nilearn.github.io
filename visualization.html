@@ -28,7 +28,7 @@
     <script type="text/javascript" src="_static/sidebar.js"></script>
     <link rel="shortcut icon" href="_static/favicon.ico"/>
     <link rel="top" title="NeuroImaging with the scikit-learn" href="index.html" />
-    <link rel="next" title="2.2.1. nisl.datasets.fetch_haxby" href="generated/nisl.datasets.fetch_haxby.html" />
+    <link rel="next" title="2.1.1. nisl.datasets.fetch_haxby" href="generated/nisl.datasets.fetch_haxby.html" />
     <link rel="prev" title="1. Introduction" href="introduction.html" />
 <script type="text/javascript">
 
@@ -112,14 +112,14 @@
 	    </div>
 	
 	<div class="rellink">
-	<a href="generated/nisl.datasets.fetch_haxby.html" title="2.2.1. nisl.datasets.fetch_haxby"
+	<a href="generated/nisl.datasets.fetch_haxby.html" title="2.1.1. nisl.datasets.fetch_haxby"
 	    accesskey="N">Next
 	    <br>
 	    <span class="smallrellink">
-	    2.2.1. nisl.data...
+	    2.1.1. nisl.data...
 	    </span>
 	    <span class="hiddenrellink">
-	    2.2.1. nisl.datasets.fetch_haxby
+	    2.1.1. nisl.datasets.fetch_haxby
 	    </span>
 	    
 	    </a>
@@ -129,21 +129,16 @@
     <h3>This page</h3>
 	<ul>
 <li><a class="reference internal" href="#">2. Basic dataset manipulation: loading and visualisation</a><ul>
-<li><a class="reference internal" href="#dataset-formatting">2.1. Dataset formatting</a></li>
-<li><a class="reference internal" href="#some-downloading-utilities">2.2. Some downloading utilities</a><ul>
+<li><a class="reference internal" href="#downloading-the-tutorial-data">2.1. Downloading the tutorial data</a><ul>
 </ul>
 </li>
-<li><a class="reference internal" href="#nifti-and-analyse-files">2.3. NIfTI and Analyse files</a><ul>
-<li><a class="reference internal" href="#specifications">2.3.1. Specifications</a></li>
+<li><a class="reference internal" href="#loading-nifti-or-analyze-files">2.2. Loading Nifti or analyze files</a></li>
+<li><a class="reference internal" href="#visualizing-brain-images">2.3. Visualizing brain images</a></li>
+<li><a class="reference internal" href="#masking-the-data">2.4. Masking the data</a><ul>
+<li><a class="reference internal" href="#extracting-a-brain-mask">2.4.1. Extracting a brain mask</a><ul>
 </ul>
 </li>
-<li><a class="reference internal" href="#loading-nifti-or-analyze-files">2.4. Loading Nifti or analyze files</a></li>
-<li><a class="reference internal" href="#visualizing-brain-images">2.5. Visualizing brain images</a></li>
-<li><a class="reference internal" href="#masking-the-data">2.6. Masking the data</a><ul>
-<li><a class="reference internal" href="#extracting-a-brain-mask">2.6.1. Extracting a brain mask</a><ul>
-</ul>
-</li>
-<li><a class="reference internal" href="#from-4d-to-2d-arrays">2.6.2. From 4D to 2D arrays</a></li>
+<li><a class="reference internal" href="#from-4d-to-2d-arrays">2.4.2. From 4D to 2D arrays</a></li>
 </ul>
 </li>
 </ul>
@@ -163,21 +158,19 @@
             
   <div class="section" id="basic-dataset-manipulation-loading-and-visualisation">
 <span id="datasets"></span><h1>2. Basic dataset manipulation: loading and visualisation<a class="headerlink" href="#basic-dataset-manipulation-loading-and-visualisation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="dataset-formatting">
-<h2>2.1. Dataset formatting<a class="headerlink" href="#dataset-formatting" title="Permalink to this headline">¶</a></h2>
-<p>Even though standard format exists, some people prefer to stick with custom
-data formatting. That is why special processing is sometimes required.</p>
-<p>We can find two main representations for MRI scans:</p>
-<ul class="simple">
-<li>a big 4D matrix representing 3D MRI along time</li>
-<li>several 3D matrices representing each volume (time point) of the session</li>
-</ul>
-<p>These scans can be grouped by sessions and by subjects.</p>
+<div class="section" id="downloading-the-tutorial-data">
+<h2>2.1. Downloading the tutorial data<a class="headerlink" href="#downloading-the-tutorial-data" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial package embeds tools to download and load datasets. They
+can be imported from <tt class="docutils literal"><span class="pre">nisl.datasets</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">haxby_data</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c"># The data is then already loaded as numpy arrays:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">haxby_data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> 
+<span class="go">[&#39;files&#39;, &#39;session&#39;, &#39;target&#39;, &#39;target_strings&#39;, &#39;data&#39;, &#39;affine&#39;, &#39;mask&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">haxby_data</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span> <span class="c"># 1491 time points and a spatial size of 40x49x41</span>
+<span class="go">(40, 49, 41, 1452)</span>
+</pre></div>
 </div>
-<div class="section" id="some-downloading-utilities">
-<h2>2.2. Some downloading utilities<a class="headerlink" href="#some-downloading-utilities" title="Permalink to this headline">¶</a></h2>
-<p>The <tt class="docutils literal"><span class="pre">nisl.datasets</span></tt> package embeds tools to fetch and load datasets. It comes
-with a set of several datasets that are not always formatted the same way.</p>
 <table border="1" class="longtable docutils">
 <colgroup>
 <col width="10%" />
@@ -185,34 +178,39 @@ with a set of several datasets that are not always formatted the same way.</p>
 </colgroup>
 <tbody valign="top">
 <tr class="row-odd"><td><a class="reference internal" href="generated/nisl.datasets.fetch_haxby.html#nisl.datasets.fetch_haxby" title="nisl.datasets.fetch_haxby"><tt class="xref py py-obj docutils literal"><span class="pre">fetch_haxby</span></tt></a>([data_dir])</td>
-<td>Returns the haxby dataset</td>
+<td>Download and loads the haxby dataset</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="generated/nisl.datasets.fetch_nyu_rest.html#nisl.datasets.fetch_nyu_rest" title="nisl.datasets.fetch_nyu_rest"><tt class="xref py py-obj docutils literal"><span class="pre">fetch_nyu_rest</span></tt></a>([n_subjects,&nbsp;data_dir])</td>
-<td>Returns the NYU Test Retest dataset</td>
+<td>Download and loads the NYU resting-state test-retest dataset</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="generated/nisl.datasets.fetch_star_plus.html#nisl.datasets.fetch_star_plus" title="nisl.datasets.fetch_star_plus"><tt class="xref py py-obj docutils literal"><span class="pre">fetch_star_plus</span></tt></a>([data_dir])</td>
-<td>Function returning the starplus data, downloading them if needed</td>
+</tbody>
+</table>
+<p>The data are downloaded only once and stored locally in the <cite>nisl_data</cite>
+folder.</p>
+</div>
+<div class="section" id="loading-nifti-or-analyze-files">
+<h2>2.2. Loading Nifti or analyze files<a class="headerlink" href="#loading-nifti-or-analyze-files" title="Permalink to this headline">¶</a></h2>
+<div class="topic">
+<p class="topic-title first">NIfTI and Analyse files</p>
+<p>NIfTI files (or Analyze files) are the standard way of sharing data in
+neuroimaging. We may be interested in the following
+three main components:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">data:</th><td class="field-body">raw scans bundled in a numpy array: <cite>data = img.get_data()</cite></td>
+</tr>
+<tr class="field-even field"><th class="field-name">affine:</th><td class="field-body">gives the correspondance between voxel index and spatial location:
+<cite>affine = img.get_affine()</cite></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">header:</th><td class="field-body">informations about the data (slice duration...):
+<cite>header = img.get_header()</cite></td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="section" id="nifti-and-analyse-files">
-<h2>2.3. NIfTI and Analyse files<a class="headerlink" href="#nifti-and-analyse-files" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="specifications">
-<h3>2.3.1. Specifications<a class="headerlink" href="#specifications" title="Permalink to this headline">¶</a></h3>
-<p>NIfTI files (or Analyze files) are the standard way of sharing data in
-neuroimaging. For our purposes, we may are interested in the following
-three main components:</p>
-<ul class="simple">
-<li><em>data</em>: raw scans bundled in a numpy array</li>
-<li><em>affine</em>: allows to switch between voxel index and spatial location</li>
-<li><em>header</em>: informations about the data (slice duration...)</li>
-</ul>
-</div>
-</div>
-<div class="section" id="loading-nifti-or-analyze-files">
-<h2>2.4. Loading Nifti or analyze files<a class="headerlink" href="#loading-nifti-or-analyze-files" title="Permalink to this headline">¶</a></h2>
-<p>NIfTI data can be loaded simply thanks to <a class="reference external" href="http://nipy.sourceforge.net/nibabel/">nibabel</a>. Once the file is
+<p>Neuroimaging data can be loaded simply thanks to <a class="reference external" href="http://nipy.sourceforge.net/nibabel/">nibabel</a>. Once the file is
 downloaded, a single line is needed to load it.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="n">haxby</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">()</span>
@@ -223,12 +221,24 @@ downloaded, a single line is needed to load it.</p>
 
 <span class="c"># Load the NIfTI data</span>
 <span class="kn">import</span> <span class="nn">nibabel</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">bold</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">nifti_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">bold</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">nifti_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
 </pre></div>
+</div>
+<div class="topic">
+<p class="topic-title first">Dataset formatting: data shape</p>
+<p>We can find two main representations for MRI scans:</p>
+<ul class="simple">
+<li>a big 4D matrix representing 3D MRI along time, stored in a big 4D
+Nifti file. FSL users tend to prefer this format.</li>
+<li>several 3D matrices representing each volume (time point) of the
+session, stored in set of 3D Nifti or analyse files. SPM users tend
+to prefer this format.</li>
+</ul>
 </div>
 </div>
 <div class="section" id="visualizing-brain-images">
-<h2>2.5. Visualizing brain images<a class="headerlink" href="#visualizing-brain-images" title="Permalink to this headline">¶</a></h2>
+<h2>2.3. Visualizing brain images<a class="headerlink" href="#visualizing-brain-images" title="Permalink to this headline">¶</a></h2>
 <p>Once that NIfTI data is loaded, visualization is simply the display of the
 desired slice. For haxby, data is rotated so we have to turn each image
 counter clockwise.</p>
@@ -259,9 +269,9 @@ counter clockwise.</p>
 </div>
 </div>
 <div class="section" id="masking-the-data">
-<h2>2.6. Masking the data<a class="headerlink" href="#masking-the-data" title="Permalink to this headline">¶</a></h2>
+<h2>2.4. Masking the data<a class="headerlink" href="#masking-the-data" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="extracting-a-brain-mask">
-<h3>2.6.1. Extracting a brain mask<a class="headerlink" href="#extracting-a-brain-mask" title="Permalink to this headline">¶</a></h3>
+<h3>2.4.1. Extracting a brain mask<a class="headerlink" href="#extracting-a-brain-mask" title="Permalink to this headline">¶</a></h3>
 <p>If we do not have a mask of the relevant regions available, a brain mask
 can be easily extracted from the fMRI data using the
 <a class="reference internal" href="generated/nisl.masking.compute_mask.html#nisl.masking.compute_mask" title="nisl.masking.compute_mask"><tt class="xref py py-func docutils literal"><span class="pre">nisl.masking.compute_mask</span></tt></a> function:</p>
@@ -292,7 +302,7 @@ can be easily extracted from the fMRI data using the
 </div>
 </div>
 <div class="section" id="from-4d-to-2d-arrays">
-<h3>2.6.2. From 4D to 2D arrays<a class="headerlink" href="#from-4d-to-2d-arrays" title="Permalink to this headline">¶</a></h3>
+<h3>2.4.2. From 4D to 2D arrays<a class="headerlink" href="#from-4d-to-2d-arrays" title="Permalink to this headline">¶</a></h3>
 <p>FMRI data is naturally represented as a 4D block of data: 3 spatial
 dimensions and time. In practice, we are most often only interested in
 working only on the time-series of the voxels in the brain. It is
