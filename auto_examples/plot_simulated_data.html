@@ -250,25 +250,24 @@ values.</p>
 
 <span class="c">###############################################################################</span>
 <span class="c"># Create data</span>
-<span class="n">size</span> <span class="o">=</span> <span class="mi">12</span>
-<span class="n">n_samples</span> <span class="o">=</span> <span class="mi">400</span>
 <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">snr</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span>\
-        <span class="n">create_simulation_data</span><span class="p">(</span><span class="n">snr</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
+        <span class="n">create_simulation_data</span><span class="p">(</span><span class="n">snr</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
 
-
-<span class="c">###############################################################################</span>
-<span class="c"># Compute the results and coef maps for different estimators</span>
-<span class="n">classifiers</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s">&#39;bayesian_ridge&#39;</span><span class="p">:</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">BayesianRidge</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
-    <span class="s">&#39;svr&#39;</span><span class="p">:</span> <span class="n">svm</span><span class="o">.</span><span class="n">SVR</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">0.001</span><span class="p">),</span>
-    <span class="s">&#39;ridge_cv&#39;</span><span class="p">:</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">RidgeCV</span><span class="p">(</span><span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span>
-    <span class="s">&#39;enet_cv&#39;</span><span class="p">:</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">ElasticNetCV</span><span class="p">(</span><span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="n">rho</span><span class="o">=</span><span class="mf">0.05</span><span class="p">),</span>
-<span class="p">}</span>
 
 <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span> <span class="p">[</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">])</span>
 <span class="n">plot_slices</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;Ground truth&quot;</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">classifier</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">classifiers</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()):</span>
+<span class="c">###############################################################################</span>
+<span class="c"># Compute the results and estimated coef maps for different estimators</span>
+<span class="n">classifiers</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="p">(</span><span class="s">&#39;bayesian_ridge&#39;</span><span class="p">,</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">BayesianRidge</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)),</span>
+  <span class="p">(</span><span class="s">&#39;enet_cv&#39;</span><span class="p">,</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">ElasticNetCV</span><span class="p">(</span><span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="n">rho</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)),</span>
+  <span class="p">(</span><span class="s">&#39;ridge_cv&#39;</span><span class="p">,</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">RidgeCV</span><span class="p">(</span><span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">)),</span>
+  <span class="p">(</span><span class="s">&#39;svr&#39;</span><span class="p">,</span> <span class="n">svm</span><span class="o">.</span><span class="n">SVR</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)),</span>
+<span class="p">]</span>
+
+<span class="c"># Run the estimators</span>
+<span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">classifier</span> <span class="ow">in</span> <span class="n">classifiers</span><span class="p">:</span>
     <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
     <span class="n">classifier</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
     <span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t1</span>
@@ -280,6 +279,8 @@ values.</p>
                 <span class="n">classifier</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span>
                 <span class="n">elapsed_time</span><span class="p">)</span>
 
+    <span class="c"># We use the plot_slices function provided in the example to</span>
+    <span class="c"># plot the results</span>
     <span class="n">plot_slices</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
 
     <span class="k">print</span> <span class="n">title</span>
@@ -289,12 +290,12 @@ values.</p>
 </div>
 <p><strong>Script output</strong>:</p>
 <div class="highlight-python"><pre>SNR : 10
-BayesianRidge: prediction score 0.552, training time: 2.56s
-ElasticNetCV: prediction score 0.668, training time: 12.86s
-RidgeCV: prediction score 0.533, training time: 2.66s
-SVR: prediction score 0.597, training time: 0.40s</pre>
+BayesianRidge: prediction score 0.552, training time: 0.66s
+ElasticNetCV: prediction score 0.668, training time: 2.05s
+RidgeCV: prediction score 0.533, training time: 0.74s
+SVR: prediction score 0.597, training time: 0.06s</pre>
 </div>
-<p><strong>Total running time of the example:</strong>   24 seconds</p>
+<p><strong>Total running time of the example:</strong>    4 seconds</p>
 </div>
 
 

@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>3.1. Decoding on simulated data &mdash; NeuroImaging with the scikit-learn</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2010',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="NeuroImaging with the scikit-learn" href="index.html" />
+    <link rel="up" title="3. Supervised learning" href="supervised_learning.html" />
+    <link rel="next" title="3.2. fMRI decoding: predicting which objects a subject is viewing" href="haxby_decoding.html" />
+    <link rel="prev" title="3. Supervised learning" href="supervised_learning.html" />
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-22606712-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+  </head>
+  <body>
+
+    <div class="header-wrapper">
+      <div class="header">
+          <p class="logo"><a href="index.html">
+            <img src="_static/scikit-learn-logo-small.png" alt="Logo"/>
+          </a>
+          </p><div class="navbar">
+          <ul>
+          <!--	  
+	    <li><a href="install.html">Download</a></li>
+            <li><a href="support.html">Support</a></li>
+	  -->
+            <li><a href="haxby_decoding.html">fMRI decoding</a></li>
+            <li><a href="auto_examples/index.html">Examples</a></li>
+          <!--	  
+	    <li><a href="modules/classes.html">Reference</a></li>
+	  -->
+       </ul>
+
+<div class="search_form">
+
+<div id="cse" style="width: 100%;"></div>
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">
+  google.load('search', '1', {language : 'en'});
+  google.setOnLoadCallback(function() {
+    var customSearchControl = new google.search.CustomSearchControl('016639176250731907682:tjtqbvtvij0');
+    customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+    var options = new google.search.DrawOptions();
+    options.setAutoComplete(true);
+    customSearchControl.draw('cse', options);
+  }, true);
+</script>
+
+</div>
+          </div> <!-- end navbar --></div>
+    </div>
+
+    <div class="content-wrapper">
+
+      <div class="sphinxsidebar">
+	<div class="sphinxsidebarwrapper">
+	  <div class="rel">
+	   
+	<!-- XXX: when we have a 'module index' that appears in the link
+	     bar, we will need to use the following ugly hack to avoid it
+	     rellinks[1:]|reverse
+	    -->
+	<div class="rellink">
+	<a href="supervised_learning.html" title="3. Supervised learning"
+	    accesskey="P">Previous
+	    <br>
+	    <span class="smallrellink">
+	    3. Supervised le...
+	    </span>
+	    <span class="hiddenrellink">
+	    3. Supervised learning
+	    </span>
+	    
+	    </a>
+	</div>
+	    <div class="spacer">
+	    &nbsp;
+	    </div>
+	
+	<div class="rellink">
+	<a href="haxby_decoding.html" title="3.2. fMRI decoding: predicting which objects a subject is viewing"
+	    accesskey="N">Next
+	    <br>
+	    <span class="smallrellink">
+	    3.2. fMRI decodi...
+	    </span>
+	    <span class="hiddenrellink">
+	    3.2. fMRI decoding: predicting which objects a subject is viewing
+	    </span>
+	    
+	    </a>
+	</div>
+	<!-- Ad a link to the 'up' page -->
+	<div class="spacer">
+	&nbsp;
+	</div>
+	<div class="rellink">
+	<a href="supervised_learning.html" title="3. Supervised learning" >
+	Up
+	<br>
+	<span class="smallrellink">
+	3. Supervised le...
+	</span>
+	<span class="hiddenrellink">
+	3. Supervised learning
+	</span>
+	
+	</a>
+	</div>
+    </div>
+    <h3>This page</h3>
+	<ul>
+<li><a class="reference internal" href="#">3.1. Decoding on simulated data</a><ul>
+<li><a class="reference internal" href="#simple-neuroimaging-like-simulations">3.1.1. Simple NeuroImaging-like simulations</a></li>
+<li><a class="reference internal" href="#running-various-estimators">3.1.2. Running various estimators</a></li>
+</ul>
+</li>
+</ul>
+
+    
+    </div>
+	  </div>
+
+
+      <div class="content">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="decoding-on-simulated-data">
+<h1>3.1. Decoding on simulated data<a class="headerlink" href="#decoding-on-simulated-data" title="Permalink to this headline">¶</a></h1>
+<div class="topic">
+<p class="topic-title first">Objectives</p>
+<ol class="arabic simple">
+<li>Understand linear estimators, (SVM, elastic net, ridge)</li>
+<li>Use the scikit-learn&#8217;s linear models</li>
+</ol>
+</div>
+<div class="section" id="simple-neuroimaging-like-simulations">
+<h2>3.1.1. Simple NeuroImaging-like simulations<a class="headerlink" href="#simple-neuroimaging-like-simulations" title="Permalink to this headline">¶</a></h2>
+<p>We simulate data as in Michel et al 2012, <cite>Total variation regularization
+for fMRI-based prediction of behaviour</cite>, Trans Med Imag: a linear model
+with a random design matrix <strong>X</strong>:</p>
+<div class="math">
+<p><img src="_images/math/b1bdb05d86594d2124b1a1c40083a886ebe2ffc6.png" alt="\mathbf{y} = \mathbf{X} \mathbf{w} + \mathbf{e}"/></p>
+</div><ul class="simple">
+<li><strong>w</strong>: the weights of the linear model correspond to the predictive
+brain regions. Here, in the simulations, they form a 3D image with 4
+regions in opposite corners.</li>
+</ul>
+<div class="figure align-center">
+<a class="reference external image-reference" href="auto_examples/plot_simulated_data.html"><img alt="_images/plot_simulated_data_1.png" src="_images/plot_simulated_data_1.png" style="width: 495.0px; height: 198.0px;" /></a>
+</div>
+<ul class="simple">
+<li><strong>X</strong>: the design matrix corresponds to the observed fMRI data. Here
+we simulate random normal variables and smooth them as in Gaussian
+fields.</li>
+<li><strong>e</strong> is random normal noise.</li>
+</ul>
+<p>We provide a black-box function to create the data in the
+<a class="reference internal" href="auto_examples/plot_simulated_data.html#example-tutorial-plot-simulated-data-py"><em>example script</em></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">snr</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span>\
+        <span class="n">create_simulation_data</span><span class="p">(</span><span class="n">snr</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+
+
+<span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span> <span class="p">[</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">])</span>
+<span class="n">plot_slices</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;Ground truth&quot;</span><span class="p">)</span>
+
+<span class="c">###############################################################################</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-various-estimators">
+<h2>3.1.2. Running various estimators<a class="headerlink" href="#running-various-estimators" title="Permalink to this headline">¶</a></h2>
+<p>We can now run different estimators and look at their prediction score,
+as well as the feature maps that they recover. Namely, we will use</p>
+<ul class="simple">
+<li>A support vector regression (<a class="reference external" href="http://scikit-learn.org/stable/modules/svm.html">SVM</a>)</li>
+<li>An <a class="reference external" href="http://scikit-learn.org/stable/modules/linear_model.html">elastic-net</a></li>
+<li>A <em>Bayesian</em> ridge estimator, i.e. a ridge estimator that sets its
+parameter according to a metaprior</li>
+<li>A ridge estimator that set its parameter by cross-validation</li>
+</ul>
+<p>We can create a list with all the estimators readily created with the
+parameters of our choice:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">classifiers</span> <span class="o">=</span> <span class="p">[</span>
+  <span class="p">(</span><span class="s">&#39;bayesian_ridge&#39;</span><span class="p">,</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">BayesianRidge</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)),</span>
+  <span class="p">(</span><span class="s">&#39;enet_cv&#39;</span><span class="p">,</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">ElasticNetCV</span><span class="p">(</span><span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="n">rho</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)),</span>
+  <span class="p">(</span><span class="s">&#39;ridge_cv&#39;</span><span class="p">,</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">RidgeCV</span><span class="p">(</span><span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">)),</span>
+  <span class="p">(</span><span class="s">&#39;svr&#39;</span><span class="p">,</span> <span class="n">svm</span><span class="o">.</span><span class="n">SVR</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)),</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Note that the <cite>RidgeCV</cite> and the <cite>ElasticNetCV</cite> have names ending in <cite>CV</cite>
+that stands for <cite>cross-validation</cite>: in the list of possible <cite>alpha</cite>
+values that they are given, they choose the best by cross-validation.</p>
+<p>As the estimators expose a fairly consistent API, we can all fit them in
+a for loop: they all have a <cite>fit</cite> method for fitting the data, a <cite>score</cite>
+method to retrieve the prediction score, and because they are all linear
+models, a <cite>coef_</cite> attribute that stores the coefficients <strong>w</strong> estimated.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">All parameters estimated from the data end with an underscore</p>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">classifier</span> <span class="ow">in</span> <span class="n">classifiers</span><span class="p">:</span>
+    <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+    <span class="n">classifier</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+    <span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t1</span>
+    <span class="n">coefs</span> <span class="o">=</span> <span class="n">classifier</span><span class="o">.</span><span class="n">coef_</span>
+    <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span> <span class="p">[</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">])</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">classifier</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>
+
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">: prediction score </span><span class="si">%.3f</span><span class="s">, training time: </span><span class="si">%.2f</span><span class="s">s&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">classifier</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span>
+                <span class="n">elapsed_time</span><span class="p">)</span>
+
+    <span class="c"># We use the plot_slices function provided in the example to</span>
+    <span class="c"># plot the results</span>
+    <span class="n">plot_slices</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="green topic">
+<p class="topic-title first"><strong>Exercise</strong></p>
+<p>Use recursive feature elimination (RFE) with the SVM:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">RFE</span>
+</pre></div>
+</div>
+<p>Read the object&#8217;s documentation to find out how to use RFE.</p>
+<p><strong>Performance tip</strong>: increase the <cite>step</cite> parameter, or it will be very
+slow.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+  
+
+    <div class="footer">
+        &copy; INRIA Parietal 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3. Design by <a href="http://webylimonada.com">Web y Limonada</a>.
+    <span style="padding-left: 5ex;">
+    <a href="_sources/simulations.txt"
+	    rel="nofollow">Show this page source</a>
+    </span>
+    </div>
+     <div class="rel">
+    
+	<!-- XXX: when we have a 'module index' that appears in the link
+	     bar, we will need to use the following ugly hack to avoid it
+	rellinks[1:]|reverse
+	-->
+    <div class="buttonPrevious">
+      <a href="supervised_learning.html">
+        Previous
+      </a>  
+    </div>
+    <div class="buttonNext">
+      <a href="haxby_decoding.html">
+        Next
+      </a>  
+    </div>
+    
+     </div>
+     <script type="text/javascript">
+       $("div.buttonNext, div.buttonPrevious").hover(
+           function () {
+               $(this).css('background-color', '#FF9C34');
+           },
+           function () {
+               $(this).css('background-color', '#A7D6E2');
+           }
+       );
+     </script>
+  </body>
+</html>

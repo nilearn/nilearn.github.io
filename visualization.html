@@ -192,7 +192,8 @@ folder.</p>
 <h2>2.2. Loading Nifti or analyze files<a class="headerlink" href="#loading-nifti-or-analyze-files" title="Permalink to this headline">¶</a></h2>
 <div class="topic">
 <p class="topic-title first">NIfTI and Analyse files</p>
-<p>NIfTI files (or Analyze files) are the standard way of sharing data in
+<p><a class="reference external" href="http://nifti.nimh.nih.gov/">NifTi</a> files (or Analyze files) are
+the standard way of sharing data in
 neuroimaging. We may be interested in the following
 three main components:</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -215,14 +216,14 @@ downloaded, a single line is needed to load it.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="n">haxby</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">()</span>
 
-<span class="c"># Get the files relative to this dataset</span>
+<span class="c"># Get the file names relative to this dataset</span>
 <span class="n">files</span> <span class="o">=</span> <span class="n">haxby</span><span class="o">.</span><span class="n">files</span>
 <span class="n">bold</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
 <span class="c"># Load the NIfTI data</span>
 <span class="kn">import</span> <span class="nn">nibabel</span>
 <span class="n">nifti_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">bold</span><span class="p">)</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">nifti_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">fmri_data</span> <span class="o">=</span> <span class="n">nifti_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
 </pre></div>
 </div>
 <div class="topic">
@@ -230,9 +231,12 @@ downloaded, a single line is needed to load it.</p>
 <p>We can find two main representations for MRI scans:</p>
 <ul class="simple">
 <li>a big 4D matrix representing 3D MRI along time, stored in a big 4D
-Nifti file. FSL users tend to prefer this format.</li>
+NifTi file.
+<a class="reference external" href="http://www.fmrib.ox.ac.uk/fsl/">FSL</a> users tend to
+prefer this format.</li>
 <li>several 3D matrices representing each volume (time point) of the
-session, stored in set of 3D Nifti or analyse files. SPM users tend
+session, stored in set of 3D Nifti or analyse files.
+<a class="reference external" href="http://www.fil.ion.ucl.ac.uk/spm/">SPM</a> users tend
 to prefer this format.</li>
 </ul>
 </div>
@@ -240,27 +244,41 @@ to prefer this format.</li>
 <div class="section" id="visualizing-brain-images">
 <h2>2.3. Visualizing brain images<a class="headerlink" href="#visualizing-brain-images" title="Permalink to this headline">¶</a></h2>
 <p>Once that NIfTI data is loaded, visualization is simply the display of the
-desired slice. For haxby, data is rotated so we have to turn each image
+desired slice (the first three dimensions) at a desired time point (fourth
+dimension). For <em>haxby</em>, data is rotated so we have to turn each image
 counter clockwise.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">131</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Coronal&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">data</span><span class="p">[:,</span> <span class="mi">32</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">100</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 
-<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">132</span><span class="p">)</span>
+<span class="c"># Compute the mean EPI: we do the mean along the axis 3, which is time</span>
+<span class="n">mean_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fmri_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c"># pl.figure() creates a new figure</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+
+<span class="c"># First subplot: coronal view</span>
+<span class="c"># subplot: 1 line, 3 columns and use the first subplot</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c"># Turn off the axes, we don&#39;t need it</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+<span class="c"># We use pl.imshow to display an image, and use a &#39;gray&#39; colormap</span>
+<span class="c"># we also use np.rot90 to rotate the image</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[:,</span> <span class="mi">32</span><span class="p">,</span> <span class="p">:]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Coronal&#39;</span><span class="p">)</span>
+
+<span class="c"># Second subplot: sagittal view</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Sagittal&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">100</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 
-<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">133</span><span class="p">)</span>
+<span class="c"># Third subplot: axial view</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Axial&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">100</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">32</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -288,7 +306,7 @@ can be easily extracted from the fMRI data using the
 </table>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Simple computation of a mask from the fMRI data</span>
 <span class="kn">from</span> <span class="nn">nisl.masking</span> <span class="kn">import</span> <span class="n">compute_mask</span>
-<span class="n">mask</span> <span class="o">=</span> <span class="n">compute_mask</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">compute_mask</span><span class="p">(</span><span class="n">mean_img</span><span class="p">)</span>
 
 <span class="c"># We create a new figure</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -302,15 +320,15 @@ can be easily extracted from the fMRI data using the
 </div>
 </div>
 <div class="section" id="from-4d-to-2d-arrays">
-<h3>2.4.2. From 4D to 2D arrays<a class="headerlink" href="#from-4d-to-2d-arrays" title="Permalink to this headline">¶</a></h3>
+<span id="mask-4d-2-3d"></span><h3>2.4.2. From 4D to 2D arrays<a class="headerlink" href="#from-4d-to-2d-arrays" title="Permalink to this headline">¶</a></h3>
 <p>FMRI data is naturally represented as a 4D block of data: 3 spatial
 dimensions and time. In practice, we are most often only interested in
 working only on the time-series of the voxels in the brain. It is
 convenient to apply a brain mask and go from a 4D array to a 2D array,
-<cite>voxel x time</cite>, as depicted below:</p>
+<cite>voxel</cite> <strong>x</strong> <cite>time</cite>, as depicted below:</p>
 <img alt="_images/masking.jpg" class="align-center" src="_images/masking.jpg" style="width: 100%;" />
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Applying the mask is just a simple array manipulation</span>
-<span class="n">masked_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+<span class="n">masked_data</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
 
 <span class="c"># masked_data is now a voxel x time matrix. We can plot the first 10</span>
 <span class="c"># lines: they correspond to time-series of 10 voxels on the side of the</span>

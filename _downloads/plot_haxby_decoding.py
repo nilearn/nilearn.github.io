@@ -30,7 +30,7 @@ mean_img = fmri_data.mean(axis=-1)
 # shape (n_samples, n_features).
 X = fmri_data[mask].T
 
-# X.shape is (1452, 39912)
+# X.shape is (n_samples, n_features): (1452, 39912)
 
 # Detrend data on each session independently
 from scipy import signal
@@ -41,7 +41,7 @@ for s in np.unique(session):
 ### Restrict to faces and houses ##############################################
 
 # Keep only data corresponding to face or houses
-condition_mask = np.in1d(conditions, ('face', 'house'))
+condition_mask = np.array([item in ('face', 'house') for item in conditions])
 X = X[condition_mask]
 y = y[condition_mask]
 session = session[condition_mask]
@@ -90,6 +90,9 @@ svc = feature_selection.inverse_transform(svc)
 # reverse masking
 act = np.zeros(mean_img.shape)
 act[mask != 0] = svc[0]
+
+# We use a masked array so that the voxels at '0' are displayed
+# transparently
 act = np.ma.masked_array(act, act == 0)
 
 ### Create the figure on z=23

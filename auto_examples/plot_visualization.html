@@ -175,42 +175,55 @@
 <span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="n">haxby</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">()</span>
 
-<span class="c"># Get the files relative to this dataset</span>
+<span class="c"># Get the file names relative to this dataset</span>
 <span class="n">files</span> <span class="o">=</span> <span class="n">haxby</span><span class="o">.</span><span class="n">files</span>
 <span class="n">bold</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
 <span class="c"># Load the NIfTI data</span>
 <span class="kn">import</span> <span class="nn">nibabel</span>
 <span class="n">nifti_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">bold</span><span class="p">)</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">nifti_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">fmri_data</span> <span class="o">=</span> <span class="n">nifti_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
 
 <span class="c"># Visualization #############################################################</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">131</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Coronal&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">data</span><span class="p">[:,</span> <span class="mi">32</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">100</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 
-<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">132</span><span class="p">)</span>
+<span class="c"># Compute the mean EPI: we do the mean along the axis 3, which is time</span>
+<span class="n">mean_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fmri_data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c"># pl.figure() creates a new figure</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+
+<span class="c"># First subplot: coronal view</span>
+<span class="c"># subplot: 1 line, 3 columns and use the first subplot</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c"># Turn off the axes, we don&#39;t need it</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+<span class="c"># We use pl.imshow to display an image, and use a &#39;gray&#39; colormap</span>
+<span class="c"># we also use np.rot90 to rotate the image</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[:,</span> <span class="mi">32</span><span class="p">,</span> <span class="p">:]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Coronal&#39;</span><span class="p">)</span>
+
+<span class="c"># Second subplot: sagittal view</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Sagittal&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">100</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 
-<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">133</span><span class="p">)</span>
+<span class="c"># Third subplot: axial view</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Axial&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">100</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">32</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 
 <span class="c"># Extracting a brain mask ###################################################</span>
 
 <span class="c"># Simple computation of a mask from the fMRI data</span>
 <span class="kn">from</span> <span class="nn">nisl.masking</span> <span class="kn">import</span> <span class="n">compute_mask</span>
-<span class="n">mask</span> <span class="o">=</span> <span class="n">compute_mask</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">compute_mask</span><span class="p">(</span><span class="n">mean_img</span><span class="p">)</span>
 
 <span class="c"># We create a new figure</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -221,7 +234,7 @@
 <span class="c"># Applying the mask #########################################################</span>
 
 <span class="c"># Applying the mask is just a simple array manipulation</span>
-<span class="n">masked_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+<span class="n">masked_data</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
 
 <span class="c"># masked_data is now a voxel x time matrix. We can plot the first 10</span>
 <span class="c"># lines: they correspond to time-series of 10 voxels on the side of the</span>
@@ -12904,7 +12917,7 @@ extracting data from /home/varoquau/dev/nisl/tutorial/nisl_data/haxby2001/pymvpa
 <blockquote>
 <div>...done.</div></blockquote>
 </div></blockquote>
-<p><strong>Total running time of the example:</strong>   58 seconds</p>
+<p><strong>Total running time of the example:</strong>   33 seconds</p>
 </div>
 
 
