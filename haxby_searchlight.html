@@ -1,0 +1,250 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Searchlight : finding voxels containing maximum information &mdash; NeuroImaging with the scikit-learn</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2010',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="NeuroImaging with the scikit-learn" href="index.html" />
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-22606712-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+  </head>
+  <body>
+
+    <div class="header-wrapper">
+      <div class="header">
+          <p class="logo"><a href="index.html">
+            <img src="_static/scikit-learn-logo-small.png" alt="Logo"/>
+          </a>
+          </p><div class="navbar">
+          <ul>
+          <!--	  
+	    <li><a href="install.html">Download</a></li>
+            <li><a href="support.html">Support</a></li>
+	  -->
+            <li><a href="haxby_decoding.html">fMRI decoding</a></li>
+            <li><a href="auto_examples/index.html">Examples</a></li>
+          <!--	  
+	    <li><a href="modules/classes.html">Reference</a></li>
+	  -->
+       </ul>
+
+<div class="search_form">
+
+<div id="cse" style="width: 100%;"></div>
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">
+  google.load('search', '1', {language : 'en'});
+  google.setOnLoadCallback(function() {
+    var customSearchControl = new google.search.CustomSearchControl('016639176250731907682:tjtqbvtvij0');
+    customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+    var options = new google.search.DrawOptions();
+    options.setAutoComplete(true);
+    customSearchControl.draw('cse', options);
+  }, true);
+</script>
+
+</div>
+          </div> <!-- end navbar --></div>
+    </div>
+
+    <div class="content-wrapper">
+
+      <div class="sphinxsidebar">
+	<div class="sphinxsidebarwrapper">
+	   <div class="rel rellarge">
+	     
+	<!-- XXX: when we have a 'module index' that appears in the link
+	     bar, we will need to use the following ugly hack to avoid it
+	     rellinks[1:]|reverse
+	    -->
+	<!-- Ad a link to the 'up' page -->
+    </div>
+    <h3>This page</h3>
+	<ul>
+<li><a class="reference internal" href="#">Searchlight : finding voxels containing maximum information</a><ul>
+<li><a class="reference internal" href="#searchlight-principle">Searchlight principle</a></li>
+<li><a class="reference internal" href="#first-step-loading-haxby-dataset">First Step : loading Haxby dataset</a></li>
+<li><a class="reference internal" href="#second-step-masking-the-data">Second Step : masking the data</a></li>
+<li><a class="reference internal" href="#third-step-set-up-the-cross-validation">Third Step : Set up the cross validation</a><ul>
+<li><a class="reference internal" href="#classifier">Classifier</a></li>
+<li><a class="reference internal" href="#score-function">Score function</a></li>
+<li><a class="reference internal" href="#cross-validation">Cross validation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fourth-step-running-searchlight">Fourth Step : Running Searchlight</a></li>
+<li><a class="reference internal" href="#visualisation">Visualisation</a></li>
+</ul>
+</li>
+</ul>
+
+    
+    </div>
+	  </div>
+
+
+      <div class="content">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="searchlight-finding-voxels-containing-maximum-information">
+<span id="searchlight"></span><h1>Searchlight : finding voxels containing maximum information<a class="headerlink" href="#searchlight-finding-voxels-containing-maximum-information" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="searchlight-principle">
+<h2>Searchlight principle<a class="headerlink" href="#searchlight-principle" title="Permalink to this headline">¶</a></h2>
+<p>Searchlight was introduced in <a class="reference external" href="http://www.pnas.org/content/103/10/3863">Information-based functional brain mapping</a>, Nikolaus Kriegeskorte,
+Rainer Goebel and Peter Bandettini (PNAS 2006) and consists in scanning the
+images volume with a <em>searchlight</em>. It can basically be related to mathematical
+morphology in the sense that a structuring element will be used to iterate over
+a 3D volume. But, instead of applying a mathematical operator (like minimum for
+erosion or maximum for dilatation), we will run a classifier on the <em>floodlit</em>
+voxels and score them (using cross validation). This gives us an
+<em>information-based functional brain mapping</em>.</p>
+</div>
+<div class="section" id="first-step-loading-haxby-dataset">
+<h2>First Step : loading Haxby dataset<a class="headerlink" href="#first-step-loading-haxby-dataset" title="Permalink to this headline">¶</a></h2>
+<p>Haxby dataset is a visual task dataset where several objects are show to the
+volunteer. We will keep only face and houses in order to speed up computing.
+For more details on Haxby, please see haxby_decoding.</p>
+</div>
+<div class="section" id="second-step-masking-the-data">
+<h2>Second Step : masking the data<a class="headerlink" href="#second-step-masking-the-data" title="Permalink to this headline">¶</a></h2>
+<p>One of the main element that distinguich Searchlight from other algorithms is
+this notion of structuring element that scan the entire volume. If this seems
+rather intuitive, it has in fact an impact on the masking procedure.</p>
+<p>Masking is a commonly used technique to restrain the computation area. For
+example, one may want to consider only some regions of interest or only the
+back of the brain, in the case of a visual task.</p>
+<p>Most of the time, fMRI data is masked and then given to the algorithm. This is
+not possible in the case of Searchlight because, to compute the score of
+non-masked voxels, some masked voxels may be needed. This is why two masks will
+be used here :</p>
+<ul class="simple">
+<li><em>mask</em> is the anatomical mask</li>
+<li><em>process_mask</em> is a subset of mask and contains voxels to be processed.</li>
+</ul>
+<p><em>process_mask</em> will then be used to restrain computation to one slice, in the
+back of the brain. <em>mask</em> will ensure that no value outside of the brain is
+taken into account when iterating with the sphere.</p>
+</div>
+<div class="section" id="third-step-set-up-the-cross-validation">
+<h2>Third Step : Set up the cross validation<a class="headerlink" href="#third-step-set-up-the-cross-validation" title="Permalink to this headline">¶</a></h2>
+<p>Searchlight will iterate on the volume and give a score to each voxel. This
+score is computed by running a classifier on selected voxels. In order to make
+this score as accurate as possible (and avoid overfitting), a cross validation
+is made.</p>
+<div class="section" id="classifier">
+<h3>Classifier<a class="headerlink" href="#classifier" title="Permalink to this headline">¶</a></h3>
+<p>The classifier used by default by Searchlight is LinearSVC with C=1 but this
+can be customed easily by passing an estimator parameter to the cross
+validation.</p>
+<p>See scikit-learn documentation for
+<a class="reference external" href="http://scikit-learn.org/supervised_learning.html">other classifiers</a></p>
+</div>
+<div class="section" id="score-function">
+<h3>Score function<a class="headerlink" href="#score-function" title="Permalink to this headline">¶</a></h3>
+<p>Let <em>face</em> and <em>house</em> be our two classes. The classifier will learn to guess
+which picture is presented just by looking at the fMRI. It will then be tested
+thanks to a testing set. There are several ways to compute a score out of the
+results. Here we have choosed the precision that measures proportion of true
+positives among all positives results for one class.</p>
+<p>Again, many others are available in
+<a class="reference external" href="http://scikit-learn.org/supervised_learning.html">scikit-learn documentation</a></p>
+</div>
+<div class="section" id="cross-validation">
+<h3>Cross validation<a class="headerlink" href="#cross-validation" title="Permalink to this headline">¶</a></h3>
+<p>Cross validation is a process through which a set of samples is divided in two
+sets, training and testing sets, to score a classifier. Several strategies can
+be adopted : here we use the <em>K</em>-Fold that randomly divides the sample set in
+<em>k</em> sets and makes <em>k</em> iterations so that a set is used as testing set and the
+other ones as training sets.</p>
+</div>
+</div>
+<div class="section" id="fourth-step-running-searchlight">
+<h2>Fourth Step : Running Searchlight<a class="headerlink" href="#fourth-step-running-searchlight" title="Permalink to this headline">¶</a></h2>
+<p>Running Searchlight is straightforward now that everything is set. The only
+parameter left is the radius of the ball that will run through the data.
+Kriegskorte uses a 4mm radius because it yielded the best detection
+performance in his simulation.</p>
+</div>
+<div class="section" id="visualisation">
+<h2>Visualisation<a class="headerlink" href="#visualisation" title="Permalink to this headline">¶</a></h2>
+<p>As the activation map is cropped, we use the mean image of all scans as a
+background. We can see here that voxels in the visual cortex contains
+information to distinguish pictures showed to the volunteer, which was the
+expected result.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+  
+
+    <div class="footer">
+        &copy; INRIA Parietal 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3. Design by <a href="http://webylimonada.com">Web y Limonada</a>.
+    <span style="padding-left: 5ex;">
+    <a href="_sources/haxby_searchlight.txt"
+	    rel="nofollow">Show this page source</a>
+    </span>
+    </div>
+     <div class="rel rellarge">
+    
+	<!-- XXX: when we have a 'module index' that appears in the link
+	     bar, we will need to use the following ugly hack to avoid it
+	rellinks[1:]|reverse
+	-->
+    
+     </div>
+     <script type="text/javascript">
+       $("div.buttonNext, div.buttonPrevious").hover(
+           function () {
+               $(this).css('background-color', '#FF9C34');
+           },
+           function () {
+               $(this).css('background-color', '#A7D6E2');
+           }
+       );
+     </script>
+  </body>
+</html>
