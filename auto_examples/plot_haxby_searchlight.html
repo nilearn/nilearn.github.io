@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>5.2. The haxby dataset: face vs house in object recognition using Searchlight &mdash; NeuroImaging with the scikit-learn</title>
+    <title>5.2. Searchlight analysis of face vs house recognition &mdash; NeuroImaging with the scikit-learn</title>
     
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '2010',
+        VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -143,7 +143,7 @@
     </div>
     <h3>This page</h3>
 	<ul>
-<li><a class="reference internal" href="#">5.2. The haxby dataset: face vs house in object recognition using Searchlight</a></li>
+<li><a class="reference internal" href="#">5.2. Searchlight analysis of face vs house recognition</a></li>
 </ul>
 
     
@@ -157,13 +157,12 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="the-haxby-dataset-face-vs-house-in-object-recognition-using-searchlight">
-<span id="example-tutorial-plot-haxby-searchlight-py"></span><h1>5.2. The haxby dataset: face vs house in object recognition using Searchlight<a class="headerlink" href="#the-haxby-dataset-face-vs-house-in-object-recognition-using-searchlight" title="Permalink to this headline">¶</a></h1>
-<p>A significant part of the running time of this example is actually spent
-in loading the data: we load all the data but only use the face and
-houses conditions.</p>
-<p>Plus, in order to speed up computing, Searchlight is run only on one slice
-od the fMRI (see the generated figures).</p>
+  <div class="section" id="searchlight-analysis-of-face-vs-house-recognition">
+<span id="example-tutorial-plot-haxby-searchlight-py"></span><h1>5.2. Searchlight analysis of face vs house recognition<a class="headerlink" href="#searchlight-analysis-of-face-vs-house-recognition" title="Permalink to this headline">¶</a></h1>
+<p>Searchlight analysis requires fitting a classifier a large amount of
+times. As a result, it is an intrinsically slow method. In order to speed
+up computing, in this example, Searchlight is run only on one slice on
+the fMRI (see the generated figures).</p>
 <ul class="horizontal">
 <li><a class="first reference internal image-reference" href="../_images/plot_haxby_searchlight_1.png"><img alt="../_images/plot_haxby_searchlight_1.png" src="../_images/plot_haxby_searchlight_1.png" style="width: 376.0px; height: 282.0px;" /></a>
 </li>
@@ -245,18 +244,19 @@ od the fMRI (see the generated figures).</p>
 <span class="n">searchlight</span> <span class="o">=</span> <span class="n">searchlight</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">process_mask</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
         <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">score_func</span><span class="o">=</span><span class="n">score_func</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
 
-<span class="c"># scores.scores_ is an array containing per voxel cross validation scores</span>
-<span class="n">scores</span> <span class="o">=</span> <span class="n">searchlight</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">searchlight</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
 <span class="c">### Visualization #############################################################</span>
 <span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">s_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">scores_</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
+<span class="c"># searchlight.scores_ contains per voxel cross validation scores</span>
+<span class="n">s_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">searchlight</span><span class="o">.</span><span class="n">scores_</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">26</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
         <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">s_scores</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">26</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
         <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Searchlight&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 <span class="c">### Show the F_score</span>
@@ -274,11 +274,12 @@ od the fMRI (see the generated figures).</p>
         <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">p_ma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">26</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
         <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;F-scores&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>   87 seconds</p>
+<p><strong>Total running time of the example:</strong>  490 seconds</p>
 </div>
 
 

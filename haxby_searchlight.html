@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2010',
+        VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -185,12 +185,9 @@
 <h2>3.3.1. Searchlight principle<a class="headerlink" href="#searchlight-principle" title="Permalink to this headline">¶</a></h2>
 <p>Searchlight was introduced in <a class="reference external" href="http://www.pnas.org/content/103/10/3863">Information-based functional brain mapping</a>, Nikolaus Kriegeskorte,
 Rainer Goebel and Peter Bandettini (PNAS 2006) and consists in scanning the
-images volume with a <em>searchlight</em>. It can basically be related to mathematical
-morphology in the sense that a structuring element will be used to iterate over
-a 3D volume. But, instead of applying a mathematical operator (like minimum for
-erosion or maximum for dilatation), we will run a classifier on the <em>floodlit</em>
-voxels and score them (using cross validation). This gives us an
-<em>information-based functional brain mapping</em>.</p>
+images volume with a <em>searchlight</em>. Briefly, a ball of given radius is
+scanned across the brain volume and the prediction accuracy of a
+classifier trained on the corresponding voxels is measured.</p>
 </div>
 <div class="section" id="preprocessing">
 <h2>3.3.2. Preprocessing<a class="headerlink" href="#preprocessing" title="Permalink to this headline">¶</a></h2>
@@ -317,8 +314,7 @@ performance in his simulation.</p>
 <span class="n">searchlight</span> <span class="o">=</span> <span class="n">searchlight</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">process_mask</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
         <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">score_func</span><span class="o">=</span><span class="n">score_func</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
 
-<span class="c"># scores.scores_ is an array containing per voxel cross validation scores</span>
-<span class="n">scores</span> <span class="o">=</span> <span class="n">searchlight</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">searchlight</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -335,12 +331,14 @@ expected result.</p>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">s_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">scores_</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
+<span class="c"># searchlight.scores_ contains per voxel cross validation scores</span>
+<span class="n">s_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">searchlight</span><span class="o">.</span><span class="n">scores_</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">26</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
         <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">s_scores</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">26</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
         <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Searchlight&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -372,6 +370,7 @@ and negate the result to obtain a more comprehensive map.</p>
         <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">p_ma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">26</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
         <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;F-scores&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
