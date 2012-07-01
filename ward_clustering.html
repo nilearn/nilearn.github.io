@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2010',
+        VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -159,7 +159,7 @@
 </li>
 <li><a class="reference internal" href="#post-processing-and-visualization">4.1.4. Post-Processing and visualization</a><ul>
 <li><a class="reference internal" href="#unmasking">4.1.4.1. Unmasking</a></li>
-<li><a class="reference internal" href="#label-visualisation">4.1.4.2. Label visualisation</a></li>
+<li><a class="reference internal" href="#label-visualization">4.1.4.2. Label visualization</a></li>
 <li><a class="reference internal" href="#compressed-picture">4.1.4.3. Compressed picture</a></li>
 </ul>
 </li>
@@ -168,6 +168,10 @@
 </ul>
 
     
+    <h3>Giving credit</h3>
+    <p>Please consider <a href="AUTHORS.html#citing">citing the 
+    scikit-learn</a> if you use it.</p>
+
     </div>
 	  </div>
 
@@ -191,9 +195,9 @@ can be found in the documentation for the downloading function
 <h2>4.1.2. Preprocessing<a class="headerlink" href="#preprocessing" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="loading">
 <h3>4.1.2.1. Loading<a class="headerlink" href="#loading" title="Permalink to this headline">¶</a></h3>
-<p>Thanks to <em>nisl</em> dataset manager, fetching the dataset is rather easy. Do not
-forget to set your environment variable <em>NISL_DATA</em> if you want your dataset
-to be stored in a specific path.</p>
+<p>As seen in <a class="reference internal" href="visualization.html#downloading-data"><em>previous sections</em></a>, we
+fetch the data
+from internet and load it with a provided function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_nyu_rest</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
@@ -201,10 +205,8 @@ to be stored in a specific path.</p>
 </div>
 <div class="section" id="masking">
 <h3>4.1.2.2. Masking<a class="headerlink" href="#masking" title="Permalink to this headline">¶</a></h3>
-<p>No mask is given with the data so we have to compute one ourselves. We use a
-simple heuristic proposed by T. Nichols based on the picture histogram. The
-idea is to threshold values and eliminates voxels present in the &#8220;black peak&#8221;
-(peak in the histogram representing background dark voxels).</p>
+<p>No mask is given with the data so we have to compute one ourselves, using
+the function <a class="reference internal" href="generated/nisl.masking.compute_mask.html#nisl.masking.compute_mask" title="nisl.masking.compute_mask"><tt class="xref py py-func docutils literal"><span class="pre">nisl.masking.compute_mask</span></tt></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">fmri_data</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
 <span class="c"># Compute a brain mask</span>
@@ -223,10 +225,9 @@ idea is to threshold values and eliminates voxels present in the &#8220;black pe
 <h2>4.1.3. Applying Ward clustering<a class="headerlink" href="#applying-ward-clustering" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="compute-connectivity-map">
 <h3>4.1.3.1. Compute connectivity map<a class="headerlink" href="#compute-connectivity-map" title="Permalink to this headline">¶</a></h3>
-<p>Before computing the ward itself, it is necessary to compute a connectivity
-map. Otherwise, the ward will consider each voxel independantly and this may
-lead to a wrong clustering (see
-<a class="reference external" href="http://www.scikit-learn.org/stable/auto_examples/cluster/plot_ward_structured_vs_unstructured.html">here</a>)</p>
+<p>Before computing the ward itself, we compute a connectivity map. This is
+useful to constrain clusters to form contiguous parcels (see <a class="reference external" href="http://www.scikit-learn.org/stable//modules/clustering.html#adding-connectivity-constraints">the
+scikit-learn documentation</a>)</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.feature_extraction</span> <span class="kn">import</span> <span class="n">image</span>
 <span class="n">shape</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span>
 <span class="n">connectivity</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">grid_to_graph</span><span class="p">(</span><span class="n">n_x</span><span class="o">=</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n_y</span><span class="o">=</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
@@ -236,25 +237,21 @@ lead to a wrong clustering (see
 </div>
 <div class="section" id="principle">
 <h3>4.1.3.2. Principle<a class="headerlink" href="#principle" title="Permalink to this headline">¶</a></h3>
-<p>The Ward algorithm computes a hierarchical tree of the picture components.
-Consequently, the root of the tree is the sum of all components (i.e. the whole
-picture) and there are as many leaves in the tree as components in the picture.</p>
-<p>Once that the tree is computed, the only step left to obtain the requested
-number of components is cutting the tree at the right level. No matter how many
-clusters we want, we do not need to compute the tree again.</p>
+<p>The Ward algorithm is a hierarchical clustering algorithm: it
+successfully merges together voxels that have similar timecourses.</p>
 </div>
 <div class="section" id="caching">
 <h3>4.1.3.3. Caching<a class="headerlink" href="#caching" title="Permalink to this headline">¶</a></h3>
-<p>Joblib is a library made to put in cache some function calls to avoid
-unnecessary computation. If a function is called with joblib, the parameters
-and results are cached. If the same function is called using the same
-parameters, then joblib bypasses the function call and returns the previously
-computed result immediately.</p>
-<p>Scikit-learn integrates joblib in a user friendly way to cache results of some
-function calls when it is possible. For example, in the ward clustering, the
-<em>memory</em> parameter allows the user to create a joblib cache to store the
-computed component tree. Either a <em>joblib.Memory</em> instance or a unique string
-identifier can be passed as a <em>memory</em> parameter.</p>
+<p>Note that in practice the scikit-learn implementation of the Ward
+clustering first computes a tree of possible merges, and then, the
+requested number of clusters breaks it apart the tree at the right level.</p>
+<p>As no matter how many clusters we want, we do not need to compute the
+tree again, we can rely on caching to speed things up when varying the
+number of cluster. Scikit-learn integrates a transparent caching library
+(<a class="reference external" href="http://packages.python.org/joblib/">joblib</a>). In the ward clustering,
+the <em>memory</em> parameter is used to cache the computed component tree. You
+can give it either a <em>joblib.Memory</em> instance or the name of directory
+used for caching.</p>
 </div>
 <div class="section" id="apply-the-ward">
 <h3>4.1.3.4. Apply the ward<a class="headerlink" href="#apply-the-ward" title="Permalink to this headline">¶</a></h3>
@@ -279,8 +276,8 @@ elements.</p>
 <span class="k">print</span> <span class="s">&quot;Ward agglomeration 1000 clusters: </span><span class="si">%.2f</span><span class="s">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now that the component tree has been computed, computation is must faster. You
-should have the result in less than 1 second.</p>
+<p>Now that the component tree has been computed, computation is must faster
+thanks to caching. You should have the result in less than 1 second.</p>
 </div>
 </div>
 <div class="section" id="post-processing-and-visualization">
@@ -294,20 +291,23 @@ should have the result in less than 1 second.</p>
 </pre></div>
 </div>
 <p>You can see that masked data is filled with -1 values. This is done for the
-sake of visualisation. In fact, clusters are labelled with going from 0 to
+sake of visualization. In fact, clusters are labeled with going from 0 to
 (n_clusters - 1). By putting every other values to -1, we assure that
 uninteresting values will not mess with the visualization.</p>
 </div>
-<div class="section" id="label-visualisation">
-<h3>4.1.4.2. Label visualisation<a class="headerlink" href="#label-visualisation" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="label-visualization">
+<h3>4.1.4.2. Label visualization<a class="headerlink" href="#label-visualization" title="Permalink to this headline">¶</a></h3>
 <p>We can visualize the clusters. We assign random colors to each cluster
-for the labels visualisation.</p>
+for the labels visualization.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
 
 <span class="c"># Cut at z=20</span>
 <span class="n">cut</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">20</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
-<span class="c"># Assign random colors to each cluster</span>
+<span class="c"># Assign random colors to each cluster. For this we build a random</span>
+<span class="c"># RGB look up table associating a color to each cluster, and apply it</span>
+<span class="c"># below</span>
 <span class="n">colors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">ward</span><span class="o">.</span><span class="n">n_clusters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="c"># Cluster &#39;-1&#39; should be black (it&#39;s outside the brain)</span>
 <span class="n">colors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>

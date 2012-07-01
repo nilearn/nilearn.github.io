@@ -152,7 +152,7 @@
 <li><a class="reference internal" href="#restricting-the-dataset">3.3.2.4. Restricting the dataset</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#third-step-set-up-the-cross-validation">3.3.3. Third Step : Set up the cross validation</a><ul>
+<li><a class="reference internal" href="#third-step-setting-up-the-searchlight">3.3.3. Third Step: Setting up the searchlight</a><ul>
 <li><a class="reference internal" href="#classifier">3.3.3.1. Classifier</a></li>
 <li><a class="reference internal" href="#score-function">3.3.3.2. Score function</a></li>
 <li><a class="reference internal" href="#cross-validation">3.3.3.3. Cross validation</a></li>
@@ -161,7 +161,7 @@
 <li><a class="reference internal" href="#running-searchlight">3.3.4. Running Searchlight</a></li>
 <li><a class="reference internal" href="#visualisation">3.3.5. Visualisation</a><ul>
 <li><a class="reference internal" href="#id1">3.3.5.1. Searchlight</a></li>
-<li><a class="reference internal" href="#f-score">3.3.5.2. F_score</a></li>
+<li><a class="reference internal" href="#comparing-to-standard-analysis-f-score-or-spm">3.3.5.2. Comparing to standard-analysis: F_score or SPM</a></li>
 </ul>
 </li>
 </ul>
@@ -169,6 +169,10 @@
 </ul>
 
     
+    <h3>Giving credit</h3>
+    <p>Please consider <a href="AUTHORS.html#citing">citing the 
+    scikit-learn</a> if you use it.</p>
+
     </div>
 	  </div>
 
@@ -193,8 +197,8 @@ classifier trained on the corresponding voxels is measured.</p>
 <h2>3.3.2. Preprocessing<a class="headerlink" href="#preprocessing" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="loading">
 <h3>3.3.2.1. Loading<a class="headerlink" href="#loading" title="Permalink to this headline">¶</a></h3>
-<p>As seen in previous tutorial, this is rather easy thanks to <em>nisl</em> dataset
-manager.</p>
+<p>As seen in <a class="reference internal" href="visualization.html#downloading-data"><em>previous sections</em></a>, fetching the data
+from internet and loading it can be done with the provided functions:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">()</span>
 <span class="n">fmri_data</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span>
@@ -256,7 +260,8 @@ taken into account when iterating with the sphere.</p>
 </div>
 <div class="section" id="restricting-the-dataset">
 <h3>3.3.2.4. Restricting the dataset<a class="headerlink" href="#restricting-the-dataset" title="Permalink to this headline">¶</a></h3>
-<p>Like <em>haxby_decoding</em> example, we limit our analysis to the <cite>face</cite> and <cite>house</cite> conditions:</p>
+<p>Like in the <a class="reference internal" href="haxby_decoding.html#fmri-decoding"><em>decoding</em></a> example, we limit our
+analysis to the <cite>face</cite> and <cite>house</cite> conditions:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Keep only data corresponding to face or houses</span>
 <span class="n">condition_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">conditions</span> <span class="o">==</span> <span class="s">&#39;face&#39;</span><span class="p">,</span> <span class="n">conditions</span> <span class="o">==</span> <span class="s">&#39;house&#39;</span><span class="p">)</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
@@ -267,25 +272,19 @@ taken into account when iterating with the sphere.</p>
 </div>
 </div>
 </div>
-<div class="section" id="third-step-set-up-the-cross-validation">
-<h2>3.3.3. Third Step : Set up the cross validation<a class="headerlink" href="#third-step-set-up-the-cross-validation" title="Permalink to this headline">¶</a></h2>
-<p>Searchlight will iterate on the volume and give a score to each voxel. This
-score is computed by running a classifier on selected voxels. In order to make
-this score as accurate as possible (and avoid overfitting), a cross validation
-is made.</p>
+<div class="section" id="third-step-setting-up-the-searchlight">
+<h2>3.3.3. Third Step: Setting up the searchlight<a class="headerlink" href="#third-step-setting-up-the-searchlight" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="classifier">
 <h3>3.3.3.1. Classifier<a class="headerlink" href="#classifier" title="Permalink to this headline">¶</a></h3>
-<p>The classifier used by default by Searchlight is LinearSVC with C=1 but this
-can be customed easily by passing an estimator parameter to the cross
-validation.</p>
-<p>See scikit-learn documentation for
-<a class="reference external" href="http://scikit-learn.org/supervised_learning.html">other classifiers</a></p>
+<p>The classifier used by default by Searchlight is LinearSVC with C=1 but
+this can be customed easily by passing an estimator parameter to the
+cross validation. See scikit-learn documentation for <a class="reference external" href="http://scikit-learn.org/supervised_learning.html">other classifiers</a>.</p>
 </div>
 <div class="section" id="score-function">
 <h3>3.3.3.2. Score function<a class="headerlink" href="#score-function" title="Permalink to this headline">¶</a></h3>
-<p>Here we use precision as metrics to measures proportion of true
-positives among all positives results for one class.</p>
-<p>Many others are available in <a class="reference external" href="http://scikit-learn.org/supervised_learning.html">scikit-learn documentation</a></p>
+<p>Here we use precision as metrics to measures proportion of true positives
+among all positives results for one class. Many others are available in
+<a class="reference external" href="http://scikit-learn.org/supervised_learning.html">scikit-learn documentation</a>.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">precision_score</span>
 <span class="n">score_func</span> <span class="o">=</span> <span class="n">precision_score</span>
 </pre></div>
@@ -293,9 +292,13 @@ positives among all positives results for one class.</p>
 </div>
 <div class="section" id="cross-validation">
 <h3>3.3.3.3. Cross validation<a class="headerlink" href="#cross-validation" title="Permalink to this headline">¶</a></h3>
-<p>As Searchlight is a little costly, we have chosen a cross validation method
-that do not take too much time. <em>K</em>-Fold along with <em>K</em> = 4 is a good compromise
-between running time and result.</p>
+<p>Searchlight will iterate on the volume and give a score to each voxel. This
+score is computed by running a classifier on selected voxels. In order to make
+this score as accurate as possible (and avoid overfitting), a cross validation
+is made.</p>
+<p>As Searchlight is a little costly, we have chosen a cross validation
+method that do not take too much time. <em>K</em>-Fold along with <em>K</em> = 4 is a
+good compromise between running time and result.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">KFold</span>
 <span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
@@ -343,16 +346,12 @@ expected result.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="f-score">
-<h3>3.3.5.2. F_score<a class="headerlink" href="#f-score" title="Permalink to this headline">¶</a></h3>
-<p>Another commonly used algorithm to find salient voxel is the ANOVA (analysis of
-variance). Here we use is to compute the <em>p_values</em> of the voxels. The
-<em>p_value</em> is the probability of getting the observed values assuming that
-nothing happens (i.e. the null hypothesis is true). Therefore, a small
-<em>p-value</em> indicates that there is a small chance of getting this data if no
-real difference existed, so the observed voxel must be significant.</p>
-<p>As the policy &#8220;the smaller, the better&#8221; is not very intuitive, we use the log
-and negate the result to obtain a more comprehensive map.</p>
+<div class="section" id="comparing-to-standard-analysis-f-score-or-spm">
+<h3>3.3.5.2. Comparing to standard-analysis: F_score or SPM<a class="headerlink" href="#comparing-to-standard-analysis-f-score-or-spm" title="Permalink to this headline">¶</a></h3>
+<p>The standard approach to brain mapping is performed using <em>statistical
+parametric mapping</em> (SPM), using ANOVA (analysis of variance), and F
+tests. Here we use is to compute the <em>p-values</em> of the voxels <a class="footnote-reference" href="#id3" id="id2">[1]</a>.
+To display the results, we use the negative log of the p-value.</p>
 <div class="figure align-center">
 <a class="reference external image-reference" href="auto_examples/plot_haxby_searchlight.html"><img alt="_images/plot_haxby_searchlight_2.png" src="_images/plot_haxby_searchlight_2.png" style="width: 480.0px; height: 360.0px;" /></a>
 </div>
@@ -375,6 +374,16 @@ and negate the result to obtain a more comprehensive map.</p>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[1]</a></td><td>The <em>p-value</em> is the probability of getting the observed values
+assuming that nothing happens (i.e. under the null hypothesis).
+Therefore, a small <em>p-value</em> indicates that there is a small chance
+of getting this data if no real difference existed, so the observed
+voxel must be significant.</td></tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>

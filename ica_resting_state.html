@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '2010',
+        VERSION:     '0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -138,6 +138,10 @@
 </ul>
 
     
+    <h3>Giving credit</h3>
+    <p>Please consider <a href="AUTHORS.html#citing">citing the 
+    scikit-learn</a> if you use it.</p>
+
     </div>
 	  </div>
 
@@ -150,13 +154,20 @@
             
   <div class="section" id="ica-of-resting-state-fmri-datasets">
 <span id="ica-rest"></span><h1>4.2. ICA of resting-state fMRI datasets<a class="headerlink" href="#ica-of-resting-state-fmri-datasets" title="Permalink to this headline">¶</a></h1>
+<p>Independent Analysis of resting-state fMRI data is useful to extract
+brain networks in an unsupervised maner (data-driven):</p>
+<ul class="simple">
+<li>Kiviniemi et al, <em>Independent component analysis of nondeterministic
+fMRI signal sources</em>, Neuroimage 2009</li>
+<li>Beckmann et al, <em>Investigations into resting-state connectivity using
+independent component analysis</em>, Philos Trans R Soc Lond B 2005</li>
+</ul>
 <div class="section" id="preprocessing">
 <h2>4.2.1. Preprocessing<a class="headerlink" href="#preprocessing" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="loading">
 <h3>4.2.1.1. Loading<a class="headerlink" href="#loading" title="Permalink to this headline">¶</a></h3>
-<p>Thanks to <em>nisl</em> dataset manager, fetching the dataset is rather easy. Do not
-forget to set your environment variable <em>NISL_DATA</em> if you want your dataset
-to be stored in a specific path.</p>
+<p>As seen in <a class="reference internal" href="visualization.html#downloading-data"><em>previous sections</em></a>, we fetch the data from
+internet and load it with a provided function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="c"># Here we use only 3 subjects to get faster-running code. For better</span>
 <span class="c"># results, simply increase this number</span>
@@ -169,7 +180,9 @@ to be stored in a specific path.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Concatenate all the subjects</span>
 <span class="n">fmri_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 
-<span class="c"># Apply a small amount of Gaussian smoothing</span>
+<span class="c"># Apply a small amount of Gaussian smoothing: in the case of ICA it is</span>
+<span class="c"># important as it introduces a spatial model that ICA lacks and greatly</span>
+<span class="c"># reduces the high-frequency signal</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
 <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">fmri_data</span><span class="o">.</span><span class="n">T</span><span class="p">:</span>
     <span class="c"># This works efficiently because image is a view on fmri_data</span>
@@ -192,15 +205,20 @@ to be stored in a specific path.</p>
 <span class="n">n_components</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">ica</span> <span class="o">=</span> <span class="n">FastICA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
 <span class="n">components_masked</span> <span class="o">=</span> <span class="n">ica</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_masked</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">data_masked</span><span class="p">)</span>
+
+<span class="c"># We normalize the estimated components, for thresholding to make sens</span>
 <span class="n">components_masked</span> <span class="o">-=</span> <span class="n">components_masked</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">components_masked</span> <span class="o">/=</span> <span class="n">components_masked</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c"># Threshold</span>
+<span class="n">components_masked</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">components_masked</span><span class="p">)</span> <span class="o">&lt;</span> <span class="o">.</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
+<span class="c"># Now we inverting the masking operation, to go back to a full 3D</span>
+<span class="c"># representation</span>
 <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="o">=</span> <span class="n">mean_img</span><span class="o">.</span><span class="n">shape</span>
 <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">n_components</span><span class="p">))</span>
 <span class="n">components</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">components_masked</span>
 
-<span class="c"># Threshold</span>
-<span class="n">components</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">components</span><span class="p">)</span> <span class="o">&lt;</span> <span class="o">.</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="c"># Using a masked array is important to have transparency in the figures</span>
 <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -218,7 +236,7 @@ overlays.</p>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">20</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">components</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">16</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">jet</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">vmax</span><span class="p">)</span>
+          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">jet</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">vmax</span><span class="p">)</span>
 
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
@@ -231,6 +249,13 @@ overlays.</p>
 </pre></div>
 </div>
 <p><a class="reference external" href="auto_examples/plot_ica_resting_state.html"><img alt="left_img" src="_images/plot_ica_resting_state_1.png" style="width: 49%;" /></a> <a class="reference external" href="auto_examples/plot_ica_resting_state.html"><img alt="right_img" src="_images/plot_ica_resting_state_2.png" style="width: 49%;" /></a></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Note that as the ICA components are not ordered, the two components
+displayed on your computer might not match those of the tutorial. For
+a fair representation, you should display all the components and
+investigate which one resemble those displayed above.</p>
+</div>
 </div>
 </div>
 
