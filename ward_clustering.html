@@ -259,8 +259,8 @@ used for caching.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">WardAgglomeration</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">ward</span> <span class="o">=</span> <span class="n">WardAgglomeration</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">,</span>
-                         <span class="n">memory</span><span class="o">=</span><span class="s">&#39;nisl_cache&#39;</span><span class="p">)</span>
+<span class="n">ward</span> <span class="o">=</span> <span class="n">WardAgglomeration</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">,</span>
+                         <span class="p">)</span><span class="c">#memory=&#39;nisl_cache&#39;)</span>
 <span class="n">ward</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_masked</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 <span class="k">print</span> <span class="s">&quot;Ward agglomeration 500 clusters: </span><span class="si">%.2f</span><span class="s">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
 </pre></div>
@@ -268,12 +268,7 @@ used for caching.</p>
 <p>This runs in about 10 seconds (depending on your computer configuration). Now,
 we are not satisfied of the result and we want to cluster the picture in 1000
 elements.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># the caching mechanism</span>
-<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">ward</span> <span class="o">=</span> <span class="n">WardAgglomeration</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">,</span>
-                         <span class="n">memory</span><span class="o">=</span><span class="s">&#39;nisl_cache&#39;</span><span class="p">)</span>
-<span class="n">ward</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_masked</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-<span class="k">print</span> <span class="s">&quot;Ward agglomeration 1000 clusters: </span><span class="si">%.2f</span><span class="s">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre>
 </pre></div>
 </div>
 <p>Now that the component tree has been computed, computation is must faster
@@ -285,9 +280,7 @@ thanks to caching. You should have the result in less than 1 second.</p>
 <div class="section" id="unmasking">
 <h3>4.1.4.1. Unmasking<a class="headerlink" href="#unmasking" title="Permalink to this headline">¶</a></h3>
 <p>After applying the ward, we must unmask the data. This can be done simply :</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">labels</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">labels_</span>
+<div class="highlight-python"><div class="highlight"><pre>
 </pre></div>
 </div>
 <p>You can see that masked data is filled with -1 values. This is done for the
@@ -299,20 +292,7 @@ uninteresting values will not mess with the visualization.</p>
 <h3>4.1.4.2. Label visualization<a class="headerlink" href="#label-visualization" title="Permalink to this headline">¶</a></h3>
 <p>We can visualize the clusters. We assign random colors to each cluster
 for the labels visualization.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
-
-<span class="c"># Cut at z=20</span>
-<span class="n">cut</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">20</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
-<span class="c"># Assign random colors to each cluster. For this we build a random</span>
-<span class="c"># RGB look up table associating a color to each cluster, and apply it</span>
-<span class="c"># below</span>
-<span class="n">colors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">ward</span><span class="o">.</span><span class="n">n_clusters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="c"># Cluster &#39;-1&#39; should be black (it&#39;s outside the brain)</span>
-<span class="n">colors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">colors</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">cut</span><span class="p">)],</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Ward parcellation&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre>
 </pre></div>
 </div>
 <div class="figure align-center">
@@ -331,33 +311,7 @@ scan)</li>
 <li>call <em>ward.inverse_transform</em> on the previous result to turn it back into
 the masked picture shape</li>
 </ul>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">first_fmri_img</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="c"># Outside the mask: a uniform value, smaller than inside the mask</span>
-<span class="n">first_fmri_img</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">mask</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.9</span><span class="o">*</span><span class="n">first_fmri_img</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-<span class="n">vmax</span> <span class="o">=</span> <span class="n">first_fmri_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">first_fmri_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">20</span><span class="p">]),</span>
-          <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">spectral</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Original&#39;</span><span class="p">)</span>
-
-<span class="c"># A reduced data can be create by taking the parcel-level average:</span>
-<span class="c"># Note that, as many objects in the scikit-learn, the ward object exposes</span>
-<span class="c"># a transform method that modifies input features. Here it reduces their</span>
-<span class="c"># dimension</span>
-<span class="n">fmri_reduced</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">fmri_masked</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-
-<span class="c"># Display the corresponding data compressed using the parcellation</span>
-<span class="n">fmri_compressed</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">fmri_reduced</span><span class="p">)</span>
-<span class="n">compressed_img</span> <span class="o">=</span> <span class="n">first_fmri_img</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">compressed_img</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">fmri_compressed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">compressed_img</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">20</span><span class="p">]),</span>
-           <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">spectral</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Compressed representation&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre>
 </pre></div>
 </div>
 <p><a class="reference external" href="auto_examples/plot_rest_clustering.html"><img alt="left_img" src="_images/plot_rest_clustering_2.png" style="width: 49%;" /></a> <a class="reference external" href="auto_examples/plot_rest_clustering.html"><img alt="right_img" src="_images/plot_rest_clustering_3.png" style="width: 49%;" /></a></p>
