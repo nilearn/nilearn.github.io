@@ -1,0 +1,410 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2.7.1. Advanced Loading and Preprocessing of fMRI data &mdash; NeuroImaging with the scikit-learn</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="NeuroImaging with the scikit-learn" href="../index.html" />
+    <link rel="up" title="2. Getting started" href="../getting_started.html" />
+    <link rel="next" title="3. Supervised learning" href="../supervised_learning.html" />
+    <link rel="prev" title="2. Getting started" href="../getting_started.html" />
+    <script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-22606712-2']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head>
+  <body>
+
+    <div class="header-wrapper">
+        <div class="header">
+                <p class="logo"><a href="../index.html">
+                        <img src="../_static/scikit-learn-logo-small.png" alt="Logo"/>
+                    </a>
+                </p><div class="navbar">
+                    <ul>
+	                    <li><a href="../index.html">User Guide</a></li>
+                        <li><a href="../auto_examples/index.html">Examples</a></li>
+                        <li><a href="../modules/classes.html">Reference</a></li>
+                    </ul>
+                    <div class="search_form">
+                        <div id="cse" style="width: 100%;"></div>
+                        <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+                        <script type="text/javascript">
+                            google.load('search', '1', {language : 'en'});
+                            google.setOnLoadCallback(function() {
+                                var customSearchControl = new google.search.CustomSearchControl('016639176250731907682:tjtqbvtvij0');
+                                customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+                                var options = new google.search.DrawOptions();
+                                options.setAutoComplete(true);
+                                customSearchControl.draw('cse', options);
+                            }, true);
+                        </script>
+                    </div>
+                </div> <!-- end navbar --></div> <!-- end header -->
+    </div> <!-- end header-wrapper -->
+    <div class="content-wrapper">
+        <div class="sphinxsidebar">
+	        <div class="sphinxsidebarwrapper">
+	                    <div class="rel">
+	                
+	                <!-- rellinks[1:] is an ugly hack to avoid link to module
+	                     index  -->
+                    	<div class="rellink">
+	                        <a href="../getting_started.html" title="2. Getting started" accesskey="P">
+                                Previous
+	                            <br />
+	                            <span class="smallrellink">
+                            	    2. Getting start...
+                        	    </span>
+                           	        <span class="hiddenrellink">
+                                        2. Getting started
+                                    </span>
+                        	    
+	                        </a>
+	                    </div>
+	                        <div class="spacer">
+	                            &nbsp;
+	                        </div>
+	                    
+                    	<div class="rellink">
+	                        <a href="../supervised_learning.html" title="3. Supervised learning" accesskey="N">
+                                Next
+	                            <br />
+	                            <span class="smallrellink">
+                            	    3. Supervised le...
+                        	    </span>
+                           	        <span class="hiddenrellink">
+                                        3. Supervised learning
+                                    </span>
+                        	    
+	                        </a>
+	                    </div>
+	                <!-- Ad a link to the 'up' page -->
+                        <div class="spacer">
+                            &nbsp;
+                        </div>
+                        <div class="rellink">
+                            <a href="../getting_started.html" title="2. Getting started" >
+                                Up
+                                <br/>
+                                <span class="smallrellink">
+                                    2. Getting start...
+                                </span>
+                                    <span class="hiddenrellink">
+                                        2. Getting started
+                                    </span>
+                                
+                            </a>
+                        </div>
+                    </div>
+                    <h3>This page</h3>
+	                <ul>
+<li><a class="reference internal" href="#">2.7.1. Advanced Loading and Preprocessing of fMRI data</a><ul>
+<li><a class="reference internal" href="#niimg">2.7.1.1. Niimg</a></li>
+<li><a class="reference internal" href="#custom-data-loading">2.7.1.2. Custom data loading</a></li>
+<li><a class="reference internal" href="#custom-masking">2.7.1.3. Custom Masking</a><ul>
+<li><a class="reference internal" href="#mask-visualization">2.7.1.3.1. Mask Visualization</a></li>
+<li><a class="reference internal" href="#mask-computing">2.7.1.3.2. Mask Computing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#preprocessings">2.7.1.4. Preprocessings</a><ul>
+<li><a class="reference internal" href="#id1">2.7.1.4.1. Resampling</a></li>
+<li><a class="reference internal" href="#temporal-filtering">2.7.1.4.2. Temporal Filtering</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#inverse-transform-unmasking-data">2.7.1.5. Inverse transform: unmasking data</a></li>
+</ul>
+</li>
+</ul>
+
+                
+
+                <h3>Giving credit</h3>
+                <p>Please consider <a href="../AUTHORS.html#citing">citing the 
+                    scikit-learn</a> if you use it.</p>
+
+            </div>
+        </div>
+
+        <div class="content">
+                
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="advanced-loading-and-preprocessing-of-fmri-data">
+<span id="nifti-masker-advanced"></span><h1>2.7.1. Advanced Loading and Preprocessing of fMRI data<a class="headerlink" href="#advanced-loading-and-preprocessing-of-fmri-data" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial, we will give some details and show how to custom data loading
+in Nisl. Sometimes, the Nifti masker can provide you advanced parameters to
+tweak algorithms. Sometimes, you will have to put your hands in the code to
+achieve what you want.</p>
+<div class="section" id="niimg">
+<h2>2.7.1.1. Niimg<a class="headerlink" href="#niimg" title="Permalink to this headline">¶</a></h2>
+<p>Niimg (pronounce ni-image) is a common term used in Nisl. It can either
+represents:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a file path to a Nifti image</li>
+<li>any object exposing <tt class="docutils literal"><span class="pre">get_data()</span></tt> and <tt class="docutils literal"><span class="pre">get_affine()</span></tt> methods (it is
+obviously intended to handle nibabel&#8217;s Nifti1Image but also user custom
+types if needed).</li>
+</ul>
+</div></blockquote>
+<p>The Nifti Masker requires a 4-dimensional Nifti-like data. Accepted inputs are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Path to a 4-dimensional Nifti image</li>
+<li>List of paths to 3-dimensional Nifti images</li>
+<li>4-dimensional Nifti-like object</li>
+<li>List of 3-dimensional Nifti-like objects</li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Image affines</p>
+<p class="last">If you provide a sequence of Nifti images, all of them must have the same
+affine.</p>
+</div>
+</div>
+<div class="section" id="custom-data-loading">
+<h2>2.7.1.2. Custom data loading<a class="headerlink" href="#custom-data-loading" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes, you may want to preprocess data by yourself.
+In this example, we will restrict Haxby dataset to 150 frames to speed up
+computation. To do that, we load the dataset, restrain it to 150 frames and
+build a brand new Nifti like object to give it to the Nifti masker. There
+is no need to save your data in a file to pass it to Nifti masker.
+Simply use your Niimg !</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Load Haxby dataset</span>
+<span class="n">haxby</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby_simple</span><span class="p">()</span>
+<span class="n">haxby_img</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_niimg</span><span class="p">(</span><span class="n">haxby</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
+<span class="c"># Restrict haxby to 150 frames to speed up computation</span>
+<span class="n">haxby_func</span> <span class="o">=</span> <span class="n">haxby_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">150</span><span class="p">]</span>
+<span class="n">haxby_img</span> <span class="o">=</span> <span class="n">Nifti1Image</span><span class="p">(</span><span class="n">haxby_func</span><span class="p">,</span> <span class="n">haxby_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">())</span>
+<span class="c"># Load mask provided by Haxby</span>
+<span class="n">haxby_mask</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_niimg</span><span class="p">(</span><span class="n">haxby</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="custom-masking">
+<span id="masking"></span><h2>2.7.1.3. Custom Masking<a class="headerlink" href="#custom-masking" title="Permalink to this headline">¶</a></h2>
+<p>In the basic tutorial, we showed how the masker could compute a mask
+automatically: the result was quite impressive. But, on some datasets, the
+default algorithm may perform poorly. That is why it is very important to
+<em>always look at what your data looks like</em>.</p>
+<div class="section" id="mask-visualization">
+<h3>2.7.1.3.1. Mask Visualization<a class="headerlink" href="#mask-visualization" title="Permalink to this headline">¶</a></h3>
+<p>Before exploring the subject, we define an helper function to display the
+masks. This function will display a background (compose of a mean of epi scans)
+and the mask as a red layer over this background.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Load mask provided by Haxby</span>
+<span class="n">haxby_mask</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_niimg</span><span class="p">(</span><span class="n">haxby</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+
+<span class="c"># Display helper</span>
+<span class="n">background</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">haxby_func</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">background</span><span class="p">),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+    <span class="n">ma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">ma</span><span class="p">),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+              <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">autumn</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="mask-computing">
+<h3>2.7.1.3.2. Mask Computing<a class="headerlink" href="#mask-computing" title="Permalink to this headline">¶</a></h3>
+<p>As said before, if a mask is not given, the Nifti Masker will try to compute
+one. It is <em>very important</em> to take a look at the generated mask, to see if it
+is suitable for your data and adjust parameters if it is not. See documentation
+for a complete list of mask computation parameters.</p>
+<p>As an example, we will now try to build a mask on a dataset form scratch. Haxby
+dataset will be used since it provides a mask that we can use as a reference.</p>
+<p>The first the step of the generation is to generate a mask with default
+parameters and take a look at it. As an indicator, we can, for example, compare
+the mask to original data.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">NiftiMasker</span><span class="p">()</span>
+<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">haxby_img</span><span class="p">)</span>
+<span class="n">default_mask</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">default_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">],</span> <span class="s">&#39;Default mask&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="figure align-center">
+<a class="reference external image-reference" href="../auto_examples/plot_nifti_advanced.html"><img alt="../_images/plot_nifti_advanced_1.png" src="../_images/plot_nifti_advanced_1.png" style="width: 400.0px; height: 300.0px;" /></a>
+</div>
+<p>With naked eyes, we can see that there is a problem with this mask. In fact,
+it does not cover a part of the brain and the outline of the mask is
+not very smooth. As we want to enlarge the mask a little bit and make it
+smoother, we try to apply opening (<em>mask_opening=true</em>).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_opening</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">haxby_img</span><span class="p">)</span>
+<span class="n">opening_mask</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">opening_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">],</span> <span class="s">&#39;Mask with opening&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="figure align-center">
+<a class="reference external image-reference" href="../auto_examples/plot_nifti_advanced.html"><img alt="../_images/plot_nifti_advanced_2.png" src="../_images/plot_nifti_advanced_2.png" style="width: 400.0px; height: 300.0px;" /></a>
+</div>
+<p>This is not very effective. If we look at
+<a class="reference internal" href="../modules/generated/nisl.masking.compute_epi_mask.html#nisl.masking.compute_epi_mask" title="nisl.masking.compute_epi_mask"><tt class="xref py py-class docutils literal"><span class="pre">nisl.masking.compute_epi_mask</span></tt></a> documentation, we spot two interesting
+parameters: <em>lower_cutoff</em> and <em>upper_cutoff</em>. The algorithm seems to ignore
+dark (low) values. Without getting into the details of the algorithm, this
+means that the threshold is chosen into high values. We can tell the algorithm
+to ignore high values by lowering <em>upper cutoff</em>. Default value is 0.9, so we
+try 0.8.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_opening</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">mask_upper_cutoff</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">haxby_img</span><span class="p">)</span>
+<span class="n">cutoff_mask</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+
+<span class="c"># Plot the mask and compare it to original</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">haxby_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">],</span> <span class="s">&#39;Haxby mask&#39;</span><span class="p">)</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">cutoff_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">],</span> <span class="s">&#39;Mask with cutoff&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c"># trended vs detrended</span>
+<span class="n">trended</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">haxby</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+<span class="n">detrended</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">haxby</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">trended_data</span> <span class="o">=</span> <span class="n">trended</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">haxby_img</span><span class="p">)</span>
+<span class="n">detrended_data</span> <span class="o">=</span> <span class="n">detrended</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">haxby_img</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="s">&quot;Trended: mean </span><span class="si">%.2f</span><span class="s">, std </span><span class="si">%.2f</span><span class="s">&quot;</span> <span class="o">%</span> \
+    <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">trended_data</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">trended_data</span><span class="p">))</span>
+<span class="k">print</span> <span class="s">&quot;Detrended: mean </span><span class="si">%.2f</span><span class="s">, std </span><span class="si">%.2f</span><span class="s">&quot;</span> <span class="o">%</span> \
+    <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">detrended_data</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">detrended_data</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="figure align-center">
+<a class="reference external image-reference" href="../auto_examples/plot_nifti_advanced.html"><img alt="../_images/plot_nifti_advanced_3.png" src="../_images/plot_nifti_advanced_3.png" style="width: 400.0px; height: 300.0px;" /></a>
+</div>
+<p>The resulting mask seems correct. If we compare it to the original one, they
+are very close.</p>
+</div>
+</div>
+<div class="section" id="preprocessings">
+<span id="resampling"></span><h2>2.7.1.4. Preprocessings<a class="headerlink" href="#preprocessings" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>2.7.1.4.1. Resampling<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Nifti Masker offers two ways to resample images:</p>
+<blockquote>
+<div><ul class="simple">
+<li><em>target_affine</em>: resample (resize, rotate...) images by providing a new affine</li>
+<li><em>target_shape</em>: resize images by providing directly a new shape</li>
+</ul>
+</div></blockquote>
+<p>Resampling can be used for example to reduce processing time of an algorithm by
+lowering image resolution.</p>
+</div>
+<div class="section" id="temporal-filtering">
+<span id="id2"></span><h3>2.7.1.4.2. Temporal Filtering<a class="headerlink" href="#temporal-filtering" title="Permalink to this headline">¶</a></h3>
+<p>All previous filters concern spatial filtering. On the time axis, the Nifti
+masker also proposes some filters.</p>
+<p>By default, the signal will be normalized. If the dataset provides a confounds
+file, it can be applied by providing the path to the file to the masker.
+Low pass and High pass filters allows one to remove artefacts.</p>
+<p>Detrending removes linear trend along axis from data. It is not activated by
+default in the Nifti Masker but it is almost essential.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Exercise</p>
+<p class="last">You can, more as a training than as an exercise, try to play with the
+parameters in Nisl examples. Try to enable detrending in haxby decoding
+and run it: does it have a big impact on the results ?</p>
+</div>
+</div>
+</div>
+<div class="section" id="inverse-transform-unmasking-data">
+<h2>2.7.1.5. Inverse transform: unmasking data<a class="headerlink" href="#inverse-transform-unmasking-data" title="Permalink to this headline">¶</a></h2>
+<p>Once that your computation is finished, you want to unmask your data to be able
+to visualize it. This step is present in almost all the examples provided in
+Nisl.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># reverse masking</span>
+<span class="n">niimg</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">svc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+            <div class="clearer"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; INRIA Parietal 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3. Design by <a href="http://desgrana.es">Desgrana</a>.
+    <span style="padding-left: 5ex;">
+    <a href="../_sources/nifti_masker/nifti_masker_advanced.txt"
+	    rel="nofollow">Show this page source</a>
+    </span>
+    </div>
+     <div class="rel">
+    
+    <div class="buttonPrevious">
+      <a href="../getting_started.html">
+        Previous
+      </a>
+    </div>
+    <div class="buttonNext">
+      <a href="../supervised_learning.html">
+        Next
+      </a>
+    </div>
+    
+     </div>
+     <script type="text/javascript">
+       $("div.buttonNext, div.buttonPrevious").hover(
+           function () {
+               $(this).css('background-color', '#FF9C34');
+           },
+           function () {
+               $(this).css('background-color', '#A7D6E2');
+           }
+       );
+     </script>
+  </body>
+</html>

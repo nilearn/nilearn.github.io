@@ -1,0 +1,536 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Group analysis of resting-state fMRI with ICA: CanICA &mdash; NeuroImaging with the scikit-learn</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="NeuroImaging with the scikit-learn" href="../index.html" />
+    <script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-22606712-2']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head>
+  <body>
+
+    <div class="header-wrapper">
+        <div class="header">
+                <p class="logo"><a href="../index.html">
+                        <img src="../_static/scikit-learn-logo-small.png" alt="Logo"/>
+                    </a>
+                </p><div class="navbar">
+                    <ul>
+	                    <li><a href="../index.html">User Guide</a></li>
+                        <li><a href="index.html">Examples</a></li>
+                        <li><a href="../modules/classes.html">Reference</a></li>
+                    </ul>
+                    <div class="search_form">
+                        <div id="cse" style="width: 100%;"></div>
+                        <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+                        <script type="text/javascript">
+                            google.load('search', '1', {language : 'en'});
+                            google.setOnLoadCallback(function() {
+                                var customSearchControl = new google.search.CustomSearchControl('016639176250731907682:tjtqbvtvij0');
+                                customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+                                var options = new google.search.DrawOptions();
+                                options.setAutoComplete(true);
+                                customSearchControl.draw('cse', options);
+                            }, true);
+                        </script>
+                    </div>
+                </div> <!-- end navbar --></div> <!-- end header -->
+    </div> <!-- end header-wrapper -->
+    <div class="content-wrapper">
+        <div class="sphinxsidebar">
+	        <div class="sphinxsidebarwrapper">
+	                    <div class="rel rellarge">
+	                
+	                <!-- rellinks[1:] is an ugly hack to avoid link to module
+	                     index  -->
+	                <!-- Ad a link to the 'up' page -->
+                    </div>
+                    <h3>This page</h3>
+	                <ul>
+<li><a class="reference internal" href="#">Group analysis of resting-state fMRI with ICA: CanICA</a></li>
+</ul>
+
+                
+
+                <h3>Giving credit</h3>
+                <p>Please consider <a href="../AUTHORS.html#citing">citing the 
+                    scikit-learn</a> if you use it.</p>
+
+            </div>
+        </div>
+
+        <div class="content">
+                
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="group-analysis-of-resting-state-fmri-with-ica-canica">
+<span id="example-tutorial-plot-canica-resting-state-py"></span><h1>Group analysis of resting-state fMRI with ICA: CanICA<a class="headerlink" href="#group-analysis-of-resting-state-fmri-with-ica-canica" title="Permalink to this headline">¶</a></h1>
+<p>An example applying CanICA to resting-state data. This example applies it
+to 40 subjects of the ADHD200 datasets.</p>
+<p>CanICA is an ICA method for group-level analysis of fMRI data. Compared
+to other strategies, it brings a well-controlled group model, as well as a
+thresholding algorithm controlling for specificity and sensitivity with
+an explicit model of the signal. The reference papers are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>G. Varoquaux et al. &#8220;A group model for stable multi-subject ICA on
+fMRI datasets&#8221;, NeuroImage Vol 51 (2010), p. 288-299</li>
+<li>G. Varoquaux et al. &#8220;ICA-based sparse features recovery from fMRI
+datasets&#8221;, IEEE ISBI 2010, p. 1177</li>
+</ul>
+</div></blockquote>
+<p>Pre-prints for both papers are available on hal
+(<a class="reference external" href="http://hal.archives-ouvertes.fr">http://hal.archives-ouvertes.fr</a>)</p>
+<ul class="horizontal">
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_3.png"><img alt="../_images/plot_canica_resting_state_3.png" src="../_images/plot_canica_resting_state_3.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_7.png"><img alt="../_images/plot_canica_resting_state_7.png" src="../_images/plot_canica_resting_state_7.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_6.png"><img alt="../_images/plot_canica_resting_state_6.png" src="../_images/plot_canica_resting_state_6.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_1.png"><img alt="../_images/plot_canica_resting_state_1.png" src="../_images/plot_canica_resting_state_1.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_4.png"><img alt="../_images/plot_canica_resting_state_4.png" src="../_images/plot_canica_resting_state_4.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_5.png"><img alt="../_images/plot_canica_resting_state_5.png" src="../_images/plot_canica_resting_state_5.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_2.png"><img alt="../_images/plot_canica_resting_state_2.png" src="../_images/plot_canica_resting_state_2.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_9.png"><img alt="../_images/plot_canica_resting_state_9.png" src="../_images/plot_canica_resting_state_9.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_8.png"><img alt="../_images/plot_canica_resting_state_8.png" src="../_images/plot_canica_resting_state_8.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+</ul>
+<p><strong>Script output</strong>:</p>
+<div class="highlight-python"><pre>[NiftiMultiMasker.fit] Loading data from [/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz, /home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preproc
+[NiftiMultiMasker.fit] Computing the mask
+________________________________________________________________________________
+[Memory] Calling nisl.masking.compute_multi_epi_mask...
+compute_multi_epi_mask([ '/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz',
+  '/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz',
+  '/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/0023008/0023008_rest_tshift_RPI_voreg_mni.nii.gz',
+  '/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/0027011/0027011_rest_tshift_RPI_voreg_mni.nii.gz',
+  '/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/0027034/0027034_rest_tshift_RPI_voreg_mni.nii.gz',
+  '/home/varoquau/dev/nisl/tut..., n_jobs=1, verbose=0, opening=False, lower_cutoff=0.2, connected=True, upper_cutoff=0.9)
+_________________________________________compute_multi_epi_mask - 186.9s, 3.1min
+[NiftiMultiMasker.transform] Resampling mask
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x2b435b9f2e10&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+_____________________________________________________resample_img - 0.2s, 0.0min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21c10&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 41.9s, 0.7min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21c50&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 41.7s, 0.7min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/0023008/0023008_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21750&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 14.6s, 0.2min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/0027011/0027011_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21810&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 66.1s, 1.1min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/0027034/0027034_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21710&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 67.4s, 1.1min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/1019436/1019436_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c219d0&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 29.3s, 0.5min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/1418396/1418396_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21e10&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 14.8s, 0.2min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/1552181/1552181_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21e50&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 14.7s, 0.2min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/1679142/1679142_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21910&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 14.7s, 0.2min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/2497695/2497695_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21a10&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 41.9s, 0.7min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/3007585/3007585_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21bd0&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 65.0s, 1.1min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/3205761/3205761_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c218d0&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 45.5s, 0.8min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/3624598/3624598_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21d90&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 44.8s, 0.7min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/3884955/3884955_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21750&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 23.7s, 0.4min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/3994098/3994098_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21810&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 45.2s, 0.8min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/4046678/4046678_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c216d0&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 14.7s, 0.2min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/4164316/4164316_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21ad0&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 41.3s, 0.7min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/6115230/6115230_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21710&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 66.5s, 1.1min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/8409791/8409791_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21e50&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 65.4s, 1.1min
+[NiftiMultiMasker.transform] Loading data from Nifti1Image('/home/varoquau/dev/nisl/tutorial/nisl_data/adhd/ADHD200_40sub_preprocessed/data/9744150/9744150_rest_tshift_RPI_voreg_mni.nii.gz')
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x4c21910&gt;, target_shape=None, target_affine=array([[3, 0, 0],
+       [0, 3, 0],
+       [0, 0, 3]]), copy=False)
+____________________________________________________resample_img - 45.5s, 0.8min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[ 2.090435, ..., -2.190795],
+       ...,
+       [ 1.10472 , ..., -1.788825]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 2.1s, 0.0min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[ 1.47546 , ..., -1.406511],
+       ...,
+       [ 0.317219, ..., -0.620434]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 2.3s, 0.0min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[-0.066793, ..., -0.881582],
+       ...,
+       [-0.838515, ..., -0.158701]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 0.6s, 0.0min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[ 0.233472, ..., -0.623186],
+       ...,
+       [-2.019626, ...,  1.216285]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 4.1s, 0.1min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[-0.847831, ..., -0.683572],
+       ...,
+       [ 0.17033 , ..., -0.410198]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 4.0s, 0.1min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[-2.273766, ...,  0.348149],
+       ...,
+       [-0.308492, ..., -0.635201]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 1.8s, 0.0min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[-1.400526, ..., -0.572099],
+       ...,
+       [-0.371019, ...,  0.958066]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 0.6s, 0.0min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[ 0.201586, ..., -0.928828],
+       ...,
+       [-1.383234, ...,  0.891506]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 0.6s, 0.0min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[-1.069553, ..., -1.164308],
+       ...,
+       [ 0.52665 , ..., -1.353578]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 0.6s, 0.0min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[ 1.877139, ..., -1.544554],
+       ...,
+       [ 1.410301, ..., -0.886728]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 2.1s, 0.0min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[-2.118431, ...,  0.916483],
+       ...,
+       [-1.660863, ...,  1.654234]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 4.0s, 0.1min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[-1.381814, ...,  1.491872],
+       ...,
+       [-0.080371, ...,  0.849273]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 3.4s, 0.1min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[ 0.443108, ..., -0.511355],
+       ...,
+       [-0.435812, ...,  0.221454]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 3.5s, 0.1min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[ 1.115441, ...,  0.926046],
+       ...,
+       [-0.900734, ...,  0.236174]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 1.3s, 0.0min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[-0.862082, ..., -1.643998],
+       ...,
+       [-0.470194, ..., -0.183902]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 3.4s, 0.1min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[ 0.031796, ...,  1.346728],
+       ...,
+       [-0.348961, ..., -0.285778]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 0.6s, 0.0min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[ 1.425277, ..., -1.509929],
+       ...,
+       [-0.181698, ...,  0.034875]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 2.1s, 0.0min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[-0.94539 , ...,  0.284277],
+       ...,
+       [-0.635333, ..., -0.177584]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 4.1s, 0.1min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[ 0.300159, ...,  1.117618],
+       ...,
+       [ 0.113207, ...,  0.145932]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 4.1s, 0.1min
+________________________________________________________________________________
+[Memory] Calling scipy.linalg.decomp_svd.svd...
+svd(array([[-1.103965, ...,  1.056084],
+       ...,
+       [-1.422281, ...,  1.841007]], dtype=float32), full_matrices=False)
+______________________________________________________________svd - 3.4s, 0.1min
+________________________________________________________________________________
+[Memory] Calling sklearn.utils.extmath.randomized_svd...
+randomized_svd(array([[-0.004612, ..., -0.002727],
+       ...,
+       [-0.002929, ...,  0.001158]], dtype=float32),
+20)
+___________________________________________________randomized_svd - 3.5s, 0.1min
+________________________________________________________________________________
+[Memory] Calling sklearn.decomposition.fastica_.fastica...
+fastica(array([[-0.003584, ..., -0.003685],
+       ...,
+       [-0.004439, ..., -0.003492]]), fun='cube', random_state=42, whiten=False)
+__________________________________________________________fastica - 0.2s, 0.0min</pre>
+</div>
+<p><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_canica_resting_state.py"><tt class="xref download docutils literal"><span class="pre">plot_canica_resting_state.py</span></tt></a></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c">### Load ADHD rest dataset ####################################################</span>
+<span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
+<span class="c"># Here we use only 5 subjects to get faster-running code. For better</span>
+<span class="c"># results, simply increase this number</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span><span class="p">()</span>
+<span class="n">func_files</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[:</span><span class="mi">20</span><span class="p">]</span>
+
+<span class="c">### Preprocess ################################################################</span>
+<span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">io</span>
+
+<span class="c"># This is a multi-subject method, thus we need to use the</span>
+<span class="c"># NiftiMultiMasker, rather than the NiftiMasker</span>
+<span class="c"># We specify the target_affine to downsample to 3mm isotropic</span>
+<span class="c"># resolution</span>
+<span class="n">masker</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">NiftiMultiMasker</span><span class="p">(</span><span class="n">smooth</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">target_affine</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span>
+                             <span class="n">memory</span><span class="o">=</span><span class="s">&quot;canica&quot;</span><span class="p">,</span> <span class="n">transform_memory</span><span class="o">=</span><span class="s">&quot;canica&quot;</span><span class="p">,</span>
+                             <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">data_masked</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">func_files</span><span class="p">)</span>
+
+<span class="n">mean_epi</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">data_masked</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+
+<span class="c">### Apply CanICA ##############################################################</span>
+
+<span class="kn">from</span> <span class="nn">nisl.decomposition.canica</span> <span class="kn">import</span> <span class="n">CanICA</span>
+<span class="n">n_components</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">ica</span> <span class="o">=</span> <span class="n">CanICA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="s">&quot;canica&quot;</span><span class="p">,</span>
+             <span class="n">maps_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">components_masked</span> <span class="o">=</span> <span class="n">ica</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_masked</span><span class="p">)</span><span class="o">.</span><span class="n">maps_</span>
+
+<span class="c"># We normalize the estimated components, for thresholding to make sens</span>
+<span class="c"># XXX: this should probably be integrated in the CanICA object</span>
+<span class="n">components_masked</span> <span class="o">-=</span> <span class="n">components_masked</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+<span class="n">components_masked</span> <span class="o">/=</span> <span class="n">components_masked</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+<span class="c"># Threshold</span>
+<span class="c">#threshold = (stats.norm.isf(0.5*threshold_p_value)</span>
+<span class="c">#                                 /np.sqrt(components_masked.shape[0]))</span>
+<span class="n">threshold</span> <span class="o">=</span> <span class="o">.</span><span class="mi">9</span>
+<span class="n">components_masked</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">components_masked</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c"># Now we inverting the masking operation, to go back to a full 3D</span>
+<span class="c"># representation</span>
+<span class="n">components_img</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">components_masked</span><span class="p">)</span>
+<span class="n">components</span> <span class="o">=</span> <span class="n">components_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+
+<span class="c"># Using a masked array is important to have transparency in the figures</span>
+<span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c">### Visualize the results #####################################################</span>
+<span class="c"># Show some interesting components</span>
+<span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_components</span><span class="p">):</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+    <span class="n">cut_coord</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">maximum_position</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">]))[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">components</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cut_coord</span><span class="p">,</span> <span class="n">i</span><span class="p">]))</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_epi</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cut_coord</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+              <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">components</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cut_coord</span><span class="p">,</span> <span class="n">i</span><span class="p">]),</span>
+              <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">jet</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">vmax</span><span class="p">)</span>
+
+<span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Total running time of the example:</strong>  1100.27 seconds</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+            <div class="clearer"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; INRIA Parietal 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3. Design by <a href="http://desgrana.es">Desgrana</a>.
+    <span style="padding-left: 5ex;">
+    <a href="../_sources/auto_examples/plot_canica_resting_state.txt"
+	    rel="nofollow">Show this page source</a>
+    </span>
+    </div>
+     <div class="rel rellarge">
+    
+    
+     </div>
+     <script type="text/javascript">
+       $("div.buttonNext, div.buttonPrevious").hover(
+           function () {
+               $(this).css('background-color', '#FF9C34');
+           },
+           function () {
+               $(this).css('background-color', '#A7D6E2');
+           }
+       );
+     </script>
+  </body>
+</html>
