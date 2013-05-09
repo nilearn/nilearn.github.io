@@ -30,7 +30,7 @@
     <link rel="top" title="NeuroImaging with the scikit-learn" href="index.html" />
     <link rel="up" title="3. Supervised learning" href="supervised_learning.html" />
     <link rel="next" title="4. Unsupervised learning" href="unsupervised_learning.html" />
-    <link rel="prev" title="3.2. fMRI decoding: predicting which objects a subject is viewing" href="haxby_decoding.html" />
+    <link rel="prev" title="3.2. fMRI decoding: predicting which object a subject is viewing" href="haxby_decoding.html" />
     <script type="text/javascript">
 
         var _gaq = _gaq || [];
@@ -82,14 +82,14 @@
 	                <!-- rellinks[1:] is an ugly hack to avoid link to module
 	                     index  -->
                     	<div class="rellink">
-	                        <a href="haxby_decoding.html" title="3.2. fMRI decoding: predicting which objects a subject is viewing" accesskey="P">
+	                        <a href="haxby_decoding.html" title="3.2. fMRI decoding: predicting which object a subject is viewing" accesskey="P">
                                 Previous
 	                            <br />
 	                            <span class="smallrellink">
                             	    3.2. fMRI decodi...
                         	    </span>
                            	        <span class="hiddenrellink">
-                                        3.2. fMRI decoding: predicting which objects a subject is viewing
+                                        3.2. fMRI decoding: predicting which object a subject is viewing
                                     </span>
                         	    
 	                        </a>
@@ -212,31 +212,13 @@ from internet and loading it can be done with the provided functions:</p>
 </ul>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Build the mean image because we have no anatomic data</span>
 <span class="n">mean_img</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="c">### Restrict to faces and houses ##############################################</span>
-<span class="n">condition_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">conditions</span> <span class="o">==</span> <span class="s">&#39;face&#39;</span><span class="p">,</span> <span class="n">conditions</span> <span class="o">==</span> <span class="s">&#39;house&#39;</span><span class="p">)</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">condition_mask</span><span class="p">]</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
-<span class="n">session</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
-<span class="n">conditions</span> <span class="o">=</span> <span class="n">conditions</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
-
-<span class="c">### Loading step ##############################################################</span>
-<span class="kn">from</span> <span class="nn">nisl.io</span> <span class="kn">import</span> <span class="n">NiftiMasker</span>
-<span class="kn">from</span> <span class="nn">nibabel</span> <span class="kn">import</span> <span class="n">Nifti1Image</span>
-
-<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">sessions</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
-<span class="n">niimg</span> <span class="o">=</span> <span class="n">Nifti1Image</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">affine</span><span class="p">)</span>
-<span class="n">X_masked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">niimg</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">niimg</span><span class="p">)</span>
-<span class="n">X_preprocessed</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">X_masked</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
-<span class="n">X_preprocessed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rollaxis</span><span class="p">(</span><span class="n">X_preprocessed</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">mask</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="masking">
 <h3>3.3.2.3. Masking<a class="headerlink" href="#masking" title="Permalink to this headline">¶</a></h3>
-<p>One of the main element that distinguich Searchlight from other algorithms is
-this notion of structuring element that scan the entire volume. If this seems
+<p>One of the main elements that distinguish Searchlight from other algorithms is
+the notion of structuring element that scans the entire volume. If this seems
 rather intuitive, it has in fact an impact on the masking procedure.</p>
 <p>Most of the time, fMRI data is masked and then given to the algorithm. This is
 not possible in the case of Searchlight because, to compute the score of
@@ -247,74 +229,12 @@ be used here :</p>
 <li><em>process_mask</em> is a subset of mask and contains voxels to be processed.</li>
 </ul>
 <p><em>process_mask</em> will then be used to restrain computation to one slice, in the
-back of the brain. <em>mask</em> will ensure that no value outside of the brain is
+back of the brain. <em>mask</em> will ensure that no value outside the brain is
 taken into account when iterating with the sphere.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">process_mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="n">process_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">38</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">False</span>
 <span class="n">process_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">36</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
 <span class="n">process_mask</span><span class="p">[:,</span> <span class="mi">30</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">False</span>
-
-<span class="c">### Searchlight ###############################################################</span>
-
-<span class="c"># Make processing parallel</span>
-<span class="c"># /!\ As each thread will print its progress, n_jobs &gt; 1 could mess up the</span>
-<span class="c">#     information output.</span>
-<span class="n">n_jobs</span> <span class="o">=</span> <span class="mi">1</span>
-
-<span class="c">### Define the score function used to evaluate classifiers</span>
-<span class="c"># Here we use precision which maesures proportion of true positives among</span>
-<span class="c"># all positives results for one class.</span>
-<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">precision_score</span>
-<span class="n">score_func</span> <span class="o">=</span> <span class="n">precision_score</span>
-
-<span class="c">### Define the cross-validation scheme used for validation.</span>
-<span class="c"># Here we use a KFold cross-validation on the session, which corresponds to</span>
-<span class="c"># splitting the samples in 4 folds and make 4 runs using each fold as a test</span>
-<span class="c"># set once and the others as learning sets</span>
-<span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">KFold</span>
-<span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-
-<span class="c">### Fit #######################################################################</span>
-
-<span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">searchlight</span>
-
-<span class="c"># The radius is the one of the Searchlight sphere that will scan the volume</span>
-<span class="n">searchlight</span> <span class="o">=</span> <span class="n">searchlight</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">process_mask</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
-        <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">score_func</span><span class="o">=</span><span class="n">score_func</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
-
-<span class="n">searchlight</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_preprocessed</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-
-<span class="c">### Visualization #############################################################</span>
-<span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="c"># searchlight.scores_ contains per voxel cross validation scores</span>
-<span class="n">s_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">searchlight</span><span class="o">.</span><span class="n">scores_</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-        <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">s_scores</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-        <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Searchlight&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-<span class="c">### Show the F_score</span>
-<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">f_classif</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">X_masked</span> <span class="o">=</span> <span class="n">X_preprocessed</span><span class="p">[:,</span> <span class="n">process_mask</span><span class="p">]</span>
-<span class="n">f_values</span><span class="p">,</span> <span class="n">p_values</span> <span class="o">=</span> <span class="n">f_classif</span><span class="p">(</span><span class="n">X_masked</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="n">p_values</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">p_values</span><span class="p">)</span>
-<span class="n">p_values</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">p_values</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">p_values</span><span class="p">[</span><span class="n">p_values</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">p_unmasked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">p_unmasked</span><span class="p">[</span><span class="n">process_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_values</span>
-<span class="n">p_ma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p_unmasked</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-        <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">p_ma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-        <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;F-scores&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -327,28 +247,6 @@ analysis to the <cite>face</cite> and <cite>house</cite> conditions:</p>
 <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
 <span class="n">session</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
 <span class="n">conditions</span> <span class="o">=</span> <span class="n">conditions</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
-
-<span class="c">### Loading step ##############################################################</span>
-<span class="kn">from</span> <span class="nn">nisl.io</span> <span class="kn">import</span> <span class="n">NiftiMasker</span>
-<span class="kn">from</span> <span class="nn">nibabel</span> <span class="kn">import</span> <span class="n">Nifti1Image</span>
-
-<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">sessions</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
-<span class="n">niimg</span> <span class="o">=</span> <span class="n">Nifti1Image</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">affine</span><span class="p">)</span>
-<span class="n">X_masked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">niimg</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">niimg</span><span class="p">)</span>
-<span class="n">X_preprocessed</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">X_masked</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
-<span class="n">X_preprocessed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rollaxis</span><span class="p">(</span><span class="n">X_preprocessed</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">mask</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
-
-<span class="c">### Prepare the masks #########################################################</span>
-<span class="c"># Here we will use several masks :</span>
-<span class="c"># * mask is the originalmask</span>
-<span class="c"># * process_mask is a subset of mask, it contains voxels that should be</span>
-<span class="c">#   processed (we only keep the slice z = 26 and the back of the brain to speed</span>
-<span class="c">#   up computation)</span>
-<span class="n">process_mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">process_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">38</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">False</span>
-<span class="n">process_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">36</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
-<span class="n">process_mask</span><span class="p">[:,</span> <span class="mi">30</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">False</span>
 </pre></div>
 </div>
 </div>
@@ -359,13 +257,14 @@ analysis to the <cite>face</cite> and <cite>house</cite> conditions:</p>
 <h3>3.3.3.1. Classifier<a class="headerlink" href="#classifier" title="Permalink to this headline">¶</a></h3>
 <p>The classifier used by default by Searchlight is LinearSVC with C=1 but
 this can be customed easily by passing an estimator parameter to the
-cross validation. See scikit-learn documentation for <a class="reference external" href="http://scikit-learn.org/supervised_learning.html">other classifiers</a>.</p>
+cross validation. See scikit-learn documentation for <a class="reference external" href="http://scikit-learn.org/stable/supervised_learning.html">other classifiers</a>.</p>
 </div>
 <div class="section" id="score-function">
 <h3>3.3.3.2. Score function<a class="headerlink" href="#score-function" title="Permalink to this headline">¶</a></h3>
-<p>Here we use precision as metrics to measures proportion of true positives
-among all positives results for one class. Many others are available in
-<a class="reference external" href="http://scikit-learn.org/supervised_learning.html">scikit-learn documentation</a>.</p>
+<p>Here we use precision as metrics to measure the proportion of true
+positives among all positive results for one class. Many others are
+available in
+<a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics">scikit-learn documentation</a>.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">precision_score</span>
 <span class="n">score_func</span> <span class="o">=</span> <span class="n">precision_score</span>
 </pre></div>
@@ -377,9 +276,9 @@ among all positives results for one class. Many others are available in
 score is computed by running a classifier on selected voxels. In order to make
 this score as accurate as possible (and avoid overfitting), a cross validation
 is made.</p>
-<p>As Searchlight is a little costly, we have chosen a cross validation
-method that do not take too much time. <em>K</em>-Fold along with <em>K</em> = 4 is a
-good compromise between running time and result.</p>
+<p>As Searchlight is costly, we have chosen a cross validation
+method that does not take too much time. <em>K</em>-Fold along with <em>K</em> = 4 is a
+good compromise between running time and quality.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">KFold</span>
 <span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
@@ -395,10 +294,11 @@ performance in his simulation.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">searchlight</span>
 
 <span class="c"># The radius is the one of the Searchlight sphere that will scan the volume</span>
-<span class="n">searchlight</span> <span class="o">=</span> <span class="n">searchlight</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">process_mask</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
-        <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">score_func</span><span class="o">=</span><span class="n">score_func</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
+<span class="n">searchlight</span> <span class="o">=</span> <span class="n">searchlight</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">process_mask</span><span class="o">=</span><span class="n">process_mask</span><span class="p">,</span>
+                                      <span class="n">radius</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+                                      <span class="n">score_func</span><span class="o">=</span><span class="n">score_func</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
 
-<span class="n">searchlight</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_preprocessed</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">searchlight</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_masked</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -408,7 +308,7 @@ performance in his simulation.</p>
 <h3>3.3.5.1. Searchlight<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>As the activation map is cropped, we use the mean image of all scans as a
 background. We can see here that voxels in the visual cortex contains
-information to distinguish pictures showed to the volunteer, which was the
+information to distinguish pictures showed to the volunteers, which was the
 expected result.</p>
 <div class="figure align-center">
 <a class="reference external image-reference" href="auto_examples/plot_haxby_searchlight.html"><img alt="_images/plot_haxby_searchlight_1.png" src="_images/plot_haxby_searchlight_1.png" style="width: 480.0px; height: 360.0px;" /></a>
@@ -418,9 +318,9 @@ expected result.</p>
 <span class="c"># searchlight.scores_ contains per voxel cross validation scores</span>
 <span class="n">s_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">searchlight</span><span class="o">.</span><span class="n">scores_</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-        <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">s_scores</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-        <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Searchlight&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -429,27 +329,25 @@ expected result.</p>
 </div>
 <div class="section" id="comparing-to-standard-analysis-f-score-or-spm">
 <h3>3.3.5.2. Comparing to standard-analysis: F_score or SPM<a class="headerlink" href="#comparing-to-standard-analysis-f-score-or-spm" title="Permalink to this headline">¶</a></h3>
-<p>The standard approach to brain mapping is performed using <em>statistical
-parametric mapping</em> (SPM), using ANOVA (analysis of variance), and F
-tests. Here we use is to compute the <em>p-values</em> of the voxels <a class="footnote-reference" href="#id3" id="id2">[1]</a>.
+<p>The standard approach to brain mapping is performed using <em>Statistical
+Parametric Mapping</em> (SPM), using ANOVA (analysis of variance), and
+F-tests. Here we compute the <em>p-values</em> of the voxels <a class="footnote-reference" href="#id3" id="id2">[1]</a>.
 To display the results, we use the negative log of the p-value.</p>
 <div class="figure align-center">
 <a class="reference external image-reference" href="auto_examples/plot_haxby_searchlight.html"><img alt="_images/plot_haxby_searchlight_2.png" src="_images/plot_haxby_searchlight_2.png" style="width: 480.0px; height: 360.0px;" /></a>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">f_classif</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">X_masked</span> <span class="o">=</span> <span class="n">X_preprocessed</span><span class="p">[:,</span> <span class="n">process_mask</span><span class="p">]</span>
 <span class="n">f_values</span><span class="p">,</span> <span class="n">p_values</span> <span class="o">=</span> <span class="n">f_classif</span><span class="p">(</span><span class="n">X_masked</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="n">p_values</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">p_values</span><span class="p">)</span>
 <span class="n">p_values</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">p_values</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">p_values</span><span class="p">[</span><span class="n">p_values</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">p_unmasked</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">p_unmasked</span><span class="p">[</span><span class="n">process_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_values</span>
+<span class="n">p_unmasked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">p_values</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
 <span class="n">p_ma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p_unmasked</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-        <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">p_ma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-        <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">)</span>
+          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;F-scores&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>

@@ -27,7 +27,7 @@ from nisl import searchlight
 
 
 ###############################################################################
-# Fonction to generate data
+# Function to generate data
 def create_simulation_data(snr=5, n_samples=2 * 100, size=12, random_state=0):
     generator = check_random_state(random_state)
     roi_size = 2  # size / 3
@@ -108,7 +108,6 @@ classifiers = [
     ('svr', svm.SVR(kernel='linear', C=0.001)),
     ('searchlight', searchlight.SearchLight(
         mask=mask, process_mask=process_mask,
-        masked_data=True,
         radius=4.,
         score_func=r2_score,
         cv=KFold(y_train.size, k=4)))

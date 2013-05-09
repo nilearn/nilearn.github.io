@@ -17,7 +17,7 @@ dataset = datasets.fetch_nyu_rest(n_subjects=1)
 ### Preprocess ################################################################
 from nisl import io
 
-masker = io.NiftiMasker(smooth=8)
+masker = io.NiftiMasker(smooth=8, memory='nisl_cache', memory_level=1)
 data_masked = masker.fit_transform(dataset.func[0])
 
 # Concatenate all the subjects
@@ -35,13 +35,13 @@ n_components = 20
 ica = FastICA(n_components=n_components, random_state=42)
 components_masked = ica.fit_transform(data_masked.T).T
 
-# We normalize the estimated components, for thresholding to make sens
+# Normalize estimated components, for thresholding to make sense
 components_masked -= components_masked.mean(axis=0)
 components_masked /= components_masked.std(axis=0)
 # Threshold
-components_masked[np.abs(components_masked) < 1.3] = 0
+components_masked[components_masked < .8] = 0
 
-# Now we inverting the masking operation, to go back to a full 3D
+# Now invert the masking operation, going back to a full 3D
 # representation
 component_img = masker.inverse_transform(components_masked)
 components = component_img.get_data()
@@ -55,17 +55,17 @@ mean_epi = mean_img.get_data()
 import pylab as pl
 pl.figure()
 pl.axis('off')
-vmax = np.max(np.abs(components[:, :, 19, 15]))
-pl.imshow(np.rot90(mean_epi[:, :, 19]), interpolation='nearest',
+vmax = np.max(np.abs(components[:, :, 25, 5]))
+pl.imshow(np.rot90(mean_epi[:, :, 25]), interpolation='nearest',
           cmap=pl.cm.gray)
-pl.imshow(np.rot90(components[:, :, 19, 15]), interpolation='nearest',
+pl.imshow(np.rot90(components[:, :, 25, 5]), interpolation='nearest',
           cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
 
 pl.figure()
 pl.axis('off')
-vmax = np.max(np.abs(components[:, :, 25, 19]))
-pl.imshow(np.rot90(mean_epi[:, :, 25]), interpolation='nearest',
+vmax = np.max(np.abs(components[:, :, 23, 12]))
+pl.imshow(np.rot90(mean_epi[:, :, 23]), interpolation='nearest',
           cmap=pl.cm.gray)
-pl.imshow(np.rot90(components[:, :, 25, 19]), interpolation='nearest',
+pl.imshow(np.rot90(components[:, :, 23, 12]), interpolation='nearest',
           cmap=pl.cm.jet, vmax=vmax, vmin=-vmax)
 pl.show()

@@ -107,7 +107,11 @@ in loading the data: we load all the data but only use the face and
 houses conditions.</p>
 <img alt="../_images/plot_haxby_decoding_1.png" class="align-center" src="../_images/plot_haxby_decoding_1.png" />
 <p><strong>Script output</strong>:</p>
-<div class="highlight-python"><pre>=== ANOVA ===
+<div class="highlight-python"><pre>________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x3e3df90&gt;, target_shape=None, target_affine=None, copy=False)
+_____________________________________________________resample_img - 0.0s, 0.0min
+=== ANOVA ===
 Classification accuracy: 1.000000  / Chance level: 0.500000</pre>
 </div>
 <p><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_haxby_decoding.py"><tt class="xref download docutils literal"><span class="pre">plot_haxby_decoding.py</span></tt></a></p>
@@ -117,7 +121,7 @@ Classification accuracy: 1.000000  / Chance level: 0.500000</pre>
 <span class="kn">import</span> <span class="nn">nibabel</span>
 <span class="n">dataset_files</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby_simple</span><span class="p">()</span>
 
-<span class="c"># fmri_data and mask are copied to lose the reference to the original data</span>
+<span class="c"># fmri_data and mask are copied to break any reference to the original object</span>
 <span class="n">bold_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
 <span class="n">fmri_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">bold_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
 <span class="n">affine</span> <span class="o">=</span> <span class="n">bold_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()</span>
@@ -133,7 +137,7 @@ Classification accuracy: 1.000000  / Chance level: 0.500000</pre>
 
 <span class="c">### Restrict to faces and houses ##############################################</span>
 
-<span class="c"># Keep only data corresponding to face or houses</span>
+<span class="c"># Keep only data corresponding to faces or houses</span>
 <span class="n">condition_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">conditions</span> <span class="o">==</span> <span class="s">&#39;face&#39;</span><span class="p">,</span> <span class="n">conditions</span> <span class="o">==</span> <span class="s">&#39;house&#39;</span><span class="p">)</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">condition_mask</span><span class="p">]</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
@@ -146,7 +150,8 @@ Classification accuracy: 1.000000  / Chance level: 0.500000</pre>
 <span class="c">### Loading step ##############################################################</span>
 <span class="kn">from</span> <span class="nn">nisl.io</span> <span class="kn">import</span> <span class="n">NiftiMasker</span>
 <span class="kn">from</span> <span class="nn">nibabel</span> <span class="kn">import</span> <span class="n">Nifti1Image</span>
-<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">sessions</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">sessions</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                           <span class="n">memory</span><span class="o">=</span><span class="s">&quot;nisl_cache&quot;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">niimg</span> <span class="o">=</span> <span class="n">Nifti1Image</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">affine</span><span class="p">)</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">niimg</span><span class="p">)</span>
 
@@ -163,7 +168,7 @@ Classification accuracy: 1.000000  / Chance level: 0.500000</pre>
 
 <span class="c">### Define the dimension reduction to be used.</span>
 <span class="c"># Here we use a classical univariate feature selection based on F-test,</span>
-<span class="c"># namely Anova. We set the number of features to be selected to 1000</span>
+<span class="c"># namely Anova. We set the number of features to be selected to 500</span>
 <span class="n">feature_selection</span> <span class="o">=</span> <span class="n">SelectKBest</span><span class="p">(</span><span class="n">f_classif</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 
 <span class="c"># We have our classifier (SVC), our feature selection (SelectKBest), and now,</span>
@@ -233,7 +238,7 @@ Classification accuracy: 1.000000  / Chance level: 0.500000</pre>
 <span class="c"># Classification accuracy: 0.986111  / Chance level: 0.500000</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  15.07 seconds</p>
+<p><strong>Total running time of the example:</strong>  17.97 seconds</p>
 </div>
 
 

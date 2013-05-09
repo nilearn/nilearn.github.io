@@ -120,7 +120,7 @@
 <li><a class="reference internal" href="#loading-non-image-data-experiment-description">2.1.2. Loading non image data: experiment description</a></li>
 <li><a class="reference internal" href="#masking-the-data-from-4d-image-to-2d-array">2.1.3. Masking the data: from 4D image to 2D array</a><ul>
 <li><a class="reference internal" href="#applying-a-mask">2.1.3.1. Applying a mask</a></li>
-<li><a class="reference internal" href="#computing-automatically-a-mask">2.1.3.2. Computing automatically a mask</a></li>
+<li><a class="reference internal" href="#automatically-computing-a-mask">2.1.3.2. Automatically computing a mask</a></li>
 </ul>
 </li>
 </ul>
@@ -158,9 +158,9 @@ steps:</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li><a class="reference internal" href="#data-loading"><em>Data loading and preprocessing</em></a> : load Nifti files and check consistency of data</li>
-<li><a class="reference internal" href="#masking"><em>Masking the data</em></a> : if a mask is not provided, one is
-computes automatically</li>
-<li><a class="reference internal" href="dataset_manipulation.html#resampling"><em>Resampling</em></a>: optionally we could resampling our data to a
+<li><a class="reference internal" href="#masking"><em>Masking data</em></a> : if a mask is not provided, one is
+computed automatically</li>
+<li><a class="reference internal" href="dataset_manipulation.html#resampling"><em>Resampling</em></a>: optionally data could be resampled to a
 different resolution</li>
 <li><a class="reference internal" href="dataset_manipulation.html#temporal-filtering"><em>Temporal Filtering</em></a>: detrending, regressing out confounds,
 normalization</li>
@@ -170,16 +170,17 @@ normalization</li>
 <span id="data-loading"></span><h2>2.1. Data loading and preprocessing<a class="headerlink" href="#data-loading-and-preprocessing" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="downloading-the-data">
 <h3>2.1.1. Downloading the data<a class="headerlink" href="#downloading-the-data" title="Permalink to this headline">¶</a></h3>
-<p>To run demos, the data is retrieved using a function provided by Nisl
-which will download a dataset and return a bunch of paths to the dataset
+<p>To run demos, data are retrieved using a function provided by Nisl
+which downloads a dataset and returns a bunch of paths to the dataset
 files (more details in <a class="reference internal" href="dataset_manipulation.html#downloading-data"><em>Downloading example datasets</em></a>). We can then proceed
 loading them as if they were just any other files on our disk. For
-example, we can download the data from the Haxby 2001 paper:</p>
+example, we can download the data from the
+<a class="reference external" href="http://dx.doi.org/10.1126/science.1063736">Haxby 2001 paper</a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><cite>datasets</cite> contains filenames referring to dataset files on the disk:</p>
+<p><cite>dataset.func</cite> contains filenames referring to dataset files on the disk:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 <span class="go">[&#39;mask_house_little&#39;, &#39;anat&#39;, &#39;mask_house&#39;, &#39;mask_face&#39;, &#39;func&#39;, &#39;session_target&#39;, &#39;mask_vt&#39;, &#39;mask_face_little&#39;]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span> 
@@ -190,18 +191,23 @@ example, we can download the data from the Haxby 2001 paper:</p>
 <div class="section" id="loading-non-image-data-experiment-description">
 <h3>2.1.2. Loading non image data: experiment description<a class="headerlink" href="#loading-non-image-data-experiment-description" title="Permalink to this headline">¶</a></h3>
 <p>An experiment may need additional information about subjects, sessions or
-experiments. In the Haxby experiment, fMRI data is acquired while
+experiments. In the Haxby experiment, fMRI data are acquired while
 presenting different category of pictures to the subject (face, house...)
 and the goal of this experiment is to predict which category is presented
 to the subjects from the brain activation.</p>
 <p>These conditions are presented as string into a CSV file. The numpy function
 <cite>loadtxt</cite> is very useful to load this kind of data.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-
+<span class="kn">import</span> <span class="nn">sklearn.utils.fixes</span>
 <span class="c"># Load target information as string and give a numerical identifier to each</span>
 <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">str</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                     <span class="n">usecols</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
-<span class="n">index</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c"># For compatibility with numpy 1.3 and scikit-learn 0.12</span>
+<span class="c"># &quot;return_inverse&quot; option appeared in numpy 1.4, scikit-learn &gt;= 0.14 supports</span>
+<span class="c"># text labels.</span>
+<span class="c"># With scikit-learn &gt;= 0.14, replace this line by: target = labels</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">fixes</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>For example, we will now remove the <em>rest</em> condition from our dataset.
@@ -213,8 +219,8 @@ This can be done as follows:</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If you are not comfortable with this kind of data processing, do not
-worry: there are plenty of example in Nisl that allows you to easily
-load data from provided dataset. Do not hesitate to copy/paste the
+worry: there are plenty of examples in Nisl that allows you to easily
+load data from provided datasets. Do not hesitate to copy/paste the
 code and adapt it to your own data format if needed. More information
 can be found in the <a class="reference internal" href="dataset_manipulation.html#data-manipulation"><em>data manipulation</em></a>
 section.</p>
@@ -224,13 +230,13 @@ section.</p>
 <span id="masking"></span><h3>2.1.3. Masking the data: from 4D image to 2D array<a class="headerlink" href="#masking-the-data-from-4d-image-to-2d-array" title="Permalink to this headline">¶</a></h3>
 <p>While the neuroimaging data is made of 4D images, positioned in a
 coordinate space (which we will call <a class="reference internal" href="dataset_manipulation.html#niimg"><em>Niimgs</em></a>). For use with
-the scikit-learn, they need to be converted into, i.e. 2D arrays of
+the scikit-learn, they need to be converted into 2D arrays of
 samples and features.</p>
 <p class="centered">
 <strong><a class="reference internal image-reference" href="_images/niimgs.jpg"><img alt="niimgs" src="_images/niimgs.jpg" style="width: 367.0px; height: 163.5px;" /></a>
   <span style="padding: .5em; font-size: 400%">&rarr;</span>  <a class="reference internal image-reference" href="_images/feature_array.jpg"><img alt="arrays" src="_images/feature_array.jpg" style="width: 115.15px; height: 167.3px;" /></a>
-</strong></p><p>We use masking to convert 4D data (e.g. 3D volume over time) into 2D data
-(e.g. voxels over time). For this purpose, we use the
+</strong></p><p>We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
+(i.e. voxels over time). For this purpose, we use the
 <tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt> object, a very powerful data loading tool.</p>
 <div class="section" id="applying-a-mask">
 <h4>2.1.3.1. Applying a mask<a class="headerlink" href="#applying-a-mask" title="Permalink to this headline">¶</a></h4>
@@ -247,8 +253,8 @@ order to learn simple parameters from it, such as its shape:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nisl.io</span> <span class="kn">import</span> <span class="n">NiftiMasker</span>
 <span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-<span class="c"># We give to the nifti_masker a filename, as retrieve a 2D array ready</span>
-<span class="c"># for machine learing with scikit-learn</span>
+<span class="c"># We give to the nifti_masker a filename, and retrieve a 2D array ready</span>
+<span class="c"># for machine learning with scikit-learn</span>
 <span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -256,8 +262,8 @@ order to learn simple parameters from it, such as its shape:</p>
 data to mask it in a similar way as the data that was used during the
 fit.</p>
 </div>
-<div class="section" id="computing-automatically-a-mask">
-<h4>2.1.3.2. Computing automatically a mask<a class="headerlink" href="#computing-automatically-a-mask" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="automatically-computing-a-mask">
+<h4>2.1.3.2. Automatically computing a mask<a class="headerlink" href="#automatically-computing-a-mask" title="Permalink to this headline">¶</a></h4>
 <p>If your dataset does not provide a mask, the Nifti masker will compute
 one for you in the <cite>fit</cite> step. The generated mask can be accessed via the
 <cite>mask_img_</cite> attribute.</p>
@@ -289,10 +295,12 @@ predict the category of picture seen by the subject:</p>
 </div>
 <div class="section" id="unmasking-inverse-transform">
 <h2>2.3. Unmasking (inverse_transform)<a class="headerlink" href="#unmasking-inverse-transform" title="Permalink to this headline">¶</a></h2>
-<p>Unmasking data is as easy as masking it! This can be done by using method <cite>inverse_transform</cite>
-on your processed data. As you may want to unmask several kind of data (not only the data that
-you previously masked but also the results of an algorithm), the masker is clever and can take
-data of dimension 1D (resp. 2D) to convert it back to 3D (resp. 4D).</p>
+<p>Unmasking data is as easy as masking it! This can be done by using
+method <cite>inverse_transform</cite> on your processed data. As you may want to
+unmask several kinds of data (not only the data that you previously
+masked but also the results of an algorithm), the masker is clever and
+can take data of dimension 1D (resp. 2D) to convert it back to 3D
+(resp. 4D).</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Look at the discriminating weights</span>
 <span class="n">sv</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">support_vectors_</span>
 
@@ -304,8 +312,9 @@ data of dimension 1D (resp. 2D) to convert it back to 3D (resp. 4D).</p>
 </div>
 <div class="section" id="visualizing-results">
 <h2>2.4. Visualizing results<a class="headerlink" href="#visualizing-results" title="Permalink to this headline">¶</a></h2>
-<p>Again the visualization code is simple. We can an fMRI slice as a background
-and plot the weight. Brighter points have a higher discriminating weight.</p>
+<p>Again the visualization code is simple. We can use an fMRI slice as a
+background and plot the weights. Brighter points have a higher
+discriminating weight.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
 <span class="kn">import</span> <span class="nn">nibabel</span>
 
@@ -329,7 +338,7 @@ and plot the weight. Brighter points have a higher discriminating weight.</p>
 <div class="section" id="going-further">
 <h2>2.5. Going further<a class="headerlink" href="#going-further" title="Permalink to this headline">¶</a></h2>
 <p>The <tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt> is a very powerful object and we have only
-scratched the surface of its possibilities. It is described more in
+scratched the surface of its possibilities. It is described in more
 details in the section <a class="reference internal" href="dataset_manipulation.html#nifti-masker"><em>The NiftiMasker: loading, masking and filtering</em></a>. Also, simple functions that
 can be used to perform elementary operations such as masking or filtering
 are described in <a class="reference internal" href="dataset_manipulation.html#preprocessing-functions"><em>Preprocessing functions</em></a>.</p>

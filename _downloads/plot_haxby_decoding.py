@@ -13,7 +13,7 @@ import numpy as np
 import nibabel
 dataset_files = datasets.fetch_haxby_simple()
 
-# fmri_data and mask are copied to lose the reference to the original data
+# fmri_data and mask are copied to break any reference to the original object
 bold_img = nibabel.load(dataset_files.func)
 fmri_data = np.copy(bold_img.get_data())
 affine = bold_img.get_affine()
@@ -29,7 +29,7 @@ mean_img = fmri_data.mean(axis=-1)
 
 ### Restrict to faces and houses ##############################################
 
-# Keep only data corresponding to face or houses
+# Keep only data corresponding to faces or houses
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
 X = fmri_data[..., condition_mask]
 y = y[condition_mask]
@@ -42,7 +42,8 @@ n_conditions = np.size(np.unique(y))
 ### Loading step ##############################################################
 from nisl.io import NiftiMasker
 from nibabel import Nifti1Image
-nifti_masker = NiftiMasker(mask=mask, sessions=session, smooth=4)
+nifti_masker = NiftiMasker(mask=mask, sessions=session, smooth=4,
+                           memory="nisl_cache", memory_level=1)
 niimg = Nifti1Image(X, affine)
 X = nifti_masker.fit_transform(niimg)
 
@@ -59,7 +60,7 @@ from sklearn.feature_selection import SelectKBest, f_classif
 
 ### Define the dimension reduction to be used.
 # Here we use a classical univariate feature selection based on F-test,
-# namely Anova. We set the number of features to be selected to 1000
+# namely Anova. We set the number of features to be selected to 500
 feature_selection = SelectKBest(f_classif, k=500)
 
 # We have our classifier (SVC), our feature selection (SelectKBest), and now,

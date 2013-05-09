@@ -107,32 +107,32 @@ Using some visualization, one can see that the default parameters of the
 nifti masker are not suited for this dataset. They are consequently tweaked
 to obtained a decent mask.</p>
 <ul class="horizontal">
+<li><a class="first reference internal image-reference" href="../_images/plot_nifti_advanced_1.png"><img alt="../_images/plot_nifti_advanced_1.png" src="../_images/plot_nifti_advanced_1.png" style="width: 141.0px; height: 235.0px;" /></a>
+</li>
 <li><a class="first reference internal image-reference" href="../_images/plot_nifti_advanced_2.png"><img alt="../_images/plot_nifti_advanced_2.png" src="../_images/plot_nifti_advanced_2.png" style="width: 141.0px; height: 235.0px;" /></a>
 </li>
 <li><a class="first reference internal image-reference" href="../_images/plot_nifti_advanced_3.png"><img alt="../_images/plot_nifti_advanced_3.png" src="../_images/plot_nifti_advanced_3.png" style="width: 282.0px; height: 235.0px;" /></a>
 </li>
-<li><a class="first reference internal image-reference" href="../_images/plot_nifti_advanced_1.png"><img alt="../_images/plot_nifti_advanced_1.png" src="../_images/plot_nifti_advanced_1.png" style="width: 141.0px; height: 235.0px;" /></a>
-</li>
 </ul>
 <p><strong>Script output</strong>:</p>
 <div class="highlight-python"><pre>Trended: mean 1127.65, std 749.09
-Detrended: mean 0.00, std 25.71</pre>
+Detrended: mean -0.00, std 25.62</pre>
 </div>
 <p><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_nifti_advanced.py"><tt class="xref download docutils literal"><span class="pre">plot_nifti_advanced.py</span></tt></a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">nibabel</span>
-<span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">io</span>
+<span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
 
 <span class="c"># Load Haxby dataset</span>
 <span class="n">haxby</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby_simple</span><span class="p">()</span>
 <span class="n">haxby_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">haxby</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
 <span class="c"># Restrict haxby to 150 frames to speed up computation</span>
 <span class="n">haxby_func</span> <span class="o">=</span> <span class="n">haxby_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">150</span><span class="p">]</span>
+
+<span class="c"># haxby_func is a 4D-array, we want to make a Niimg out of it:</span>
 <span class="n">haxby_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">haxby_func</span><span class="p">,</span> <span class="n">haxby_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">())</span>
-<span class="c"># Load mask provided by Haxby</span>
-<span class="n">haxby_mask</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">haxby</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
 
 <span class="c"># Display helper</span>
 <span class="n">background</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">haxby_func</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">]</span>
@@ -147,6 +147,7 @@ Detrended: mean 0.00, std 25.71</pre>
     <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
 
 <span class="c"># Generate mask with default parameters</span>
+<span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">io</span>
 <span class="n">masker</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">NiftiMasker</span><span class="p">()</span>
 <span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">haxby_img</span><span class="p">)</span>
 <span class="n">default_mask</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
@@ -166,6 +167,10 @@ Detrended: mean 0.00, std 25.71</pre>
 <span class="n">cutoff_mask</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
 
 <span class="c"># Plot the mask and compare it to original</span>
+
+<span class="c"># Load mask provided by Haxby</span>
+<span class="n">haxby_mask</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">haxby</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">haxby_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">],</span> <span class="s">&#39;Haxby mask&#39;</span><span class="p">)</span>
@@ -187,7 +192,7 @@ Detrended: mean 0.00, std 25.71</pre>
     <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">detrended_data</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">detrended_data</span><span class="p">))</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  5.67 seconds</p>
+<p><strong>Total running time of the example:</strong>  7.81 seconds</p>
 </div>
 
 

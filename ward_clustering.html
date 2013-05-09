@@ -183,14 +183,14 @@ from internet and load it with a provided function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">io</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_nyu_rest</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">NiftiMasker</span><span class="p">()</span>
+<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">NiftiMasker</span><span class="p">(</span><span class="n">memory</span><span class="o">=</span><span class="s">&#39;nisl_cache&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="n">mask</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>No mask is given with the data so we let the masker compute one.
 The result is a niimg from which we extract a numpy array that is
-used to mask our original <em>X</em>.</p>
+used to mask our original images.</p>
 </div>
 <div class="section" id="applying-ward-clustering">
 <h2>4.1.3. Applying Ward clustering<a class="headerlink" href="#applying-ward-clustering" title="Permalink to this headline">¶</a></h2>
@@ -209,19 +209,19 @@ scikit-learn documentation</a>)</p>
 <div class="section" id="principle">
 <h3>4.1.3.2. Principle<a class="headerlink" href="#principle" title="Permalink to this headline">¶</a></h3>
 <p>The Ward algorithm is a hierarchical clustering algorithm: it
-successfully merges together voxels that have similar timecourses.</p>
+merges together voxels that have similar timecourses.</p>
 </div>
 <div class="section" id="caching">
 <h3>4.1.3.3. Caching<a class="headerlink" href="#caching" title="Permalink to this headline">¶</a></h3>
 <p>Note that in practice the scikit-learn implementation of the Ward
-clustering first computes a tree of possible merges, and then, the
-requested number of clusters breaks it apart the tree at the right level.</p>
+clustering first computes a tree of possible merges, and then, given a
+requested number of clusters, breaks apart the tree at the right level.</p>
 <p>As no matter how many clusters we want, we do not need to compute the
 tree again, we can rely on caching to speed things up when varying the
-number of cluster. Scikit-learn integrates a transparent caching library
+number of clusters. Scikit-learn integrates a transparent caching library
 (<a class="reference external" href="http://packages.python.org/joblib/">joblib</a>). In the ward clustering,
 the <em>memory</em> parameter is used to cache the computed component tree. You
-can give it either a <em>joblib.Memory</em> instance or the name of directory
+can give it either a <em>joblib.Memory</em> instance or the name of a directory
 used for caching.</p>
 </div>
 <div class="section" id="apply-the-ward">
@@ -258,19 +258,19 @@ thanks to caching. You should have the result in less than 1 second.</p>
 <p>After applying the ward, we must unmask the data. This can be done simply :</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Avoid 0 label</span>
 <span class="n">labels</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">labels_</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">ward</span><span class="o">.</span><span class="n">labels_</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
 <span class="c"># 0 is the background, putting it to -1</span>
 <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span> <span class="o">-</span> <span class="mi">1</span>
 </pre></div>
 </div>
 <p>You can see that masked data is filled with -1 values. This is done for the
-sake of visualization. In fact, clusters are labeled with going from 0 to
-(n_clusters - 1). By putting every other values to -1, we assure that
-uninteresting values will not mess with the visualization.</p>
+sake of visualization. In fact, clusters are labeled from 0 to
+(n_clusters - 1). By putting every background value to -1, we assure that
+they will not mess with the visualization.</p>
 </div>
 <div class="section" id="label-visualization">
 <h3>4.1.4.2. Label visualization<a class="headerlink" href="#label-visualization" title="Permalink to this headline">¶</a></h3>
-<p>We can visualize the clusters. We assign random colors to each cluster
+<p>To visualize the clusters, we assign random colors to each cluster
 for the labels visualization.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
 
@@ -298,7 +298,7 @@ for the labels visualization.</p>
 <p>By transforming a picture in a new one in which the value of each voxel
 is the mean value of the cluster it belongs to, we are creating a
 compressed version of the original picture. We can obtain this
-representation thanks to a two step procedure :</p>
+representation thanks to a two-step procedure :</p>
 <ul class="simple">
 <li>call <em>ward.transform</em> to obtain the mean value of each cluster (for each
 scan)</li>
@@ -339,8 +339,8 @@ the masked picture shape</li>
 </pre></div>
 </div>
 <p><a class="reference external" href="auto_examples/plot_rest_clustering.html"><img alt="left_img" src="_images/plot_rest_clustering_2.png" style="width: 49%;" /></a> <a class="reference external" href="auto_examples/plot_rest_clustering.html"><img alt="right_img" src="_images/plot_rest_clustering_3.png" style="width: 49%;" /></a></p>
-<p>We can see that using only 2000 parcels, we can approximate well the
-original image.</p>
+<p>We can see that using only 2000 parcels, the original image is well
+approximated.</p>
 </div>
 </div>
 </div>

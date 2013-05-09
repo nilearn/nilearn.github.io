@@ -19,7 +19,7 @@ Pattern Recognition 2011.
 import numpy as np
 from nisl import datasets, io
 dataset = datasets.fetch_nyu_rest(n_subjects=1)
-nifti_masker = io.NiftiMasker()
+nifti_masker = io.NiftiMasker(memory='nisl_cache', memory_level=1)
 fmri_masked = nifti_masker.fit_transform(dataset.func[0])
 mask = nifti_masker.mask_img_.get_data().astype(np.bool)
 
@@ -53,7 +53,7 @@ print "Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start)
 # Unmask data
 # Avoid 0 label
 labels = ward.labels_ + 1
-labels = nifti_masker.inverse_transform(ward.labels_).get_data()
+labels = nifti_masker.inverse_transform(labels).get_data()
 # 0 is the background, putting it to -1
 labels = labels - 1
 
