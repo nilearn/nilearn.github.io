@@ -103,33 +103,9 @@
   <div class="section" id="example-of-pattern-recognition-on-simulated-data">
 <span id="example-nisl-plot-simulated-data-py"></span><h1>Example of pattern recognition on simulated data<a class="headerlink" href="#example-of-pattern-recognition-on-simulated-data" title="Permalink to this headline">¶</a></h1>
 <p>This examples simulates data according to a very simple sketch of brain
-imaging data and applies machine learing techniques to predict output
+imaging data and applies machine learning techniques to predict output
 values.</p>
-<ul class="horizontal">
-<li><a class="first reference internal image-reference" href="../_images/plot_simulated_data_1.png"><img alt="../_images/plot_simulated_data_1.png" src="../_images/plot_simulated_data_1.png" style="width: 258.5px; height: 103.4px;" /></a>
-</li>
-<li><a class="first reference internal image-reference" href="../_images/plot_simulated_data_2.png"><img alt="../_images/plot_simulated_data_2.png" src="../_images/plot_simulated_data_2.png" style="width: 258.5px; height: 103.4px;" /></a>
-</li>
-<li><a class="first reference internal image-reference" href="../_images/plot_simulated_data_3.png"><img alt="../_images/plot_simulated_data_3.png" src="../_images/plot_simulated_data_3.png" style="width: 258.5px; height: 103.4px;" /></a>
-</li>
-<li><a class="first reference internal image-reference" href="../_images/plot_simulated_data_4.png"><img alt="../_images/plot_simulated_data_4.png" src="../_images/plot_simulated_data_4.png" style="width: 258.5px; height: 103.4px;" /></a>
-</li>
-<li><a class="first reference internal image-reference" href="../_images/plot_simulated_data_5.png"><img alt="../_images/plot_simulated_data_5.png" src="../_images/plot_simulated_data_5.png" style="width: 258.5px; height: 103.4px;" /></a>
-</li>
-<li><a class="first reference internal image-reference" href="../_images/plot_simulated_data_6.png"><img alt="../_images/plot_simulated_data_6.png" src="../_images/plot_simulated_data_6.png" style="width: 258.5px; height: 103.4px;" /></a>
-</li>
-<li><a class="first reference internal image-reference" href="../_images/plot_simulated_data_7.png"><img alt="../_images/plot_simulated_data_7.png" src="../_images/plot_simulated_data_7.png" style="width: 258.5px; height: 103.4px;" /></a>
-</li>
-</ul>
-<p><strong>Script output</strong>:</p>
-<div class="highlight-python"><pre>SNR : 10
-BayesianRidge: prediction score 0.535, training time: 0.53s
-ElasticNetCV: prediction score 0.637, training time: 1.96s
-RidgeCV: prediction score 0.527, training time: 0.53s
-SVR: prediction score 0.579, training time: 0.08s
-SearchLight: training time: 163.06s</pre>
-</div>
-<p><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_simulated_data.py"><tt class="xref download docutils literal"><span class="pre">plot_simulated_data.py</span></tt></a></p>
+<p class="horizontal"><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_simulated_data.py"><tt class="xref download docutils literal"><span class="pre">plot_simulated_data.py</span></tt></a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Licence : BSD</span>
 
 <span class="k">print</span> <span class="n">__doc__</span>
@@ -145,7 +121,11 @@ SearchLight: training time: 163.06s</pre>
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">r2_score</span>
 <span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">KFold</span>
 <span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">f_regression</span>
-<span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">searchlight</span>
+
+<span class="kn">import</span> <span class="nn">nibabel</span>
+
+<span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">decoding</span>
+<span class="kn">import</span> <span class="nn">nisl.masking</span>
 
 
 <span class="c">###############################################################################</span>
@@ -181,7 +161,7 @@ SearchLight: training time: 163.06s</pre>
     <span class="c"># Add additive noise</span>
     <span class="n">noise</span> <span class="o">=</span> <span class="n">noise_coef</span> <span class="o">*</span> <span class="n">orig_noise</span>
     <span class="n">snr</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">noise</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="k">print</span> <span class="s">&quot;SNR : </span><span class="si">%d</span><span class="s"> &quot;</span> <span class="o">%</span> <span class="n">snr</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&quot;SNR: </span><span class="si">%.1f</span><span class="s"> dB&quot;</span> <span class="o">%</span> <span class="n">snr</span><span class="p">)</span>
     <span class="n">y</span> <span class="o">+=</span> <span class="n">noise</span>
 
     <span class="n">X</span> <span class="o">-=</span> <span class="n">X</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
@@ -210,13 +190,19 @@ SearchLight: training time: 163.06s</pre>
 
 <span class="c">###############################################################################</span>
 <span class="c"># Create data</span>
-<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">snr</span><span class="p">,</span> <span class="n">noise</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> \
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">snr</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> \
     <span class="n">create_simulation_data</span><span class="p">(</span><span class="n">snr</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+
+<span class="c"># Create masks for SearchLight. process_mask is the voxels where SearchLight</span>
+<span class="c"># computation is performed. It is a subset of the brain mask, just to reduce</span>
+<span class="c"># computation time.</span>
 <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+<span class="n">mask_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
 <span class="n">process_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
 <span class="n">process_mask</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
 <span class="n">process_mask</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
 <span class="n">process_mask</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">11</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">process_mask_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">process_mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
 
 <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span> <span class="p">[</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">])</span>
 <span class="n">plot_slices</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;Ground truth&quot;</span><span class="p">)</span>
@@ -228,17 +214,23 @@ SearchLight: training time: 163.06s</pre>
     <span class="p">(</span><span class="s">&#39;enet_cv&#39;</span><span class="p">,</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">ElasticNetCV</span><span class="p">(</span><span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="n">rho</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)),</span>
     <span class="p">(</span><span class="s">&#39;ridge_cv&#39;</span><span class="p">,</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">RidgeCV</span><span class="p">(</span><span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">)),</span>
     <span class="p">(</span><span class="s">&#39;svr&#39;</span><span class="p">,</span> <span class="n">svm</span><span class="o">.</span><span class="n">SVR</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)),</span>
-    <span class="p">(</span><span class="s">&#39;searchlight&#39;</span><span class="p">,</span> <span class="n">searchlight</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span>
-        <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">process_mask</span><span class="o">=</span><span class="n">process_mask</span><span class="p">,</span>
-        <span class="n">radius</span><span class="o">=</span><span class="mf">4.</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="n">svm</span><span class="o">.</span><span class="n">SVR</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&quot;linear&quot;</span><span class="p">),</span>
-        <span class="n">score_func</span><span class="o">=</span><span class="n">r2_score</span><span class="p">,</span>
-        <span class="n">cv</span><span class="o">=</span><span class="n">KFold</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">4</span><span class="p">)))</span>
+    <span class="p">(</span><span class="s">&#39;searchlight&#39;</span><span class="p">,</span> <span class="n">decoding</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span>
+        <span class="n">mask_img</span><span class="p">,</span> <span class="n">process_mask_img</span><span class="o">=</span><span class="n">process_mask_img</span><span class="p">,</span>
+        <span class="n">radius</span><span class="o">=</span><span class="mf">2.7</span><span class="p">,</span>
+        <span class="n">score_func</span><span class="o">=</span><span class="n">r2_score</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="n">svm</span><span class="o">.</span><span class="n">SVR</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&quot;linear&quot;</span><span class="p">),</span>
+        <span class="n">cv</span><span class="o">=</span><span class="n">KFold</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
 <span class="p">]</span>
 
 <span class="c"># Run the estimators</span>
 <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">classifier</span> <span class="ow">in</span> <span class="n">classifiers</span><span class="p">:</span>
     <span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
-    <span class="n">classifier</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s">&quot;searchlight&quot;</span><span class="p">:</span>
+        <span class="n">classifier</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">nisl</span><span class="o">.</span><span class="n">masking</span><span class="o">.</span><span class="n">unmask</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">mask_img</span><span class="p">)</span>
+        <span class="n">classifier</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">X</span>
     <span class="n">elapsed_time</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t1</span>
 
     <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s">&#39;searchlight&#39;</span><span class="p">:</span>
@@ -271,7 +263,7 @@ SearchLight: training time: 163.06s</pre>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  167.59 seconds</p>
+<p><strong>Total running time of the example:</strong> -1.00 seconds</p>
 </div>
 
 

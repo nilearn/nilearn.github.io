@@ -106,63 +106,42 @@
 times. As a result, it is an intrinsically slow method. In order to speed
 up computing, in this example, Searchlight is run only on one slice on
 the fMRI (see the generated figures).</p>
-<ul class="horizontal">
-<li><a class="first reference internal image-reference" href="../_images/plot_haxby_searchlight_1.png"><img alt="../_images/plot_haxby_searchlight_1.png" src="../_images/plot_haxby_searchlight_1.png" style="width: 376.0px; height: 282.0px;" /></a>
-</li>
-<li><a class="first reference internal image-reference" href="../_images/plot_haxby_searchlight_2.png"><img alt="../_images/plot_haxby_searchlight_2.png" src="../_images/plot_haxby_searchlight_2.png" style="width: 376.0px; height: 282.0px;" /></a>
-</li>
-</ul>
-<p><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_haxby_searchlight.py"><tt class="xref download docutils literal"><span class="pre">plot_haxby_searchlight.py</span></tt></a></p>
+<p class="horizontal"><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_haxby_searchlight.py"><tt class="xref download docutils literal"><span class="pre">plot_haxby_searchlight.py</span></tt></a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">### Load Haxby dataset ########################################################</span>
-<span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">nibabel</span>
+<span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">datasets</span>
 
 <span class="n">dataset_files</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby_simple</span><span class="p">()</span>
 
-<span class="c"># fmri_data and mask are copied to lose the reference to the original data</span>
-<span class="n">bold_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
-<span class="n">fmri_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">bold_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
-<span class="n">affine</span> <span class="o">=</span> <span class="n">bold_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()</span>
+<span class="n">fmri_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
 <span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">session_target</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&quot;int&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 <span class="n">conditions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromtxt</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">conditions_target</span><span class="p">)[</span><span class="s">&#39;f0&#39;</span><span class="p">]</span>
-<span class="n">mask</span> <span class="o">=</span> <span class="n">dataset_files</span><span class="o">.</span><span class="n">mask</span>
-
-<span class="c">### Preprocess data ###########################################################</span>
-<span class="c"># Build the mean image because we have no anatomic data</span>
-<span class="n">mean_img</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c">### Restrict to faces and houses ##############################################</span>
 <span class="n">condition_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">conditions</span> <span class="o">==</span> <span class="s">&#39;face&#39;</span><span class="p">,</span> <span class="n">conditions</span> <span class="o">==</span> <span class="s">&#39;house&#39;</span><span class="p">)</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">condition_mask</span><span class="p">]</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
-<span class="n">session</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
+
+<span class="n">fmri_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">fmri_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="n">condition_mask</span><span class="p">],</span>
+                               <span class="n">fmri_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+<span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">],</span> <span class="n">session</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
 <span class="n">conditions</span> <span class="o">=</span> <span class="n">conditions</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
 
-<span class="c">### Loading step ##############################################################</span>
-<span class="kn">from</span> <span class="nn">nisl.io</span> <span class="kn">import</span> <span class="n">NiftiMasker</span>
-<span class="kn">from</span> <span class="nn">nibabel</span> <span class="kn">import</span> <span class="n">Nifti1Image</span>
+<span class="c">### Prepare masks #############################################################</span>
+<span class="c"># - mask_img is the original mask</span>
+<span class="c"># - process_mask_img is a subset of mask_img, it contains the voxels that</span>
+<span class="c">#   should be processed (we only keep the slice z = 26 and the back of the</span>
+<span class="c">#   brain to speed up computation)</span>
 
-<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">sessions</span><span class="o">=</span><span class="n">session</span><span class="p">,</span>
-                           <span class="n">memory</span><span class="o">=</span><span class="s">&#39;nisl_cache&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">niimg</span> <span class="o">=</span> <span class="n">Nifti1Image</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">affine</span><span class="p">)</span>
-<span class="n">X_masked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">niimg</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">niimg</span><span class="p">)</span>
-<span class="c">#X_preprocessed = nifti_masker.inverse_transform(X_masked).get_data()</span>
-<span class="c">#X_preprocessed = np.rollaxis(X_preprocessed, axis=-1)</span>
-<span class="n">mask</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+<span class="n">mask_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
 
-<span class="c">### Prepare the masks #########################################################</span>
-<span class="c"># Here we will use several masks :</span>
-<span class="c"># * mask is the originalmask</span>
-<span class="c"># * process_mask is a subset of mask, it contains voxels that should be</span>
-<span class="c">#   processed (we only keep the slice z = 26 and the back of the brain to speed</span>
-<span class="c">#   up computation)</span>
-<span class="n">process_mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">process_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">38</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">False</span>
-<span class="n">process_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">36</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
-<span class="n">process_mask</span><span class="p">[:,</span> <span class="mi">30</span><span class="p">:]</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="c"># .astype() makes a copy.</span>
+<span class="n">process_mask</span> <span class="o">=</span> <span class="n">mask_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+<span class="n">process_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">38</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">process_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">36</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">process_mask</span><span class="p">[:,</span> <span class="mi">30</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">process_mask_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">process_mask</span><span class="p">,</span> <span class="n">mask_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">())</span>
 
-<span class="c">### Searchlight ###############################################################</span>
+<span class="c">### Searchlight computation ###################################################</span>
 
 <span class="c"># Make processing parallel</span>
 <span class="c"># /!\ As each thread will print its progress, n_jobs &gt; 1 could mess up the</span>
@@ -170,7 +149,7 @@ the fMRI (see the generated figures).</p>
 <span class="n">n_jobs</span> <span class="o">=</span> <span class="mi">1</span>
 
 <span class="c">### Define the score function used to evaluate classifiers</span>
-<span class="c"># Here we use precision which maesures proportion of true positives among</span>
+<span class="c"># Here we use precision which measures proportion of true positives among</span>
 <span class="c"># all positives results for one class.</span>
 <span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">precision_score</span>
 <span class="n">score_func</span> <span class="o">=</span> <span class="n">precision_score</span>
@@ -182,40 +161,49 @@ the fMRI (see the generated figures).</p>
 <span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">KFold</span>
 <span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 
-<span class="c">### Fit #######################################################################</span>
-
-<span class="kn">from</span> <span class="nn">nisl</span> <span class="kn">import</span> <span class="n">searchlight</span>
-
+<span class="kn">import</span> <span class="nn">nisl.decoding</span>
 <span class="c"># The radius is the one of the Searchlight sphere that will scan the volume</span>
-<span class="n">searchlight</span> <span class="o">=</span> <span class="n">searchlight</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">process_mask</span><span class="o">=</span><span class="n">process_mask</span><span class="p">,</span>
-                                      <span class="n">radius</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+<span class="n">searchlight</span> <span class="o">=</span> <span class="n">nisl</span><span class="o">.</span><span class="n">decoding</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span><span class="n">mask_img</span><span class="p">,</span>
+                                      <span class="n">process_mask_img</span><span class="o">=</span><span class="n">process_mask_img</span><span class="p">,</span>
+                                      <span class="n">radius</span><span class="o">=</span><span class="mf">5.6</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
                                       <span class="n">score_func</span><span class="o">=</span><span class="n">score_func</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
+<span class="n">searchlight</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
-<span class="n">searchlight</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_masked</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="c">### F-scores computation ######################################################</span>
+<span class="kn">from</span> <span class="nn">nisl.io</span> <span class="kn">import</span> <span class="n">NiftiMasker</span>
+
+<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">mask_img</span><span class="p">,</span> <span class="n">sessions</span><span class="o">=</span><span class="n">session</span><span class="p">,</span>
+                           <span class="n">memory</span><span class="o">=</span><span class="s">&#39;nisl_cache&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">fmri_img</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">f_classif</span>
+<span class="n">f_values</span><span class="p">,</span> <span class="n">p_values</span> <span class="o">=</span> <span class="n">f_classif</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">p_values</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">p_values</span><span class="p">)</span>
+<span class="n">p_values</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">p_values</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">p_values</span><span class="p">[</span><span class="n">p_values</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">p_unmasked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">p_values</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
 
 <span class="c">### Visualization #############################################################</span>
 <span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
+
+<span class="c"># Use the fmri mean image as a surrogate of anatomical data</span>
+<span class="n">mean_fmri</span> <span class="o">=</span> <span class="n">fmri_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c"># Searchlight results</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="c"># searchlight.scores_ contains per voxel cross validation scores</span>
 <span class="n">s_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">searchlight</span><span class="o">.</span><span class="n">scores_</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_fmri</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">s_scores</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Searchlight&#39;</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-<span class="c">### Show the F_score</span>
-<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">f_classif</span>
+<span class="c">### F_score results</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">f_values</span><span class="p">,</span> <span class="n">p_values</span> <span class="o">=</span> <span class="n">f_classif</span><span class="p">(</span><span class="n">X_masked</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="n">p_values</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">p_values</span><span class="p">)</span>
-<span class="n">p_values</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">p_values</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">p_values</span><span class="p">[</span><span class="n">p_values</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
-<span class="n">p_unmasked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">p_values</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
 <span class="n">p_ma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p_unmasked</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_fmri</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">p_ma</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">37</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">)</span>
@@ -224,7 +212,7 @@ the fMRI (see the generated figures).</p>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  108.42 seconds</p>
+<p><strong>Total running time of the example:</strong> -1.00 seconds</p>
 </div>
 
 
