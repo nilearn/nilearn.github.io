@@ -101,7 +101,7 @@
           <div class="body">
             
   <div class="section" id="simple-neuroimaging-data-visualization-and-manipulation">
-<span id="example-tutorial-plot-visualization-py"></span><h1>Simple NeuroImaging data visualization and manipulation<a class="headerlink" href="#simple-neuroimaging-data-visualization-and-manipulation" title="Permalink to this headline">¶</a></h1>
+<span id="example-nisl-plot-visualization-py"></span><h1>Simple NeuroImaging data visualization and manipulation<a class="headerlink" href="#simple-neuroimaging-data-visualization-and-manipulation" title="Permalink to this headline">¶</a></h1>
 <p>Simple example to show data manipulation and visualization.</p>
 <ul class="horizontal">
 <li><a class="first reference internal image-reference" href="../_images/plot_visualization_1.png"><img alt="../_images/plot_visualization_1.png" src="../_images/plot_visualization_1.png" style="width: 376.0px; height: 282.0px;" /></a>
@@ -123,6 +123,7 @@
 <span class="kn">import</span> <span class="nn">nibabel</span>
 <span class="n">nifti_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">bold</span><span class="p">)</span>
 <span class="n">fmri_data</span> <span class="o">=</span> <span class="n">nifti_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="n">fmri_affine</span> <span class="o">=</span> <span class="n">nifti_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()</span>
 
 <span class="c"># Visualization #############################################################</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
@@ -163,21 +164,22 @@
 
 <span class="c"># Simple computation of a mask from the fMRI data</span>
 <span class="kn">from</span> <span class="nn">nisl.masking</span> <span class="kn">import</span> <span class="n">compute_epi_mask</span>
-<span class="n">mask</span> <span class="o">=</span> <span class="n">compute_epi_mask</span><span class="p">(</span><span class="n">nifti_img</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+<span class="n">mask_img</span> <span class="o">=</span> <span class="n">compute_epi_mask</span><span class="p">(</span><span class="n">nifti_img</span><span class="p">)</span>
+<span class="n">mask_data</span> <span class="o">=</span> <span class="n">mask_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
 
 <span class="c"># We create a new figure</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="c"># A plot the axial view of the mask to compare with the axial</span>
 <span class="c"># view of the raw data displayed previously</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mask</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">32</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">)</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mask_data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">32</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">)</span>
 
 <span class="c"># Applying the mask #########################################################</span>
 
-<span class="c"># Applying the mask is just a simple array manipulation</span>
-<span class="n">masked_data</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+<span class="kn">from</span> <span class="nn">nisl.masking</span> <span class="kn">import</span> <span class="n">apply_mask</span>
+<span class="n">masked_data</span> <span class="o">=</span> <span class="n">apply_mask</span><span class="p">(</span><span class="n">nifti_img</span><span class="p">,</span> <span class="n">mask_img</span><span class="p">)</span>
 
-<span class="c"># masked_data is now a voxel x time matrix. We can plot the first 10</span>
-<span class="c"># lines: they correspond to time-series of 10 voxels on the side of the</span>
+<span class="c"># masked_data shape is (instant number, voxel number). We can plot the first 10</span>
+<span class="c"># lines: they correspond to timeseries of 10 voxels on the side of the</span>
 <span class="c"># brain</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">masked_data</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
@@ -187,7 +189,7 @@
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  14.20 seconds</p>
+<p><strong>Total running time of the example:</strong>  19.78 seconds</p>
 </div>
 
 

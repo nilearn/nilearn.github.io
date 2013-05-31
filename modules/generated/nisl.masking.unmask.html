@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>6.3.1.5. nisl.masking.unmask &mdash; NeuroImaging with the scikit-learn</title>
+    <title>6.4.1.5. nisl.masking.unmask &mdash; NeuroImaging with the scikit-learn</title>
     
     <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -29,8 +29,8 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="top" title="NeuroImaging with the scikit-learn" href="../../index.html" />
     <link rel="up" title="6. Reference" href="../classes.html" />
-    <link rel="next" title="6.4.1.1. nisl.resampling.to_matrix_vector" href="nisl.resampling.to_matrix_vector.html" />
-    <link rel="prev" title="6.3.1.4. nisl.masking.apply_mask" href="nisl.masking.apply_mask.html" />
+    <link rel="next" title="6.5.1.1. nisl.region.img_to_signals_labels" href="nisl.region.img_to_signals_labels.html" />
+    <link rel="prev" title="6.4.1.4. nisl.masking.apply_mask" href="nisl.masking.apply_mask.html" />
     <script type="text/javascript">
 
         var _gaq = _gaq || [];
@@ -82,14 +82,14 @@
 	                <!-- rellinks[1:] is an ugly hack to avoid link to module
 	                     index  -->
                     	<div class="rellink">
-	                        <a href="nisl.masking.apply_mask.html" title="6.3.1.4. nisl.masking.apply_mask" accesskey="P">
+	                        <a href="nisl.masking.apply_mask.html" title="6.4.1.4. nisl.masking.apply_mask" accesskey="P">
                                 Previous
 	                            <br />
 	                            <span class="smallrellink">
-                            	    6.3.1.4. nisl.ma...
+                            	    6.4.1.4. nisl.ma...
                         	    </span>
                            	        <span class="hiddenrellink">
-                                        6.3.1.4. nisl.masking.apply_mask
+                                        6.4.1.4. nisl.masking.apply_mask
                                     </span>
                         	    
 	                        </a>
@@ -99,14 +99,14 @@
 	                        </div>
 	                    
                     	<div class="rellink">
-	                        <a href="nisl.resampling.to_matrix_vector.html" title="6.4.1.1. nisl.resampling.to_matrix_vector" accesskey="N">
+	                        <a href="nisl.region.img_to_signals_labels.html" title="6.5.1.1. nisl.region.img_to_signals_labels" accesskey="N">
                                 Next
 	                            <br />
 	                            <span class="smallrellink">
-                            	    6.4.1.1. nisl.re...
+                            	    6.5.1.1. nisl.re...
                         	    </span>
                            	        <span class="hiddenrellink">
-                                        6.4.1.1. nisl.resampling.to_matrix_vector
+                                        6.5.1.1. nisl.region.img_to_signals_labels
                                     </span>
                         	    
 	                        </a>
@@ -131,7 +131,7 @@
                     </div>
                     <h3>This page</h3>
 	                <ul>
-<li><a class="reference internal" href="#">6.3.1.5. nisl.masking.unmask</a></li>
+<li><a class="reference internal" href="#">6.4.1.5. nisl.masking.unmask</a></li>
 </ul>
 
                 
@@ -150,23 +150,37 @@
           <div class="body">
             
   <div class="section" id="nisl-masking-unmask">
-<h1>6.3.1.5. nisl.masking.unmask<a class="headerlink" href="#nisl-masking-unmask" title="Permalink to this headline">¶</a></h1>
+<h1>6.4.1.5. nisl.masking.unmask<a class="headerlink" href="#nisl-masking-unmask" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="nisl.masking.unmask">
-<tt class="descclassname">nisl.masking.</tt><tt class="descname">unmask</tt><big>(</big><em>X</em>, <em>mask_img</em><big>)</big><a class="headerlink" href="#nisl.masking.unmask" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">nisl.masking.</tt><tt class="descname">unmask</tt><big>(</big><em>X</em>, <em>mask_img</em>, <em>order='F'</em><big>)</big><a class="headerlink" href="#nisl.masking.unmask" title="Permalink to this definition">¶</a></dt>
 <dd><p>Take masked data and bring them back into 3D/4D</p>
+<p>This function can be applied to a list of masked data.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>X: numpy array (or list of)</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>X: numpy.ndarray (or list of)</strong> :</p>
 <blockquote>
 <div><p>Masked data. shape: (samples #, features #).
 If X is one-dimensional, it is assumed that samples# == 1.</p>
 </div></blockquote>
 <p><strong>mask_img: nifti-like image</strong> :</p>
+<blockquote>
+<div><p>Mask. Must be 3-dimensional.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>data: nifti-like image (or list of)</strong> :</p>
 <blockquote class="last">
-<div><p>Mask. mask must be 3 dimensional</p>
+<div><p>Unmasked data. Depending on the shape of X, data can have
+different shapes:</p>
+<ul class="simple">
+<li>X.ndim == 2:
+Shape: (mask.shape[0], mask.shape[1], mask.shape[2], X.shape[0])</li>
+<li>X.ndim == 1:
+Shape: (mask.shape[0], mask.shape[1], mask.shape[2])</li>
+</ul>
 </div></blockquote>
 </td>
 </tr>
@@ -200,7 +214,7 @@ If X is one-dimensional, it is assumed that samples# == 1.</p>
       </a>
     </div>
     <div class="buttonNext">
-      <a href="nisl.resampling.to_matrix_vector.html">
+      <a href="nisl.region.img_to_signals_labels.html">
         Next
       </a>
     </div>

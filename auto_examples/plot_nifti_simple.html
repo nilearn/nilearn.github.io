@@ -101,15 +101,25 @@
           <div class="body">
             
   <div class="section" id="simple-example-of-niftimasker-use">
-<span id="example-tutorial-plot-nifti-simple-py"></span><h1>Simple example of NiftiMasker use<a class="headerlink" href="#simple-example-of-niftimasker-use" title="Permalink to this headline">¶</a></h1>
+<span id="example-nisl-plot-nifti-simple-py"></span><h1>Simple example of NiftiMasker use<a class="headerlink" href="#simple-example-of-niftimasker-use" title="Permalink to this headline">¶</a></h1>
 <p>Here is a simple example of automatic mask computation using the nifti masker.
 The mask is computed and visualized.</p>
 <ul class="horizontal">
-<li><a class="first reference internal image-reference" href="../_images/plot_nifti_simple_2.png"><img alt="../_images/plot_nifti_simple_2.png" src="../_images/plot_nifti_simple_2.png" style="width: 376.0px; height: 282.0px;" /></a>
-</li>
 <li><a class="first reference internal image-reference" href="../_images/plot_nifti_simple_1.png"><img alt="../_images/plot_nifti_simple_1.png" src="../_images/plot_nifti_simple_1.png" style="width: 376.0px; height: 282.0px;" /></a>
 </li>
+<li><a class="first reference internal image-reference" href="../_images/plot_nifti_simple_2.png"><img alt="../_images/plot_nifti_simple_2.png" src="../_images/plot_nifti_simple_2.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
 </ul>
+<p><strong>Script output</strong>:</p>
+<div class="highlight-python"><pre>________________________________________________________________________________
+[Memory] Calling nisl.masking.compute_epi_mask...
+compute_epi_mask(&lt;nibabel.nifti1.Nifti1Image object at 0x375dcd0&gt;, upper_cutoff=0.90000000000000002, opening=False, connected=True, verbose=-1, lower_cutoff=0.20000000000000001)
+_________________________________________________compute_epi_mask - 0.9s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nisl.resampling.resample_img...
+resample_img(&lt;nibabel.nifti1.Nifti1Image object at 0x375d810&gt;, target_shape=None, target_affine=None, copy=False)
+_____________________________________________________resample_img - 0.0s, 0.0min</pre>
+</div>
 <p><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_nifti_simple.py"><tt class="xref download docutils literal"><span class="pre">plot_nifti_simple.py</span></tt></a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">### Load nyu_rest dataset #####################################################</span>
 
@@ -138,29 +148,29 @@ The mask is computed and visualized.</p>
 
 <span class="c">### Preprocess data ###########################################################</span>
 <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
 <span class="c">### Run an algorithm ##########################################################</span>
 <span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">FastICA</span>
 <span class="n">n_components</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">ica</span> <span class="o">=</span> <span class="n">FastICA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">components_masked</span> <span class="o">=</span> <span class="n">ica</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">)</span>
+<span class="n">components_masked</span> <span class="o">=</span> <span class="n">ica</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">fmri_masked</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
 <span class="c">### Reverse masking ###########################################################</span>
-<span class="n">components</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">components_masked</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="n">components</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">components_masked</span><span class="p">)</span>
 
 <span class="c">### Show results ##############################################################</span>
-<span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">components</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">components_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">components</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
           <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">7</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">components_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">7</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
           <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  11.69 seconds</p>
+<p><strong>Total running time of the example:</strong>  16.82 seconds</p>
 </div>
 
 
