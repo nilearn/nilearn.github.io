@@ -8,7 +8,7 @@ study.
 
 ### Load haxby dataset ########################################################
 
-from nisl import datasets
+from nilearn import datasets
 dataset = datasets.fetch_haxby()
 
 ### Load Target labels ########################################################
@@ -32,10 +32,10 @@ target = target[no_rest_indices]
 
 ### Load the mask #############################################################
 
-from nisl.io import NiftiMasker
+from nilearn.input_data import NiftiMasker
 nifti_masker = NiftiMasker(mask=dataset.mask_vt[0])
 
-# We give to the nifti_masker a filename, and retrieve a 2D array ready
+# We give the nifti_masker a filename and retrieve a 2D array ready
 # for machine learning with scikit-learn
 fmri_masked = nifti_masker.fit_transform(dataset.func[0])
 

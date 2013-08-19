@@ -12,7 +12,7 @@ import pylab as pl
 import numpy as np
 
 import nibabel
-from nisl import datasets
+from nilearn import datasets
 
 # Load Haxby dataset
 haxby = datasets.fetch_haxby_simple()
@@ -36,7 +36,7 @@ def display_mask(background, mask, title):
     pl.title(title)
 
 # Generate mask with default parameters
-from nisl import io
+from nilearn import io
 masker = io.NiftiMasker()
 masker.fit(haxby_img)
 default_mask = masker.mask_img_.get_data().astype(np.bool)
@@ -44,11 +44,11 @@ pl.figure(figsize=(3, 5))
 display_mask(background, default_mask[..., 27], 'Default mask')
 
 # Generate mask with opening
-masker = io.NiftiMasker(mask_opening=True)
+masker = io.NiftiMasker(mask_opening=0)
 masker.fit(haxby_img)
 opening_mask = masker.mask_img_.get_data().astype(np.bool)
 pl.figure(figsize=(3, 5))
-display_mask(background, opening_mask[..., 27], 'Mask with opening')
+display_mask(background, opening_mask[..., 27], 'Mask without opening')
 
 # Generate mask with upper cutoff
 masker = io.NiftiMasker(mask_opening=True, mask_upper_cutoff=0.8)
