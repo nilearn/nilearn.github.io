@@ -1,0 +1,264 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Dataset loading utilities &mdash; NeuroImaging with the scikit-learn</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="NeuroImaging with the scikit-learn" href="../index.html" />
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-22606712-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+  </head>
+  <body>
+
+    <div class="header-wrapper">
+      <div class="header">
+          <p class="logo"><a href="../index.html">
+            <img src="../_static/scikit-learn-logo-small.png" alt="Logo"/>
+          </a>
+          </p><div class="navbar">
+          <ul>
+          
+	    <li><a href="../visualization.html">Data Manipulation</a></li>
+            <li><a href="../supervised_learning.html">Supervised Learning</a></li>
+            <li><a href="../unsupervised_learning.html">Unsupervised Learning</a></li>
+            <li><a href="../auto_examples/index.html">Examples</a></li>
+          
+	  
+       </ul>
+
+<div class="search_form">
+
+<div id="cse" style="width: 100%;"></div>
+<script src="http://www.google.com/jsapi" type="text/javascript"></script>
+<script type="text/javascript">
+  google.load('search', '1', {language : 'en'});
+  google.setOnLoadCallback(function() {
+    var customSearchControl = new google.search.CustomSearchControl('016639176250731907682:tjtqbvtvij0');
+    customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+    var options = new google.search.DrawOptions();
+    options.setAutoComplete(true);
+    customSearchControl.draw('cse', options);
+  }, true);
+</script>
+
+</div>
+          </div> <!-- end navbar --></div>
+    </div>
+
+    <div class="content-wrapper">
+
+      <div class="sphinxsidebar">
+	<div class="sphinxsidebarwrapper">
+	   <div class="rel rellarge">
+	     
+	<!-- XXX: when we have a 'module index' that appears in the link
+	     bar, we will need to use the following ugly hack to avoid it
+	     rellinks[1:]|reverse
+	    -->
+	<!-- Ad a link to the 'up' page -->
+    </div>
+    <h3>This page</h3>
+	<ul>
+<li><a class="reference internal" href="#">Dataset loading utilities</a><ul>
+<li><a class="reference internal" href="#dataset-directory">Dataset directory</a></li>
+<li><a class="reference internal" href="#loading-a-dataset">Loading a dataset</a></li>
+<li><a class="reference internal" href="#writing-your-own-dataset-loading-function">Writing your own dataset loading function</a><ul>
+<li><a class="reference internal" href="#create-your-fetching-function">Create your fetching function</a></li>
+<li><a class="reference internal" href="#definition-of-dataset-files">Definition of dataset files</a></li>
+<li><a class="reference internal" href="#load-or-download-the-dataset">Load or download the dataset</a></li>
+<li><a class="reference internal" href="#preprocessing">Preprocessing</a></li>
+<li><a class="reference internal" href="#return-dataset">Return dataset</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+    
+    <h3>Giving credit</h3>
+    <p>Please consider <a href="../AUTHORS.html#citing">citing the 
+    scikit-learn</a> if you use it.</p>
+
+    </div>
+	  </div>
+
+
+      <div class="content">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="dataset-loading-utilities">
+<span id="datasets"></span><h1>Dataset loading utilities<a class="headerlink" href="#dataset-loading-utilities" title="Permalink to this headline">¶</a></h1>
+<p>The <tt class="docutils literal"><span class="pre">nisl.datasets</span></tt> package embeds tools to fetch and load datasets. It comes
+with a set of several datasets that can be easily downloaded.</p>
+<div class="section" id="dataset-directory">
+<h2>Dataset directory<a class="headerlink" href="#dataset-directory" title="Permalink to this headline">¶</a></h2>
+<p>The purpose of this API is to download datasets, preprocess them if needed, but
+do it once and for all, so datasets must be stored somewhere.</p>
+<p>There are 3 simple ways to determine where to stock datasets. Here are these
+rules ordered by priority (the first rule override the others and so on):</p>
+<ol class="arabic simple">
+<li>the keyword argument <em>data_dir</em> can be given ton any dataset fetching
+function to force the storage directory.</li>
+<li>the environment variable <em>NISL_DATA</em></li>
+<li>by default, a directory called <em>nisl_data</em> is created in the current working
+directory.</li>
+</ol>
+</div>
+<div class="section" id="loading-a-dataset">
+<h2>Loading a dataset<a class="headerlink" href="#loading-a-dataset" title="Permalink to this headline">¶</a></h2>
+<p>A generic dataset fetching function is available (<em>fetch_dataset</em>). Please see
+its documentation to learn how to use it.</p>
+<p>If you consider using an online public dataset, do not hesitate to follow the
+steps below to create a dataset fetching function for this dataset. Any pull
+request is welcome.</p>
+</div>
+<div class="section" id="writing-your-own-dataset-loading-function">
+<h2>Writing your own dataset loading function<a class="headerlink" href="#writing-your-own-dataset-loading-function" title="Permalink to this headline">¶</a></h2>
+<p>Writing a dataset fetching function is rather easy if the data do not require
+complex preprocessing. Take special care of sharing conditions of the dataset
+you want to load. If a registration is required, contact the dataset provider
+to know if there is a way to get round it (put data on a public server or
+create an account that will be used by the script to download it).</p>
+<div class="section" id="create-your-fetching-function">
+<h3>Create your fetching function<a class="headerlink" href="#create-your-fetching-function" title="Permalink to this headline">¶</a></h3>
+<p>Creating your function is straightforward. Your function have to take at least
+two parameters :</p>
+<ul class="simple">
+<li><em>data_dir</em> if the user wants to override the download directory</li>
+<li><em>force_download</em> is the user wants to download the data again</li>
+</ul>
+<p>You don&#8217;t have to worry about these parameters. They just have to be passed to
+some helper functions. You can obviously add custom parameters to fit your*
+needs. For example:</p>
+<ul class="simple">
+<li><em>session</em>, <em>subjects</em> to load only part of the data (may be useful if the
+dataset is composed of several large files)</li>
+<li><em>preprocessing</em> if you want to provide several preprocessings</li>
+<li><em>type</em> to load either anatomical of functional MRI</li>
+</ul>
+<p>With the definition function comes the associated docstring. As well as
+parameters definition, any information about data structure and/or paper
+references is welcome.</p>
+<div class="highlight-python"><div class="highlight"><pre>
+</pre></div>
+</div>
+</div>
+<div class="section" id="definition-of-dataset-files">
+<h3>Definition of dataset files<a class="headerlink" href="#definition-of-dataset-files" title="Permalink to this headline">¶</a></h3>
+<p>The first step is to define of which files is composed the dataset. A simple
+array is enough.</p>
+<div class="highlight-python"><div class="highlight"><pre>
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-or-download-the-dataset">
+<h3>Load or download the dataset<a class="headerlink" href="#load-or-download-the-dataset" title="Permalink to this headline">¶</a></h3>
+<p>Now, we try to load the files specified before. Is they cannot be found, we
+will try to download the dataset. All these steps can be done simply thanks
+to helper functions :</p>
+<ul class="simple">
+<li><em>get_dataset</em> is used to load dataset files. An IOError is raised if all
+dataset files are not present</li>
+<li><em>fetch_dataset</em> given a list of urls, try to download all the files of
+a dataset. Progress information is provided.</li>
+<li><em>uncompress_dataset</em> try to uncompress a dataset in its directory</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre>
+</pre></div>
+</div>
+</div>
+<div class="section" id="preprocessing">
+<h3>Preprocessing<a class="headerlink" href="#preprocessing" title="Permalink to this headline">¶</a></h3>
+<p>If needed, you can preprocess the dataset. As many datasets are in matlab or
+Nifti format, reformatting it in a more user-friendly format (like numpy
+arrays) is encouraged.</p>
+<div class="highlight-python"><div class="highlight"><pre>
+</pre></div>
+</div>
+</div>
+<div class="section" id="return-dataset">
+<h3>Return dataset<a class="headerlink" href="#return-dataset" title="Permalink to this headline">¶</a></h3>
+<p>A convenient way to return a dataset is to use the <em>Bunch</em> structure which
+encapsulte it and provide easy access to all data fields.</p>
+<div class="highlight-python"><div class="highlight"><pre>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+  
+
+    <div class="footer">
+        &copy; INRIA Parietal 2010.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3. Design by <a href="http://webylimonada.com">Web y Limonada</a>.
+    <span style="padding-left: 5ex;">
+    <a href="../_sources/datasets/download.txt"
+	    rel="nofollow">Show this page source</a>
+    </span>
+    </div>
+     <div class="rel rellarge">
+    
+	<!-- XXX: when we have a 'module index' that appears in the link
+	     bar, we will need to use the following ugly hack to avoid it
+	rellinks[1:]|reverse
+	-->
+    
+     </div>
+     <script type="text/javascript">
+       $("div.buttonNext, div.buttonPrevious").hover(
+           function () {
+               $(this).css('background-color', '#FF9C34');
+           },
+           function () {
+               $(this).css('background-color', '#A7D6E2');
+           }
+       );
+     </script>
+  </body>
+</html>
