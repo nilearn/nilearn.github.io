@@ -82,7 +82,7 @@
 <li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
 <li><a href="index.html">Examples</a> |&nbsp;</li>
 <li><a href="../modules/classes.html">Reference</a> |&nbsp;</li>
-<li><a href="../AUTHORS.html" id="navbar-about">About</a></li>
+<li id="navbar-about"><a href="../AUTHORS.html">About</a>|&nbsp;</li>
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
  
       </ul>
@@ -118,44 +118,54 @@
 <p>This example shows how to extract signals from regions defined by an atlas,
 and to estimate a covariance matrix based on these signals.</p>
 <ul class="horizontal">
+<li><a class="first reference internal image-reference" href="../_images/plot_adhd_covariance_3.png"><img alt="../_images/plot_adhd_covariance_3.png" src="../_images/plot_adhd_covariance_3.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
 <li><a class="first reference internal image-reference" href="../_images/plot_adhd_covariance_1.png"><img alt="../_images/plot_adhd_covariance_1.png" src="../_images/plot_adhd_covariance_1.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_adhd_covariance_5.png"><img alt="../_images/plot_adhd_covariance_5.png" src="../_images/plot_adhd_covariance_5.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_adhd_covariance_4.png"><img alt="../_images/plot_adhd_covariance_4.png" src="../_images/plot_adhd_covariance_4.png" style="width: 376.0px; height: 282.0px;" /></a>
 </li>
 <li><a class="first reference internal image-reference" href="../_images/plot_adhd_covariance_2.png"><img alt="../_images/plot_adhd_covariance_2.png" src="../_images/plot_adhd_covariance_2.png" style="width: 376.0px; height: 282.0px;" /></a>
 </li>
+<li><a class="first reference internal image-reference" href="../_images/plot_adhd_covariance_6.png"><img alt="../_images/plot_adhd_covariance_6.png" src="../_images/plot_adhd_covariance_6.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
 </ul>
 <p><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_adhd_covariance.py"><tt class="xref download docutils literal"><span class="pre">plot_adhd_covariance.py</span></tt></a></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">n_subjects</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c"># Number of subjects to consider for group-sparse covariance</span>
+<span class="n">plotted_subject</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c"># subject to plot</span>
+
+
+<span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span>
-
-<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">covariance</span>
-
-<span class="kn">import</span> <span class="nn">nilearn.datasets</span>
-<span class="kn">import</span> <span class="nn">nilearn.image</span>
-<span class="kn">import</span> <span class="nn">nilearn.signal</span>
-<span class="kn">import</span> <span class="nn">nilearn.input_data</span>
-
 <span class="c"># Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.</span>
 <span class="n">_bwr_data</span> <span class="o">=</span> <span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">register_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span>
     <span class="s">&quot;bwr&quot;</span><span class="p">,</span> <span class="n">_bwr_data</span><span class="p">))</span>
 
 
-<span class="k">def</span> <span class="nf">plot_matrices</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">subject_n</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">plot_matrices</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Plot covariance and precision matrices, for a given processing. &quot;&quot;&quot;</span>
+
+    <span class="n">prec</span> <span class="o">=</span> <span class="n">prec</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c"># avoid side effects</span>
+
+    <span class="c"># Display sparsity pattern</span>
+    <span class="n">sparsity</span> <span class="o">=</span> <span class="n">prec</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">sparsity</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">)</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> / sparsity&quot;</span> <span class="o">%</span> <span class="n">title</span><span class="p">)</span>
 
     <span class="c"># Put zeros on the diagonal, for graph clarity.</span>
     <span class="n">size</span> <span class="o">=</span> <span class="n">prec</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">prec</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-
     <span class="n">span</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">prec</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">prec</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
-    <span class="n">title</span> <span class="o">=</span> <span class="s">&quot;{0:d} {1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subject_n</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
 
     <span class="c"># Display covariance matrix</span>
     <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
     <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span>
               <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s">&quot;bwr&quot;</span><span class="p">))</span>
     <span class="n">pl</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span> <span class="o">+</span> <span class="s">&quot; / covariance&quot;</span><span class="p">)</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> / covariance&quot;</span> <span class="o">%</span> <span class="n">title</span><span class="p">)</span>
 
     <span class="c"># Display precision matrix</span>
     <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -163,50 +173,213 @@ and to estimate a covariance matrix based on these signals.</p>
               <span class="n">vmin</span><span class="o">=-</span><span class="n">span</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">span</span><span class="p">,</span>
               <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s">&quot;bwr&quot;</span><span class="p">))</span>
     <span class="n">pl</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span> <span class="o">+</span> <span class="s">&quot; / precision&quot;</span><span class="p">)</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> / precision&quot;</span> <span class="o">%</span> <span class="n">title</span><span class="p">)</span>
 
-<span class="n">subject_n</span> <span class="o">=</span> <span class="mi">1</span>
 
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Fetching datasets ...&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">nilearn.datasets</span>
+<span class="n">atlas</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_msdl_atlas</span><span class="p">()</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span><span class="p">()</span>
-<span class="n">filename</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&quot;func&quot;</span><span class="p">][</span><span class="n">subject_n</span><span class="p">]</span>
-<span class="n">confound_file</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&quot;confounds&quot;</span><span class="p">][</span><span class="n">subject_n</span><span class="p">]</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Loading raw data ({0:d}) and masking ...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">subject_n</span><span class="p">))</span>
-<span class="n">msdl_atlas</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_msdl_atlas</span><span class="p">()</span>
+<span class="kn">import</span> <span class="nn">nilearn.image</span>
+<span class="kn">import</span> <span class="nn">nilearn.input_data</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing confounds ...&quot;</span><span class="p">)</span>
-<span class="n">hv_confounds</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">high_variance_confounds</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">joblib</span>
+<span class="n">mem</span> <span class="o">=</span> <span class="n">joblib</span><span class="o">.</span><span class="n">Memory</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+<span class="n">subjects</span> <span class="o">=</span> <span class="p">[]</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing region signals ...&quot;</span><span class="p">)</span>
-<span class="n">masker</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">NiftiMapsMasker</span><span class="p">(</span><span class="n">msdl_atlas</span><span class="p">[</span><span class="s">&quot;maps&quot;</span><span class="p">],</span>
-                                 <span class="n">resampling_target</span><span class="o">=</span><span class="s">&quot;maps&quot;</span><span class="p">,</span>
-                                 <span class="n">low_pass</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">high_pass</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">t_r</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span>
-                                 <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">region_ts</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span>
-                                 <span class="n">confounds</span><span class="o">=</span><span class="p">[</span><span class="n">hv_confounds</span><span class="p">,</span> <span class="n">confound_file</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">subject_n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_subjects</span><span class="p">):</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&quot;func&quot;</span><span class="p">][</span><span class="n">subject_n</span><span class="p">]</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Processing file </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing covariance matrices ...&quot;</span><span class="p">)</span>
-<span class="n">estimator</span> <span class="o">=</span> <span class="n">covariance</span><span class="o">.</span><span class="n">GraphLassoCV</span><span class="p">()</span>
-<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">region_ts</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing confounds ...&quot;</span><span class="p">)</span>
+    <span class="n">confound_file</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&quot;confounds&quot;</span><span class="p">][</span><span class="n">subject_n</span><span class="p">]</span>
+    <span class="n">hv_confounds</span> <span class="o">=</span> <span class="n">mem</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">nilearn</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">high_variance_confounds</span><span class="p">)(</span><span class="n">filename</span><span class="p">)</span>
 
-<span class="n">plot_matrices</span><span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">covariance_</span><span class="p">,</span> <span class="o">-</span><span class="n">estimator</span><span class="o">.</span><span class="n">precision_</span><span class="p">,</span>
-              <span class="n">title</span><span class="o">=</span><span class="s">&quot;Graph Lasso CV ({0:.3f})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">alpha_</span><span class="p">),</span>
-              <span class="n">subject_n</span><span class="o">=</span><span class="n">subject_n</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing region signals ...&quot;</span><span class="p">)</span>
+    <span class="n">masker</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">NiftiMapsMasker</span><span class="p">(</span>
+        <span class="n">atlas</span><span class="p">[</span><span class="s">&quot;maps&quot;</span><span class="p">],</span> <span class="n">resampling_target</span><span class="o">=</span><span class="s">&quot;maps&quot;</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">low_pass</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">high_pass</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">t_r</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">memory</span><span class="o">=</span><span class="n">mem</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">region_ts</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span>
+                                     <span class="n">confounds</span><span class="o">=</span><span class="p">[</span><span class="n">hv_confounds</span><span class="p">,</span> <span class="n">confound_file</span><span class="p">])</span>
+    <span class="n">subjects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">region_ts</span><span class="p">)</span>
+
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing group-sparse precision matrices ...&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">nilearn.group_sparse_covariance</span> <span class="kn">import</span> <span class="n">GroupSparseCovarianceCV</span>
+<span class="n">gsc</span> <span class="o">=</span> <span class="n">GroupSparseCovarianceCV</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">gsc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subjects</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing graph-lasso precision matrices ...&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">covariance</span>
+<span class="n">gl</span> <span class="o">=</span> <span class="n">covariance</span><span class="o">.</span><span class="n">GraphLassoCV</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">gl</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subjects</span><span class="p">[</span><span class="n">plotted_subject</span><span class="p">])</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Displaying results&quot;</span><span class="p">)</span>
+<span class="n">title</span> <span class="o">=</span> <span class="s">&quot;{0:d} GroupSparseCovariance $</span><span class="se">\\</span><span class="s">alpha={1:.2e}$&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">plotted_subject</span><span class="p">,</span>
+                                                     <span class="n">gsc</span><span class="o">.</span><span class="n">alpha_</span><span class="p">)</span>
+<span class="n">plot_matrices</span><span class="p">(</span><span class="n">gsc</span><span class="o">.</span><span class="n">covariances_</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">plotted_subject</span><span class="p">],</span>
+              <span class="n">gsc</span><span class="o">.</span><span class="n">precisions_</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">plotted_subject</span><span class="p">],</span> <span class="n">title</span><span class="p">)</span>
+
+<span class="n">title</span> <span class="o">=</span> <span class="s">&quot;{0:d} GraphLasso $</span><span class="se">\\</span><span class="s">alpha={1:.2e}$&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">plotted_subject</span><span class="p">,</span>
+                                                     <span class="n">gl</span><span class="o">.</span><span class="n">alpha_</span><span class="p">)</span>
+<span class="n">plot_matrices</span><span class="p">(</span><span class="n">gl</span><span class="o">.</span><span class="n">covariance_</span><span class="p">,</span> <span class="n">gl</span><span class="o">.</span><span class="n">precision_</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
+
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 <p><strong>Script output</strong>:</p>
-<div class="highlight-python"><pre>-- Loading raw data (1) and masking ...
+<div class="highlight-python"><pre>-- Fetching datasets ...
+Processing file /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
+-- Computing confounds ...
+-- Computing region signals ...
+[NiftiMapsMasker.fit_transform] loading regions from /home/varoquau/dev/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+[NiftiMapsMasker.fit_transform] loading images from /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
+[NiftiMapsMasker.fit_transform] resampling images to fit maps
+[NiftiMapsMasker.fit_transform] extracting region signals
+________________________________________________________________________________
+[Memory] Calling nilearn.region.img_to_signals_maps...
+img_to_signals_maps(&lt;nibabel.nifti1.Nifti1Image object at 0x4b45dd0&gt;, &lt;nibabel.nifti1.Nifti1Image object at 0x4b45ad0&gt;, mask_img=None)
+______________________________________________img_to_signals_maps - 6.3s, 0.1min
+[NiftiMapsMasker.fit_transform] cleaning extracted signals
+Processing file /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz
 -- Computing confounds ...
 -- Computing region signals ...
 [NiftiMapsMasker.fit_transform] loading regions from /home/varoquau/dev/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
 [NiftiMapsMasker.fit_transform] loading images from /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz
 [NiftiMapsMasker.fit_transform] resampling images to fit maps
 [NiftiMapsMasker.fit_transform] extracting region signals
+________________________________________________________________________________
+[Memory] Calling nilearn.region.img_to_signals_maps...
+img_to_signals_maps(&lt;nibabel.nifti1.Nifti1Image object at 0x4991710&gt;, &lt;nibabel.nifti1.Nifti1Image object at 0x4b45f10&gt;, mask_img=None)
+______________________________________________img_to_signals_maps - 6.1s, 0.1min
 [NiftiMapsMasker.fit_transform] cleaning extracted signals
--- Computing covariance matrices ...</pre>
+Processing file /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/0023008/0023008_rest_tshift_RPI_voreg_mni.nii.gz
+-- Computing confounds ...
+-- Computing region signals ...
+[NiftiMapsMasker.fit_transform] loading regions from /home/varoquau/dev/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+[NiftiMapsMasker.fit_transform] loading images from /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/0023008/0023008_rest_tshift_RPI_voreg_mni.nii.gz
+[NiftiMapsMasker.fit_transform] resampling images to fit maps
+[NiftiMapsMasker.fit_transform] extracting region signals
+________________________________________________________________________________
+[Memory] Calling nilearn.region.img_to_signals_maps...
+img_to_signals_maps(&lt;nibabel.nifti1.Nifti1Image object at 0x4b45f50&gt;, &lt;nibabel.nifti1.Nifti1Image object at 0x4b45c10&gt;, mask_img=None)
+______________________________________________img_to_signals_maps - 3.2s, 0.1min
+[NiftiMapsMasker.fit_transform] cleaning extracted signals
+Processing file /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/0027011/0027011_rest_tshift_RPI_voreg_mni.nii.gz
+-- Computing confounds ...
+-- Computing region signals ...
+[NiftiMapsMasker.fit_transform] loading regions from /home/varoquau/dev/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+[NiftiMapsMasker.fit_transform] loading images from /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/0027011/0027011_rest_tshift_RPI_voreg_mni.nii.gz
+[NiftiMapsMasker.fit_transform] resampling images to fit maps
+[NiftiMapsMasker.fit_transform] extracting region signals
+________________________________________________________________________________
+[Memory] Calling nilearn.region.img_to_signals_maps...
+img_to_signals_maps(&lt;nibabel.nifti1.Nifti1Image object at 0x4b45b10&gt;, &lt;nibabel.nifti1.Nifti1Image object at 0x4b45d10&gt;, mask_img=None)
+______________________________________________img_to_signals_maps - 8.7s, 0.1min
+[NiftiMapsMasker.fit_transform] cleaning extracted signals
+Processing file /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/0027034/0027034_rest_tshift_RPI_voreg_mni.nii.gz
+-- Computing confounds ...
+-- Computing region signals ...
+[NiftiMapsMasker.fit_transform] loading regions from /home/varoquau/dev/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+[NiftiMapsMasker.fit_transform] loading images from /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/0027034/0027034_rest_tshift_RPI_voreg_mni.nii.gz
+[NiftiMapsMasker.fit_transform] resampling images to fit maps
+[NiftiMapsMasker.fit_transform] extracting region signals
+________________________________________________________________________________
+[Memory] Calling nilearn.region.img_to_signals_maps...
+img_to_signals_maps(&lt;nibabel.nifti1.Nifti1Image object at 0x4991710&gt;, &lt;nibabel.nifti1.Nifti1Image object at 0x4bab990&gt;, mask_img=None)
+______________________________________________img_to_signals_maps - 8.6s, 0.1min
+[NiftiMapsMasker.fit_transform] cleaning extracted signals
+Processing file /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/1019436/1019436_rest_tshift_RPI_voreg_mni.nii.gz
+-- Computing confounds ...
+-- Computing region signals ...
+[NiftiMapsMasker.fit_transform] loading regions from /home/varoquau/dev/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+[NiftiMapsMasker.fit_transform] loading images from /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/1019436/1019436_rest_tshift_RPI_voreg_mni.nii.gz
+[NiftiMapsMasker.fit_transform] resampling images to fit maps
+[NiftiMapsMasker.fit_transform] extracting region signals
+________________________________________________________________________________
+[Memory] Calling nilearn.region.img_to_signals_maps...
+img_to_signals_maps(&lt;nibabel.nifti1.Nifti1Image object at 0x4b45a50&gt;, &lt;nibabel.nifti1.Nifti1Image object at 0x4b45f90&gt;, mask_img=None)
+______________________________________________img_to_signals_maps - 5.4s, 0.1min
+[NiftiMapsMasker.fit_transform] cleaning extracted signals
+Processing file /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/1418396/1418396_rest_tshift_RPI_voreg_mni.nii.gz
+-- Computing confounds ...
+-- Computing region signals ...
+[NiftiMapsMasker.fit_transform] loading regions from /home/varoquau/dev/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+[NiftiMapsMasker.fit_transform] loading images from /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/1418396/1418396_rest_tshift_RPI_voreg_mni.nii.gz
+[NiftiMapsMasker.fit_transform] resampling images to fit maps
+[NiftiMapsMasker.fit_transform] extracting region signals
+________________________________________________________________________________
+[Memory] Calling nilearn.region.img_to_signals_maps...
+img_to_signals_maps(&lt;nibabel.nifti1.Nifti1Image object at 0x4b45a90&gt;, &lt;nibabel.nifti1.Nifti1Image object at 0x4b45950&gt;, mask_img=None)
+______________________________________________img_to_signals_maps - 3.2s, 0.1min
+[NiftiMapsMasker.fit_transform] cleaning extracted signals
+Processing file /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/1552181/1552181_rest_tshift_RPI_voreg_mni.nii.gz
+-- Computing confounds ...
+-- Computing region signals ...
+[NiftiMapsMasker.fit_transform] loading regions from /home/varoquau/dev/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+[NiftiMapsMasker.fit_transform] loading images from /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/1552181/1552181_rest_tshift_RPI_voreg_mni.nii.gz
+[NiftiMapsMasker.fit_transform] resampling images to fit maps
+[NiftiMapsMasker.fit_transform] extracting region signals
+________________________________________________________________________________
+[Memory] Calling nilearn.region.img_to_signals_maps...
+img_to_signals_maps(&lt;nibabel.nifti1.Nifti1Image object at 0x286d590&gt;, &lt;nibabel.nifti1.Nifti1Image object at 0x4babc50&gt;, mask_img=None)
+______________________________________________img_to_signals_maps - 3.3s, 0.1min
+[NiftiMapsMasker.fit_transform] cleaning extracted signals
+Processing file /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/1679142/1679142_rest_tshift_RPI_voreg_mni.nii.gz
+-- Computing confounds ...
+-- Computing region signals ...
+[NiftiMapsMasker.fit_transform] loading regions from /home/varoquau/dev/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+[NiftiMapsMasker.fit_transform] loading images from /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/1679142/1679142_rest_tshift_RPI_voreg_mni.nii.gz
+[NiftiMapsMasker.fit_transform] resampling images to fit maps
+[NiftiMapsMasker.fit_transform] extracting region signals
+________________________________________________________________________________
+[Memory] Calling nilearn.region.img_to_signals_maps...
+img_to_signals_maps(&lt;nibabel.nifti1.Nifti1Image object at 0x4b45f50&gt;, &lt;nibabel.nifti1.Nifti1Image object at 0x4b45a10&gt;, mask_img=None)
+______________________________________________img_to_signals_maps - 3.3s, 0.1min
+[NiftiMapsMasker.fit_transform] cleaning extracted signals
+Processing file /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/2497695/2497695_rest_tshift_RPI_voreg_mni.nii.gz
+-- Computing confounds ...
+-- Computing region signals ...
+[NiftiMapsMasker.fit_transform] loading regions from /home/varoquau/dev/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+[NiftiMapsMasker.fit_transform] loading images from /home/varoquau/dev/nilearn/nilearn_data/adhd/ADHD200_40sub_preprocessed/data/2497695/2497695_rest_tshift_RPI_voreg_mni.nii.gz
+[NiftiMapsMasker.fit_transform] resampling images to fit maps
+[NiftiMapsMasker.fit_transform] extracting region signals
+________________________________________________________________________________
+[Memory] Calling nilearn.region.img_to_signals_maps...
+img_to_signals_maps(&lt;nibabel.nifti1.Nifti1Image object at 0x4b45d90&gt;, &lt;nibabel.nifti1.Nifti1Image object at 0x4b45c50&gt;, mask_img=None)
+______________________________________________img_to_signals_maps - 6.0s, 0.1min
+[NiftiMapsMasker.fit_transform] cleaning extracted signals
+-- Computing group-sparse precision matrices ...
+[GroupSparseCovarianceCV.fit] [GroupSparseCovarianceCV] Done refinement  1 out of 4
+[GroupSparseCovarianceCV.fit] [GroupSparseCovarianceCV] Done refinement  2 out of 4
+[GroupSparseCovarianceCV.fit] [GroupSparseCovarianceCV] Done refinement  3 out of 4
+[GroupSparseCovarianceCV.fit] [GroupSparseCovarianceCV] Done refinement  4 out of 4
+[GroupSparseCovarianceCV.fit] Final optimization
+[GroupSparseCovarianceCV.fit] * iteration 0 (0 %) ...
+[GroupSparseCovarianceCV.fit] * iteration 1 (1 %) variation (max norm): 3.024e+00  ...
+[GroupSparseCovarianceCV.fit] * iteration 2 (2 %) variation (max norm): 1.282e+00  ...
+[GroupSparseCovarianceCV.fit] * iteration 3 (3 %) variation (max norm): 5.434e-01  ...
+[GroupSparseCovarianceCV.fit] * iteration 4 (4 %) variation (max norm): 4.170e-01  ...
+[GroupSparseCovarianceCV.fit] * iteration 5 (5 %) variation (max norm): 2.827e-01  ...
+[GroupSparseCovarianceCV.fit] * iteration 6 (6 %) variation (max norm): 1.059e-01  ...
+[GroupSparseCovarianceCV.fit] * iteration 7 (7 %) variation (max norm): 7.785e-02  ...
+[GroupSparseCovarianceCV.fit] * iteration 8 (8 %) variation (max norm): 4.755e-02  ...
+[GroupSparseCovarianceCV.fit] * iteration 9 (9 %) variation (max norm): 1.678e-02  ...
+[GroupSparseCovarianceCV.fit] * iteration 10 (10 %) variation (max norm): 1.149e-02  ...
+[GroupSparseCovarianceCV.fit] * iteration 11 (11 %) variation (max norm): 1.321e-02  ...
+[GroupSparseCovarianceCV.fit] * iteration 12 (12 %) variation (max norm): 1.058e-02  ...
+[GroupSparseCovarianceCV.fit] * iteration 13 (13 %) variation (max norm): 5.373e-03  ...
+[GroupSparseCovarianceCV.fit] * iteration 14 (14 %) variation (max norm): 3.152e-03  ...
+[GroupSparseCovarianceCV.fit] * iteration 15 (15 %) variation (max norm): 1.789e-03  ...
+[GroupSparseCovarianceCV.fit] * iteration 16 (16 %) variation (max norm): 2.153e-03  ...
+[GroupSparseCovarianceCV.fit] * iteration 17 (17 %) variation (max norm): 1.617e-03  ...
+[GroupSparseCovarianceCV.fit] tolerance reached at iteration number 18: 7.377e-04
+-- Computing graph-lasso precision matrices ...
+-- Displaying results</pre>
 </div>
-<p><strong>Total running time of the example:</strong>  282.39 seconds</p>
+<p><strong>Total running time of the example:</strong>  422.28 seconds</p>
 </div>
 
 
@@ -225,7 +398,7 @@ and to estimate a covariance matrix based on these signals.</p>
 <li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
 <li><a href="index.html">Examples</a> |&nbsp;</li>
 <li><a href="../modules/classes.html">Reference</a> |&nbsp;</li>
-<li><a href="../AUTHORS.html" id="navbar-about">About</a></li>
+<li id="navbar-about"><a href="../AUTHORS.html">About</a>|&nbsp;</li>
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
  
       </ul>

@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>NiLearn: Machine learning for NeuroImaging in Python &mdash; Machine learning for NeuroImaging</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="Machine learning for NeuroImaging" href="index.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head>
+  <body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="index.html">
+      <img src="_static/nilearn-logo.png" alt="NiLearn logo"  border="0" />
+    </a>
+  </div>
+  <div class="banner">
+    <h1>NiLearn:</h1>
+    <h2>Machine learning for Neuro-Imaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div id="cse" style="width: 100%;"></div>
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript">
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+      var customSearchControl = new google.search.CustomSearchControl('014136483057745874622:r-npolb1uki');
+      customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+      var options = new google.search.DrawOptions();
+      options.setAutoComplete(true);
+      customSearchControl.draw('cse', options);
+      }, true);
+    </script>
+  </div>
+</div>
+
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a></li>
+<li><a href="index.html">NiLearn Home</a> |&nbsp;</li>
+<li><a href="user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="auto_examples/index.html">Examples</a> |&nbsp;</li>
+<li><a href="modules/classes.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="AUTHORS.html">About</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+ 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="AUTHORS.html#citing">citing the
+                    scikit-learn</a> if you use it.</p></li>
+  </ul>
+
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5.3. Gaussian graphical models for functional connectivity analysis</a><ul>
+<li><a class="reference internal" href="#synthetic-signals">5.3.1. Synthetic signals</a></li>
+<li><a class="reference internal" href="#estimation">5.3.2. Estimation</a></li>
+</ul>
+</li>
+</ul>
+
+
+<div class="navbar">
+</div> <!-- end navbar -->
+
+<script type="text/javascript">$('#searchbox-ml').show(0);</script>
+<script type="text/javascript">$('#searchbox-site').show(0);</script>
+
+
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="gaussian-graphical-models-for-functional-connectivity-analysis">
+<span id="func-connect"></span><h1>5.3. Gaussian graphical models for functional connectivity analysis<a class="headerlink" href="#gaussian-graphical-models-for-functional-connectivity-analysis" title="Permalink to this headline">¶</a></h1>
+<p>Resting-state functional connectivity can be obtained by estimating a
+covariance matrix <strong>C</strong> for signals from different brain regions. Each
+element of <strong>C</strong> gives the covariance between two brain regions. The
+same information can be represented as a weighted graph, vertices
+being brain regions, weights on edges being covariances (gaussian
+graphical model). In turn, this graph can be interpreted as a
+connection graph between brain regions, with weights giving the
+strength of the connection. However, coefficients in a covariance
+matrix reflects direct as well as indirect connections. As real brain
+signals exhibit small-world properties (there always exists a rather
+short path between any two regions), covariance matrices tend to be
+dense, and it is rather difficult to extract from them only the direct
+connections between two regions.</p>
+<p>This can be achieved using a precision matrix, which is the inverse of
+the covariance matrix. It contains <em>partial covariances</em>, which are
+covariances between two regions conditioned on all the others. It thus
+gives only direct connections between regions. In the case of fMRI
+signals, estimating a covariance matrix using the empirical estimator
+gives a very noisy result, mainly because the number of coefficients
+to estimate is usually greater than the number of samples available.
+That leads to an even worse precision matrix. Thus cleverer schemes
+are required to get an usable result.</p>
+<p>One way to reduce the number of coefficients to estimate is to impose
+sparsity of the precision matrix. It is equivalent to limiting the
+number of edges in the graph. Finding the sparsity pattern that gives
+the maximum likelihood is a hard problem, since there is
+asymptotically 2**(p*p) possible sparsity patterns (where p is the
+number of brain regions), which is exponential with p. Thus,
+sub-optimal algorithms are used. Two are presented here:
+<a class="reference external" href="http://biostatistics.oxfordjournals.org/content/9/3/432.short">graph lasso</a>
+and <a class="reference external" href="http://arxiv.org/abs/1207.4255">group-sparse covariance</a>. Both
+are based on maximizing the log-likelihood of the precision matrix,
+penalized with a non-smooth regularizer. Both are convex functions,
+for which efficient maximizing algorithms exist. The graph lasso
+processes one covariance matrix at a time, whereas the group-sparse
+covariance algorithm deals with several at the same time, imposing a
+common sparsity pattern on all precision matrices.</p>
+<p>For more details on these algorithms, please see</p>
+<blockquote>
+<div><p>Honorio, Jean, and Dimitris Samaras. &#8216;<a class="reference external" href="http://arxiv.org/abs/1207.4255">Simultaneous and
+Group-Sparse Multi-Task Learning of Gaussian Graphical Models</a>&#8216; arXiv:1207.4255 (17 July 2012).</p>
+<p>Ledoit, Olivier, and Michael Wolf. &#8216;<a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S0047259X03000964">A Well-conditioned Estimator
+for Large-dimensional Covariance Matrices</a>&#8216;. Journal of
+Multivariate Analysis 88, no. 2 (february 2004): 365-411.</p>
+</div></blockquote>
+<p>And for a general overview of functional connectivity estimation, see</p>
+<blockquote>
+<div>Gael Varoquaux, Alexandre Gramfort, Jean-Baptiste Poline, and
+Bertrand Thirion. &#8216;<a class="reference external" href="http://arxiv.org/abs/1008.5071">Brain Covariance Selection: Better Individual
+Functional Connectivity Models Using Population Prior</a>&#8216;. arXiv:1008.5071 (30 August
+2010).</div></blockquote>
+<div class="section" id="synthetic-signals">
+<h2>5.3.1. Synthetic signals<a class="headerlink" href="#synthetic-signals" title="Permalink to this headline">¶</a></h2>
+<p>NiLearn provides a function to generate random signals drawn from a
+sparse gaussian graphical model. It can simulate several sets of
+signals, one set representing one subject, with different precision
+matrices, but sharing a common sparsity pattern. Here is how to use it
+to generate signals for 10 brain regions, for 20 subjects:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn._utils.testing</span> <span class="kn">import</span> <span class="n">generate_group_sparse_gaussian_graphs</span>
+
+<span class="n">n_subjects</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c"># number of subjects</span>
+<span class="n">n_displayed</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c"># number of subjects displayed</span>
+<span class="n">subjects</span><span class="p">,</span> <span class="n">precisions</span><span class="p">,</span> <span class="n">topology</span> <span class="o">=</span> <span class="n">generate_group_sparse_gaussian_graphs</span><span class="p">(</span>
+    <span class="n">n_subjects</span><span class="o">=</span><span class="n">n_subjects</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_n_samples</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">max_n_samples</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">density</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><cite>subjects</cite> and <cite>precisions</cite> are lists containing respectively each
+subject&#8217;s signals and the corresponding true precision matrices used
+in the generation (ground truth). <cite>topology</cite> is a single array with
+only 0 and 1 giving the common sparsity pattern.</p>
+</div>
+<div class="section" id="estimation">
+<h2>5.3.2. Estimation<a class="headerlink" href="#estimation" title="Permalink to this headline">¶</a></h2>
+<p>The actual estimation is performed using a <cite>cross-validation
+&lt;http://scikit-learn.org/stable/modules/cross_validation.html&gt;</cite>
+scheme. This allows for selecting the regularization parameter value
+for which the model generalizes best on unseen data. This is important
+to get models that might be expected to be valid at the population
+level.</p>
+<p>A single-subject estimation can be performed using the Graph Lasso
+estimator from the scikit-learn:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.covariance</span> <span class="kn">import</span> <span class="n">GraphLassoCV</span>
+<span class="n">gl</span> <span class="o">=</span> <span class="n">GraphLassoCV</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">subject</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">subjects</span><span class="p">[:</span><span class="n">n_displayed</span><span class="p">]):</span>
+    <span class="n">gl</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After calling <cite>fit</cite>, the estimated precision matrix can be plotted
+using:</p>
+<div class="highlight-python"><div class="highlight"><pre>    <span class="n">plot_matrix</span><span class="p">(</span><span class="n">gl</span><span class="o">.</span><span class="n">precision_</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <cite>plot_matrix</cite> is a convenience function to avoid repeating the
+same code. It draws the matrix as an image, taking care of using a
+symmetric range, so that zero values are just in the middle of the
+colormap (white in that case):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">plot_matrix</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+    <span class="n">abs_max</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">RdBu_r</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span>
+              <span class="n">vmin</span><span class="o">=-</span><span class="n">abs_max</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">abs_max</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is also possible to fit a graph lasso on data from every subject at
+once:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="n">gl</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">subjects</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Running a group-sparse estimation is very similar, the estimator comes
+from NiLearn this time:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.group_sparse_covariance</span> <span class="kn">import</span> <span class="n">GroupSparseCovarianceCV</span>
+<span class="n">gsc</span> <span class="o">=</span> <span class="n">GroupSparseCovarianceCV</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">gsc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subjects</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The results are shown on the following figure:</p>
+<p><a class="reference external" href="auto_examples/plot_connect_comparison.html"><img alt="results" src="_images/plot_connect_comparison_1.png" style="width: 600.0px; height: 420.0px;" /></a></p>
+<p>It is visible that the group-sparse estimation outputs matrices with
+the same sparsity pattern, but different values for the non-zero
+coefficients. This is not the case for the graph lasso output, which
+all have similar but different structures. Note that the graph lasso
+applied to all subjects at once gives a sparsity pattern close to that
+obtained with the group-sparse one, but cannot provide per-subject
+information.</p>
+<div class="topic">
+<p class="topic-title first">Note</p>
+<p>The complete source code for this example can be found here:
+<a class="reference internal" href="auto_examples/plot_connect_comparison.html"><em>plot_connect_comparison.py</em></a></p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">For a detailed example on real data:
+<a class="reference internal" href="auto_examples/plot_adhd_covariance.html"><em>plot_adhd_covariance.py</em></a></p>
+</div>
+<hr class="docutils" />
+<p>A lot of technical details on the algorithm used for group-sparse
+estimation and its implementation can be found in <a class="reference internal" href="developers/group_sparse_covariance.html"><em>Group-sparse covariance estimation</em></a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a></li>
+<li><a href="index.html">NiLearn Home</a> |&nbsp;</li>
+<li><a href="user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="auto_examples/index.html">Examples</a> |&nbsp;</li>
+<li><a href="modules/classes.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="AUTHORS.html">About</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+            &copy; INRIA Parietal 2010-2013.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2b1.
+        <span style="padding-left: 5ex;">
+          <a href="_sources/functional_connectivity.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>

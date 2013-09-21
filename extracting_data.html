@@ -82,7 +82,7 @@
 <li><a href="user_guide.html">User Guide</a> |&nbsp;</li>
 <li><a href="auto_examples/index.html">Examples</a> |&nbsp;</li>
 <li><a href="modules/classes.html">Reference</a> |&nbsp;</li>
-<li><a href="AUTHORS.html" id="navbar-about">About</a></li>
+<li id="navbar-about"><a href="AUTHORS.html">About</a>|&nbsp;</li>
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
  
       </ul>
@@ -352,8 +352,7 @@ and run the script: does it have a big impact on the result?</p>
 after unmasking (turning voxel signals into a series of images, using the same
 mask as for masking). This step is present in almost all the
 <a class="reference internal" href="auto_examples/index.html"><em>examples</em></a> provided in Nilearn.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># reverse masking</span>
-<span class="n">niimg</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">svc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class="highlight-python"><div class="highlight"><pre>
 </pre></div>
 </div>
 </div>
@@ -393,22 +392,45 @@ and very close to the usage of <a class="reference internal" href="modules/gener
 in this section.</p>
 <p>Nilearn provides several downloaders to get a brain parcellation. Load
 the <a class="reference external" href="https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/">MSDL one</a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">msdl_atlas</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_msdl_atlas</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">nilearn.datasets</span>
+<span class="n">atlas</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_msdl_atlas</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>This atlas defines its regions using maps. The path to the corresponding file
-can be found under the &#8220;maps&#8221; key. Assuming that a confounds file name is in the
-variable &#8220;confounds&#8221;, extracting region signals can be performed like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">NiftiMapsMasker</span><span class="p">(</span><span class="n">msdl_atlas</span><span class="p">[</span><span class="s">&quot;maps&quot;</span><span class="p">],</span>
-                                 <span class="n">resampling_target</span><span class="o">=</span><span class="s">&quot;maps&quot;</span><span class="p">,</span>
-                                 <span class="n">low_pass</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">high_pass</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">t_r</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span>
-                                 <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">region_ts</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span>
-                                 <span class="n">confounds</span><span class="o">=</span><span class="p">[</span><span class="n">hv_confounds</span><span class="p">,</span> <span class="n">confound_file</span><span class="p">])</span>
+can be found under the &#8220;maps&#8221; key. Extracting region signals for
+several subjects can be performed like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">dataset</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">nilearn.image</span>
+<span class="kn">import</span> <span class="nn">nilearn.input_data</span>
+
+<span class="kn">import</span> <span class="nn">joblib</span>
+<span class="n">mem</span> <span class="o">=</span> <span class="n">joblib</span><span class="o">.</span><span class="n">Memory</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+<span class="n">subjects</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">subject_n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_subjects</span><span class="p">):</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&quot;func&quot;</span><span class="p">][</span><span class="n">subject_n</span><span class="p">]</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Processing file </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing confounds ...&quot;</span><span class="p">)</span>
+    <span class="n">confound_file</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&quot;confounds&quot;</span><span class="p">][</span><span class="n">subject_n</span><span class="p">]</span>
+    <span class="n">hv_confounds</span> <span class="o">=</span> <span class="n">mem</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">nilearn</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">high_variance_confounds</span><span class="p">)(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing region signals ...&quot;</span><span class="p">)</span>
+    <span class="n">masker</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">NiftiMapsMasker</span><span class="p">(</span>
+        <span class="n">atlas</span><span class="p">[</span><span class="s">&quot;maps&quot;</span><span class="p">],</span> <span class="n">resampling_target</span><span class="o">=</span><span class="s">&quot;maps&quot;</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">low_pass</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">high_pass</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">t_r</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">memory</span><span class="o">=</span><span class="n">mem</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">region_ts</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span>
+                                     <span class="n">confounds</span><span class="o">=</span><span class="p">[</span><span class="n">hv_confounds</span><span class="p">,</span> <span class="n">confound_file</span><span class="p">])</span>
+    <span class="n">subjects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">region_ts</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><cite>region_ts</cite> is a <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html">numpy.ndarray</a>,
-containing one signal per column.</p>
+containing one signal per column. The <cite>subjects</cite> list contains signals
+for several subjects. In this example, confounds removal is performed,
+by both using a provided list of confounds, and by computing new ones
+using <a class="reference internal" href="modules/generated/nilearn.image.high_variance_confounds.html#nilearn.image.high_variance_confounds" title="nilearn.image.high_variance_confounds"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.image.high_variance_confounds</span></tt></a>.</p>
 <p>One important thing that happens transparently during the execution of
 <a class="reference internal" href="modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker.fit_transform" title="nilearn.input_data.NiftiMasker.fit_transform"><tt class="xref py py-meth docutils literal"><span class="pre">NiftiMasker.fit_transform</span></tt></a> is resampling. Initially, the images
 and the atlas do not have the same shape nor the same affine. Getting
@@ -419,17 +441,27 @@ indicates that all images should be resampled to have the same shape
 and affine as the <a class="reference external" href="https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/">MSDL atlas</a>.
 See the reference documentation for <a class="reference internal" href="modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> for every
 possible option.</p>
-<p><cite>region_ts</cite> can then be used as input to a <a class="reference external" href="http://scikit-learn.org">scikit-learn</a> transformer. In the present case,
-covariance between region signals can be obtained using the <a class="reference external" href="http://biostatistics.oxfordjournals.org/content/9/3/432.short">graph
-lasso algorithm</a>
-(with cross-validation):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">estimator</span> <span class="o">=</span> <span class="n">covariance</span><span class="o">.</span><span class="n">GraphLassoCV</span><span class="p">()</span>
-<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">region_ts</span><span class="p">)</span>
+<p>The <a class="reference internal" href="modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMapsMasker</span></tt></a> output can then be used as input to a
+<a class="reference external" href="http://scikit-learn.org">scikit-learn</a> transformer. In the present
+case, covariance between region signals can be obtained for each
+subject either using the <a class="reference external" href="http://biostatistics.oxfordjournals.org/content/9/3/432.short">graph lasso</a>
+or the <a class="reference external" href="http://arxiv.org/abs/1207.4255">group-sparse covariance</a>
+algorithm:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing group-sparse precision matrices ...&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">nilearn.group_sparse_covariance</span> <span class="kn">import</span> <span class="n">GroupSparseCovarianceCV</span>
+<span class="n">gsc</span> <span class="o">=</span> <span class="n">GroupSparseCovarianceCV</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">gsc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subjects</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing graph-lasso precision matrices ...&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">covariance</span>
+<span class="n">gl</span> <span class="o">=</span> <span class="n">covariance</span><span class="o">.</span><span class="n">GraphLassoCV</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">gl</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subjects</span><span class="p">[</span><span class="n">plotted_subject</span><span class="p">])</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The full example can be found here: <a class="reference internal" href="auto_examples/plot_adhd_covariance.html"><em>plot_adhd_covariance.py</em></a></p>
+<p class="last">The full example can be found here:
+<a class="reference internal" href="auto_examples/plot_adhd_covariance.html"><em>plot_adhd_covariance.py</em></a></p>
 </div>
 </div>
 <div class="section" id="niftilabelsmasker-usage">
@@ -466,7 +498,7 @@ keyword.</p>
 <li><a href="user_guide.html">User Guide</a> |&nbsp;</li>
 <li><a href="auto_examples/index.html">Examples</a> |&nbsp;</li>
 <li><a href="modules/classes.html">Reference</a> |&nbsp;</li>
-<li><a href="AUTHORS.html" id="navbar-about">About</a></li>
+<li id="navbar-about"><a href="AUTHORS.html">About</a>|&nbsp;</li>
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
  
       </ul>

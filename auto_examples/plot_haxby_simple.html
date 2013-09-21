@@ -82,7 +82,7 @@
 <li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
 <li><a href="index.html">Examples</a> |&nbsp;</li>
 <li><a href="../modules/classes.html">Reference</a> |&nbsp;</li>
-<li><a href="../AUTHORS.html" id="navbar-about">About</a></li>
+<li id="navbar-about"><a href="../AUTHORS.html">About</a>|&nbsp;</li>
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
  
       </ul>
@@ -143,10 +143,10 @@ study.</p>
 <span class="c"># With scikit-learn &gt;= 0.14, replace this line by: target = labels</span>
 <span class="n">_</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">fixes</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-<span class="c">### Remove resting state condition ############################################</span>
+<span class="c">### Keep only data corresponding to faces or houses ###########################</span>
+<span class="n">condition_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">labels</span> <span class="o">==</span> <span class="s">&#39;face&#39;</span><span class="p">,</span> <span class="n">labels</span> <span class="o">==</span> <span class="s">&#39;house&#39;</span><span class="p">)</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
 
-<span class="n">no_rest_indices</span> <span class="o">=</span> <span class="p">(</span><span class="n">labels</span> <span class="o">!=</span> <span class="s">&#39;rest&#39;</span><span class="p">)</span>
-<span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="n">no_rest_indices</span><span class="p">]</span>
 
 <span class="c">### Load the mask #############################################################</span>
 
@@ -159,8 +159,8 @@ study.</p>
 
 <span class="c">### Prediction function #######################################################</span>
 
-<span class="c"># First, we remove rest condition</span>
-<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">fmri_masked</span><span class="p">[</span><span class="n">no_rest_indices</span><span class="p">]</span>
+<span class="c"># First, we narrow to the face vs house classification</span>
+<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">fmri_masked</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
 
 <span class="c"># Here we use a Support Vector Classification, with a linear kernel and C=1</span>
 <span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
@@ -173,10 +173,10 @@ study.</p>
 <span class="c">### Unmasking #################################################################</span>
 
 <span class="c"># Look at the discriminating weights</span>
-<span class="n">sv</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">support_vectors_</span>
+<span class="n">coef_</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">coef_</span>
 
 <span class="c"># Reverse masking thanks to the Nifti Masker</span>
-<span class="n">niimg</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">sv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">niimg</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef_</span><span class="p">)</span>
 
 <span class="c">### Visualization #############################################################</span>
 <span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
@@ -191,7 +191,7 @@ study.</p>
 <span class="n">pl</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;SVM vectors&#39;</span><span class="p">)</span>
 <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
           <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">act</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">]),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">act</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span>
           <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">)</span>
 
 
@@ -210,7 +210,7 @@ study.</p>
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  183.22 seconds</p>
+<p><strong>Total running time of the example:</strong>  166.60 seconds</p>
 </div>
 
 
@@ -229,7 +229,7 @@ study.</p>
 <li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
 <li><a href="index.html">Examples</a> |&nbsp;</li>
 <li><a href="../modules/classes.html">Reference</a> |&nbsp;</li>
-<li><a href="../AUTHORS.html" id="navbar-about">About</a></li>
+<li id="navbar-about"><a href="../AUTHORS.html">About</a>|&nbsp;</li>
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
  
       </ul>
