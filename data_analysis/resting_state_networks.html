@@ -25,6 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/copybutton.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="top" title="Machine learning for NeuroImaging" href="../index.html" />
 <meta content="True" name="HandheldFriendly">
@@ -150,8 +151,10 @@ fMRI datasets&#8221;, <a class="reference external" href="http://www.sciencedire
 <div class="section" id="retrieving-example-data">
 <h3>2.3.1.1. Retrieving example data<a class="headerlink" href="#retrieving-example-data" title="Permalink to this headline">¶</a></h3>
 <p>We will use sample data from the <cite>ADHD 200 resting-state dataset
-&lt;http://fcon_1000.projects.nitrc.org&gt;</cite>. We use nilearn functions to fetch
-data from Internet and get the filenames (<a class="reference internal" href="../building_blocks/manipulating_mr_images.html#downloading-data"><em>more on data downloading</em></a>):</p>
+&lt;http://fcon_1000.projects.nitrc.org/indi/adhd200/&gt;</cite>, that has been
+preprocessed using <cite>CPAC &lt;http://fcp-indi.github.io/&gt;</cite>. We use nilearn
+functions to fetch data from Internet and get the filenames (<a class="reference internal" href="../building_blocks/manipulating_mr_images.html#downloading-data"><em>more
+on data downloading</em></a>):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
 
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span><span class="p">()</span>
@@ -203,7 +206,7 @@ object.</p>
 <p>We can visualize the components as in the previous examples. As before,
 we use masked arrays (<cite>np.ma</cite>) to create transparency in the overlays.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Show some interesting components</span>
-<span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
 
 <span class="c"># First retrieve the numpy array from the Nifti image</span>
@@ -213,16 +216,16 @@ we use masked arrays (<cite>np.ma</cite>) to create transparency in the overlays
 <span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_components</span><span class="p">):</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
     <span class="n">cut_coord</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">maximum_position</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">]))[</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">components</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cut_coord</span><span class="p">,</span> <span class="n">i</span><span class="p">]))</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_epi</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cut_coord</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-              <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
-    <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">components</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cut_coord</span><span class="p">,</span> <span class="n">i</span><span class="p">]),</span>
-              <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">jet</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">vmax</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_epi</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cut_coord</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+              <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">components</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cut_coord</span><span class="p">,</span> <span class="n">i</span><span class="p">]),</span>
+              <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">jet</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">vmax</span><span class="p">)</span>
 
-<span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 <p><a class="reference external" href="../auto_examples/plot_canica_resting_state.html"><img alt="left_img" src="../_images/plot_canica_resting_state_21.png" style="width: 48%;" /></a> <a class="reference external" href="../auto_examples/plot_canica_resting_state.html"><img alt="right_img" src="../_images/plot_canica_resting_state_31.png" style="width: 48%;" /></a></p>
