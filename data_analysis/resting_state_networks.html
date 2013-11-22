@@ -103,11 +103,11 @@
   <ul>
 <li><a class="reference internal" href="#">2.3. Extracting resting-state networks</a><ul>
 <li><a class="reference internal" href="#data-preparation">2.3.1. Data preparation</a><ul>
-<li><a class="reference internal" href="#retrieving-the-example-data">2.3.1.1. Retrieving the example data</a></li>
-<li><a class="reference internal" href="#concatenating-smoothing-and-masking">2.3.1.2. Concatenating, smoothing, and masking</a></li>
+<li><a class="reference internal" href="#retrieving-example-data">2.3.1.1. Retrieving example data</a></li>
+<li><a class="reference internal" href="#computing-a-mean-epi-image">2.3.1.2. Computing a mean EPI image</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#applying-ica">2.3.2. Applying ICA</a></li>
+<li><a class="reference internal" href="#applying-canica">2.3.2. Applying CanICA</a></li>
 <li><a class="reference internal" href="#visualizing-the-results">2.3.3. Visualizing the results</a></li>
 </ul>
 </li>
@@ -133,105 +133,108 @@
 <span id="extracting-rsn"></span><h1>2.3. Extracting resting-state networks<a class="headerlink" href="#extracting-resting-state-networks" title="Permalink to this headline">¶</a></h1>
 <div class="topic">
 <p class="topic-title first"><strong>Page summary</strong></p>
-<p>This page demonstrates the use of Independent Component Analysis (ICA)
-of resting-state fMRI data to extract brain networks in an
-unsupervised manner (data-driven).</p>
+<p>This page demonstrates the use of multi-subject Independent Component
+Analysis (ICA) of resting-state fMRI data to extract brain networks in
+an data-driven way. Here we use the &#8216;CanICA&#8217; approach, that implements
+a multivariate random effects model across subjects.</p>
 </div>
 <div class="topic">
 <p class="topic-title first"><strong>References</strong></p>
 <ul class="simple">
-<li><a class="reference external" href="http://dx.doi.org/10.1016/S1053-8119(03)00097-1">Kiviniemi et al, *Independent component analysis of nondeterministic
-fMRI signal sources*, Neuroimage 2009</a></li>
-<li><a class="reference external" href="http://dx.doi.org/10.1098/rstb.2005.1634">Beckmann et al, *Investigations into resting-state connectivity using
-independent component analysis*, Philos Trans R Soc Lond B 2005</a></li>
+<li>G. Varoquaux et al. &#8220;A group model for stable multi-subject ICA on
+fMRI datasets&#8221;, <a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S1053811910001618">NeuroImage Vol 51 (2010)</a>, p. 288-299</li>
 </ul>
 </div>
 <div class="section" id="data-preparation">
 <h2>2.3.1. Data preparation<a class="headerlink" href="#data-preparation" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="retrieving-the-example-data">
-<h3>2.3.1.1. Retrieving the example data<a class="headerlink" href="#retrieving-the-example-data" title="Permalink to this headline">¶</a></h3>
-<p>As seen in <a class="reference internal" href="../building_blocks/manipulating_mr_images.html#downloading-data"><em>previous sections</em></a>, we fetch data from
-internet and get the filenames with a provided function:</p>
+<div class="section" id="retrieving-example-data">
+<h3>2.3.1.1. Retrieving example data<a class="headerlink" href="#retrieving-example-data" title="Permalink to this headline">¶</a></h3>
+<p>We will use sample data from the <cite>ADHD 200 resting-state dataset
+&lt;http://fcon_1000.projects.nitrc.org&gt;</cite>. We use nilearn functions to fetch
+data from Internet and get the filenames (<a class="reference internal" href="../building_blocks/manipulating_mr_images.html#downloading-data"><em>more on data downloading</em></a>):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
-<span class="c"># Here we use only 3 subjects to get faster-running code. For better</span>
-<span class="c"># results, simply increase this number</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_nyu_rest</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="c"># XXX: must get the code to run for more than 1 subject</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span><span class="p">()</span>
+<span class="n">func_files</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">func</span> <span class="c"># The list of 4D nifti files for each subject</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="concatenating-smoothing-and-masking">
-<h3>2.3.1.2. Concatenating, smoothing, and masking<a class="headerlink" href="#concatenating-smoothing-and-masking" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <span class="n">NiftiMasker</span>
+<div class="section" id="computing-a-mean-epi-image">
+<h3>2.3.1.2. Computing a mean EPI image<a class="headerlink" href="#computing-a-mean-epi-image" title="Permalink to this headline">¶</a></h3>
+<p>To visualize the results, a mean EPI image is useful:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <span class="n">resample_img</span>
 
-<span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="s">&#39;nilearn_cache&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                        <span class="n">standardize</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">data_masked</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-<span class="c"># Concatenate all the subjects</span>
-<span class="c">#fmri_data = np.concatenate(data_masked, axis=1)</span>
-<span class="n">fmri_data</span> <span class="o">=</span> <span class="n">data_masked</span>
-
-<span class="c"># Take the mean along axis 3: the direction of time</span>
-<span class="n">mean_img</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">fmri_data</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">epi_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">func_files</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">mean_epi</span> <span class="o">=</span> <span class="n">epi_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">mean_epi_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">mean_epi</span><span class="p">,</span> <span class="n">epi_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">())</span>
+<span class="n">mean_epi</span> <span class="o">=</span> <span class="n">resample_img</span><span class="p">(</span><span class="n">mean_epi_img</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 </div>
-<div class="section" id="applying-ica">
-<h2>2.3.2. Applying ICA<a class="headerlink" href="#applying-ica" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">FastICA</span>
+<div class="section" id="applying-canica">
+<h2>2.3.2. Applying CanICA<a class="headerlink" href="#applying-canica" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="../modules/generated/nilearn.decomposition.CanICA.html#nilearn.decomposition.CanICA" title="nilearn.decomposition.CanICA"><tt class="xref py py-class docutils literal"><span class="pre">CanICA</span></tt></a> is a ready-to-use object that can be applied to
+multi-subject Nifti data, for instance presented as filenames, and will
+perform a multi-subject ICA decomposition following the CanICA model.
+As with every object in nilearn, we give it&#8217;s parameters at construction,
+and then fit it on the data.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.decomposition.canica</span> <span class="kn">import</span> <span class="n">CanICA</span>
+
 <span class="n">n_components</span> <span class="o">=</span> <span class="mi">20</span>
-<span class="n">ica</span> <span class="o">=</span> <span class="n">FastICA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-<span class="n">components_masked</span> <span class="o">=</span> <span class="n">ica</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data_masked</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="n">canica</span> <span class="o">=</span> <span class="n">CanICA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span>
+                <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mf">6.</span><span class="p">,</span>
+                <span class="n">memory</span><span class="o">=</span><span class="s">&quot;nilearn_cache&quot;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                <span class="n">threshold</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">canica</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">func_files</span><span class="p">)</span>
 
-<span class="c"># Normalize estimated components, for thresholding to make sense</span>
-<span class="n">components_masked</span> <span class="o">-=</span> <span class="n">components_masked</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">components_masked</span> <span class="o">/=</span> <span class="n">components_masked</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="c"># Threshold</span>
-<span class="n">components_masked</span><span class="p">[</span><span class="n">components_masked</span> <span class="o">&lt;</span> <span class="o">.</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-
-<span class="c"># Now invert the masking operation, going back to a full 3D</span>
-<span class="c"># representation</span>
-<span class="n">component_img</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">components_masked</span><span class="p">)</span>
-<span class="n">components</span> <span class="o">=</span> <span class="n">component_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
-
-<span class="c"># Using a masked array is important to have transparency in the figures</span>
-<span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="c"># Retrieve the independent components in brain space</span>
+<span class="n">components_img</span> <span class="o">=</span> <span class="n">canica</span><span class="o">.</span><span class="n">masker_</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">canica</span><span class="o">.</span><span class="n">components_</span><span class="p">)</span>
+<span class="c"># components_img is a Nifti Image object, and can be saved to a file with</span>
+<span class="c"># the following line:</span>
+<span class="n">components_img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s">&#39;canica_resting_state.nii.gz&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>The components estimated are found as the <cite>components_</cite> attribute of the
+object.</p>
 </div>
 <div class="section" id="visualizing-the-results">
 <h2>2.3.3. Visualizing the results<a class="headerlink" href="#visualizing-the-results" title="Permalink to this headline">¶</a></h2>
-<p>Visualization follows similarly as in the previous examples. As before,
-we use masked arrays (<cite>np.ma</cite>) to create transparency in the
-overlays.</p>
+<p>We can visualize the components as in the previous examples. As before,
+we use masked arrays (<cite>np.ma</cite>) to create transparency in the overlays.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Show some interesting components</span>
-<span class="n">mean_epi</span> <span class="o">=</span> <span class="n">mean_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
 <span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">pl</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
-<span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">components</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">5</span><span class="p">]))</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_epi</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">25</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">components</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">5</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">jet</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">vmax</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
 
-<span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
-<span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">components</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">12</span><span class="p">]))</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_epi</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">23</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
-<span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">components</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">12</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
-          <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">jet</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">vmax</span><span class="p">)</span>
+<span class="c"># First retrieve the numpy array from the Nifti image</span>
+<span class="n">components</span> <span class="o">=</span> <span class="n">components_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+
+<span class="c"># Using a masked array is important to have transparency in the figures</span>
+<span class="n">components</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_components</span><span class="p">):</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+    <span class="n">cut_coord</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">maximum_position</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">]))[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">components</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cut_coord</span><span class="p">,</span> <span class="n">i</span><span class="p">]))</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">mean_epi</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cut_coord</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span>
+              <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
+    <span class="n">pl</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">components</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">cut_coord</span><span class="p">,</span> <span class="n">i</span><span class="p">]),</span>
+              <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">pl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">jet</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">vmax</span><span class="p">)</span>
+
 <span class="n">pl</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p><a class="reference external" href="../auto_examples/plot_ica_resting_state.html"><img alt="left_img" src="../_images/plot_ica_resting_state_1.png" style="width: 48%;" /></a> <a class="reference external" href="../auto_examples/plot_ica_resting_state.html"><img alt="right_img" src="../_images/plot_ica_resting_state_2.png" style="width: 48%;" /></a></p>
+<p><a class="reference external" href="../auto_examples/plot_canica_resting_state.html"><img alt="left_img" src="../_images/plot_canica_resting_state_21.png" style="width: 48%;" /></a> <a class="reference external" href="../auto_examples/plot_canica_resting_state.html"><img alt="right_img" src="../_images/plot_canica_resting_state_31.png" style="width: 48%;" /></a></p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">The full code can be found as an example:
+<a class="reference internal" href="../auto_examples/plot_canica_resting_state.html#example-plot-canica-resting-state-py"><em>Group analysis of resting-state fMRI with ICA: CanICA</em></a></p>
+</div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Note that as the ICA components are not ordered, the two components
-displayed on your computer might not match those of the tutorial. For
+displayed on your computer might not match those of the documentation. For
 a fair representation, you should display all components and
 investigate which one resemble those displayed above.</p>
 </div>
