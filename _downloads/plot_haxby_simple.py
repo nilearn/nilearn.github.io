@@ -28,7 +28,7 @@ condition_mask = np.logical_or(labels['labels'] == 'face',
 target = target[condition_mask]
 
 
-### Load the mask #############################################################
+### Prepare the data: apply the mask ##########################################
 
 from nilearn.input_data import NiftiMasker
 nifti_masker = NiftiMasker(mask=dataset.mask_vt[0])
@@ -37,10 +37,10 @@ nifti_masker = NiftiMasker(mask=dataset.mask_vt[0])
 # for machine learning with scikit-learn
 fmri_masked = nifti_masker.fit_transform(dataset.func[0])
 
-### Prediction function #######################################################
-
 # Restrict the classification to the face vs house discrimination
 fmri_masked = fmri_masked[condition_mask]
+
+### Prediction function #######################################################
 
 # Here we use a Support Vector Classification, with a linear kernel and C=1
 from sklearn.svm import SVC
