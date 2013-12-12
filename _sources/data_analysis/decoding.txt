@@ -15,27 +15,71 @@
 Decoding: predicting behavior or phenotype from brain images
 ================================================================================
 
-.. topic:: **Page summary**
+Decoding consists in predicting external variables such as behavioral or
+phenotypic variables from brain image. This page is a tutorial articulated on
+the analysis of the Haxby 2001 dataset. It shows how to:
 
-    Decoding consists in learning a predictive model that can
-    predict external variables such as behavioral or phenotypic variables
-    from brain image. This page shows how to:
+1. Load fMRI volumes in Python.
+2. Perform a state-of-the-art decoding analysis of fMRI data.
+3. Perform even more sophisticated analyses of fMRI data.
 
-    1. Load fMRI volumes in Python.
-    2. Perform a state-of-the-art decoding analysis of fMRI data.
-    3. Perform even more sophisticated analyses of fMRI data.
+.. contents:: **Chapters contents**
+    :local:
+    :depth: 1
+
 
 Data loading and preparation
 ================================
+
+The Haxby 2001 experiment
+-------------------------
+
+Subjects are presented visual stimuli from different categories. We are
+going to predict which category the subject is seeing from the fMRI
+activity recorded in masks of the ventral stream. Significant prediction
+shows that the signal in the region contains information on the
+corresponding category.
+
+.. figure:: ../auto_examples/images/plot_haxby_stimuli_4.png
+   :target: ../auto_examples/plot_haxby_stimuli.html
+   :scale: 30
+   :align: left
+
+   Face stimuli
+
+.. figure:: ../auto_examples/images/plot_haxby_stimuli_5.png
+   :target: ../auto_examples/plot_haxby_stimuli.html
+   :scale: 30
+   :align: left
+
+   House stimuli
+
+.. figure:: ../auto_examples/images/plot_haxby_masks_1.png
+   :target: ../auto_examples/plot_haxby_masks.html
+   :scale: 30
+   :align: left
+
+   Masks
+
+.. figure:: ../auto_examples/images/plot_haxby_full_analysis_1.png
+   :target: ../auto_examples/plot_haxby_full_analysis.html
+   :scale: 35
+   :align: left
+
+   Decoding scores per mask
+
+
+Loading the data into Python
+-----------------------------
 
 Launch ipython::
 
   $ ipython -pylab
 
-First, load the data using nilearn's data downloader,
+First, load the data using nilearn's data downloading function,
 :func:`nilearn.datasets.fetch_haxby_simple`:
 
-.. literalinclude:: ../../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Load Haxby dataset ########################################################
     :end-before: ### Preprocess data ########################################################### 
 
@@ -46,7 +90,7 @@ Then prepare the data:
   (n_samples, n_features) (see :ref:`mask_4d_2_3d` for a discussion on using 
   masks)
 
-.. literalinclude:: ../../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Preprocess data ########################################################### 
     :end-before: ### Restrict to faces and houses ##############################################
 
@@ -64,11 +108,11 @@ Then prepare the data:
 
 Here, we limit our analysis to the `face` and `house` conditions:
 
-.. literalinclude:: ../../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Restrict to faces and houses ##############################################
     :end-before: ### Prediction function #######################################################
 
-Down to business: decoding analysis
+Performing the decoding analysis
 ====================================
 
 Prediction function: the estimator
@@ -82,7 +126,7 @@ We define here a simple `Support Vector Classification
 linear kernel. We first import the correct module from scikit-learn and we
 define the classifier:
 
-.. literalinclude:: ../../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Prediction function #######################################################
     :end-before: ### Dimension reduction #######################################################
 
@@ -123,7 +167,7 @@ For this, we need to import the correct module and define a simple F-score
 based feature selection (a.k.a. 
 `Anova <http://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_):
 
-.. literalinclude:: ../../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_anova_svm.py
         :start-after: ### Dimension reduction #######################################################
         :end-before: ### Fit and predict ###########################################################
 
@@ -138,7 +182,7 @@ In scikit-learn, the prediction objects (classifiers, regression) have a very si
   Here, we just have to give the new set of images (as the target should be
   unknown):
 
-.. literalinclude:: ../../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_anova_svm.py
         :start-after: ### Fit and predict ###########################################################
         :end-before: ### Visualisation #############################################################
 
@@ -160,12 +204,12 @@ We can visualize the result of our algorithm:
 - we remove the mask
 - then we overlay our previously-computed, mean image with our support vectors
 
-.. figure:: ../auto_examples/images/plot_haxby_decoding_1.png
-   :target: ../auto_examples/plot_haxby_decoding.html
+.. figure:: ../auto_examples/images/plot_haxby_anova_svm_1.png
+   :target: ../auto_examples/plot_haxby_anova_svm.html
    :align: right
    :scale: 60
 
-.. literalinclude:: ../../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Visualisation #############################################################
     :end-before: ### Cross validation ########################################################## 
 
@@ -186,7 +230,7 @@ the indices of the folds within a loop.
 Now, we can apply the previously defined *pipeline* with the
 cross-validation:
 
-.. literalinclude:: ../../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_anova_svm.py
         :start-after: ### Cross validation ########################################################## 
         :end-before: ### Print results #############################################################
 
@@ -235,14 +279,14 @@ We have a total prediction accuracy of 99% across the different folds.
 
 We can add a line to print the results:
 
-.. literalinclude:: ../../plot_haxby_decoding.py
+.. literalinclude:: ../../plot_haxby_anova_svm.py
         :start-after: ### Print results #############################################################
 
 
 .. topic:: **Final script**
 
     The complete script can be found as 
-    :ref:`an example <example_tutorial_plot_haxby_decoding.py>`.
+    :ref:`an example <example_plot_haxby_anova_svm.py>`.
     Now, all you have to do is publish the results :)
 
 
