@@ -29,6 +29,26 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+<script type="text/javascript">
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var top = 95 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+
+    $(window).scroll(function(event) {
+	if($(window).scrollTop() > top){
+	    //begin to scroll
+	    $('.sphinxsidebarwrapper').css("position", "fixed");
+	    $('.sphinxsidebarwrapper').css("top", -95);
+	}
+	else{
+	    //lock it back into place
+	    $('.sphinxsidebarwrapper').css("position", "relative");
+	    $('.sphinxsidebarwrapper').css("top",0);
+	}
+    });
+});
+</script>
+
 
 <script type="text/javascript">
 
@@ -196,7 +216,7 @@ Classification accuracy: 1.000000  / Chance level: 0.500000</pre>
 <span class="c">### Define the prediction function to be used.</span>
 <span class="c"># Here we use a Support Vector Classification, with a linear kernel and C=1</span>
 <span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">SVC</span></a>
-<a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">clf</span></a> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
+<a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">svc</span></a> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
 
 <span class="c">### Dimension reduction #######################################################</span>
 
@@ -211,7 +231,7 @@ Classification accuracy: 1.000000  / Chance level: 0.500000</pre>
 <span class="c"># we can plug them together in a *pipeline* that performs the two operations</span>
 <span class="c"># successively:</span>
 <span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a>
-<a href="http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline"><span class="n">anova_svc</span></a> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a><span class="p">([(</span><span class="s">&#39;anova&#39;</span><span class="p">,</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest"><span class="n">feature_selection</span></a><span class="p">),</span> <span class="p">(</span><span class="s">&#39;svc&#39;</span><span class="p">,</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">clf</span></a><span class="p">)])</span>
+<a href="http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline"><span class="n">anova_svc</span></a> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a><span class="p">([(</span><span class="s">&#39;anova&#39;</span><span class="p">,</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest"><span class="n">feature_selection</span></a><span class="p">),</span> <span class="p">(</span><span class="s">&#39;svc&#39;</span><span class="p">,</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">svc</span></a><span class="p">)])</span>
 
 <span class="c">### Fit and predict ###########################################################</span>
 
@@ -220,31 +240,32 @@ Classification accuracy: 1.000000  / Chance level: 0.500000</pre>
 
 <span class="c">### Visualisation #############################################################</span>
 
-<span class="c">### Look at the discriminating weights</span>
-<span class="n">coef</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">clf</span></a><span class="o">.</span><span class="n">coef_</span>
+<span class="c">### Look at the SVC&#39;s discriminating weights</span>
+<span class="n">coef</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">svc</span></a><span class="o">.</span><span class="n">coef_</span>
 <span class="c"># reverse feature selection</span>
 <span class="n">coef</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest"><span class="n">feature_selection</span></a><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span>
 <span class="c"># reverse masking</span>
-<span class="n">niimg</span> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span>
+<span class="n">weight_niimg</span> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span>
 
 <span class="c"># We use a masked array so that the voxels at &#39;-1&#39; are displayed</span>
 <span class="c"># transparently</span>
-<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">act</span></a> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.masked_array.all.html#numpy.ma.masked_array"><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span></a><span class="p">(</span><span class="n">niimg</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span> <span class="n">niimg</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">weights</span></a> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.masked_array.all.html#numpy.ma.masked_array"><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span></a><span class="p">(</span><span class="n">weight_niimg</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span>
+                             <span class="n">weight_niimg</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
 
 <span class="c">### Create the figure</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<a href="http://matplotlib.org/api/axis_api.html#matplotlib.axis"><span class="n">plt</span><span class="o">.</span><span class="n">axis</span></a><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&#39;SVM vectors&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.rot90.html#numpy.rot90"><span class="n">np</span><span class="o">.</span><span class="n">rot90</span></a><span class="p">(</span><span class="n">mean_img</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">]),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">,</span>
           <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.rot90.html#numpy.rot90"><span class="n">np</span><span class="o">.</span><span class="n">rot90</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">act</span></a><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.rot90.html#numpy.rot90"><span class="n">np</span><span class="o">.</span><span class="n">rot90</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">weights</span></a><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span>
           <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/axis_api.html#matplotlib.axis"><span class="n">plt</span><span class="o">.</span><span class="n">axis</span></a><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&#39;SVM weights&#39;</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 
-<span class="c"># Saving the results as a Nifti file may also be important</span>
+<span class="c">### Saving the results as a Nifti file may also be important</span>
 <span class="kn">import</span> <span class="nn">nibabel</span>
-<span class="n">img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">act</span></a><span class="p">,</span> <span class="n">affine</span><span class="p">)</span>
-<span class="n">nibabel</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="s">&#39;haxby_face_vs_house.nii&#39;</span><span class="p">)</span>
+<span class="n">nibabel</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">weight_niimg</span><span class="p">,</span> <span class="s">&#39;haxby_face_vs_house.nii&#39;</span><span class="p">)</span>
 
 <span class="c">### Cross validation ##########################################################</span>
 
@@ -274,8 +295,8 @@ Classification accuracy: 1.000000  / Chance level: 0.500000</pre>
 <span class="c"># Classification accuracy: 0.986111  / Chance level: 0.500000</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  16.76 seconds
-( 0 minutes  16.76 seconds)</p>
+<p><strong>Total running time of the example:</strong>  15.97 seconds
+( 0 minutes  15.97 seconds)</p>
 </div>
 
 

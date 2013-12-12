@@ -29,6 +29,26 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+<script type="text/javascript">
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var top = 95 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+
+    $(window).scroll(function(event) {
+	if($(window).scrollTop() > top){
+	    //begin to scroll
+	    $('.sphinxsidebarwrapper').css("position", "fixed");
+	    $('.sphinxsidebarwrapper').css("top", -95);
+	}
+	else{
+	    //lock it back into place
+	    $('.sphinxsidebarwrapper').css("position", "relative");
+	    $('.sphinxsidebarwrapper').css("top",0);
+	}
+    });
+});
+</script>
+
 
 <script type="text/javascript">
 
@@ -140,28 +160,28 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="simple-example-of-decoding-the-haxby-dataset">
-<span id="example-plot-haxby-simple-py"></span><h1>Simple example of decoding: the Haxby dataset<a class="headerlink" href="#simple-example-of-decoding-the-haxby-dataset" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="simple-example-of-decoding-the-haxby-data">
+<span id="example-plot-haxby-simple-py"></span><h1>Simple example of decoding: the Haxby data<a class="headerlink" href="#simple-example-of-decoding-the-haxby-data" title="Permalink to this headline">¶</a></h1>
 <p>Here is a simple example of decoding, reproducing the Haxby 2001
 study on a face vs house discrimination task in a mask of the ventral
 stream.</p>
 <ul class="horizontal">
-<li><a class="first reference internal image-reference" href="../_images/plot_haxby_simple_1.png"><img alt="../_images/plot_haxby_simple_1.png" src="../_images/plot_haxby_simple_1.png" style="width: 376.0px; height: 282.0px;" /></a>
-</li>
 <li><a class="first reference internal image-reference" href="../_images/plot_haxby_simple_2.png"><img alt="../_images/plot_haxby_simple_2.png" src="../_images/plot_haxby_simple_2.png" style="width: 376.0px; height: 282.0px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_haxby_simple_1.png"><img alt="../_images/plot_haxby_simple_1.png" src="../_images/plot_haxby_simple_1.png" style="width: 141.0px; height: 235.0px;" /></a>
 </li>
 </ul>
 <p><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_haxby_simple.py"><tt class="xref download docutils literal"><span class="pre">plot_haxby_simple.py</span></tt></a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">### Load haxby dataset ########################################################</span>
 
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
-<span class="n">dataset</span> <span class="o">=</span> <a href="../modules/generated/nilearn.datasets.fetch_haxby.html#nilearn.datasets.fetch_haxby"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span></a><span class="p">()</span>
+<span class="n">data</span> <span class="o">=</span> <a href="../modules/generated/nilearn.datasets.fetch_haxby.html#nilearn.datasets.fetch_haxby"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span></a><span class="p">()</span>
 
 <span class="c">### Load Target labels ########################################################</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="c"># Load target information as string and give a numerical identifier to each</span>
-<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">labels</span></a> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="p">)</span>
+<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">labels</span></a> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="p">)</span>
 
 <span class="c"># scikit-learn &gt;= 0.14 supports text labels. You can replace this line by:</span>
 <span class="c"># target = labels[&#39;labels&#39;]</span>
@@ -176,11 +196,11 @@ stream.</p>
 <span class="c">### Prepare the data: apply the mask ##########################################</span>
 
 <span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
-<a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
 <span class="c"># We give the nifti_masker a filename and retrieve a 2D array ready</span>
 <span class="c"># for machine learning with scikit-learn</span>
-<span class="n">fmri_masked</span> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">fmri_masked</span> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
 <span class="c"># Restrict the classification to the face vs house discrimination</span>
 <span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">fmri_masked</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
@@ -198,27 +218,36 @@ stream.</p>
 
 <span class="c">### Unmasking #################################################################</span>
 
-<span class="c"># Look at the discriminating weights</span>
+<span class="c"># Retrieve the SVC discriminating weights</span>
 <span class="n">coef_</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">svc</span></a><span class="o">.</span><span class="n">coef_</span>
 
 <span class="c"># Reverse masking thanks to the Nifti Masker</span>
-<span class="n">niimg</span> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef_</span><span class="p">)</span>
+<span class="n">coef_niimg</span> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef_</span><span class="p">)</span>
+
+<span class="c"># Use nibabel to save the coefficients as a Nifti image</span>
+<span class="kn">import</span> <span class="nn">nibabel</span>
+<span class="n">nibabel</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">coef_niimg</span><span class="p">,</span> <span class="s">&#39;haxby_svc_weights.nii&#39;</span><span class="p">)</span>
 
 <span class="c">### Visualization #############################################################</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">nibabel</span>
 
-<span class="c"># We use a masked array so that the voxels at &#39;-1&#39; are displayed transparently</span>
-<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">act</span></a> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">ma</span></a><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">niimg</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span> <span class="n">niimg</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+<span class="c">### Create the figure and plot the first EPI image as a background</span>
+<a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
 
-<span class="c">### Create the figure</span>
-<a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
-<a href="http://matplotlib.org/api/axis_api.html#matplotlib.axis"><span class="n">plt</span><span class="o">.</span><span class="n">axis</span></a><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&#39;SVM vectors&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.rot90.html#numpy.rot90"><span class="n">np</span><span class="o">.</span><span class="n">rot90</span></a><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+<span class="n">epi_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.rot90.html#numpy.rot90"><span class="n">np</span><span class="o">.</span><span class="n">rot90</span></a><span class="p">(</span><span class="n">epi_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
           <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.rot90.html#numpy.rot90"><span class="n">np</span><span class="o">.</span><span class="n">rot90</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">act</span></a><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span>
+
+<span class="c">### Plot the SVM weights</span>
+<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">weights</span></a> <span class="o">=</span> <span class="n">coef_niimg</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="c"># We use a masked array so that the voxels at &#39;-1&#39; are displayed transparently</span>
+<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">weights</span></a> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">ma</span></a><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">weights</span></a><span class="p">,</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">weights</span></a> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.rot90.html#numpy.rot90"><span class="n">np</span><span class="o">.</span><span class="n">rot90</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">weights</span></a><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">,</span>
           <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">)</span>
+
+<a href="http://matplotlib.org/api/axis_api.html#matplotlib.axis"><span class="n">plt</span><span class="o">.</span><span class="n">axis</span></a><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&#39;SVM weights&#39;</span><span class="p">)</span>
 
 
 <span class="c">### Visualize the mask ########################################################</span>
@@ -227,7 +256,7 @@ stream.</p>
 
 <a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
 <a href="http://matplotlib.org/api/axis_api.html#matplotlib.axis"><span class="n">plt</span><span class="o">.</span><span class="n">axis</span></a><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.rot90.html#numpy.rot90"><span class="n">np</span><span class="o">.</span><span class="n">rot90</span></a><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.rot90.html#numpy.rot90"><span class="n">np</span><span class="o">.</span><span class="n">rot90</span></a><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
           <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
 <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">ma</span></a> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.masked_equal.html#numpy.ma.masked_equal"><span class="n">np</span><span class="o">.</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">ma</span></a><span class="o">.</span><span class="n">masked_equal</span></a><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.rot90.html#numpy.rot90"><span class="n">np</span><span class="o">.</span><span class="n">rot90</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.ma.MaskedArray.__int__.html#numpy.ma.MaskedArray"><span class="n">ma</span></a><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">autumn</span><span class="p">,</span>
@@ -236,8 +265,8 @@ stream.</p>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  31.01 seconds
-( 0 minutes  31.01 seconds)</p>
+<p><strong>Total running time of the example:</strong>  30.84 seconds
+( 0 minutes  30.84 seconds)</p>
 </div>
 
 
