@@ -185,7 +185,8 @@ $(function () {
 <li><a class="reference internal" href="#measuring-prediction-performance">2.1.2.2. Measuring prediction performance</a><ul>
 <li><a class="reference internal" href="#cross-validation">2.1.2.2.1. Cross-validation</a></li>
 <li><a class="reference internal" href="#choosing-a-good-cross-validation-strategy">2.1.2.2.2. Choosing a good cross-validation strategy</a></li>
-<li><a class="reference internal" href="#measuring-the-chance-level">2.1.2.2.3. Measuring the chance level</a></li>
+<li><a class="reference internal" href="#choice-of-the-prediction-accuracy-measure">2.1.2.2.3. Choice of the prediction accuracy measure</a></li>
+<li><a class="reference internal" href="#measuring-the-chance-level">2.1.2.2.4. Measuring the chance level</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#visualizing-the-decoder-s-weights">2.1.2.3. Visualizing the decoder&#8217;s weights</a></li>
@@ -472,10 +473,25 @@ to use the session label, present in the behavioral data file, and
 </pre></div>
 </div>
 </div>
-<p>We have a total prediction accuracy of 77% across the different folds.</p>
+<p>We have a total prediction accuracy of 77% across the different sessions.</p>
+</div>
+<div class="section" id="choice-of-the-prediction-accuracy-measure">
+<h4>2.1.2.2.3. Choice of the prediction accuracy measure<a class="headerlink" href="#choice-of-the-prediction-accuracy-measure" title="Permalink to this headline">¶</a></h4>
+<p>The default metric used for measuring errors is the accuracy score, ie
+the number of total errors. It is not always a sensible metric,
+especially in the case of very imbalance classes, as in such situation
+choosing the dominant class can achieve a low number of errors.</p>
+<p>Other metrics, such as the f1-score, can be used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">fmri_masked</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span>  <span class="n">scoring</span><span class="o">=</span><span class="s">&#39;f1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">the <a class="reference external" href="http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values">list of scoring options</a></p>
+</div>
 </div>
 <div class="section" id="measuring-the-chance-level">
-<h4>2.1.2.2.3. Measuring the chance level<a class="headerlink" href="#measuring-the-chance-level" title="Permalink to this headline">¶</a></h4>
+<h4>2.1.2.2.4. Measuring the chance level<a class="headerlink" href="#measuring-the-chance-level" title="Permalink to this headline">¶</a></h4>
 <p><strong>Dummy estimators</strong>: The simplest way to measure prediction performance
 at chance, is to use a dummy classifier,
 <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier" title="(in scikit-learn v0.14)"><tt class="xref py py-class docutils literal"><span class="pre">sklearn.dummy.DummyClassifier</span></tt></a>:</p>
@@ -486,8 +502,27 @@ at chance, is to use a dummy classifier,
 <p><strong>Permutation testing</strong>: A more controlled way, but slower, is to do
 permutation testing on the labels, with
 <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.permutation_test_score.html#sklearn.cross_validation.permutation_test_score" title="(in scikit-learn v0.14)"><tt class="xref py py-func docutils literal"><span class="pre">sklearn.cross_validation.permutation_test_score</span></tt></a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">null_cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">fmri_masked</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">permutation_test_score</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">null_cv_scores</span> <span class="o">=</span> <span class="n">permutation_test_score</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">fmri_masked</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
 </pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="topic">
+<p class="topic-title first"><strong>Putting it all together</strong></p>
+<p>The <a class="reference internal" href="../auto_examples/plot_haxby_full_analysis.html#example-plot-haxby-full-analysis-py"><em>ROI-based decoding example</em></a> does a decoding analysis per
+mask, giving the f1-score of the prediction for each object.</p>
+<p>It uses all the notions presented above, with <tt class="docutils literal"><span class="pre">for</span></tt> loop to iterate
+over masks and categories and Python dictionnaries to store the
+scores.</p>
+</div>
+<div class="figure align-left">
+<a class="reference external image-reference" href="../auto_examples/plot_haxby_masks.html"><img alt="../_images/plot_haxby_masks_11.png" src="../_images/plot_haxby_masks_11.png" style="width: 240.0px; height: 324.0px;" /></a>
+<p class="caption">Masks</p>
+</div>
+<div class="figure align-left">
+<a class="reference external image-reference" href="../auto_examples/plot_haxby_full_analysis.html"><img alt="../_images/plot_haxby_full_analysis_11.png" src="../_images/plot_haxby_full_analysis_11.png" style="width: 624.0px; height: 468.0px;" /></a>
 </div>
 </div>
 </div>
@@ -570,17 +605,24 @@ that we will put before the SVC in a <cite>pipeline</cite>
 <span class="c"># successively:</span>
 <span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
 <span class="n">anova_svc</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s">&#39;anova&#39;</span><span class="p">,</span> <span class="n">feature_selection</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;svc&#39;</span><span class="p">,</span> <span class="n">svc</span><span class="p">)])</span>
+
+<span class="c">### Fit and predict ###########################################################</span>
+
+<span class="n">anova_svc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">anova_svc</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>We can use our <tt class="docutils literal"><span class="pre">anova_svc</span></tt> object exactly as we were using our <tt class="docutils literal"><span class="pre">svc</span></tt>
+object previously.</p>
 </div>
 <div class="section" id="visualizing-the-results">
 <h3>2.1.3.2. Visualizing the results<a class="headerlink" href="#visualizing-the-results" title="Permalink to this headline">¶</a></h3>
-<p>We can visualize the result of our algorithm:</p>
+<p>To visualize the results, we need to:</p>
 <ul class="simple">
-<li>we first get the support vectors of the SVC and inverse the feature
+<li>first get the support vectors of the SVC and inverse the feature
 selection mechanism</li>
-<li>we remove the mask</li>
-<li>then we overlay our previously-computed, mean image with our support vectors</li>
+<li>then, as before, inverse the masking process to retrieve the weights
+and plot them.</li>
 </ul>
 <div class="figure align-right">
 <a class="reference external image-reference" href="../auto_examples/plot_haxby_anova_svm.html"><img alt="../_images/plot_haxby_anova_svm_11.png" src="../_images/plot_haxby_anova_svm_11.png" style="width: 195.0px; height: 325.0px;" /></a>
@@ -683,6 +725,16 @@ We can try Fisher&#8217;s <a class="reference external" href="http://scikit-lear
 </pre></div>
 </div>
 <p>But, be aware that this can take A WHILE...</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">The <a class="reference external" href="http://scikit-learn.org">scikit-learn documentation</a>
+has very detailed explanations on a large variety of estimators and
+machine learning techniques. To become better at decoding, you need
+to study it.</p>
+</div>
 </div>
 </div>
 </div>
