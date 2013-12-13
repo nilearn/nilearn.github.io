@@ -166,11 +166,15 @@ $(function () {
 study on a face vs house discrimination task in a mask of the ventral
 stream.</p>
 <ul class="horizontal">
-<li><a class="first reference internal image-reference" href="../_images/plot_haxby_simple_1.png"><img alt="../_images/plot_haxby_simple_1.png" src="../_images/plot_haxby_simple_1.png" style="width: 141.0px; height: 235.0px;" /></a>
-</li>
 <li><a class="first reference internal image-reference" href="../_images/plot_haxby_simple_2.png"><img alt="../_images/plot_haxby_simple_2.png" src="../_images/plot_haxby_simple_2.png" style="width: 376.0px; height: 282.0px;" /></a>
 </li>
+<li><a class="first reference internal image-reference" href="../_images/plot_haxby_simple_1.png"><img alt="../_images/plot_haxby_simple_1.png" src="../_images/plot_haxby_simple_1.png" style="width: 141.0px; height: 235.0px;" /></a>
+</li>
 </ul>
+<p><strong>Script output</strong>:</p>
+<div class="max-height highlight-python"><div class="highlight"><pre><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+</pre></div>
+</div>
 <p><strong>Python source code:</strong> <a class="reference download internal" href="../_downloads/plot_haxby_simple.py"><tt class="xref download docutils literal"><span class="pre">plot_haxby_simple.py</span></tt></a></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">### Load haxby dataset ########################################################</span>
 
@@ -205,16 +209,30 @@ stream.</p>
 <span class="c"># Restrict the classification to the face vs house discrimination</span>
 <span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">fmri_masked</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
 
-<span class="c">### Prediction function #######################################################</span>
+<span class="c">### Prediction ################################################################</span>
 
-<span class="c"># Here we use a Support Vector Classification, with a linear kernel and C=1</span>
+<span class="c"># Here we use a Support Vector Classification, with a linear kernel</span>
 <span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">SVC</span></a>
-<a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">svc</span></a> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
+<a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">svc</span></a> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">)</span>
 
 <span class="c"># And we run it</span>
 <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">svc</span></a><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-<span class="n">y_pred</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">svc</span></a><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">)</span>
+<span class="n">prediction</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">svc</span></a><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">)</span>
 
+<span class="c">### Cross-validation ##########################################################</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.KFold.html#sklearn.cross_validation.KFold"><span class="n">KFold</span></a>
+
+<a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.KFold.html#sklearn.cross_validation.KFold"><span class="n">cv</span></a> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.KFold.html#sklearn.cross_validation.KFold"><span class="n">KFold</span></a><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">),</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">cv_scores</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="ow">in</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.KFold.html#sklearn.cross_validation.KFold"><span class="n">cv</span></a><span class="p">:</span>
+    <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">svc</span></a><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">[</span><span class="n">train</span><span class="p">],</span> <span class="n">target</span><span class="p">[</span><span class="n">train</span><span class="p">])</span>
+    <span class="n">prediction</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">svc</span></a><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">[</span><span class="n">test</span><span class="p">])</span>
+    <span class="n">cv_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.sum.html#numpy.sum"><span class="n">np</span><span class="o">.</span><span class="n">sum</span></a><span class="p">(</span><span class="n">prediction</span> <span class="o">==</span> <span class="n">target</span><span class="p">[</span><span class="n">test</span><span class="p">])</span>
+                     <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">target</span><span class="p">[</span><span class="n">test</span><span class="p">])))</span>
+
+<span class="k">print</span> <span class="n">cv_scores</span>
 
 <span class="c">### Unmasking #################################################################</span>
 
@@ -265,8 +283,8 @@ stream.</p>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  30.60 seconds
-( 0 minutes  30.60 seconds)</p>
+<p><strong>Total running time of the example:</strong>  30.59 seconds
+( 0 minutes  30.59 seconds)</p>
 </div>
 
 
