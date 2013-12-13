@@ -32,10 +32,20 @@
 <script type="text/javascript">
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 95 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+    var top = 95 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
+        sections = {},
+        i        = 0,
+	current_section = 0;
+
+    // Grab positions of our sections 
+    $('.headerlink').each(function(){
+        sections[this.href.replace(document.URL, '')] = $(this).offset().top;
+    });
 
     $(window).scroll(function(event) {
-	if($(window).scrollTop() > top){
+	var pos   = $(window).scrollTop();
+	// Lock the table of content to a fixed position once we scroll enough
+	if(pos > top){
 	    //begin to scroll
 	    $('.sphinxsidebarwrapper').css("position", "fixed");
 	    $('.sphinxsidebarwrapper').css("top", -95);
@@ -45,7 +55,20 @@ $(function () {
 	    $('.sphinxsidebarwrapper').css("position", "relative");
 	    $('.sphinxsidebarwrapper').css("top",0);
 	}
+            
+	// Highlight the current section
+	$('a.internal').removeClass('active');
+        for(i in sections){
+            if(sections[i] > pos){
+		break;
+            };
+	    if($('a.internal[href$="' + i + '"]').is(':visible')){
+		current_section = i;
+	    };
+        }
+	$('a.internal[href$="' + current_section + '"]').addClass('active');
     });
+
 });
 </script>
 
@@ -273,14 +296,14 @@ obtained.</p>
 <span class="n">labels</span><span class="p">,</span> <span class="n">n_labels</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">pvalues</span><span class="p">)</span>
 <span class="n">plot_brain</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">coronal</span><span class="p">,</span> <span class="n">sagittal</span><span class="p">,</span> <span class="n">axial</span><span class="p">,</span> <span class="s">&#39;Connected components&#39;</span><span class="p">,</span>
            <span class="n">cmap</span><span class="o">=</span><span class="s">&#39;jet&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 
 <span class="c"># Save the result</span>
 <span class="n">nibabel</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">fmri_affine</span><span class="p">),</span> <span class="s">&#39;mask.nii&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  31.78 seconds
-( 0 minutes  31.78 seconds)</p>
+<p><strong>Total running time of the example:</strong>  150.07 seconds
+( 2 minutes  30.07 seconds)</p>
 </div>
 
 

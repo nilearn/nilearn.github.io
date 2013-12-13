@@ -132,7 +132,7 @@ label **y** given a set **X** of images.
 We use here a simple `Support Vector Classification
 <http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC) with a
 linear kernel. We first import the correct module from scikit-learn and we
-define the classifier:
+define the classifier, :class:`sklearn.svm.SVC`:
 
 .. literalinclude:: ../../plot_haxby_simple.py
     :start-after: # Here we use a Support Vector Classification, with a linear kernel
@@ -255,9 +255,17 @@ Measuring the chance level
 ...........................
 
 **Dummy estimators**: The simplest way to measure prediction performance 
-at chance, is to use a dummy classifier::
+at chance, is to use a dummy classifier,
+:class:`sklearn.dummy.DummyClassifier`::
 
     >>> from sklearn.dummy import DummyClassifier
+    >>> null_cv_scores = cross_val_score(DummyClassifier(), fmri_masked, target, cv=cv)
+
+**Permutation testing**: A more controlled way, but slower, is to do
+permutation testing on the labels, with
+:func:`sklearn.cross_validation.permutation_test_score`::
+
+  >>> null_cv_scores = cross_val_score(svc, fmri_masked, target, cv=cv)
 
 Visualizing the decoder's weights
 ---------------------------------
@@ -297,11 +305,12 @@ face vs house prediction. We thus add a `feature selection
 procedure. The idea is to select the `k` voxels most correlated to the
 task.
 
-For this, we need to import the `feature_selection` module and define a
-simple F-score
+For this, we need to import the :mod:`sklearn.feature_selection` module and use 
+:func:`sklearn.feature_selection.f_classif`, a simple F-score
 based feature selection (a.k.a. 
 `Anova <http://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_),
-that we will put before the SVC in a `pipeline`:
+that we will put before the SVC in a `pipeline`
+(:class:`sklearn.pipeline.Pipeline`):
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py
     :start-after: ### Dimension reduction #######################################################
@@ -330,13 +339,6 @@ We can visualize the result of our algorithm:
 .. seealso::
 
    * :ref:`visualizing`
-
-
-
-We can add a line to print the results:
-
-.. literalinclude:: ../../plot_haxby_anova_svm.py
-        :start-after: ### Print results #############################################################
 
 
 .. topic:: **Final script**
