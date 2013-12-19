@@ -243,6 +243,9 @@ the different estimators.</td>
 </tr>
 </tbody>
 </table>
+<p>The &#8220;One vs One&#8221; strategy is more computationaly costly than the &#8220;One vs
+All&#8221; (it scales as the square of the number of classes, whereas OvA is
+linear with the number of classes).</p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
 <p class="last"><a class="reference external" href="http://scikit-learn.org/stable/modules/multiclass.html">Multi-class prediction in scikit-learn&#8217;s documenation</a></p>
@@ -263,33 +266,90 @@ understand the classifier&#8217;s errors in a multiclass problem.</p>
 </div>
 <div class="section" id="setting-estimator-parameters">
 <h2>3.3.1.2. Setting estimator parameters<a class="headerlink" href="#setting-estimator-parameters" title="Permalink to this headline">¶</a></h2>
+<p>Most estimators have parameters that can be set to optimize their
+performance. Importantly, this must be done via <strong>nested</strong>
+cross-validation.</p>
+<p>Indeed, there is noise in the cross-validation score, and when we vary
+the parameter, the curve showing the score as a function of the parameter
+will have bumps and peaks due to this noise. These will not generalize to
+new data and chances are that the corresponding choice of parameter will
+not perform as well on new data.</p>
+<div class="figure align-center">
+<a class="reference external image-reference" href="../auto_examples/plot_haxby_grid_search.html"><img alt="../_images/plot_haxby_grid_search_11.png" src="../_images/plot_haxby_grid_search_11.png" style="width: 360.0px; height: 240.0px;" /></a>
+</div>
+<p>With scikit-learn nested cross-validation is done via
+<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.grid_search.GridSearchCV.html#sklearn.grid_search.GridSearchCV" title="(in scikit-learn v0.14)"><tt class="xref py py-class docutils literal"><span class="pre">sklearn.grid_search.GridSearchCV</span></tt></a>. It is unfortunately time
+consuming, but the <tt class="docutils literal"><span class="pre">n_jobs</span></tt> argument can spread the load on multiple
+CPUs.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference external" href="http://scikit-learn.org/stable/modules/grid_search.html">The scikit-learn documentation on parameter selection</a></li>
+<li>The example <a class="reference internal" href="../auto_examples/plot_haxby_grid_search.html#example-plot-haxby-grid-search-py"><em>Setting a parameter by cross-validation</em></a></li>
+</ul>
+</div>
 </div>
 <div class="section" id="different-linear-models">
 <h2>3.3.1.3. Different linear models<a class="headerlink" href="#different-linear-models" title="Permalink to this headline">¶</a></h2>
+<p>There is a wide variety of classifiers available in scikit-learn (see the
+<a class="reference external" href="http://scikit-learn.org/stable/supervised_learning.html">scikit-learn documentation on supervised learning</a>).
+Here we apply a few linear models to fMRI data:</p>
+<ul class="simple">
+<li>SVC: the support vector classifier</li>
+<li>SVC cv: the support vector classifier with its parameter C set by
+cross-validation</li>
+<li>log l2: the logistic regression with l2 penalty</li>
+<li>log l2 cv: the logistic regression with l2 penalty with its parameter
+set by cross-validation</li>
+<li>log l1: the logistic regression with l1 penalty: <strong>sparse model</strong></li>
+<li>log l1 50: the logistic regression with l1 penalty and a high sparsity
+parameter</li>
+<li>log l1 cv: the logistic regression with l1 penalty with its parameter
+(controlling the sparsity) set by cross-validation</li>
+<li>ridge: the ridge classifier</li>
+<li>ridge cv: the ridge classifier with its parameter set by
+cross-validation</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last">
+<li><p class="first">The SVC is fairly insensitive to the choice of the regularization
+parameter</p>
+</li>
+<li><dl class="first docutils">
+<dt>The ridge and ridge cv are fast, but will work only on</dt>
+<dd><p class="first last">well-separated classes</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">Parameter selection is difficult with sparse models</p>
+</li>
+</ul>
+</div>
 <div class="figure align-center">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_11.png" src="../_images/plot_haxby_different_estimators_11.png" style="width: 640.0px; height: 480.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_1.png" src="../_images/plot_haxby_different_estimators_1.png" style="width: 640.0px; height: 480.0px;" /></a>
 </div>
 <hr class="docutils" />
 <div class="figure align-left">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_71.png" src="../_images/plot_haxby_different_estimators_71.png" style="width: 210.0px; height: 350.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_7.png" src="../_images/plot_haxby_different_estimators_7.png" style="width: 210.0px; height: 350.0px;" /></a>
 </div>
 <div class="figure align-left">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_81.png" src="../_images/plot_haxby_different_estimators_81.png" style="width: 210.0px; height: 350.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_8.png" src="../_images/plot_haxby_different_estimators_8.png" style="width: 210.0px; height: 350.0px;" /></a>
 </div>
 <div class="figure align-left">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_51.png" src="../_images/plot_haxby_different_estimators_51.png" style="width: 210.0px; height: 350.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_5.png" src="../_images/plot_haxby_different_estimators_5.png" style="width: 210.0px; height: 350.0px;" /></a>
 </div>
 <div class="figure align-left">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_61.png" src="../_images/plot_haxby_different_estimators_61.png" style="width: 210.0px; height: 350.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_6.png" src="../_images/plot_haxby_different_estimators_6.png" style="width: 210.0px; height: 350.0px;" /></a>
 </div>
 <div class="figure align-left">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_41.png" src="../_images/plot_haxby_different_estimators_41.png" style="width: 210.0px; height: 350.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_4.png" src="../_images/plot_haxby_different_estimators_4.png" style="width: 210.0px; height: 350.0px;" /></a>
 </div>
 <div class="figure align-left">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_21.png" src="../_images/plot_haxby_different_estimators_21.png" style="width: 210.0px; height: 350.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_2.png" src="../_images/plot_haxby_different_estimators_2.png" style="width: 210.0px; height: 350.0px;" /></a>
 </div>
 <div class="figure align-left">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_31.png" src="../_images/plot_haxby_different_estimators_31.png" style="width: 210.0px; height: 350.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/plot_haxby_different_estimators.html"><img alt="../_images/plot_haxby_different_estimators_3.png" src="../_images/plot_haxby_different_estimators_3.png" style="width: 210.0px; height: 350.0px;" /></a>
 </div>
 </div>
 </div>
