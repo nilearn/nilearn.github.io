@@ -175,12 +175,12 @@ $(function () {
 <li><a class="reference internal" href="#">3.2. Data preparation: input/output and basic transformation</a><ul>
 <li><a class="reference internal" href="#niftimasker-loading-masking-and-filtering">3.2.1. <tt class="docutils literal"><span class="pre">NiftiMasker</span></tt>: loading, masking and filtering</a><ul>
 <li><a class="reference internal" href="#custom-data-loading">3.2.1.1. Custom data loading</a></li>
-<li><a class="reference internal" href="#custom-masking">3.2.1.2. Custom Masking</a><ul>
+<li><a class="reference internal" href="#controlling-how-the-mask-is-computed-from-the-data">3.2.1.2. Controlling how the mask is computed from the data</a><ul>
 <li><a class="reference internal" href="#mask-visualization">3.2.1.2.1. Mask Visualization</a></li>
 <li><a class="reference internal" href="#computing-the-mask">3.2.1.2.2. Computing the mask</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#preprocessing">3.2.1.3. Preprocessing</a><ul>
+<li><a class="reference internal" href="#common-data-preparation-steps">3.2.1.3. Common data preparation steps</a><ul>
 <li><a class="reference internal" href="#resampling">3.2.1.3.1. Resampling</a></li>
 <li><a class="reference internal" href="#smoothing">3.2.1.3.2. Smoothing</a></li>
 <li><a class="reference internal" href="#temporal-filtering">3.2.1.3.3. Temporal Filtering</a></li>
@@ -250,28 +250,25 @@ preprocessings and validate them.</p>
 transformer so that you can directly plug it into a <a class="reference external" href="http://scikit-learn.org">scikit-learn</a> pipeline.</p>
 <div class="section" id="custom-data-loading">
 <h3>3.2.1.1. Custom data loading<a class="headerlink" href="#custom-data-loading" title="Permalink to this headline">¶</a></h3>
-<p>Sometimes, some custom preprocessing of data is necessary. In this
-example, we will restrict Haxby dataset (which contains 1452 frames)
-to 150 frames to speed up computation. To do that, we load the dataset
-with <a class="reference internal" href="../modules/generated/nilearn.datasets.fetch_haxby_simple.html#nilearn.datasets.fetch_haxby_simple" title="nilearn.datasets.fetch_haxby_simple"><tt class="xref py py-func docutils literal"><span class="pre">fetch_haxby_simple()</span></tt></a>,
-restrict it to 150 frames and build a brand new Nifti-like object to
-give it to the masker. Though it is possible, there is no need to save
-your data in a file to pass it to a <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a>. Simply use
-<a class="reference external" href="http://nipy.sourceforge.net/nibabel/">nibabel</a> to create a
-<a class="reference internal" href="manipulating_mr_images.html#niimg"><em>Niimg</em></a> in memory:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Load Haxby dataset</span>
-<span class="n">haxby</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby_simple</span><span class="p">()</span>
-<span class="n">haxby_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">haxby</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
-<span class="c"># Restrict haxby to 150 frames to speed up computation</span>
-<span class="n">haxby_func</span> <span class="o">=</span> <span class="n">haxby_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">150</span><span class="p">]</span>
+<p>Sometimes, some custom preprocessing of data is necessary. For instance
+we can restrict a dataset to the first 100 frames. Below, we load
+a resting-state dataset with <a class="reference internal" href="../modules/generated/nilearn.datasets.fetch_nyu_rest.html#nilearn.datasets.fetch_nyu_rest" title="nilearn.datasets.fetch_nyu_rest"><tt class="xref py py-func docutils literal"><span class="pre">fetch_fetch_nyu_rest()</span></tt></a>, restrict it to 100 frames and
+build a brand new Nifti-like object to give it to the masker. Though it
+is possible, there is no need to save your data in a file to pass it to a
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a>. Simply use <a class="reference external" href="http://nipy.sourceforge.net/nibabel/">nibabel</a> to create a <a class="reference internal" href="manipulating_mr_images.html#niimg"><em>Niimg</em></a>
+in memory:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">nyu</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_nyu_rest</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">nyu_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">nyu</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="c"># Restrict nyu to 100 frames to speed up computation</span>
+<span class="n">nyu_func</span> <span class="o">=</span> <span class="n">nyu_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">100</span><span class="p">]</span>
 
-<span class="c"># haxby_func is a 4D-array, we want to make a Niimg out of it:</span>
-<span class="n">haxby_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">haxby_func</span><span class="p">,</span> <span class="n">haxby_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">())</span>
+<span class="c"># nyu_func is a 4D-array, we want to make a Niimg out of it:</span>
+<span class="n">nyu_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">nyu_func</span><span class="p">,</span> <span class="n">nyu_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="custom-masking">
-<h3>3.2.1.2. Custom Masking<a class="headerlink" href="#custom-masking" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="controlling-how-the-mask-is-computed-from-the-data">
+<h3>3.2.1.2. Controlling how the mask is computed from the data<a class="headerlink" href="#controlling-how-the-mask-is-computed-from-the-data" title="Permalink to this headline">¶</a></h3>
 <p>In the basic tutorial, we showed how the masker could compute a mask
 automatically, and it has done a good job. But, on some datasets, the
 default algorithm performs poorly. This is why it is very important to
@@ -279,13 +276,9 @@ default algorithm performs poorly. This is why it is very important to
 <div class="section" id="mask-visualization">
 <h4>3.2.1.2.1. Mask Visualization<a class="headerlink" href="#mask-visualization" title="Permalink to this headline">¶</a></h4>
 <p>Before exploring the subject, we define a helper function to display
-masks. This function will display a background (composed of a mean of
-epi scans) and a mask as a red layer over this background.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Display helper</span>
-<span class="n">background</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">haxby_func</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">]</span>
-
-
-<span class="k">def</span> <span class="nf">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+masks. This function will display a background (we can use the mean of
+the input images) and a mask as a red layer over this background.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">background</span><span class="p">),</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">gray</span><span class="p">)</span>
     <span class="n">ma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_equal</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
@@ -306,74 +299,68 @@ parameters.</p>
 scratch. The Haxby dataset will be used since it provides a mask that we
 can use as a reference.</p>
 <div class="figure align-right">
-<a class="reference external image-reference" href="auto_examples/plot_nifti_advanced.html"><img alt="../_images/plot_nifti_advanced_11.png" src="../_images/plot_nifti_advanced_11.png" style="width: 150.0px; height: 250.0px;" /></a>
+<a class="reference external image-reference" href="auto_examples/plot_mask_computation.html"><img alt="../_images/plot_mask_computation_21.png" src="../_images/plot_mask_computation_21.png" style="width: 200.0px; height: 225.0px;" /></a>
 </div>
 <p>The first step is to generate a mask with default parameters and take
-a look at it. As an indicator, we can, for example, compare the mask
-to original data.</p>
+a look at it.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <span class="n">NiftiMasker</span>
-<span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">()</span>
-<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">haxby_img</span><span class="p">)</span>
+<span class="c"># We need to specify an &#39;epi&#39; mask_strategy, as this is raw EPI data</span>
+<span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_strategy</span><span class="o">=</span><span class="s">&#39;epi&#39;</span><span class="p">)</span>
+<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">nyu_img</span><span class="p">)</span>
 <span class="n">default_mask</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="n">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">default_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">],</span> <span class="s">&#39;Default mask&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<span class="n">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">default_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">21</span><span class="p">],</span> <span class="s">&#39;EPI automatic mask&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>With naked eyes, we can see that the outline of the mask is not very
-smooth. To make it less smooth, bypass the opening step
-(<em>mask_opening=0</em>).</p>
+<hr class="docutils" />
 <div class="figure align-right">
-<a class="reference external image-reference" href="auto_examples/plot_nifti_advanced.html"><img alt="../_images/plot_nifti_advanced_21.png" src="../_images/plot_nifti_advanced_21.png" style="width: 150.0px; height: 250.0px;" /></a>
+<a class="reference external image-reference" href="auto_examples/plot_mask_computation.html"><img alt="../_images/plot_mask_computation_31.png" src="../_images/plot_mask_computation_31.png" style="width: 200.0px; height: 225.0px;" /></a>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_opening</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">haxby_img</span><span class="p">)</span>
+<p>We can make the outline of the mask more by increasing the number of
+opening steps (<em>opening=10</em>) using the <cite>mask_args</cite> argument of the
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_strategy</span><span class="o">=</span><span class="s">&#39;epi&#39;</span><span class="p">,</span> <span class="n">mask_args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">opening</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">nyu_img</span><span class="p">)</span>
 <span class="n">opening_mask</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="n">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">opening_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">],</span> <span class="s">&#39;Mask without opening&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<span class="n">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">opening_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">21</span><span class="p">],</span> <span class="s">&#39;EPI Mask with strong opening&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Looking at the <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> object, we
-see two interesting parameters: <em>lower_cutoff</em> and <em>upper_cutoff</em>. The
-algorithm ignores dark (low) values. We can tell the algorithm to ignore
-high values by lowering <em>upper cutoff</em>. Default value is 0.9, so we try
-0.8 to lower a bit the threshold and get a larger mask.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_opening</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">mask_upper_cutoff</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
-<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">haxby_img</span><span class="p">)</span>
+<hr class="docutils" />
+<p>Looking at the <a class="reference internal" href="../modules/generated/nilearn.masking.compute_epi_mask.html#nilearn.masking.compute_epi_mask" title="nilearn.masking.compute_epi_mask"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.masking.compute_epi_mask</span></tt></a> called by the
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> object, we see two interesting parameters:
+<em>lower_cutoff</em> and <em>upper_cutoff</em>. These set the grey-values bounds in
+which the masking algorithm is going to try to find it&#8217;s threshold (where
+0 is the minimum of the image, and 1 the maximum). Here we raise a lot
+the lower cutoff, and thus force the masking algorithm to select only
+voxels that are very light on the EPI image.</p>
+<div class="figure align-right">
+<a class="reference external image-reference" href="../auto_examples/plot_mask_computation.html"><img alt="../_images/plot_mask_computation_41.png" src="../_images/plot_mask_computation_41.png" style="width: 200.0px; height: 225.0px;" /></a>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_strategy</span><span class="o">=</span><span class="s">&#39;epi&#39;</span><span class="p">,</span>
+                     <span class="n">mask_args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">upper_cutoff</span><span class="o">=.</span><span class="mi">9</span><span class="p">,</span> <span class="n">lower_cutoff</span><span class="o">=.</span><span class="mi">8</span><span class="p">,</span>
+                                    <span class="n">opening</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">nyu_img</span><span class="p">)</span>
 <span class="n">cutoff_mask</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
 
-<span class="c"># Plot the mask and compare it to original</span>
-
-<span class="c"># Load mask provided by Haxby</span>
-<span class="n">haxby_mask</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">haxby</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">haxby_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">],</span> <span class="s">&#39;Haxby mask&#39;</span><span class="p">)</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="n">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">cutoff_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">27</span><span class="p">],</span> <span class="s">&#39;Mask with cutoff&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<span class="n">display_mask</span><span class="p">(</span><span class="n">background</span><span class="p">,</span> <span class="n">cutoff_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">21</span><span class="p">],</span> <span class="s">&#39;EPI Mask: high lower_cutoff&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="figure align-center">
-<a class="reference external image-reference" href="../auto_examples/plot_nifti_advanced.html"><img alt="../_images/plot_nifti_advanced_31.png" src="../_images/plot_nifti_advanced_31.png" style="width: 300.0px; height: 250.0px;" /></a>
-</div>
-<p>The resulting mask seems to be correct. Compared to the original one,
-it is very close.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The full example described in this section can be found here:
-<a class="reference internal" href="../auto_examples/plot_nifti_advanced.html"><em>plot_nifti_advanced.py</em></a>.
+<a class="reference internal" href="../auto_examples/plot_mask_computation.html"><em>plot_mask_computation.py</em></a>.
 This one can be relevant too:
 <a class="reference internal" href="../auto_examples/plot_nifti_simple.html"><em>plot_nifti_simple.py</em></a>.</p>
 </div>
 </div>
 </div>
-<div class="section" id="preprocessing">
-<h3>3.2.1.3. Preprocessing<a class="headerlink" href="#preprocessing" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="common-data-preparation-steps">
+<h3>3.2.1.3. Common data preparation steps<a class="headerlink" href="#common-data-preparation-steps" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="resampling">
 <span id="id3"></span><h4>3.2.1.3.1. Resampling<a class="headerlink" href="#resampling" title="Permalink to this headline">¶</a></h4>
 <dl class="docutils">
