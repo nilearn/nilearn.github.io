@@ -46,7 +46,7 @@ preprocessings and validate them.
 In addition, :class:`NiftiMasker` is a `scikit-learn
 <http://scikit-learn.org>`_ compliant
 transformer so that you can directly plug it into a `scikit-learn
-<http://scikit-learn.org>`_ pipeline.
+pipeline <http://scikit-learn.org/stable/modules/pipeline.html>`_.
 
 Custom data loading
 --------------------
@@ -156,8 +156,14 @@ voxels that are very light on the EPI image.
     :doc:`plot_nifti_simple.py <../auto_examples/plot_nifti_simple>`.
 
 
-Common data preparation steps
-------------------------------
+Common data preparation steps: resampling, smoothing, filtering
+----------------------------------------------------------------
+
+.. seealso::
+
+   If you don't want to use the :class:`NiftiMasker` to perform these
+   simple operations on data, note that they are 
+   :ref:`corresponding functions <preprocessing_functions>`.
 
 .. _resampling:
 
@@ -176,6 +182,35 @@ Resampling can be used for example to reduce processing time by
 lowering image resolution. Certain image viewers also require images to be
 resampled to display overlays.
 
+Automatic compution of offset and bounding box can be performed by
+specifying a 3x3 matrix instead of the 4x4 affine, in which case nilearn
+computes automatically the translation part of the affine.
+
+.. image:: ../auto_examples/images/plot_affine_transformation_2.png
+    :target: auto_examples/plot_affine_transformation.html
+    :scale: 36%
+.. image:: ../auto_examples/images/plot_affine_transformation_4.png
+    :target: auto_examples/plot_affine_transformation.html
+    :scale: 36%
+.. image:: ../auto_examples/images/plot_affine_transformation_3.png
+    :target: auto_examples/plot_affine_transformation.html
+    :scale: 36%
+
+
+.. topic:: **Special case: resampling to a given voxel size**
+
+   Specifying a 3x3 matrix that is diagonal as a target_affine fixes the
+   voxel size. For instance to resample to 3x3x3 mm voxels::
+
+    >>> import numpy as np
+    >>> target_affine = np.diag((3, 3, 3))
+
+|
+
+.. seealso::
+
+   :func:`nilearn.image.resample_img`
+
 
 Smoothing
 .........
@@ -186,6 +221,10 @@ half maximum (in millimeter) along each axis in the parameter `smoothing_fwhm`.
 For an isotropic filtering, passing a scalar is also possible. The underlying
 function handles properly the tricky case of non-cubic voxels, by scaling the
 given widths appropriately.
+
+.. seealso::
+
+   :func:`nilearn.image.smooth_img`
 
 
 .. _temporal_filtering:
@@ -211,22 +250,28 @@ All previous filters operate on images, before conversion to voxel signals.
 .. topic:: **Exercise**
 
    You can, more as a training than as an exercise, try to play with
-   the parameters in :doc:`plot_haxby_simple.py
+   the parameters in :ref:`plot_haxby_simple.py
    <auto_examples/plot_haxby_simple>`. Try to enable detrending
    and run the script: does it have a big impact on the result?
+
+
+.. seealso::
+
+   :func:`nilearn.signal.clean`
 
 
 Inverse transform: unmasking data
 ----------------------------------
 
-Once voxel signals have been processed, the result can be visualized as images
-after unmasking (turning voxel signals into a series of images, using the same
-mask as for masking). This step is present in almost all the
-:doc:`examples <auto_examples/index>` provided in Nilearn.
-
+Once voxel signals have been processed, the result can be visualized as
+images after unmasking (turning voxel signals into a series of images,
+using the same mask as for masking). This step is present in almost all
+the :ref:`examples <examples-index>` provided in Nilearn. Below is
+an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
+<example_plot_haxby_anova_svm.py>`):
 
 .. literalinclude:: ../../plot_haxby_anova_svm.py
-    :start-after: ### Look at the discriminating weights
+    :start-after: ### Look at the SVC's discriminating weights
     :end-before: # We use a masked array so that the voxels at '-1' are displayed
 
 
@@ -324,8 +369,8 @@ algorithm:
    :end-before: print("-- Displaying results")
 
 
-NiftiLabelsMasker Usage
------------------------
+:class:`NiftiLabelsMasker` Usage
+---------------------------------
 
 Usage of :class:`NiftiLabelsMasker` is similar to that of
 :class:`NiftiMapsMasker`. The main difference is that it requires a labels image
