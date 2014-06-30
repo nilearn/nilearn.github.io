@@ -2,11 +2,12 @@
 Voxel-Based Morphometry on Oasis dataset
 ========================================
 
-This example used Voxel-Based Morphometry (VBM) to study the relationship
+This example uses Voxel-Based Morphometry (VBM) to study the relationship
 between aging and gray matter density.
 
-The data comes from the `OASIS <http://www.oasis-brains.org/>`_ project.
-If you use it, you need to agree with the terms of use on the website.
+The data come from the `OASIS <http://www.oasis-brains.org/>`_ project.
+If you use it, you need to agree with the data usage agreement available
+on the website.
 
 It has been run through a standard VBM pipeline (using SPM8 and
 NewSegment) to create VBM maps, which we study here.
@@ -29,7 +30,7 @@ Brain mapping with mass univariate
 
 SVM weights are very noisy, partly because heavy smoothing is detrimental
 for the prediction here. A standard analysis using mass-univariate GLM
-(here permute to have exact correction for multiple comparisons) gives a
+(here permuted to have exact correction for multiple comparisons) gives a
 much clearer view of the important regions.
 
 ____
@@ -37,6 +38,7 @@ ____
 """
 # Authors: Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
+#          Gael Varoquaux, Apr 2014
 import numpy as np
 import matplotlib.pyplot as plt
 import nibabel
@@ -95,15 +97,14 @@ coef = feature_selection.inverse_transform(coef)
 # reverse masking
 weight_niimg = nifti_masker.inverse_transform(coef)
 
-# We use a masked array so that the voxels at '-1' are displayed
-# transparently
+# We use a masked array so that the voxels at '-1' are transparent
 weights = np.ma.masked_array(weight_niimg.get_data(),
                              weight_niimg.get_data() == 0)
 
 ### Create the figure
 background_img = nibabel.load(dataset_files.gray_matter_maps[0]).get_data()
 picked_slice = 36
-plt.figure(figsize=(5, 5))
+plt.figure(figsize=(5.5, 5.5))
 data_for_plot = weights[:, :, picked_slice, 0]
 vmax = max(np.min(data_for_plot), np.max(data_for_plot)) * 0.5
 plt.imshow(np.rot90(background_img[:, :, picked_slice]), cmap=plt.cm.gray,
@@ -113,7 +114,6 @@ im = plt.imshow(np.rot90(data_for_plot), cmap=plt.cm.Spectral_r,
 plt.axis('off')
 plt.colorbar(im)
 plt.title('SVM weights')
-plt.tight_layout()
 
 ### Measure accuracy with cross validation
 from sklearn.cross_validation import cross_val_score
@@ -130,28 +130,30 @@ print "Massively univariate model"
 
 ### Statistical inference
 from nilearn.mass_univariate import permuted_ols
-neg_log_pvals, all_scores, _ = permuted_ols(
+neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     age, gm_maps_masked,  # + intercept as a covariate by default
-    n_perm=5000,  # In the interest of time; 10000 would be better
+    n_perm=1000,  # 1,000 in the interest of time; 10000 would be better
     n_jobs=1)  # can be changed to use more CPUs
-neg_log_pvals_unmasked = nifti_masker.inverse_transform(
-    neg_log_pvals).get_data()[..., 0]
+signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
+signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
+    signed_neg_log_pvals).get_data()
 
 ### Show results
 # background anat
-plt.figure(figsize=(5, 5))
+plt.figure(figsize=(5.5, 5.5))
 vmin = -np.log10(0.1)  # 10% corrected
-masked_pvals = np.ma.masked_less(neg_log_pvals_unmasked, vmin)
+vmax = np.amax(neg_log_pvals)
+masked_pvals = np.ma.masked_inside(signed_neg_log_pvals_unmasked,
+                                   -vmin, vmin)[..., 0]
 print '\n%d detections' % (~masked_pvals.mask[..., picked_slice]).sum()
 plt.imshow(np.rot90(background_img[:, :, picked_slice]),
            interpolation='nearest', cmap=plt.cm.gray, vmin=0., vmax=1.)
 im = plt.imshow(np.rot90(masked_pvals[:, :, picked_slice]),
-                interpolation='nearest', cmap=plt.cm.autumn,
-                vmin=vmin, vmax=np.amax(neg_log_pvals_unmasked))
+                interpolation='nearest', cmap=plt.cm.RdBu_r,
+                vmin=-vmax, vmax=vmax)
 plt.axis('off')
 plt.colorbar(im)
 plt.title(r'Negative $\log_{10}$ p-values'
           + '\n(Non-parametric + max-type correction)\n')
-plt.tight_layout()
 
 plt.show()
