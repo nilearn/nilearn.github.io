@@ -26,6 +26,9 @@
     <script type="text/javascript" src="../_static/copybutton.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="top" title="Machine learning for NeuroImaging" href="../index.html" />
+    <link rel="up" title="2. NeuroImaging data analysis pipelines" href="index.html" />
+    <link rel="next" title="2.2. Parcellating the brain in regions" href="parcellating.html" />
+    <link rel="prev" title="2. NeuroImaging data analysis pipelines" href="index.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
@@ -149,13 +152,20 @@ $(function () {
         <li class="right" style="margin-right: 10px">
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a></li>
+        <li class="right" >
+          <a href="parcellating.html" title="2.2. Parcellating the brain in regions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="2. NeuroImaging data analysis pipelines"
+             accesskey="P">previous</a> |</li>
 <li><a href="../index.html">NiLearn Home</a> |&nbsp;</li>
 <li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
 <li><a href="../auto_examples/index.html">Examples</a> |&nbsp;</li>
 <li><a href="../modules/reference.html">Reference</a> |&nbsp;</li>
 <li id="navbar-about"><a href="../AUTHORS.html">About</a>|&nbsp;</li>
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
- 
+
+          <li><a href="index.html" accesskey="U">2. NeuroImaging data analysis pipelines</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -168,7 +178,7 @@ $(function () {
                     scikit-learn</a> if you use it.</p></li>
   </ul>
 
-  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <h3><a href="../user_guide.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">2.1. Decoding: predicting behavior or phenotype from brain images</a><ul>
 <li><a class="reference internal" href="#data-loading-and-preparation">2.1.1. Data loading and preparation</a><ul>
@@ -206,6 +216,12 @@ $(function () {
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">2. NeuroImaging data analysis pipelines</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="parcellating.html"
+                        title="next chapter">2.2. Parcellating the brain in regions</a></p>
 
 <div class="navbar">
 </div> <!-- end navbar -->
@@ -270,7 +286,8 @@ corresponding category.</p>
 <div class="section" id="loading-the-data-into-python">
 <h3>2.1.1.2. Loading the data into Python<a class="headerlink" href="#loading-the-data-into-python" title="Permalink to this headline">¶</a></h3>
 <p>Launch ipython:</p>
-<div class="highlight-python"><pre>$ ipython -pylab</pre>
+<div class="highlight-python"><div class="highlight"><pre>$ ipython -pylab
+</pre></div>
 </div>
 <p>First, load the data using nilearn&#8217;s data downloading function,
 <a class="reference internal" href="../modules/generated/nilearn.datasets.fetch_haxby_simple.html#nilearn.datasets.fetch_haxby_simple" title="nilearn.datasets.fetch_haxby_simple"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.datasets.fetch_haxby_simple</span></tt></a>:</p>
@@ -312,12 +329,12 @@ our analysis to the <cite>face</cite> and <cite>cat</cite> conditions:</p>
 n_features) (see <a class="reference internal" href="../building_blocks/manipulating_mr_images.html#mask-4d-2-3d"><em>From 4D to 2D arrays</em></a> for a discussion on using masks).</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">simingly-minor data preparation can matter a lot on the final score,
+<p class="last">seemingly minor data preparation can matter a lot on the final score,
 for instance standardizing the data.</p>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <span class="n">NiftiMasker</span>
 <span class="c"># For decoding, standardizing is often very important</span>
-<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 <span class="c"># We give the nifti_masker a filename and retrieve a 2D array ready</span>
 <span class="c"># for machine learning with scikit-learn</span>
@@ -346,16 +363,16 @@ for instance standardizing the data.</p>
 label <strong>y</strong> given a set <strong>X</strong> of images.</p>
 <p>We use here a simple <a class="reference external" href="http://scikit-learn.org/stable/modules/svm.html">Support Vector Classification</a> (or SVC) with a
 linear kernel. We first import the correct module from scikit-learn and we
-define the classifier, <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="(in scikit-learn v0.15.1)"><tt class="xref py py-class docutils literal"><span class="pre">sklearn.svm.SVC</span></tt></a>:</p>
+define the classifier, <a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="(in scikit-learn v0.15)"><tt class="xref py py-class docutils literal"><span class="pre">sklearn.svm.SVC</span></tt></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
 <span class="n">svc</span> <span class="o">=</span> <span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The documentation of the object details all parameters. In IPython, it
 can be displayed as follows:</p>
-<div class="highlight-python"><pre>In [10]: svc?
+<div class="highlight-python"><div class="highlight"><pre>In [10]: svc?
 Type:             SVC
-Base Class:       &lt;class 'sklearn.svm.libsvm.SVC'&gt;
+Base Class:       &lt;class &#39;sklearn.svm.libsvm.SVC&#39;&gt;
 String Form:
 SVC(kernel=linear, C=1.0, probability=False, degree=3, coef0=0.0, eps=0.001,
 cache_size=100.0, shrinking=True, gamma=0.0)
@@ -366,7 +383,8 @@ Docstring:
     ----------
     C : float, optional (default=1.0)
         penalty parameter C of the error term.
-...</pre>
+...
+</pre></div>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
@@ -389,7 +407,7 @@ unknown):</li>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last"><strong>Do predict on data used by the fit:</strong> the prediction that we obtain here
+<p class="last"><strong>Do not predict on data used by the fit:</strong> the prediction that we obtain here
 is to good to be true (see next paragraph). Here we are just doing a sanity
 check.</p>
 </div>
@@ -403,7 +421,7 @@ check.</p>
 the same set of data. We need to use a cross-validation to split the data
 into different sets, called &#8220;folds&#8221;, in a <a class="reference external" href="http://en.wikipedia.org/wiki/Cross-validation_(statistics)#k-fold_cross-validation">K-Fold strategy</a>.</p>
 <p>We use a cross-validation object,
-<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.KFold.html#sklearn.cross_validation.KFold" title="(in scikit-learn v0.15.1)"><tt class="xref py py-class docutils literal"><span class="pre">sklearn.cross_validation.KFold</span></tt></a>, that simply generates the
+<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.KFold.html#sklearn.cross_validation.KFold" title="(in scikit-learn v0.15)"><tt class="xref py py-class docutils literal"><span class="pre">sklearn.cross_validation.KFold</span></tt></a>, that simply generates the
 indices of the folds within a loop.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">KFold</span>
 
@@ -420,7 +438,7 @@ indices of the folds within a loop.</p>
 </pre></div>
 </div>
 <p>There is a specific function,
-<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score" title="(in scikit-learn v0.15.1)"><tt class="xref py py-func docutils literal"><span class="pre">sklearn.cross_validation.cross_val_score</span></tt></a> that computes for you
+<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score" title="(in scikit-learn v0.15)"><tt class="xref py py-func docutils literal"><span class="pre">sklearn.cross_validation.cross_val_score</span></tt></a> that computes for you
 the score for the different folds of cross-validation:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">cross_val_score</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">fmri_masked</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
@@ -455,7 +473,7 @@ the prediction error (a rule of thumb is to use 10 to 20% of the data).</li>
 <p>Here, in the Haxby example, we are going to leave a session out, in order
 to have a test set independent from the train set. For this, we are going
 to use the session label, present in the behavioral data file, and
-<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.LeaveOneLabelOut.html#sklearn.cross_validation.LeaveOneLabelOut" title="(in scikit-learn v0.15.1)"><tt class="xref py py-class docutils literal"><span class="pre">sklearn.cross_validation.LeaveOneLabelOut</span></tt></a>:</p>
+<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.LeaveOneLabelOut.html#sklearn.cross_validation.LeaveOneLabelOut" title="(in scikit-learn v0.15)"><tt class="xref py py-class docutils literal"><span class="pre">sklearn.cross_validation.LeaveOneLabelOut</span></tt></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">LeaveOneLabelOut</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">session_label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s">&#39;chunks&#39;</span><span class="p">]</span> 
 <span class="gp">&gt;&gt;&gt; </span><span class="c"># We need to remember to remove the rest conditions</span>
@@ -483,9 +501,9 @@ to use the session label, present in the behavioral data file, and
 </div>
 <div class="section" id="choice-of-the-prediction-accuracy-measure">
 <h4>2.1.2.2.3. Choice of the prediction accuracy measure<a class="headerlink" href="#choice-of-the-prediction-accuracy-measure" title="Permalink to this headline">¶</a></h4>
-<p>The default metric used for measuring errors is the accuracy score, ie
+<p>The default metric used for measuring errors is the accuracy score, i.e.
 the number of total errors. It is not always a sensible metric,
-especially in the case of very imbalance classes, as in such situation
+especially in the case of very imbalanced classes, as in such situations
 choosing the dominant class can achieve a low number of errors.</p>
 <p>Other metrics, such as the f1-score, can be used:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">fmri_masked</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span>  <span class="n">scoring</span><span class="o">=</span><span class="s">&#39;f1&#39;</span><span class="p">)</span>
@@ -500,14 +518,14 @@ choosing the dominant class can achieve a low number of errors.</p>
 <h4>2.1.2.2.4. Measuring the chance level<a class="headerlink" href="#measuring-the-chance-level" title="Permalink to this headline">¶</a></h4>
 <p><strong>Dummy estimators</strong>: The simplest way to measure prediction performance
 at chance, is to use a dummy classifier,
-<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier" title="(in scikit-learn v0.15.1)"><tt class="xref py py-class docutils literal"><span class="pre">sklearn.dummy.DummyClassifier</span></tt></a>:</p>
+<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier" title="(in scikit-learn v0.15)"><tt class="xref py py-class docutils literal"><span class="pre">sklearn.dummy.DummyClassifier</span></tt></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.dummy</span> <span class="kn">import</span> <span class="n">DummyClassifier</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">null_cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">DummyClassifier</span><span class="p">(),</span> <span class="n">fmri_masked</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Permutation testing</strong>: A more controlled way, but slower, is to do
 permutation testing on the labels, with
-<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.permutation_test_score.html#sklearn.cross_validation.permutation_test_score" title="(in scikit-learn v0.15.1)"><tt class="xref py py-func docutils literal"><span class="pre">sklearn.cross_validation.permutation_test_score</span></tt></a>:</p>
+<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.permutation_test_score.html#sklearn.cross_validation.permutation_test_score" title="(in scikit-learn v0.15)"><tt class="xref py py-func docutils literal"><span class="pre">sklearn.cross_validation.permutation_test_score</span></tt></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">permutation_test_score</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">null_cv_scores</span> <span class="o">=</span> <span class="n">permutation_test_score</span><span class="p">(</span><span class="n">svc</span><span class="p">,</span> <span class="n">fmri_masked</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
 </pre></div>
@@ -584,12 +602,12 @@ large number of voxels and not all are useful for
 face vs cat prediction. We thus add a <a class="reference external" href="http://scikit-learn.org/stable/modules/feature_selection.html">feature selection</a>
 procedure. The idea is to select the <cite>k</cite> voxels most correlated to the
 task.</p>
-<p>For this, we need to import the <a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection" title="(in scikit-learn v0.15.1)"><tt class="xref py py-mod docutils literal"><span class="pre">sklearn.feature_selection</span></tt></a> module and use
-<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" title="(in scikit-learn v0.15.1)"><tt class="xref py py-func docutils literal"><span class="pre">sklearn.feature_selection.f_classif</span></tt></a>, a simple F-score
+<p>For this, we need to import the <a class="reference external" href="http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection" title="(in scikit-learn v0.15)"><tt class="xref py py-mod docutils literal"><span class="pre">sklearn.feature_selection</span></tt></a> module and use
+<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" title="(in scikit-learn v0.15)"><tt class="xref py py-func docutils literal"><span class="pre">sklearn.feature_selection.f_classif</span></tt></a>, a simple F-score
 based feature selection (a.k.a.
 <a class="reference external" href="http://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test">Anova</a>),
 that we will put before the SVC in a <cite>pipeline</cite>
-(<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="(in scikit-learn v0.15.1)"><tt class="xref py py-class docutils literal"><span class="pre">sklearn.pipeline.Pipeline</span></tt></a>):</p>
+(<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="(in scikit-learn v0.15)"><tt class="xref py py-class docutils literal"><span class="pre">sklearn.pipeline.Pipeline</span></tt></a>):</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">SelectKBest</span><span class="p">,</span> <span class="n">f_classif</span>
 
 <span class="c">### Define the dimension reduction to be used.</span>
@@ -746,18 +764,25 @@ to study it.</li>
         <li class="right" style="margin-right: 10px">
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a></li>
+        <li class="right" >
+          <a href="parcellating.html" title="2.2. Parcellating the brain in regions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="2. NeuroImaging data analysis pipelines"
+             >previous</a> |</li>
 <li><a href="../index.html">NiLearn Home</a> |&nbsp;</li>
 <li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
 <li><a href="../auto_examples/index.html">Examples</a> |&nbsp;</li>
 <li><a href="../modules/reference.html">Reference</a> |&nbsp;</li>
 <li id="navbar-about"><a href="../AUTHORS.html">About</a>|&nbsp;</li>
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
- 
+
+          <li><a href="index.html" >2. NeuroImaging data analysis pipelines</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
             &copy; INRIA Parietal 2010-2013.
-          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2b1.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.
         <span style="padding-left: 5ex;">
           <a href="../_sources/data_analysis/decoding.txt"
         	 rel="nofollow">Show this page source</a>
