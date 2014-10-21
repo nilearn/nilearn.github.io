@@ -183,7 +183,6 @@ $(function () {
 <li><a class="reference internal" href="#">2.3. Extracting resting-state networks</a><ul>
 <li><a class="reference internal" href="#data-preparation">2.3.1. Data preparation</a><ul>
 <li><a class="reference internal" href="#retrieving-example-data">2.3.1.1. Retrieving example data</a></li>
-<li><a class="reference internal" href="#computing-a-mean-epi-image">2.3.1.2. Computing a mean EPI image</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#applying-canica">2.3.2. Applying CanICA</a></li>
@@ -242,42 +241,6 @@ on data loading</em></a>):</p>
 
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span><span class="p">()</span>
 <span class="n">func_files</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">func</span> <span class="c"># The list of 4D nifti files for each subject</span>
-
-<span class="c">### Apply CanICA ##############################################################</span>
-<span class="kn">from</span> <span class="nn">nilearn.decomposition.canica</span> <span class="kn">import</span> <span class="n">CanICA</span>
-
-<span class="n">n_components</span> <span class="o">=</span> <span class="mi">20</span>
-<span class="n">canica</span> <span class="o">=</span> <span class="n">CanICA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mf">6.</span><span class="p">,</span>
-                <span class="n">memory</span><span class="o">=</span><span class="s">&quot;nilearn_cache&quot;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-                <span class="n">threshold</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">canica</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">func_files</span><span class="p">)</span>
-
-<span class="c"># Retrieve the independent components in brain space</span>
-<span class="n">components_img</span> <span class="o">=</span> <span class="n">canica</span><span class="o">.</span><span class="n">masker_</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">canica</span><span class="o">.</span><span class="n">components_</span><span class="p">)</span>
-<span class="c"># components_img is a Nifti Image object, and can be saved to a file with</span>
-<span class="c"># the following line:</span>
-<span class="n">components_img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s">&#39;canica_resting_state.nii.gz&#39;</span><span class="p">)</span>
-
-<span class="c">### Visualize the results #####################################################</span>
-<span class="c"># Show some interesting components</span>
-<span class="kn">import</span> <span class="nn">nibabel</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <span class="n">plot_stat_map</span>
-
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_components</span><span class="p">):</span>
-    <span class="n">plot_stat_map</span><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">components_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span>
-                                      <span class="n">components_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()),</span>
-                  <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;z&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;IC </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                  <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="computing-a-mean-epi-image">
-<h3>2.3.1.2. Computing a mean EPI image<a class="headerlink" href="#computing-a-mean-epi-image" title="Permalink to this headline">¶</a></h3>
-<p>To visualize the results, a mean EPI image is useful:</p>
-<div class="highlight-python"><div class="highlight"><pre>
 </pre></div>
 </div>
 </div>
@@ -287,7 +250,7 @@ on data loading</em></a>):</p>
 <p><a class="reference internal" href="../modules/generated/nilearn.decomposition.CanICA.html#nilearn.decomposition.CanICA" title="nilearn.decomposition.CanICA"><tt class="xref py py-class docutils literal"><span class="pre">CanICA</span></tt></a> is a ready-to-use object that can be applied to
 multi-subject Nifti data, for instance presented as filenames, and will
 perform a multi-subject ICA decomposition following the CanICA model.
-As with every object in nilearn, we give it&#8217;s parameters at construction,
+As with every object in nilearn, we give its parameters at construction,
 and then fit it on the data.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.decomposition.canica</span> <span class="kn">import</span> <span class="n">CanICA</span>
 
@@ -309,8 +272,7 @@ object.</p>
 </div>
 <div class="section" id="visualizing-the-results">
 <h2>2.3.3. Visualizing the results<a class="headerlink" href="#visualizing-the-results" title="Permalink to this headline">¶</a></h2>
-<p>We can visualize the components as in the previous examples. As before,
-we use masked arrays (<cite>np.ma</cite>) to create transparency in the overlays.</p>
+<p>We can visualize the components as in the previous examples.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># Show some interesting components</span>
 <span class="kn">import</span> <span class="nn">nibabel</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
