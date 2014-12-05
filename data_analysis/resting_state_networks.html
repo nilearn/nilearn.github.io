@@ -237,12 +237,6 @@ fMRI datasets&#8221;, <a class="reference external" href="http://www.sciencedire
 preprocessed using <a class="reference external" href="http://fcp-indi.github.io/">CPAC</a>. We use nilearn
 functions to fetch data from Internet and get the filenames (<a class="reference internal" href="../building_blocks/manipulating_mr_images.html#loading-data"><em>more
 on data loading</em></a>):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span><span class="p">()</span>
-<span class="n">func_files</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">func</span> <span class="c"># The list of 4D nifti files for each subject</span>
-</pre></div>
-</div>
 </div>
 </div>
 <div class="section" id="applying-canica">
@@ -252,41 +246,12 @@ multi-subject Nifti data, for instance presented as filenames, and will
 perform a multi-subject ICA decomposition following the CanICA model.
 As with every object in nilearn, we give its parameters at construction,
 and then fit it on the data.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.decomposition.canica</span> <span class="kn">import</span> <span class="n">CanICA</span>
-
-<span class="n">n_components</span> <span class="o">=</span> <span class="mi">20</span>
-<span class="n">canica</span> <span class="o">=</span> <span class="n">CanICA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mf">6.</span><span class="p">,</span>
-                <span class="n">memory</span><span class="o">=</span><span class="s">&quot;nilearn_cache&quot;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-                <span class="n">threshold</span><span class="o">=</span><span class="mf">3.</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">canica</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">func_files</span><span class="p">)</span>
-
-<span class="c"># Retrieve the independent components in brain space</span>
-<span class="n">components_img</span> <span class="o">=</span> <span class="n">canica</span><span class="o">.</span><span class="n">masker_</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">canica</span><span class="o">.</span><span class="n">components_</span><span class="p">)</span>
-<span class="c"># components_img is a Nifti Image object, and can be saved to a file with</span>
-<span class="c"># the following line:</span>
-<span class="n">components_img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s">&#39;canica_resting_state.nii.gz&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>The components estimated are found as the <cite>components_</cite> attribute of the
 object.</p>
 </div>
 <div class="section" id="visualizing-the-results">
 <h2>2.3.3. Visualizing the results<a class="headerlink" href="#visualizing-the-results" title="Permalink to this headline">¶</a></h2>
 <p>We can visualize the components as in the previous examples.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Show some interesting components</span>
-<span class="kn">import</span> <span class="nn">nibabel</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <span class="n">plot_stat_map</span>
-
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_components</span><span class="p">):</span>
-    <span class="n">plot_stat_map</span><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">components_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span>
-                                      <span class="n">components_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()),</span>
-                  <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;z&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;IC </span><span class="si">%d</span><span class="s">&quot;</span><span class="o">%</span><span class="n">i</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                  <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
 <p><a class="reference external" href="../auto_examples/plot_canica_resting_state.html"><img alt="left_img" src="../_images/plot_canica_resting_state_21.png" style="width: 48%;" /></a> <a class="reference external" href="../auto_examples/plot_canica_resting_state.html"><img alt="right_img" src="../_images/plot_canica_resting_state_31.png" style="width: 48%;" /></a></p>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>

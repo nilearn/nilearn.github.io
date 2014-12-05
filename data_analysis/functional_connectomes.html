@@ -273,15 +273,6 @@ subjects.</li>
 <p>We simulate several sets of signals, one set representing one subject,
 with different precision matrices, but sharing a common sparsity pattern:
 10 brain regions, for 20 subjects:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn._utils.testing</span> <span class="kn">import</span> <span class="n">generate_group_sparse_gaussian_graphs</span>
-
-<span class="n">n_subjects</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c"># number of subjects</span>
-<span class="n">n_displayed</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c"># number of subjects displayed</span>
-<span class="n">subjects</span><span class="p">,</span> <span class="n">precisions</span><span class="p">,</span> <span class="n">topology</span> <span class="o">=</span> <span class="n">generate_group_sparse_gaussian_graphs</span><span class="p">(</span>
-    <span class="n">n_subjects</span><span class="o">=</span><span class="n">n_subjects</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_n_samples</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">max_n_samples</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
-    <span class="n">density</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
-</pre></div>
-</div>
 <p><cite>subjects</cite> and <cite>precisions</cite> are lists containing respectively each
 subject&#8217;s signals and the corresponding true precision matrices used
 in the generation (ground truth). <cite>topology</cite> is a single array with
@@ -296,47 +287,16 @@ to get models that might be expected to be valid at the population
 level.</p>
 <p>A single-subject estimation can be performed using the Graph Lasso
 estimator from the scikit-learn:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.covariance</span> <span class="kn">import</span> <span class="n">GraphLassoCV</span>
-<span class="n">gl</span> <span class="o">=</span> <span class="n">GraphLassoCV</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">subject</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">subjects</span><span class="p">[:</span><span class="n">n_displayed</span><span class="p">]):</span>
-    <span class="n">gl</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>After calling <cite>fit</cite>, the estimated precision matrix can be plotted
 using:</p>
-<div class="highlight-python"><div class="highlight"><pre>    <span class="n">plot_matrix</span><span class="p">(</span><span class="n">gl</span><span class="o">.</span><span class="n">precision_</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>where <cite>plot_matrix</cite> is a convenience function to avoid repeating the
 same code. It draws the matrix as an image, taking care of using a
 symmetric range, so that zero values are just in the middle of the
 colormap (white in that case):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">plot_matrix</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">):</span>
-    <span class="n">abs_max</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">RdBu_r</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span>
-              <span class="n">vmin</span><span class="o">=-</span><span class="n">abs_max</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">abs_max</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>It is also possible to fit a graph lasso on data from every subject at
 once:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="n">gl</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">subjects</span><span class="p">))</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">n_displayed</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="n">plot_matrix</span><span class="p">(</span><span class="n">gl</span><span class="o">.</span><span class="n">precision_</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&quot;graph lasso, all subjects</span><span class="se">\n</span><span class="s">$</span><span class="se">\\</span><span class="s">alpha=</span><span class="si">%.2f</span><span class="s">$&quot;</span> <span class="o">%</span> <span class="n">gl</span><span class="o">.</span><span class="n">alpha_</span><span class="p">)</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
 <p>Running a group-sparse estimation is very similar, the estimator comes
 from NiLearn this time:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.group_sparse_covariance</span> <span class="kn">import</span> <span class="n">GroupSparseCovarianceCV</span>
-<span class="n">gsc</span> <span class="o">=</span> <span class="n">GroupSparseCovarianceCV</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">gsc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subjects</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>The results are shown on the following figure:</p>
 <a class="reference external image-reference" href="../auto_examples/plot_connect_comparison.html"><img alt="../_images/plot_connect_comparison_11.png" src="../_images/plot_connect_comparison_11.png" style="width: 600.0px; height: 420.0px;" /></a>
 <p>The group-sparse estimation outputs matrices with
