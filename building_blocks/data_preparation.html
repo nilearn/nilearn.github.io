@@ -271,6 +271,15 @@ build a brand new Nifti-like object to give it to the masker. Though it
 is possible, there is no need to save your data in a file to pass it to a
 <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a>. Simply use <a class="reference external" href="http://nipy.sourceforge.net/nibabel/">nibabel</a> to create a <a class="reference internal" href="manipulating_mr_images.html#niimg"><em>Niimg</em></a>
 in memory:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">nyu</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_nyu_rest</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">nyu_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">nyu</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="c"># Restrict nyu to 100 frames to speed up computation</span>
+<span class="n">nyu_func</span> <span class="o">=</span> <span class="n">nyu_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">100</span><span class="p">]</span>
+
+<span class="c"># nyu_func is a 4D-array, we want to make an img out of it:</span>
+<span class="n">nyu_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">nyu_func</span><span class="p">,</span> <span class="n">nyu_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">())</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="controlling-how-the-mask-is-computed-from-the-data">
 <h3>3.2.1.2. Controlling how the mask is computed from the data<a class="headerlink" href="#controlling-how-the-mask-is-computed-from-the-data" title="Permalink to this headline">¶</a></h3>
@@ -293,6 +302,12 @@ can use as a reference.</p>
 </div>
 <p>The first step is to generate a mask with default parameters and take
 a look at it.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># We need to specify an &#39;epi&#39; mask_strategy, as this is raw EPI data</span>
+<span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_strategy</span><span class="o">=</span><span class="s">&#39;epi&#39;</span><span class="p">)</span>
+<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">nyu_img</span><span class="p">)</span>
+<span class="n">plot_roi</span><span class="p">(</span><span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="p">,</span> <span class="n">nyu_mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;EPI automatic mask&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <hr class="docutils" />
 <div class="figure align-right">
 <a class="reference external image-reference" href="../auto_examples/plot_mask_computation.html"><img alt="../_images/plot_mask_computation_31.png" src="../_images/plot_mask_computation_31.png" style="width: 330.0px; height: 130.0px;" /></a>
@@ -300,6 +315,11 @@ a look at it.</p>
 <p>We can make the outline of the mask more by increasing the number of
 opening steps (<em>opening=10</em>) using the <cite>mask_args</cite> argument of the
 <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_strategy</span><span class="o">=</span><span class="s">&#39;epi&#39;</span><span class="p">,</span> <span class="n">mask_args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">opening</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">nyu_img</span><span class="p">)</span>
+<span class="n">plot_roi</span><span class="p">(</span><span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="p">,</span> <span class="n">nyu_mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;EPI Mask with strong opening&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <hr class="docutils" />
 <p>Looking at the <a class="reference internal" href="generated/nilearn.masking.compute_epi_mask.html#nilearn.masking.compute_epi_mask" title="nilearn.masking.compute_epi_mask"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.masking.compute_epi_mask</span></tt></a> called by the
 <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> object, we see two interesting parameters:
@@ -311,10 +331,17 @@ voxels that are very light on the EPI image.</p>
 <div class="figure align-right">
 <a class="reference external image-reference" href="../auto_examples/plot_mask_computation.html"><img alt="../_images/plot_mask_computation_41.png" src="../_images/plot_mask_computation_41.png" style="width: 330.0px; height: 130.0px;" /></a>
 </div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_strategy</span><span class="o">=</span><span class="s">&#39;epi&#39;</span><span class="p">,</span>
+                     <span class="n">mask_args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">upper_cutoff</span><span class="o">=.</span><span class="mi">9</span><span class="p">,</span> <span class="n">lower_cutoff</span><span class="o">=.</span><span class="mi">8</span><span class="p">,</span>
+                                    <span class="n">opening</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">nyu_img</span><span class="p">)</span>
+<span class="n">plot_roi</span><span class="p">(</span><span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="p">,</span> <span class="n">nyu_mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;EPI Mask: high lower_cutoff&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The full example described in this section can be found here:
-<a class="reference internal" href="../auto_examples/plot_mask_computation.html"><em>plot_mask_computation.py</em></a>.
+<a class="reference internal" href="../auto_examples/manipulating_images_and_visualization/plot_mask_computation.html"><em>plot_mask_computation.py</em></a>.
 This one can be relevant too:
 <a class="reference internal" href="../auto_examples/plot_nifti_simple.html"><em>plot_nifti_simple.py</em></a>.</p>
 </div>
@@ -411,7 +438,14 @@ and run the script: does it have a big impact on the result?</p>
 images after unmasking (turning voxel signals into a series of images,
 using the same mask as for masking). This step is present in almost all
 the <a class="reference internal" href="../auto_examples/index.html#examples-index"><em>examples</em></a> provided in Nilearn. Below is
-an excerpt of <a class="reference internal" href="../auto_examples/plot_haxby_anova_svm.html#example-plot-haxby-anova-svm-py"><em>the example performing Anova-SVM on the Haxby data</em></a>):</p>
+an excerpt of <a class="reference internal" href="../auto_examples/decoding/plot_haxby_anova_svm.html#example-decoding-plot-haxby-anova-svm-py"><em>the example performing Anova-SVM on the Haxby data</em></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">coef</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">coef_</span>
+<span class="c"># reverse feature selection</span>
+<span class="n">coef</span> <span class="o">=</span> <span class="n">feature_selection</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span>
+<span class="c"># reverse masking</span>
+<span class="n">weight_img</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="extraction-of-signals-from-regions-niftilabelsmasker-niftimapsmasker">
@@ -446,16 +480,50 @@ difficult with this representation.</li>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The full example in this section can be found here:
-<a class="reference internal" href="../auto_examples/plot_adhd_covariance.html"><em>plot_adhd_covariance.py</em></a></p>
+<a class="reference internal" href="../auto_examples/connectivity/plot_adhd_covariance.html"><em>plot_adhd_covariance.py</em></a></p>
 </div>
 <p>Usage of <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMapsMasker</span></tt></a> is very close to the usage of
 <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a>. Only options specific to
 <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMapsMasker</span></tt></a> are described in this section.</p>
 <p>Nilearn provides several downloaders to get a brain parcellation. Load
 the <a class="reference external" href="https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/">MSDL one</a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">nilearn.datasets</span>
+<span class="n">atlas</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_msdl_atlas</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>This atlas defines its regions using maps. The path to the corresponding file
 can be found under the &#8220;maps&#8221; key. Extracting region signals for
 several subjects can be performed like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">dataset</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">nilearn.image</span>
+<span class="kn">import</span> <span class="nn">nilearn.input_data</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.externals.joblib</span> <span class="kn">import</span> <span class="n">Memory</span>
+<span class="n">mem</span> <span class="o">=</span> <span class="n">Memory</span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="p">)</span>
+
+<span class="c"># Number of subjects to consider for group-sparse covariance</span>
+<span class="n">n_subjects</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">subjects</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">subject_n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_subjects</span><span class="p">):</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&quot;func&quot;</span><span class="p">][</span><span class="n">subject_n</span><span class="p">]</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Processing file </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing confounds ...&quot;</span><span class="p">)</span>
+    <span class="n">confound_file</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&quot;confounds&quot;</span><span class="p">][</span><span class="n">subject_n</span><span class="p">]</span>
+    <span class="n">hv_confounds</span> <span class="o">=</span> <span class="n">mem</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">nilearn</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">high_variance_confounds</span><span class="p">)(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing region signals ...&quot;</span><span class="p">)</span>
+    <span class="n">masker</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">NiftiMapsMasker</span><span class="p">(</span>
+        <span class="n">atlas</span><span class="p">[</span><span class="s">&quot;maps&quot;</span><span class="p">],</span> <span class="n">resampling_target</span><span class="o">=</span><span class="s">&quot;maps&quot;</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">low_pass</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">high_pass</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">t_r</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">memory</span><span class="o">=</span><span class="n">mem</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">region_ts</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span>
+                                     <span class="n">confounds</span><span class="o">=</span><span class="p">[</span><span class="n">hv_confounds</span><span class="p">,</span> <span class="n">confound_file</span><span class="p">])</span>
+    <span class="n">subjects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">region_ts</span><span class="p">)</span>
+</pre></div>
+</div>
 <p><cite>region_ts</cite> is a <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html">numpy.ndarray</a>,
 containing one signal per column. The <cite>subjects</cite> list contains signals
 for several subjects. In this example, confounds removal is performed,
@@ -477,6 +545,17 @@ case, covariance between region signals can be obtained for each
 subject either using the <a class="reference external" href="http://biostatistics.oxfordjournals.org/content/9/3/432.short">graph lasso</a>
 or the <a class="reference external" href="http://arxiv.org/abs/1207.4255">group-sparse covariance</a>
 algorithm:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing group-sparse precision matrices ...&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">nilearn.group_sparse_covariance</span> <span class="kn">import</span> <span class="n">GroupSparseCovarianceCV</span>
+<span class="n">gsc</span> <span class="o">=</span> <span class="n">GroupSparseCovarianceCV</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">gsc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subjects</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing graph-lasso precision matrices ...&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">covariance</span>
+<span class="n">gl</span> <span class="o">=</span> <span class="n">covariance</span><span class="o">.</span><span class="n">GraphLassoCV</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">gl</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subjects</span><span class="p">[</span><span class="n">plotted_subject</span><span class="p">])</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="niftilabelsmasker-usage">
 <h3>3.2.2.3. <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="nilearn.input_data.NiftiLabelsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiLabelsMasker</span></tt></a> Usage<a class="headerlink" href="#niftilabelsmasker-usage" title="Permalink to this headline">¶</a></h3>

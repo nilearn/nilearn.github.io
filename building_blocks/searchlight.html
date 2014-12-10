@@ -243,6 +243,17 @@ classifier trained on the corresponding voxels is measured.</p>
 <h3>3.3.2.2.1. Loading<a class="headerlink" href="#loading" title="Permalink to this headline">¶</a></h3>
 <p>Fetching the data from internet and loading it can be done with the
 provided functions (see <a class="reference internal" href="manipulating_mr_images.html#loading-data"><em>Loading data</em></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">nibabel</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+
+<span class="n">dataset_files</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby_simple</span><span class="p">()</span>
+
+<span class="n">fmri_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
+<span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">session_target</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&quot;int&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="n">conditions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromtxt</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">conditions_target</span><span class="p">)[</span><span class="s">&#39;f0&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="reshaping-the-data">
 <h3>3.3.2.2.2. Reshaping the data<a class="headerlink" href="#reshaping-the-data" title="Permalink to this headline">¶</a></h3>
@@ -253,6 +264,14 @@ provided functions (see <a class="reference internal" href="manipulating_mr_imag
 <li>limit our analysis to the <cite>face</cite> and <cite>house</cite> conditions
 (like in the <a class="reference internal" href="../data_analysis/decoding.html#fmri-decoding"><em>decoding</em></a> example)</li>
 </ul>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">condition_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">conditions</span> <span class="o">==</span> <span class="s">&#39;face&#39;</span><span class="p">,</span> <span class="n">conditions</span> <span class="o">==</span> <span class="s">&#39;house&#39;</span><span class="p">)</span>
+
+<span class="n">fmri_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">fmri_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="n">condition_mask</span><span class="p">],</span>
+                               <span class="n">fmri_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+<span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">],</span> <span class="n">session</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
+<span class="n">conditions</span> <span class="o">=</span> <span class="n">conditions</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="masking">
 <h3>3.3.2.2.3. Masking<a class="headerlink" href="#masking" title="Permalink to this headline">¶</a></h3>
@@ -270,6 +289,17 @@ be used here :</p>
 <p><em>process_mask_img</em> will then be used to restrain computation to one slice, in the
 back of the brain. <em>mask_img</em> will ensure that no value outside the brain is
 taken into account when iterating with the sphere.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mask_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+
+<span class="c"># .astype() makes a copy.</span>
+<span class="n">process_mask</span> <span class="o">=</span> <span class="n">mask_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+<span class="n">picked_slice</span> <span class="o">=</span> <span class="mi">27</span>
+<span class="n">process_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">(</span><span class="n">picked_slice</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">process_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="n">picked_slice</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">process_mask</span><span class="p">[:,</span> <span class="mi">30</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">process_mask_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">process_mask</span><span class="p">,</span> <span class="n">mask_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">())</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="third-step-setting-up-the-searchlight">
@@ -297,6 +327,10 @@ is made.</p>
 validation method that does not take too much time.
 <em>K</em>-Fold along with <em>K</em> = 4 is a
 good compromise between running time and quality.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">KFold</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="running-searchlight">
@@ -306,6 +340,13 @@ The only
 parameter left is the radius of the ball that will run through the data.
 Kriegskorte et al. use a 4mm radius because it yielded the best detection
 performance in their simulation.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">searchlight</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">decoding</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span><span class="n">mask_img</span><span class="p">,</span>
+                                      <span class="n">process_mask_img</span><span class="o">=</span><span class="n">process_mask_img</span><span class="p">,</span>
+                                      <span class="n">radius</span><span class="o">=</span><span class="mf">5.6</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+                                      <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
+<span class="n">searchlight</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="visualization">
 <h2>3.3.2.5. Visualization<a class="headerlink" href="#visualization" title="Permalink to this headline">¶</a></h2>
@@ -316,7 +357,29 @@ background. We can see here that voxels in the visual cortex contains
 information to distinguish pictures showed to the volunteers, which was the
 expected result.</p>
 <div class="figure align-center">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_searchlight.html"><img alt="../_images/plot_haxby_searchlight_11.png" src="../_images/plot_haxby_searchlight_11.png" style="width: 132.0px; height: 137.4px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/decoding/plot_haxby_searchlight.html"><img alt="../_images/plot_haxby_searchlight_11.png" src="../_images/plot_haxby_searchlight_11.png" style="width: 132.0px; height: 137.4px;" /></a>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="c"># Use the fmri mean image as a surrogate of anatomical data</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">image</span>
+<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <span class="n">plot_stat_map</span>
+<span class="n">mean_fmri</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">mean_img</span><span class="p">(</span><span class="n">fmri_img</span><span class="p">)</span>
+
+<span class="n">plot_stat_map</span><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">searchlight</span><span class="o">.</span><span class="n">scores_</span><span class="p">,</span>
+                                  <span class="n">mean_fmri</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()),</span> <span class="n">mean_fmri</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s">&quot;Searchlight&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;z&quot;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">16</span><span class="p">],</span>
+              <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c">### F_score results</span>
+<span class="n">p_ma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p_unmasked</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
+<span class="n">plot_stat_map</span><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">p_ma</span><span class="p">,</span>
+                                  <span class="n">mean_fmri</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()),</span> <span class="n">mean_fmri</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s">&quot;F-scores&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;z&quot;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">16</span><span class="p">],</span>
+              <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
 </div>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
@@ -333,7 +396,16 @@ parametric tests (F-tests ot t-tests).
 Here we compute the <em>p-values</em> of the voxels <a class="footnote-reference" href="#id4" id="id2">[1]</a>.
 To display the results, we use the negative log of the p-value.</p>
 <div class="figure align-center">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_searchlight.html"><img alt="../_images/plot_haxby_searchlight_21.png" src="../_images/plot_haxby_searchlight_21.png" style="width: 132.0px; height: 137.4px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/decoding/plot_haxby_searchlight.html"><img alt="../_images/plot_haxby_searchlight_21.png" src="../_images/plot_haxby_searchlight_21.png" style="width: 132.0px; height: 137.4px;" /></a>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">p_ma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p_unmasked</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
+<span class="n">plot_stat_map</span><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">p_ma</span><span class="p">,</span>
+                                  <span class="n">mean_fmri</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()),</span> <span class="n">mean_fmri</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s">&quot;F-scores&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;z&quot;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">16</span><span class="p">],</span>
+              <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
 </div>
 <p>Parametric scores can be converted into p-values using a reference
 theoretical distribution, which is known under specific assumptions
@@ -362,6 +434,19 @@ distribution: The higher the rank of the original score, the smaller
 is its associated p-value. The
 <a class="reference internal" href="../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="nilearn.mass_univariate.permuted_ols"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.mass_univariate.permuted_ols</span></tt></a> function returns the
 p-values computed with a permutation test.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.mass_univariate</span> <span class="kn">import</span> <span class="n">permuted_ols</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># We use a two-sided t-test to compute p-values, but we keep trace of the</span>
+<span class="c"># effect sign to add it back at the end and thus observe the signed effect</span>
+<span class="n">neg_log_pvals</span><span class="p">,</span> <span class="n">t_scores_original_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">permuted_ols</span><span class="p">(</span>
+    <span class="n">grouped_conditions_encoded</span><span class="p">,</span> <span class="n">grouped_fmri_masked</span><span class="p">,</span>
+    <span class="c"># + intercept as a covariate by default</span>
+    <span class="n">n_perm</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">two_sided_test</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c"># can be changed to use more CPUs</span>
+<span class="n">signed_neg_log_pvals</span> <span class="o">=</span> <span class="n">neg_log_pvals</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">t_scores_original_data</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>The number of tests performed is generally large when full-brain
 analysis is performed (&gt; 50,000 voxels). This increases the
 probability of finding a significant activation by chance, a
@@ -379,7 +464,7 @@ every voxel so that the F-statistics are comparable. This correction
 strategy is applied in Nilearn&#8217;s
 <a class="reference internal" href="../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="nilearn.mass_univariate.permuted_ols"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.mass_univariate.permuted_ols</span></tt></a> function.</p>
 <div class="figure align-center">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_searchlight.html"><img alt="../_images/plot_haxby_mass_univariate_11.png" src="../_images/plot_haxby_mass_univariate_11.png" style="width: 240.0px; height: 330.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/manipulating_images_and_visualization/plot_haxby_searchlight.html"><img alt="../_images/plot_haxby_mass_univariate_11.png" src="../_images/plot_haxby_mass_univariate_11.png" style="width: 240.0px; height: 330.0px;" /></a>
 </div>
 <p>We observe that the results obtained with a permutation test are less
 conservative than the ones obtained with a Bonferroni correction

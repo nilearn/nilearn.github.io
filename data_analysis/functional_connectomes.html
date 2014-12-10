@@ -249,8 +249,8 @@ two regions.</p>
 covariances between two regions conditioned on all the others. It thus
 gives only direct connections between regions.</p>
 <p class="centered">
-<strong><a class="reference external image-reference" href="../auto_examples/plot_adhd_covariance.html"><img alt="covariance" src="../_images/plot_adhd_covariance_51.png" style="width: 312.0px; height: 234.0px;" /></a>
- <a class="reference external image-reference" href="../auto_examples/plot_adhd_covariance.html"><img alt="precision" src="../_images/plot_adhd_covariance_61.png" style="width: 312.0px; height: 234.0px;" /></a>
+<strong><a class="reference external image-reference" href="../auto_examples/connectivity/plot_adhd_covariance.html"><img alt="covariance" src="../_images/plot_adhd_covariance_51.png" style="width: 312.0px; height: 234.0px;" /></a>
+ <a class="reference external image-reference" href="../auto_examples/connectivity/plot_adhd_covariance.html"><img alt="precision" src="../_images/plot_adhd_covariance_61.png" style="width: 312.0px; height: 234.0px;" /></a>
 </strong></p><p>Sparsity in the inverse covariance matrix is important to reduce noise in
 the estimated connectome by limiting the number of edges (technicaly,
 this problem arises from multi-colinearity in time series, when the
@@ -273,6 +273,15 @@ subjects.</li>
 <p>We simulate several sets of signals, one set representing one subject,
 with different precision matrices, but sharing a common sparsity pattern:
 10 brain regions, for 20 subjects:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn._utils.testing</span> <span class="kn">import</span> <span class="n">generate_group_sparse_gaussian_graphs</span>
+
+<span class="n">n_subjects</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c"># number of subjects</span>
+<span class="n">n_displayed</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c"># number of subjects displayed</span>
+<span class="n">subjects</span><span class="p">,</span> <span class="n">precisions</span><span class="p">,</span> <span class="n">topology</span> <span class="o">=</span> <span class="n">generate_group_sparse_gaussian_graphs</span><span class="p">(</span>
+    <span class="n">n_subjects</span><span class="o">=</span><span class="n">n_subjects</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_n_samples</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">max_n_samples</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">density</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
 <p><cite>subjects</cite> and <cite>precisions</cite> are lists containing respectively each
 subject&#8217;s signals and the corresponding true precision matrices used
 in the generation (ground truth). <cite>topology</cite> is a single array with
@@ -287,18 +296,46 @@ to get models that might be expected to be valid at the population
 level.</p>
 <p>A single-subject estimation can be performed using the Graph Lasso
 estimator from the scikit-learn:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.covariance</span> <span class="kn">import</span> <span class="n">GraphLassoCV</span>
+<span class="n">gl</span> <span class="o">=</span> <span class="n">GraphLassoCV</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">subject</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">subjects</span><span class="p">[:</span><span class="n">n_displayed</span><span class="p">]):</span>
+    <span class="n">gl</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>After calling <cite>fit</cite>, the estimated precision matrix can be plotted
 using:</p>
+<div class="highlight-python"><div class="highlight"><pre>    <span class="n">plot_matrix</span><span class="p">(</span><span class="n">gl</span><span class="o">.</span><span class="n">precision_</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>where <cite>plot_matrix</cite> is a convenience function to avoid repeating the
 same code. It draws the matrix as an image, taking care of using a
 symmetric range, so that zero values are just in the middle of the
 colormap (white in that case):</p>
+<div class="highlight-python"><div class="highlight"><pre>
+</pre></div>
+</div>
 <p>It is also possible to fit a graph lasso on data from every subject at
 once:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="n">gl</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">subjects</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">n_displayed</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">plot_matrix</span><span class="p">(</span><span class="n">gl</span><span class="o">.</span><span class="n">precision_</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&quot;graph lasso, all subjects</span><span class="se">\n</span><span class="s">$</span><span class="se">\\</span><span class="s">alpha=</span><span class="si">%.2f</span><span class="s">$&quot;</span> <span class="o">%</span> <span class="n">gl</span><span class="o">.</span><span class="n">alpha_</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>Running a group-sparse estimation is very similar, the estimator comes
 from NiLearn this time:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.group_sparse_covariance</span> <span class="kn">import</span> <span class="n">GroupSparseCovarianceCV</span>
+<span class="n">gsc</span> <span class="o">=</span> <span class="n">GroupSparseCovarianceCV</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">gsc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subjects</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>The results are shown on the following figure:</p>
-<a class="reference external image-reference" href="../auto_examples/plot_connect_comparison.html"><img alt="../_images/plot_connect_comparison_11.png" src="../_images/plot_connect_comparison_11.png" style="width: 600.0px; height: 420.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/connectivity/plot_connect_comparison.html"><img alt="../_images/plot_connect_comparison_11.png" src="../_images/plot_connect_comparison_11.png" style="width: 600.0px; height: 420.0px;" /></a>
 <p>The group-sparse estimation outputs matrices with
 the same sparsity pattern, but different values for the non-zero
 coefficients. This is not the case for the graph lasso output, which
@@ -309,14 +346,14 @@ information.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The complete source code for this example can be found here:
-<a class="reference internal" href="../auto_examples/plot_connect_comparison.html"><em>plot_connect_comparison.py</em></a></p>
+<a class="reference internal" href="../auto_examples/connectivity/plot_connect_comparison.html"><em>plot_connect_comparison.py</em></a></p>
 </div>
 </div>
 </div>
 <div class="section" id="a-real-data-example">
 <h2>2.4.3. A real-data example<a class="headerlink" href="#a-real-data-example" title="Permalink to this headline">¶</a></h2>
 <p>For a detailed example on real data:
-<a class="reference internal" href="../auto_examples/plot_adhd_covariance.html"><em>plot_adhd_covariance.py</em></a></p>
+<a class="reference internal" href="../auto_examples/connectivity/plot_adhd_covariance.html"><em>plot_adhd_covariance.py</em></a></p>
 <hr class="docutils" />
 <p>A lot of technical details on the algorithm used for group-sparse
 estimation and its implementation can be found in <a class="reference internal" href="../developers/group_sparse_covariance.html"><em>Group-sparse covariance estimation</em></a>.</p>
