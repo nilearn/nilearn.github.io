@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1a1',
+        VERSION:     '0.1b1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -199,18 +199,14 @@ Classification accuracy: 1.000000  / Chance level: 0.500000
 <div class="highlight-python"><div class="highlight"><pre><span class="c">### Load Haxby dataset ########################################################</span>
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="n">dataset_files</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_haxby_simple.html#nilearn.datasets.fetch_haxby_simple"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby_simple</span></a><span class="p">()</span>
+<span class="n">haxby_dataset</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_haxby_simple.html#nilearn.datasets.fetch_haxby_simple"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby_simple</span></a><span class="p">()</span>
 
-<span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.loadtxt.html#numpy.loadtxt"><span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span></a><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">session_target</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&quot;int&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">conditions</span></a> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromtxt</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">conditions_target</span><span class="p">)[</span><span class="s">&#39;f0&#39;</span><span class="p">]</span>
-<span class="n">mask</span> <span class="o">=</span> <span class="n">dataset_files</span><span class="o">.</span><span class="n">mask</span>
-<span class="c"># fmri_data.shape is (40, 64, 64, 1452)</span>
-<span class="c"># and mask.shape is (40, 64, 64)</span>
+<span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.loadtxt.html#numpy.loadtxt"><span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span></a><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&quot;int&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">conditions</span></a> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromtxt</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">conditions_target</span><span class="p">)[</span><span class="s">&#39;f0&#39;</span><span class="p">]</span>
 
 <span class="c">### Preprocess data ###########################################################</span>
 
 <span class="c">### Restrict to faces and houses ##############################################</span>
-<span class="c"># Keep only data corresponding to faces or houses</span>
 <span class="n">condition_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">conditions</span></a> <span class="o">==</span> <span class="s">&#39;face&#39;</span><span class="p">,</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">conditions</span></a> <span class="o">==</span> <span class="s">&#39;house&#39;</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
 <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">conditions</span></a> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">conditions</span></a><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
@@ -220,11 +216,14 @@ Classification accuracy: 1.000000  / Chance level: 0.500000
 
 <span class="c">### Loading step ##############################################################</span>
 <span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
+
+<span class="n">mask_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask</span>
 <span class="c"># For decoding, standardizing is often very important</span>
-<a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">sessions</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-                           <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="s">&quot;nilearn_cache&quot;</span><span class="p">,</span>
-                           <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">X</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
+<a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">mask_filename</span><span class="p">,</span> <span class="n">sessions</span><span class="o">=</span><span class="n">session</span><span class="p">,</span>
+                           <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                           <span class="n">memory</span><span class="o">=</span><span class="s">&quot;nilearn_cache&quot;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">func_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span>
+<span class="n">X</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
 <span class="c"># Apply our condition_mask</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
 <span class="n">session</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
@@ -272,13 +271,12 @@ Classification accuracy: 1.000000  / Chance level: 0.500000
 <span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a>
 
 <span class="c"># Plot the mean image because we have no anatomic data</span>
-<span class="n">mean_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img"><span class="n">image</span><span class="o">.</span><span class="n">mean_img</span></a><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
+<span class="n">mean_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img"><span class="n">image</span><span class="o">.</span><span class="n">mean_img</span></a><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
 
 <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">weight_img</span><span class="p">,</span> <span class="n">mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;SVM weights&#39;</span><span class="p">)</span>
 
 <span class="c">### Saving the results as a Nifti file may also be important</span>
-<span class="kn">import</span> <span class="nn">nibabel</span>
-<span class="n">nibabel</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">weight_img</span><span class="p">,</span> <span class="s">&#39;haxby_face_vs_house.nii&#39;</span><span class="p">)</span>
+<span class="n">weight_img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s">&#39;haxby_face_vs_house.nii&#39;</span><span class="p">)</span>
 
 <span class="c">### Cross validation ##########################################################</span>
 
@@ -310,8 +308,8 @@ Classification accuracy: 1.000000  / Chance level: 0.500000
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  5.51 seconds
-( 0 minutes  5.51 seconds)</p>
+<p><strong>Total running time of the example:</strong>  5.34 seconds
+( 0 minutes  5.34 seconds)</p>
 </div>
 
 

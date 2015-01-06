@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1a1',
+        VERSION:     '0.1b1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -272,7 +272,7 @@ to the subjects from the brain activation.</p>
 <cite>recfromcsv</cite> is very useful to load this kind of data.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="c"># Load target information as string and give a numerical identifier to each</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="p">)</span>
 
 <span class="c"># scikit-learn &gt;= 0.14 supports text labels. You can replace this line by:</span>
 <span class="c"># target = labels[&#39;labels&#39;]</span>
@@ -321,12 +321,14 @@ provided with the Haxby dataset.</p>
 from 4D images to 2D arrays, but first it needs to &#8216;fit&#8217; this data in
 order to learn simple parameters from it, such as its shape:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <span class="n">NiftiMasker</span>
+<span class="n">mask_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="c"># For decoding, standardizing is often very important</span>
-<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">mask_filename</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
+<span class="n">func_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="c"># We give the nifti_masker a filename and retrieve a 2D array ready</span>
 <span class="c"># for machine learning with scikit-learn</span>
-<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
 
 <span class="c"># Restrict the classification to the face vs cat discrimination</span>
 <span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">fmri_masked</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
@@ -378,9 +380,8 @@ can take data of dimension 1D (resp. 2D) to convert it back to 3D
 <span class="c"># Reverse masking thanks to the Nifti Masker</span>
 <span class="n">coef_img</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef_</span><span class="p">)</span>
 
-<span class="c"># Use nibabel to save the coefficients as a Nifti image</span>
-<span class="kn">import</span> <span class="nn">nibabel</span>
-<span class="n">nibabel</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">coef_img</span><span class="p">,</span> <span class="s">&#39;haxby_svc_weights.nii&#39;</span><span class="p">)</span>
+<span class="c"># Save the coefficients as a Nifti image</span>
+<span class="n">coef_img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s">&#39;haxby_svc_weights.nii&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Here we want to see the discriminating weights of some voxels.</p>
@@ -397,7 +398,7 @@ discriminating weight.</p>
 <span class="kn">from</span> <span class="nn">nilearn.image.image</span> <span class="kn">import</span> <span class="n">mean_img</span>
 <span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <span class="n">plot_roi</span><span class="p">,</span> <span class="n">plot_stat_map</span>
 
-<span class="n">mean_epi</span> <span class="o">=</span> <span class="n">mean_img</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">mean_epi</span> <span class="o">=</span> <span class="n">mean_img</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
 <span class="n">plot_stat_map</span><span class="p">(</span><span class="n">coef_img</span><span class="p">,</span> <span class="n">mean_epi</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;SVM weights&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;yx&quot;</span><span class="p">)</span>
 
 <span class="n">plot_roi</span><span class="p">(</span><span class="n">nifti_masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="p">,</span> <span class="n">mean_epi</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;Mask&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;yx&quot;</span><span class="p">)</span>

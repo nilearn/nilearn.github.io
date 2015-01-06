@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1a1',
+        VERSION:     '0.1b1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -190,9 +190,9 @@ $(function () {
 study on a face vs cat discrimination task in a mask of the ventral
 stream.</p>
 <ul class="horizontal">
-<li><a class="first reference internal image-reference" href="../_images/plot_haxby_simple_2.png"><img alt="../_images/plot_haxby_simple_2.png" src="../_images/plot_haxby_simple_2.png" style="width: 206.8px; height: 122.2px;" /></a>
-</li>
 <li><a class="first reference internal image-reference" href="../_images/plot_haxby_simple_1.png"><img alt="../_images/plot_haxby_simple_1.png" src="../_images/plot_haxby_simple_1.png" style="width: 239.7px; height: 122.2px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_haxby_simple_2.png"><img alt="../_images/plot_haxby_simple_2.png" src="../_images/plot_haxby_simple_2.png" style="width: 206.8px; height: 122.2px;" /></a>
 </li>
 </ul>
 <p><strong>Script output</strong>:</p>
@@ -203,13 +203,13 @@ stream.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">### Load haxby dataset ########################################################</span>
 
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
-<span class="n">data</span> <span class="o">=</span> <a href="../modules/generated/nilearn.datasets.fetch_haxby.html#nilearn.datasets.fetch_haxby"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span></a><span class="p">()</span>
+<span class="n">haxby_dataset</span> <span class="o">=</span> <a href="../modules/generated/nilearn.datasets.fetch_haxby.html#nilearn.datasets.fetch_haxby"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span></a><span class="p">()</span>
 
 <span class="c">### Load Target labels ########################################################</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="c"># Load target information as string and give a numerical identifier to each</span>
-<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">labels</span></a> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="p">)</span>
+<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">labels</span></a> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="p">)</span>
 
 <span class="c"># scikit-learn &gt;= 0.14 supports text labels. You can replace this line by:</span>
 <span class="c"># target = labels[&#39;labels&#39;]</span>
@@ -224,12 +224,14 @@ stream.</p>
 <span class="c">### Prepare the data: apply the mask ##########################################</span>
 
 <span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
+<span class="n">mask_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="c"># For decoding, standardizing is often very important</span>
-<a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">mask_filename</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
+<span class="n">func_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="c"># We give the nifti_masker a filename and retrieve a 2D array ready</span>
 <span class="c"># for machine learning with scikit-learn</span>
-<span class="n">fmri_masked</span> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">fmri_masked</span> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
 
 <span class="c"># Restrict the classification to the face vs cat discrimination</span>
 <span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">fmri_masked</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
@@ -267,16 +269,15 @@ stream.</p>
 <span class="c"># Reverse masking thanks to the Nifti Masker</span>
 <span class="n">coef_img</span> <span class="o">=</span> <a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef_</span><span class="p">)</span>
 
-<span class="c"># Use nibabel to save the coefficients as a Nifti image</span>
-<span class="kn">import</span> <span class="nn">nibabel</span>
-<span class="n">nibabel</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">coef_img</span><span class="p">,</span> <span class="s">&#39;haxby_svc_weights.nii&#39;</span><span class="p">)</span>
+<span class="c"># Save the coefficients as a Nifti image</span>
+<span class="n">coef_img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s">&#39;haxby_svc_weights.nii&#39;</span><span class="p">)</span>
 
 <span class="c">### Visualization #############################################################</span>
 <span class="kn">import</span> <span class="nn">pylab</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">nilearn.image.image</span> <span class="kn">import</span> <a href="../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img"><span class="n">mean_img</span></a>
 <span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi"><span class="n">plot_roi</span></a><span class="p">,</span> <a href="../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a>
 
-<span class="n">mean_epi</span> <span class="o">=</span> <a href="../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img"><span class="n">mean_img</span></a><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">mean_epi</span> <span class="o">=</span> <a href="../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img"><span class="n">mean_img</span></a><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
 <a href="../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">coef_img</span><span class="p">,</span> <span class="n">mean_epi</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;SVM weights&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;yx&quot;</span><span class="p">)</span>
 
 <a href="../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi"><span class="n">plot_roi</span></a><span class="p">(</span><a href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">mask_img_</span><span class="p">,</span> <span class="n">mean_epi</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;Mask&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;yx&quot;</span><span class="p">)</span>
@@ -284,8 +285,8 @@ stream.</p>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  14.29 seconds
-( 0 minutes  14.29 seconds)</p>
+<p><strong>Total running time of the example:</strong>  13.72 seconds
+( 0 minutes  13.72 seconds)</p>
 </div>
 
 

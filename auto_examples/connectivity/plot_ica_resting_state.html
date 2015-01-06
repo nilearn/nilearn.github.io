@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1a1',
+        VERSION:     '0.1b1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -194,14 +194,13 @@ $(function () {
 </li>
 </ul>
 <p><strong>Python source code:</strong> <a class="reference download internal" href="../../_downloads/plot_ica_resting_state.py"><tt class="xref download docutils literal"><span class="pre">plot_ica_resting_state.py</span></tt></a></p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-
-<span class="c">### Load nyu_rest dataset #####################################################</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">### Load nyu_rest dataset #####################################################</span>
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="c"># Here we use only 3 subjects to get faster-running code. For better</span>
 <span class="c"># results, simply increase this number</span>
-<span class="n">dataset</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_nyu_rest.html#nilearn.datasets.fetch_nyu_rest"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_nyu_rest</span></a><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="c"># XXX: must get the code to run for more than 1 subject</span>
+<span class="n">nyu_dataset</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_nyu_rest.html#nilearn.datasets.fetch_nyu_rest"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_nyu_rest</span></a><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">func_filename</span> <span class="o">=</span> <span class="n">nyu_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
 <span class="c">### Preprocess ################################################################</span>
 <span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
@@ -211,10 +210,10 @@ $(function () {
 <span class="c"># EPI images</span>
 <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">masker</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span><span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="s">&#39;nilearn_cache&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                      <span class="n">mask_strategy</span><span class="o">=</span><span class="s">&#39;epi&#39;</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">data_masked</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">masker</span></a><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">data_masked</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">masker</span></a><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
 
 <span class="c"># Concatenate all the subjects</span>
-<span class="c">#fmri_data = np.concatenate(data_masked, axis=1)</span>
+<span class="c"># fmri_data = np.concatenate(data_masked, axis=1)</span>
 <span class="n">fmri_data</span> <span class="o">=</span> <span class="n">data_masked</span>
 
 
@@ -244,19 +243,19 @@ $(function () {
 <span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a>
 
 <span class="c"># Use the mean as a background</span>
-<span class="n">mean_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img"><span class="n">image</span><span class="o">.</span><span class="n">mean_img</span></a><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">mean_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img"><span class="n">image</span><span class="o">.</span><span class="n">mean_img</span></a><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
 
-<a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">component_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[:,:,:,</span><span class="mi">5</span><span class="p">],</span> 
+<a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">component_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">5</span><span class="p">],</span>
                                   <span class="n">component_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()),</span> <span class="n">mean_img</span><span class="p">)</span>
 
-<a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">component_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[:,:,:,</span><span class="mi">12</span><span class="p">],</span> 
+<a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">component_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">12</span><span class="p">],</span>
                                   <span class="n">component_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()),</span> <span class="n">mean_img</span><span class="p">)</span>
 
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  8.41 seconds
-( 0 minutes  8.41 seconds)</p>
+<p><strong>Total running time of the example:</strong>  8.39 seconds
+( 0 minutes  8.39 seconds)</p>
 </div>
 
 

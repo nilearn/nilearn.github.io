@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1a1',
+        VERSION:     '0.1b1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -271,8 +271,9 @@ build a brand new Nifti-like object to give it to the masker. Though it
 is possible, there is no need to save your data in a file to pass it to a
 <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a>. Simply use <a class="reference external" href="http://nipy.sourceforge.net/nibabel/">nibabel</a> to create a <a class="reference internal" href="manipulating_mr_images.html#niimg"><em>Niimg</em></a>
 in memory:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">nyu</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_nyu_rest</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">nyu_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">nyu</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">nyu_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_nyu_rest</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">nyu_filename</span> <span class="o">=</span> <span class="n">nyu_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">nyu_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">nyu_filename</span><span class="p">)</span>
 <span class="c"># Restrict nyu to 100 frames to speed up computation</span>
 <span class="n">nyu_func</span> <span class="o">=</span> <span class="n">nyu_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">100</span><span class="p">]</span>
 
@@ -341,7 +342,7 @@ voxels that are very light on the EPI image.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The full example described in this section can be found here:
-<a class="reference internal" href="../auto_examples/manipulating_images_and_visualization/plot_mask_computation.html"><em>plot_mask_computation.py</em></a>.
+<a class="reference internal" href="../auto_examples/manipulating_visualizing/plot_mask_computation.html"><em>plot_mask_computation.py</em></a>.
 This one can be relevant too:
 <a class="reference internal" href="../auto_examples/plot_nifti_simple.html"><em>plot_nifti_simple.py</em></a>.</p>
 </div>
@@ -487,14 +488,9 @@ difficult with this representation.</li>
 <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMapsMasker</span></tt></a> are described in this section.</p>
 <p>Nilearn provides several downloaders to get a brain parcellation. Load
 the <a class="reference external" href="https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/">MSDL one</a>:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">nilearn.datasets</span>
-<span class="n">atlas</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_msdl_atlas</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>This atlas defines its regions using maps. The path to the corresponding file
-can be found under the &#8220;maps&#8221; key. Extracting region signals for
-several subjects can be performed like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">dataset</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span><span class="p">()</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+<span class="n">msdl_atlas_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_msdl_atlas</span><span class="p">()</span>
+<span class="n">adhd_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span><span class="p">()</span>
 
 <span class="kn">import</span> <span class="nn">nilearn.image</span>
 <span class="kn">import</span> <span class="nn">nilearn.input_data</span>
@@ -506,22 +502,54 @@ several subjects can be performed like this:</p>
 <span class="n">n_subjects</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="n">subjects</span> <span class="o">=</span> <span class="p">[]</span>
 
-<span class="k">for</span> <span class="n">subject_n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_subjects</span><span class="p">):</span>
-    <span class="n">filename</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&quot;func&quot;</span><span class="p">][</span><span class="n">subject_n</span><span class="p">]</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Processing file </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+<span class="n">func_filenames</span> <span class="o">=</span> <span class="n">adhd_dataset</span><span class="o">.</span><span class="n">func</span>
+<span class="n">confound_filenames</span> <span class="o">=</span> <span class="n">adhd_dataset</span><span class="o">.</span><span class="n">confounds</span>
+<span class="k">for</span> <span class="n">func_filename</span><span class="p">,</span> <span class="n">confound_filename</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">func_filenames</span><span class="p">,</span>
+                                            <span class="n">confound_filenames</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Processing file </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">func_filename</span><span class="p">)</span>
 
     <span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing confounds ...&quot;</span><span class="p">)</span>
-    <span class="n">confound_file</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&quot;confounds&quot;</span><span class="p">][</span><span class="n">subject_n</span><span class="p">]</span>
-    <span class="n">hv_confounds</span> <span class="o">=</span> <span class="n">mem</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">nilearn</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">high_variance_confounds</span><span class="p">)(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">hv_confounds</span> <span class="o">=</span> <span class="n">mem</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">nilearn</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">high_variance_confounds</span><span class="p">)(</span>
+        <span class="n">func_filename</span><span class="p">)</span>
 
     <span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing region signals ...&quot;</span><span class="p">)</span>
     <span class="n">masker</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">NiftiMapsMasker</span><span class="p">(</span>
-        <span class="n">atlas</span><span class="p">[</span><span class="s">&quot;maps&quot;</span><span class="p">],</span> <span class="n">resampling_target</span><span class="o">=</span><span class="s">&quot;maps&quot;</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">msdl_atlas_dataset</span><span class="o">.</span><span class="n">maps</span><span class="p">,</span> <span class="n">resampling_target</span><span class="o">=</span><span class="s">&quot;maps&quot;</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
         <span class="n">low_pass</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">high_pass</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">t_r</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
         <span class="n">memory</span><span class="o">=</span><span class="n">mem</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">region_ts</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span>
-                                     <span class="n">confounds</span><span class="o">=</span><span class="p">[</span><span class="n">hv_confounds</span><span class="p">,</span> <span class="n">confound_file</span><span class="p">])</span>
+    <span class="n">region_ts</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">func_filename</span><span class="p">,</span>
+                                     <span class="n">confounds</span><span class="o">=</span><span class="p">[</span><span class="n">hv_confounds</span><span class="p">,</span>
+                                                <span class="n">confound_filename</span><span class="p">])</span>
     <span class="n">subjects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">region_ts</span><span class="p">)</span>
+
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing group-sparse precision matrices ...&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">nilearn.group_sparse_covariance</span> <span class="kn">import</span> <span class="n">GroupSparseCovarianceCV</span>
+<span class="n">gsc</span> <span class="o">=</span> <span class="n">GroupSparseCovarianceCV</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">gsc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subjects</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Computing graph-lasso precision matrices ...&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">covariance</span>
+<span class="n">gl</span> <span class="o">=</span> <span class="n">covariance</span><span class="o">.</span><span class="n">GraphLassoCV</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">gl</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">subjects</span><span class="p">[</span><span class="n">plotted_subject</span><span class="p">])</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;-- Displaying results&quot;</span><span class="p">)</span>
+<span class="n">title</span> <span class="o">=</span> <span class="s">&quot;{0:d} GroupSparseCovariance $</span><span class="se">\\</span><span class="s">alpha={1:.2e}$&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">plotted_subject</span><span class="p">,</span>
+                                                     <span class="n">gsc</span><span class="o">.</span><span class="n">alpha_</span><span class="p">)</span>
+<span class="n">plot_matrices</span><span class="p">(</span><span class="n">gsc</span><span class="o">.</span><span class="n">covariances_</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">plotted_subject</span><span class="p">],</span>
+              <span class="n">gsc</span><span class="o">.</span><span class="n">precisions_</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">plotted_subject</span><span class="p">],</span> <span class="n">title</span><span class="p">)</span>
+
+<span class="n">title</span> <span class="o">=</span> <span class="s">&quot;{0:d} GraphLasso $</span><span class="se">\\</span><span class="s">alpha={1:.2e}$&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">plotted_subject</span><span class="p">,</span>
+                                                     <span class="n">gl</span><span class="o">.</span><span class="n">alpha_</span><span class="p">)</span>
+<span class="n">plot_matrices</span><span class="p">(</span><span class="n">gl</span><span class="o">.</span><span class="n">covariance_</span><span class="p">,</span> <span class="n">gl</span><span class="o">.</span><span class="n">precision_</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This atlas defines its regions using maps. The path to the corresponding file
+can be found under the &#8220;maps&#8221; key. Extracting region signals for
+several subjects can be performed like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>
 </pre></div>
 </div>
 <p><cite>region_ts</cite> is a <a class="reference external" href="http://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html">numpy.ndarray</a>,

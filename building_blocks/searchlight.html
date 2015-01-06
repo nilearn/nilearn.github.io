@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.1a1',
+        VERSION:     '0.1b1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -247,11 +247,12 @@ provided functions (see <a class="reference internal" href="manipulating_mr_imag
 <span class="kn">import</span> <span class="nn">nibabel</span>
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
 
-<span class="n">dataset_files</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby_simple</span><span class="p">()</span>
+<span class="n">haxby_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby_simple</span><span class="p">()</span>
 
-<span class="n">fmri_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
-<span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">session_target</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&quot;int&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-<span class="n">conditions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromtxt</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">conditions_target</span><span class="p">)[</span><span class="s">&#39;f0&#39;</span><span class="p">]</span>
+<span class="n">fmri_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span>
+<span class="n">fmri_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fmri_filename</span><span class="p">)</span>
+<span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&quot;int&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="n">conditions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromtxt</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">conditions_target</span><span class="p">)[</span><span class="s">&#39;f0&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -289,7 +290,7 @@ be used here :</p>
 <p><em>process_mask_img</em> will then be used to restrain computation to one slice, in the
 back of the brain. <em>mask_img</em> will ensure that no value outside the brain is
 taken into account when iterating with the sphere.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">mask_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">dataset_files</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mask_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
 
 <span class="c"># .astype() makes a copy.</span>
 <span class="n">process_mask</span> <span class="o">=</span> <span class="n">mask_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
@@ -340,10 +341,11 @@ The only
 parameter left is the radius of the ball that will run through the data.
 Kriegskorte et al. use a 4mm radius because it yielded the best detection
 performance in their simulation.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">searchlight</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">decoding</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span><span class="n">mask_img</span><span class="p">,</span>
-                                      <span class="n">process_mask_img</span><span class="o">=</span><span class="n">process_mask_img</span><span class="p">,</span>
-                                      <span class="n">radius</span><span class="o">=</span><span class="mf">5.6</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
-                                      <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">searchlight</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">decoding</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span>
+    <span class="n">mask_img</span><span class="p">,</span>
+    <span class="n">process_mask_img</span><span class="o">=</span><span class="n">process_mask_img</span><span class="p">,</span>
+    <span class="n">radius</span><span class="o">=</span><span class="mf">5.6</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
 <span class="n">searchlight</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -464,7 +466,7 @@ every voxel so that the F-statistics are comparable. This correction
 strategy is applied in Nilearn&#8217;s
 <a class="reference internal" href="../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="nilearn.mass_univariate.permuted_ols"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.mass_univariate.permuted_ols</span></tt></a> function.</p>
 <div class="figure align-center">
-<a class="reference external image-reference" href="../auto_examples/manipulating_images_and_visualization/plot_haxby_searchlight.html"><img alt="../_images/plot_haxby_mass_univariate_11.png" src="../_images/plot_haxby_mass_univariate_11.png" style="width: 240.0px; height: 330.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/manipulating_visualizing/plot_haxby_searchlight.html"><img alt="../_images/plot_haxby_mass_univariate_11.png" src="../_images/plot_haxby_mass_univariate_11.png" style="width: 240.0px; height: 330.0px;" /></a>
 </div>
 <p>We observe that the results obtained with a permutation test are less
 conservative than the ones obtained with a Bonferroni correction
