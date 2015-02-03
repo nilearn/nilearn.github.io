@@ -20,27 +20,24 @@ haxby_func_filename = haxby_dataset.func[0]
 
 localizer_dataset = datasets.fetch_localizer_contrasts(
     ["left vs right button press"],
-    n_subjects=4,
+    n_subjects=2,
     get_anats=True,
     get_tmaps=True)
-localizer_anat_filename = localizer_dataset.anats[3]
-localizer_cmap_filename = localizer_dataset.cmaps[3]
-localizer_tmap_filename = localizer_dataset.tmaps[3]
+localizer_anat_filename = localizer_dataset.anats[1]
+localizer_cmap_filename = localizer_dataset.cmaps[1]
+localizer_tmap_filename = localizer_dataset.tmaps[1]
 
 ###############################################################################
 # demo the different plotting functions
-
-# Plotting glass brain
-plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
-                          threshold=3)
-
-plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
-                          black_bg=True, display_mode='xz', threshold=3)
 
 # Plotting statistical maps
 plotting.plot_stat_map(localizer_cmap_filename, bg_img=localizer_anat_filename,
                        threshold=3, title="plot_stat_map",
                        cut_coords=(36, -27, 66))
+
+# Plotting glass brain
+plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
+                          threshold=3)
 
 # Plotting anatomical maps
 plotting.plot_anat(haxby_anat_filename, title="plot_anat")
