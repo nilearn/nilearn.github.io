@@ -264,10 +264,10 @@ Scores: 0.26 +- 0.20
 <span class="n">resting_state</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">stimuli</span></a> <span class="o">==</span> <span class="s">&quot;rest&quot;</span>
 
 <span class="c"># find names of remaining active labels</span>
-<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">categories</span></a> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.unique.html#numpy.unique"><span class="n">np</span><span class="o">.</span><span class="n">unique</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">stimuli</span></a><span class="p">[</span><span class="n">resting_state</span> <span class="o">==</span> <span class="bp">False</span><span class="p">])</span>
+<a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">categories</span></a> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.unique.html#numpy.unique"><span class="n">np</span><span class="o">.</span><span class="n">unique</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">stimuli</span></a><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">resting_state</span><span class="p">)])</span>
 
 <span class="c"># extract tags indicating to which acquisition run a tag belongs</span>
-<span class="n">session_labels</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">labels</span></a><span class="p">[</span><span class="s">&quot;chunks&quot;</span><span class="p">][</span><span class="n">resting_state</span> <span class="o">==</span> <span class="bp">False</span><span class="p">]</span>
+<span class="n">session_labels</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">labels</span></a><span class="p">[</span><span class="s">&quot;chunks&quot;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">resting_state</span><span class="p">)]</span>
 
 <span class="c"># The classifier: a support vector classifier</span>
 <span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">SVC</span></a>
@@ -293,14 +293,14 @@ Scores: 0.26 +- 0.20
     <span class="n">mask_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="p">[</span><span class="n">mask_name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
     <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">masker</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">mask_filename</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="n">masked_timecourses</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">masker</span></a><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span>
-        <span class="n">func_filename</span><span class="p">)[</span><span class="n">resting_state</span> <span class="o">==</span> <span class="bp">False</span><span class="p">]</span>
+        <span class="n">func_filename</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">resting_state</span><span class="p">)]</span>
 
     <span class="n">mask_scores</span><span class="p">[</span><span class="n">mask_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">mask_chance_scores</span><span class="p">[</span><span class="n">mask_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">categories</span></a><span class="p">:</span>
         <span class="k">print</span> <span class="s">&quot;Processing </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mask_name</span><span class="p">,</span> <span class="n">category</span><span class="p">)</span>
-        <span class="n">classification_target</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">stimuli</span></a><span class="p">[</span><span class="n">resting_state</span> <span class="o">==</span> <span class="bp">False</span><span class="p">]</span> <span class="o">==</span> <span class="n">category</span>
+        <span class="n">classification_target</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.recarray.ndim.html#numpy.recarray"><span class="n">stimuli</span></a><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">resting_state</span><span class="p">)]</span> <span class="o">==</span> <span class="n">category</span>
         <span class="n">mask_scores</span><span class="p">[</span><span class="n">mask_name</span><span class="p">][</span><span class="n">category</span><span class="p">]</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span>
             <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">classifier</span></a><span class="p">,</span>
             <span class="n">masked_timecourses</span><span class="p">,</span>
@@ -347,8 +347,8 @@ Scores: 0.26 +- 0.20
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the example:</strong>  45.51 seconds
-( 0 minutes  45.51 seconds)</p>
+<p><strong>Total running time of the example:</strong>  45.59 seconds
+( 0 minutes  45.59 seconds)</p>
 </div>
 
 
