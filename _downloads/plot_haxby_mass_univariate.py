@@ -30,25 +30,25 @@ References
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 import numpy as np
 from scipy import linalg
+import nibabel
 from nilearn import datasets
 from nilearn.input_data import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
 
 ### Load Haxby dataset ########################################################
-haxby_dataset = datasets.fetch_haxby_simple()
+dataset_files = datasets.fetch_haxby_simple()
 
 ### Mask data #################################################################
-mask_filename = haxby_dataset.mask
+mask_img = nibabel.load(dataset_files.mask)
 nifti_masker = NiftiMasker(
-    mask_img=mask_filename,
+    mask_img=dataset_files.mask,
     memory='nilearn_cache', memory_level=1)  # cache options
-func_filename = haxby_dataset.func
-fmri_masked = nifti_masker.fit_transform(func_filename)
+fmri_masked = nifti_masker.fit_transform(dataset_files.func)
 
 ### Restrict to faces and houses ##############################################
 conditions_encoded, sessions = np.loadtxt(
-    haxby_dataset.session_target).astype("int").T
-conditions = np.recfromtxt(haxby_dataset.conditions_target)['f0']
+    dataset_files.session_target).astype("int").T
+conditions = np.recfromtxt(dataset_files.conditions_target)['f0']
 condition_mask = np.logical_or(conditions == 'face', conditions == 'house')
 conditions_encoded = conditions_encoded[condition_mask]
 fmri_masked = fmri_masked[condition_mask]
@@ -105,7 +105,7 @@ from nilearn.plotting import plot_stat_map
 
 # Use the fmri mean image as a surrogate of anatomical data
 from nilearn import image
-mean_fmri_img = image.mean_img(func_filename)
+mean_fmri_img = image.mean_img(dataset_files.func)
 
 # Various plotting parameters
 z_slice = -17  # plotted slice
@@ -148,9 +148,9 @@ display = plot_stat_map(signed_neg_log_pvals_unmasked, mean_fmri_img,
                         figure=fig, vmax=vmax)
 
 signed_neg_log_pvals_data = signed_neg_log_pvals_unmasked.get_data()
-signed_neg_log_pvals_slice_data = \
+signed_neg_log_pvals_data_slice_data = \
     signed_neg_log_pvals_data[..., k_slice, 0]
-n_detections = (np.abs(signed_neg_log_pvals_slice_data) > threshold).sum()
+n_detections = (np.abs(signed_neg_log_pvals_data_slice_data) > threshold).sum()
 title = ('Negative $\log_{10}$ p-values'
          '\n(Non-parametric two-sided test'
          '\n+ max-type correction)'

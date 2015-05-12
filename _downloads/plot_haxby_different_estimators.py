@@ -12,12 +12,18 @@ import time
 from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby(n_subjects=1)
 
+# print basic information on the dataset
+print('First subject anatomical nifti image (3D) located is at: %s' %
+      haxby_dataset.anat[0])
+print('First subject functional nifti image (4D) is located at: %s' %
+      haxby_dataset.func[0])
+
 # load labels
 import numpy as np
 labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
 stimuli = labels['labels']
 # identify resting state labels in order to be able to remove them
-resting_state = stimuli == "rest"
+resting_state = stimuli == b'rest'
 
 # find names of remaining active labels
 categories = np.unique(stimuli[np.logical_not(resting_state)])
@@ -84,7 +90,7 @@ classifiers_scores = {}
 
 for classifier_name, classifier in sorted(classifiers.items()):
     classifiers_scores[classifier_name] = {}
-    print 70 * '_'
+    print(70 * '_')
 
     for category in categories:
         classification_target = stimuli[np.logical_not(resting_state)] == category
@@ -95,11 +101,11 @@ for classifier_name, classifier in sorted(classifiers.items()):
             classification_target,
             cv=cv, scoring="f1")
 
-        print "%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" % (
+        print("%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" % (
             classifier_name, category,
             classifiers_scores[classifier_name][category].mean(),
             classifiers_scores[classifier_name][category].std(),
-            time.time() - t0)
+            time.time() - t0))
 
 ###############################################################################
 # make a rudimentary diagram
@@ -133,11 +139,11 @@ from nilearn import image
 mean_epi_img = image.mean_img(func_filename)
 
 # Restrict the decoding to face vs house
-condition_mask = np.logical_or(stimuli == 'face', stimuli == 'house')
+condition_mask = np.logical_or(stimuli == b'face', stimuli == b'house')
 masked_timecourses = masked_timecourses[condition_mask[np.logical_not(resting_state)]]
 stimuli = stimuli[condition_mask]
 # Transform the stimuli to binary values
-stimuli = (stimuli == 'face').astype(np.int)
+stimuli = (stimuli == b'face').astype(np.int)
 
 from nilearn.plotting import plot_stat_map
 

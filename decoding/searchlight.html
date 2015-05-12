@@ -1,0 +1,556 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Nilearn: Machine learning for NeuroImaging in Python &mdash; Machine learning for NeuroImaging</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Machine learning for NeuroImaging" href="../index.html" />
+    <link rel="up" title="2. Decoding and MVPA: predicting from brain images" href="index.html" />
+    <link rel="next" title="3. Functional connectivity and resting state" href="../connectivity/index.html" />
+    <link rel="prev" title="2.3. Decoding on simulated data" href="decoding_simulated.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+<script type="text/javascript">
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
+        sections = {},
+        i        = 0,
+	url	 = document.URL.replace(/#.*$/, ""),
+	current_section = 0;
+
+    // Grab positions of our sections 
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+    });
+
+    $(window).scroll(function(event) {
+	var pos   = $(window).scrollTop();
+	// Lock the table of content to a fixed position once we scroll enough
+	if(pos > top){
+	    //begin to scroll
+	    $('.sphinxsidebarwrapper').css("position", "fixed");
+	    $('.sphinxsidebarwrapper').css("top", -105);
+	}
+	else{
+	    //lock it back into place
+	    $('.sphinxsidebarwrapper').css("position", "relative");
+	    $('.sphinxsidebarwrapper').css("top",0);
+	}
+            
+	// Highlight the current section
+	$('a.internal').removeClass('active');
+        for(i in sections){
+            if(sections[i] > pos){
+		break;
+            };
+	    if($('a.internal[href$="' + i + '"]').is(':visible')){
+		current_section = i;
+	    };
+        }
+	$('a.internal[href$="' + current_section + '"]').addClass('active');
+    });
+
+});
+</script>
+
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head>
+  <body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="../index.html">
+      <img src="../_static/nilearn-logo.png" alt="Nilearn logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="../auto_examples/plot_haxby_anova_svm.html">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="../data_analysis/parcellating.html">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="../building_blocks/haxby_searchlight.html">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="../data_analysis/resting_state_networks.html">ICA</a></big>
+    </li>
+    <li>
+      <a href="../building_blocks/data_preparation.html">Nifti IO</a>
+    </li>
+    <li>
+      <a href="../modules/reference.html#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nilearn:</h1>
+    <h2>Machine learning for Neuro-Imaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div id="cse" style="width: 100%;"></div>
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript">
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+      var customSearchControl = new google.search.CustomSearchControl('014136483057745874622:r-npolb1uki');
+      customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+      var options = new google.search.DrawOptions();
+      options.setAutoComplete(true);
+      customSearchControl.draw('cse', options);
+      }, true);
+    </script>
+  </div>
+</div>
+
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a></li>
+        <li class="right" >
+          <a href="../connectivity/index.html" title="3. Functional connectivity and resting state"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="decoding_simulated.html" title="2.3. Decoding on simulated data"
+             accesskey="P">previous</a> |</li>
+<li><a href="../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="../auto_examples/index.html">Examples</a> |&nbsp;</li>
+<li><a href="../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../AUTHORS.html">About</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+          <li><a href="index.html" accesskey="U">2. Decoding and MVPA: predicting from brain images</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="../AUTHORS.html#citing">citing the
+                    scikit-learn</a> if you use it.</p></li>
+  </ul>
+
+  <h3><a href="../user_guide.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">2.4. Searchlight : finding voxels containing information</a><ul>
+<li><a class="reference internal" href="#principle-of-the-searchlight">2.4.1. Principle of the Searchlight</a></li>
+<li><a class="reference internal" href="#preparing-the-data">2.4.2. Preparing the data</a><ul>
+<li><a class="reference internal" href="#loading">2.4.2.1. Loading</a></li>
+<li><a class="reference internal" href="#reshaping-the-data">2.4.2.2. Reshaping the data</a></li>
+<li><a class="reference internal" href="#masking">2.4.2.3. Masking</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#third-step-setting-up-the-searchlight">2.4.3. Third Step: Setting up the searchlight</a><ul>
+<li><a class="reference internal" href="#classifier">2.4.3.1. Classifier</a></li>
+<li><a class="reference internal" href="#score-function">2.4.3.2. Score function</a></li>
+<li><a class="reference internal" href="#cross-validation">2.4.3.3. Cross validation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-searchlight">2.4.4. Running Searchlight</a></li>
+<li><a class="reference internal" href="#visualization">2.4.5. Visualization</a><ul>
+<li><a class="reference internal" href="#id1">2.4.5.1. Searchlight</a></li>
+<li><a class="reference internal" href="#comparing-to-massively-univariate-analysis-f-score-or-spm">2.4.5.2. Comparing to massively univariate analysis: F_score or SPM</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="decoding_simulated.html"
+                        title="previous chapter">2.3. Decoding on simulated data</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../connectivity/index.html"
+                        title="next chapter">3. Functional connectivity and resting state</a></p>
+
+<div class="navbar">
+</div> <!-- end navbar -->
+
+<script type="text/javascript">$('#searchbox-ml').show(0);</script>
+<script type="text/javascript">$('#searchbox-site').show(0);</script>
+
+
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="searchlight-finding-voxels-containing-information">
+<span id="searchlight"></span><h1>2.4. Searchlight : finding voxels containing information<a class="headerlink" href="#searchlight-finding-voxels-containing-information" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="principle-of-the-searchlight">
+<h2>2.4.1. Principle of the Searchlight<a class="headerlink" href="#principle-of-the-searchlight" title="Permalink to this headline">¶</a></h2>
+<p>Searchlight was introduced in <a class="reference external" href="http://www.pnas.org/content/103/10/3863">Information-based functional brain mapping</a>, Nikolaus Kriegeskorte,
+Rainer Goebel and Peter Bandettini (PNAS 2006) and consists in scanning the
+images volume with a <em>searchlight</em>. Briefly, a ball of given radius is
+scanned across the brain volume and the prediction accuracy of a
+classifier trained on the corresponding voxels is measured.</p>
+</div>
+<div class="section" id="preparing-the-data">
+<h2>2.4.2. Preparing the data<a class="headerlink" href="#preparing-the-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="loading">
+<h3>2.4.2.1. Loading<a class="headerlink" href="#loading" title="Permalink to this headline">¶</a></h3>
+<p>Fetching the data from internet and loading it can be done with the
+provided functions (see <a class="reference internal" href="../manipulating_visualizing/manipulating_images.html#loading-data"><em>Loading data</em></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">nibabel</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+
+<span class="n">haxby_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby_simple</span><span class="p">()</span>
+
+<span class="c"># print basic information on the dataset</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;Anatomical nifti image (3D) is located at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;Functional nifti image (4D) is located at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">)</span>
+
+<span class="n">fmri_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span>
+<span class="n">fmri_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fmri_filename</span><span class="p">)</span>
+<span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;int&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="n">conditions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromtxt</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">conditions_target</span><span class="p">)[</span><span class="s">&#39;f0&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reshaping-the-data">
+<h3>2.4.2.2. Reshaping the data<a class="headerlink" href="#reshaping-the-data" title="Permalink to this headline">¶</a></h3>
+<p>For this example we need:</p>
+<ul class="simple">
+<li>to put X in the form <em>n_samples</em> x <em>n_features</em></li>
+<li>compute a mean image for visualization background</li>
+<li>limit our analysis to the <cite>face</cite> and <cite>house</cite> conditions
+(like in the <a class="reference internal" href="decoding_tutorial.html#decoding-tutorial"><em>decoding tutorial</em></a>)</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <span class="n">index_img</span>
+<span class="n">condition_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">conditions</span> <span class="o">==</span> <span class="n">b</span><span class="s">&#39;face&#39;</span><span class="p">,</span> <span class="n">conditions</span> <span class="o">==</span> <span class="n">b</span><span class="s">&#39;house&#39;</span><span class="p">)</span>
+
+<span class="n">fmri_img</span> <span class="o">=</span> <span class="n">index_img</span><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">condition_mask</span><span class="p">)</span>
+<span class="n">y</span><span class="p">,</span> <span class="n">session</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">],</span> <span class="n">session</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
+<span class="n">conditions</span> <span class="o">=</span> <span class="n">conditions</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="masking">
+<h3>2.4.2.3. Masking<a class="headerlink" href="#masking" title="Permalink to this headline">¶</a></h3>
+<p>One of the main elements that distinguish Searchlight from other algorithms is
+the notion of structuring element that scans the entire volume. If this seems
+rather intuitive, it has in fact an impact on the masking procedure.</p>
+<p>Most of the time, fMRI data is masked and then given to the algorithm. This is
+not possible in the case of Searchlight because, to compute the score of
+non-masked voxels, some masked voxels may be needed. This is why two masks will
+be used here :</p>
+<ul class="simple">
+<li><em>mask_img</em> is the anatomical mask</li>
+<li><em>process_mask_img</em> is a subset of mask and contains voxels to be processed.</li>
+</ul>
+<p><em>process_mask_img</em> will then be used to restrain computation to one slice, in the
+back of the brain. <em>mask_img</em> will ensure that no value outside the brain is
+taken into account when iterating with the sphere.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mask_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+
+<span class="c"># .astype() makes a copy.</span>
+<span class="n">process_mask</span> <span class="o">=</span> <span class="n">mask_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+<span class="n">picked_slice</span> <span class="o">=</span> <span class="mi">27</span>
+<span class="n">process_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">(</span><span class="n">picked_slice</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">process_mask</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="n">picked_slice</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">process_mask</span><span class="p">[:,</span> <span class="mi">30</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">process_mask_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">process_mask</span><span class="p">,</span> <span class="n">mask_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="third-step-setting-up-the-searchlight">
+<h2>2.4.3. Third Step: Setting up the searchlight<a class="headerlink" href="#third-step-setting-up-the-searchlight" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="classifier">
+<h3>2.4.3.1. Classifier<a class="headerlink" href="#classifier" title="Permalink to this headline">¶</a></h3>
+<p>The classifier used by default by <a class="reference internal" href="../modules/generated/nilearn.decoding.SearchLight.html#nilearn.decoding.SearchLight" title="nilearn.decoding.SearchLight"><tt class="xref py py-class docutils literal"><span class="pre">SearchLight</span></tt></a> is LinearSVC with C=1 but
+this can be customed easily by passing an estimator parameter to the
+cross validation. See scikit-learn documentation for <a class="reference external" href="http://scikit-learn.org/stable/supervised_learning.html">other classifiers</a>.</p>
+</div>
+<div class="section" id="score-function">
+<h3>2.4.3.2. Score function<a class="headerlink" href="#score-function" title="Permalink to this headline">¶</a></h3>
+<p>Here we use precision as metrics to measure the proportion of true
+positives among all positive results for one class. Others metrics can be
+specified by the &#8220;scoring&#8221; argument to the <a class="reference internal" href="../modules/generated/nilearn.decoding.SearchLight.html#nilearn.decoding.SearchLight" title="nilearn.decoding.SearchLight"><tt class="xref py py-class docutils literal"><span class="pre">SearchLight</span></tt></a>, as
+detailed in the <a class="reference external" href="http://scikit-learn.org/dev/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules">scikit-learn documentation</a></p>
+</div>
+<div class="section" id="cross-validation">
+<h3>2.4.3.3. Cross validation<a class="headerlink" href="#cross-validation" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="../modules/generated/nilearn.decoding.SearchLight.html#nilearn.decoding.SearchLight" title="nilearn.decoding.SearchLight"><tt class="xref py py-class docutils literal"><span class="pre">SearchLight</span></tt></a> will iterate on the volume and give a score to each voxel. This
+score is computed by running a classifier on selected voxels. In order to make
+this score as accurate as possible (and avoid overfitting), a cross validation
+is made.</p>
+<p>As <a class="reference internal" href="../modules/generated/nilearn.decoding.SearchLight.html#nilearn.decoding.SearchLight" title="nilearn.decoding.SearchLight"><tt class="xref py py-class docutils literal"><span class="pre">SearchLight</span></tt></a> is computationally costly, we have chosen a cross
+validation method that does not take too much time.
+<em>K</em>-Fold along with <em>K</em> = 4 is a
+good compromise between running time and quality.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">KFold</span>
+<span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="running-searchlight">
+<h2>2.4.4. Running Searchlight<a class="headerlink" href="#running-searchlight" title="Permalink to this headline">¶</a></h2>
+<p>Running <a class="reference internal" href="../modules/generated/nilearn.decoding.SearchLight.html#nilearn.decoding.SearchLight" title="nilearn.decoding.SearchLight"><tt class="xref py py-class docutils literal"><span class="pre">SearchLight</span></tt></a> is straightforward now that everything is set.
+The only
+parameter left is the radius of the ball that will run through the data.
+Kriegskorte et al. use a 4mm radius because it yielded the best detection
+performance in their simulation.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">searchlight</span> <span class="o">=</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">decoding</span><span class="o">.</span><span class="n">SearchLight</span><span class="p">(</span>
+    <span class="n">mask_img</span><span class="p">,</span>
+    <span class="n">process_mask_img</span><span class="o">=</span><span class="n">process_mask_img</span><span class="p">,</span>
+    <span class="n">radius</span><span class="o">=</span><span class="mf">5.6</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
+<span class="n">searchlight</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="visualization">
+<h2>2.4.5. Visualization<a class="headerlink" href="#visualization" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>2.4.5.1. Searchlight<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>As the activation map is cropped, we use the mean image of all scans as a
+background. We can see here that voxels in the visual cortex contains
+information to distinguish pictures showed to the volunteers, which was the
+expected result.</p>
+<div class="figure align-center">
+<a class="reference external image-reference" href="../auto_examples/decoding/plot_haxby_searchlight.html"><img alt="../_images/plot_haxby_searchlight_0011.png" src="../_images/plot_haxby_searchlight_0011.png" style="width: 132.0px; height: 137.4px;" /></a>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="c"># Use the fmri mean image as a surrogate of anatomical data</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">image</span>
+<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <span class="n">plot_stat_map</span>
+<span class="n">mean_fmri</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">mean_img</span><span class="p">(</span><span class="n">fmri_img</span><span class="p">)</span>
+
+<span class="n">plot_stat_map</span><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">searchlight</span><span class="o">.</span><span class="n">scores_</span><span class="p">,</span>
+                                  <span class="n">mean_fmri</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()),</span> <span class="n">mean_fmri</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s">&quot;Searchlight&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;z&quot;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">16</span><span class="p">],</span>
+              <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c">### F_score results</span>
+<span class="n">p_ma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p_unmasked</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
+<span class="n">plot_stat_map</span><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">p_ma</span><span class="p">,</span>
+                                  <span class="n">mean_fmri</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()),</span> <span class="n">mean_fmri</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s">&quot;F-scores&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;z&quot;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">16</span><span class="p">],</span>
+              <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference internal" href="../manipulating_visualizing/plotting.html#plotting"><em>Plotting brain images</em></a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="comparing-to-massively-univariate-analysis-f-score-or-spm">
+<h3>2.4.5.2. Comparing to massively univariate analysis: F_score or SPM<a class="headerlink" href="#comparing-to-massively-univariate-analysis-f-score-or-spm" title="Permalink to this headline">¶</a></h3>
+<p>The standard approach to brain mapping is performed using <em>Statistical
+Parametric Mapping</em> (SPM), using ANOVA (analysis of variance), and
+parametric tests (F-tests ot t-tests).
+Here we compute the <em>p-values</em> of the voxels <a class="footnote-reference" href="#id4" id="id2">[1]</a>.
+To display the results, we use the negative log of the p-value.</p>
+<div class="figure align-center">
+<a class="reference external image-reference" href="../auto_examples/decoding/plot_haxby_searchlight.html"><img alt="../_images/plot_haxby_searchlight_0021.png" src="../_images/plot_haxby_searchlight_0021.png" style="width: 132.0px; height: 137.4px;" /></a>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">p_ma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p_unmasked</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">process_mask</span><span class="p">))</span>
+<span class="n">plot_stat_map</span><span class="p">(</span><span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">p_ma</span><span class="p">,</span>
+                                  <span class="n">mean_fmri</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()),</span> <span class="n">mean_fmri</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s">&quot;F-scores&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;z&quot;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">16</span><span class="p">],</span>
+              <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Parametric scores can be converted into p-values using a reference
+theoretical distribution, which is known under specific assumptions
+(hence the name <em>parametric</em>). In practice, neuroimaging signal has a
+complex structure that might not match these assumptions. An exact,
+non-parametric <em>permutation test</em> can be performed as an alternative
+to the parametric test: the residuals of the model are permuted so as
+to break any effect and the corresponding decision statistic is
+recomputed. One thus builds the distribution of the decision statistic
+under the hypothesis that there is no relationship between the tested
+variates and the target variates.  In neuroimaging, this is generally
+done by swapping the signal values of all voxels while the tested
+variables remain unchanged <a class="footnote-reference" href="#id5" id="id3">[2]</a>. A voxel-wise analysis is then
+performed on the permuted data. The relationships between the image
+descriptors and the tested variates are broken while the value of the
+signal in each particular voxel can be observed with the same
+probability than the original value associated to that voxel. Note
+that it is hereby assumed that the signal distribution is the same in
+every voxel. Several data permutations are performed (typically
+10,000) while the scores for every voxel and every data permutation
+is stored. The empirical distribution of the scores is thus
+constructed (under the hypothesis that there is no relationship
+between the tested variates and the neuroimaging signal, the so-called
+<em>null-hypothesis</em>) and we can compare the original scores to that
+distribution: The higher the rank of the original score, the smaller
+is its associated p-value. The
+<a class="reference internal" href="../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="nilearn.mass_univariate.permuted_ols"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.mass_univariate.permuted_ols</span></tt></a> function returns the
+p-values computed with a permutation test.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.mass_univariate</span> <span class="kn">import</span> <span class="n">permuted_ols</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># We use a two-sided t-test to compute p-values, but we keep trace of the</span>
+<span class="c"># effect sign to add it back at the end and thus observe the signed effect</span>
+<span class="n">neg_log_pvals</span><span class="p">,</span> <span class="n">t_scores_original_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">permuted_ols</span><span class="p">(</span>
+    <span class="n">grouped_conditions_encoded</span><span class="p">,</span> <span class="n">grouped_fmri_masked</span><span class="p">,</span>
+    <span class="c"># + intercept as a covariate by default</span>
+    <span class="n">n_perm</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">two_sided_test</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c"># can be changed to use more CPUs</span>
+<span class="n">signed_neg_log_pvals</span> <span class="o">=</span> <span class="n">neg_log_pvals</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">t_scores_original_data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The number of tests performed is generally large when full-brain
+analysis is performed (&gt; 50,000 voxels). This increases the
+probability of finding a significant activation by chance, a
+phenomenon that is known to statisticians as the <em>multiple comparisons
+problem</em>. It is therefore recommended to correct the p-values to take
+into account the multiple tests. <em>Bonferroni correction</em> consists of
+multiplying the p-values by the number of tests (while making sure the
+p-values remain smaller than 1). Thus, we control the occurrence of one
+false detection <em>at most</em>, the so-called <em>family-wise error control</em>.
+A similar control can be performed when performing a permutation test:
+For each permutation, only the maximum value of the F-statistic across
+voxels is considered and is used to build the null distribution. It is
+crucial to assume that the distribution of the signal is the same in
+every voxel so that the F-statistics are comparable. This correction
+strategy is applied in nilearn
+<a class="reference internal" href="../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="nilearn.mass_univariate.permuted_ols"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.mass_univariate.permuted_ols</span></tt></a> function.</p>
+<div class="figure align-center">
+<a class="reference external image-reference" href="../auto_examples/manipulating_visualizing/plot_haxby_searchlight.html"><img alt="../_images/plot_haxby_mass_univariate_0011.png" src="../_images/plot_haxby_mass_univariate_0011.png" style="width: 240.0px; height: 330.0px;" /></a>
+</div>
+<p>We observe that the results obtained with a permutation test are less
+conservative than the ones obtained with a Bonferroni correction
+strategy.</p>
+<p>In nilearn <a class="reference internal" href="../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="nilearn.mass_univariate.permuted_ols"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.mass_univariate.permuted_ols</span></tt></a> function, we
+permute a parametric t-test. Unlike F-test, a t-test can be signed
+(<em>one-sided test</em>), that is both the absolute value and the sign of an
+effect are considered. Thus, only positive effects
+can be focused on.  It is still possible to perform a two-sided test
+equivalent to a permuted F-test by setting the argument
+<cite>two_sided_test</cite> to <cite>True</cite>. In the example above, we do perform a two-sided
+test but add back the sign of the effect at the end using the t-scores obtained
+on the original (non-permuted) data. Thus, we can perform two one-sided tests
+(a given contrast and its opposite) for the price of one single run.
+The example results can be interpreted as follows: viewing faces significantly
+activates the Fusiform Face Area as compared to viewing houses, while viewing
+houses does not reveals significant supplementary activations as compared to
+viewing faces.</p>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[1]</a></td><td>The <em>p-value</em> is the probability of getting the observed values
+assuming that nothing happens (i.e. under the null hypothesis).
+Therefore, a small <em>p-value</em> indicates that there is a small chance
+of getting this data if no real difference existed, so the observed
+voxel must be significant.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[2]</a></td><td>When the variate tested is a scalar (test of the <em>intercept</em>)
+&#8211;which corresponds to a one sample test&#8211;, no swapping can be
+performed but one can estimate the null distribution by assuming
+symmetry about some reference value. When this value is zero, one can
+randomly swap the sign of the target variates (the imaging
+signal). nilearn
+<a class="reference internal" href="../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="nilearn.mass_univariate.permuted_ols"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.mass_univariate.permuted_ols</span></tt></a> function automatically
+adopts the suitable strategy according to the input data.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a></li>
+        <li class="right" >
+          <a href="../connectivity/index.html" title="3. Functional connectivity and resting state"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="decoding_simulated.html" title="2.3. Decoding on simulated data"
+             >previous</a> |</li>
+<li><a href="../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="../auto_examples/index.html">Examples</a> |&nbsp;</li>
+<li><a href="../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../AUTHORS.html">About</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+          <li><a href="index.html" >2. Decoding and MVPA: predicting from brain images</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+            &copy; The nilearn developers 2010-2015.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.2.
+        <span style="padding-left: 5ex;">
+          <a href="../_sources/decoding/searchlight.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>
