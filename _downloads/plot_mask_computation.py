@@ -30,17 +30,21 @@ import nilearn.image as image
 from nilearn.plotting.img_plotting import plot_roi
 
 # Load Miyawaki dataset
-miyawaki = datasets.fetch_miyawaki2008()
-miyawaki_img = nibabel.load(miyawaki.func[0])
+miyawaki_dataset = datasets.fetch_miyawaki2008()
 
-miyawaki_mean_img = image.mean_img(miyawaki.func[0])
+# print basic information on the dataset
+print('First functional nifti image (4D) is located at: %s' %
+      miyawaki_dataset.func[0])  # 4D data
+
+miyawaki_filename = miyawaki_dataset.func[0]
+miyawaki_mean_img = image.mean_img(miyawaki_filename)
 
 # This time, we can use the NiftiMasker without changing the default mask
 # strategy, as the data has already been masked, and thus lies on a
 # homogeneous background
 
 masker = NiftiMasker()
-masker.fit(miyawaki_img)
+masker.fit(miyawaki_filename)
 
 plot_roi(masker.mask_img_, miyawaki_mean_img,
          title="Mask from already masked data")
@@ -50,13 +54,13 @@ plot_roi(masker.mask_img_, miyawaki_mean_img,
 # From raw EPI data
 
 # Load NYU resting-state dataset
-nyu = datasets.fetch_nyu_rest(n_subjects=1)
-nyu_img = nibabel.load(nyu.func[0])
-# Restrict nyu to 100 frames to speed up computation
-nyu_func = nyu_img.get_data()[..., :100]
+nyu_dataset = datasets.fetch_nyu_rest(n_subjects=1)
+nyu_filename = nyu_dataset.func[0]
+nyu_img = nibabel.load(nyu_filename)
 
-# nyu_func is a 4D-array, we want to make an img out of it:
-nyu_img = nibabel.Nifti1Image(nyu_func, nyu_img.get_affine())
+# Restrict nyu to 100 frames to speed up computation
+from nilearn.image import index_img
+nyu_img = index_img(nyu_img, slice(0, 100))
 
 # To display the background
 nyu_mean_img = image.mean_img(nyu_img)
@@ -89,10 +93,10 @@ detrended = NiftiMasker(mask_strategy='epi', detrend=True)
 trended_data = trended.fit_transform(nyu_img)
 detrended_data = detrended.fit_transform(nyu_img)
 
-print "Trended: mean %.2f, std %.2f" % \
-    (np.mean(trended_data), np.std(trended_data))
-print "Detrended: mean %.2f, std %.2f" % \
-    (np.mean(detrended_data), np.std(detrended_data))
+print("Trended: mean %.2f, std %.2f" %
+       (np.mean(trended_data), np.std(trended_data)))
+print("Detrended: mean %.2f, std %.2f" %
+       (np.mean(detrended_data), np.std(detrended_data)))
 
 
 plt.show()
