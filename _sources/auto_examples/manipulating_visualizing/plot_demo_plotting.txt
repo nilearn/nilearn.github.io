@@ -1,6 +1,6 @@
 
 
-.. _example_manipulating_visualizing_plot_demo_plotting.py:
+.. _sphx_glr_auto_examples_manipulating_visualizing_plot_demo_plotting.py:
 
 
 Plotting in nilearn
@@ -10,51 +10,158 @@ Nilearn comes with a set of plotting function for Nifti-like images,
 see :ref:`plotting` for more details.
 
 
+.. code-block:: python
+
+
+    # Import plotting and image processing tools
+    from nilearn import plotting, image
+
+
+
 
 .. rst-class:: sphx-glr-horizontal
 
 
-    *
-
-      .. image:: images/plot_demo_plotting_001.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_demo_plotting_002.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_demo_plotting_003.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_demo_plotting_004.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_demo_plotting_005.png
-            :scale: 47
 
 
-**Script output**:
+
+Retrieve the data: haxby dataset to have EPI images and masks, and
+localizer dataset to have contrast maps
+
+
+.. code-block:: python
+
+
+    from nilearn import datasets
+    haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+
+    # print basic information on the dataset
+    print('First subject anatomical nifti image (3D) is at: %s' %
+          haxby_dataset.anat[0])
+    print('First subject functional nifti image (4D) is at: %s' %
+          haxby_dataset.func[0])  # 4D data
+
+    haxby_anat_filename = haxby_dataset.anat[0]
+    haxby_mask_filename = haxby_dataset.mask_vt[0]
+    haxby_func_filename = haxby_dataset.func[0]
+
+    localizer_dataset = datasets.fetch_localizer_contrasts(
+        ["left vs right button press"],
+        n_subjects=2,
+        get_anats=True,
+        get_tmaps=True)
+    localizer_anat_filename = localizer_dataset.anats[1]
+    localizer_tmap_filename = localizer_dataset.tmaps[1]
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
 
 .. rst-class:: sphx-glr-script-out
 
+ **Output**:
+
+
   ::
 
-    First subject anatomical nifti image (3D) is at: /home/lesteve/nilearn_data/haxby2001/subj1/anat.nii.gz
-    First subject functional nifti image (4D) is at: /home/lesteve/nilearn_data/haxby2001/subj1/bold.nii.gz
+    First subject anatomical nifti image (3D) is at: /storage/data/nilearn_data/haxby2001/subj1/anat.nii.gz
+    First subject functional nifti image (4D) is at: /storage/data/nilearn_data/haxby2001/subj1/bold.nii.gz
 
 
-**Python source code:** :download:`plot_demo_plotting.py <plot_demo_plotting.py>`
+Plotting statistical maps
 
-.. literalinclude:: plot_demo_plotting.py
-    :lines: 8-
 
-**Total running time of the example:**  5.75 seconds
-( 0 minutes  5.75 seconds)
-    
+.. code-block:: python
+
+    plotting.plot_stat_map(localizer_tmap_filename, bg_img=localizer_anat_filename,
+                           threshold=3, title="plot_stat_map",
+                           cut_coords=(36, -27, 66))
+
+
+
+
+.. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_plotting_001.png
+    :align: center
+
+
+
+
+Plotting glass brain
+
+
+.. code-block:: python
+
+    plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
+                              threshold=3)
+
+
+
+
+.. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_plotting_002.png
+    :align: center
+
+
+
+
+Plotting anatomical maps
+
+
+.. code-block:: python
+
+    plotting.plot_anat(haxby_anat_filename, title="plot_anat")
+
+
+
+
+.. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_plotting_003.png
+    :align: center
+
+
+
+
+Plotting ROIs (here the mask)
+
+
+.. code-block:: python
+
+    plotting.plot_roi(haxby_mask_filename, bg_img=haxby_anat_filename,
+                      title="plot_roi")
+
+
+
+
+.. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_plotting_004.png
+    :align: center
+
+
+
+
+Plotting EPI haxby
+
+
+.. code-block:: python
+
+    mean_haxby_img = image.mean_img(haxby_func_filename)
+    plotting.plot_epi(mean_haxby_img, title="plot_epi")
+
+    plotting.show()
+
+
+
+.. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_demo_plotting_005.png
+    :align: center
+
+
+
+
+**Total running time of the script:**
+(0 minutes 7.177 seconds)
+
+
+
+.. container:: sphx-glr-download
+
+    **Download Python source code:** :download:`plot_demo_plotting.py <plot_demo_plotting.py>`

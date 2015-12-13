@@ -1,6 +1,6 @@
 
 
-.. _example_plot_nilearn_101.py:
+.. _sphx_glr_auto_examples_plot_nilearn_101.py:
 
 
 Basic nilearn example
@@ -10,41 +10,161 @@ A simple example showing how to load an existing Nifti file and use
 basic nilearn functionalities.
 
 
+.. code-block:: python
+
+
+    # Import the os module, for file manipulation
+    import os
+
+
+
 
 .. rst-class:: sphx-glr-horizontal
 
 
-    *
-
-      .. image:: images/plot_nilearn_101_001.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_nilearn_101_002.png
-            :scale: 47
 
 
-**Script output**:
+
+Let us use a Nifti file that is shipped with nilearn
+
+
+.. code-block:: python
+
+    from nilearn.datasets import data
+    anat_filename = os.path.join(os.path.dirname(data.__file__),
+                                 'avg152T1_brain.nii.gz')
+    print('anat_filename: %s' % anat_filename)
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
 
 .. rst-class:: sphx-glr-script-out
 
+ **Output**:
+
+
   ::
 
-    anat_filename: /home/lesteve/dev/alt-nilearn/nilearn/data/avg152T1_brain.nii.gz
+    anat_filename: /home/parietal/gvaroqua/dev/nilearn/nilearn/datasets/data/avg152T1_brain.nii.gz
+
+
+Using simple image nilearn functions
+
+
+.. code-block:: python
+
+    from nilearn import image
+    # functions containing 'img' can take either a filename or an image as input
+    smooth_anat_img = image.smooth_img(anat_filename, 3)
+
+    # While we are giving a file name as input, the object that is returned
+    # is a 'nibabel' object. It has data, and an affine
+    anat_data = smooth_anat_img.get_data()
+    print('anat_data has shape: %s' % str(anat_data.shape))
+    anat_affine = smooth_anat_img.get_affine()
+    print('anat_affineaffine:\n%s' % anat_affine)
+
+    # Finally, it can be passed to nilearn function
+    smooth_anat_img = image.smooth_img(smooth_anat_img, 3)
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ **Output**:
+
+
+  ::
+
     anat_data has shape: (91, 109, 91)
-    anat_affine:
+    anat_affineaffine:
     [[  -2.    0.    0.   90.]
      [   0.    2.    0. -126.]
      [   0.    0.    2.  -72.]
      [   0.    0.    0.    1.]]
 
 
-**Python source code:** :download:`plot_nilearn_101.py <plot_nilearn_101.py>`
+Visualization
 
-.. literalinclude:: plot_nilearn_101.py
-    :lines: 8-
 
-**Total running time of the example:**  0.71 seconds
-( 0 minutes  0.71 seconds)
-    
+.. code-block:: python
+
+    from nilearn import plotting
+    cut_coords = (0, 0, 0)
+
+    # Like all functions in nilearn, plotting can be given filenames
+    plotting.plot_anat(anat_filename, cut_coords=cut_coords,
+                       title='Anatomy image')
+
+    # Or nibabel objects
+    plotting.plot_anat(smooth_anat_img,
+                       cut_coords=cut_coords,
+                       title='Smoothed anatomy image')
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /auto_examples/images/sphx_glr_plot_nilearn_101_001.png
+            :scale: 47
+
+    *
+
+      .. image:: /auto_examples/images/sphx_glr_plot_nilearn_101_002.png
+            :scale: 47
+
+
+
+
+Saving image to file
+
+
+.. code-block:: python
+
+    smooth_anat_img.to_filename('smooth_anat_img.nii.gz')
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+
+
+
+Finally, showing plots when used inside a terminal
+
+
+.. code-block:: python
+
+    plotting.show()
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+
+
+
+**Total running time of the script:**
+(0 minutes 0.677 seconds)
+
+
+
+.. container:: sphx-glr-download
+
+    **Download Python source code:** :download:`plot_nilearn_101.py <plot_nilearn_101.py>`

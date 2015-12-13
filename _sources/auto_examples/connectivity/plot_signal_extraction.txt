@@ -1,6 +1,6 @@
 
 
-.. _example_connectivity_plot_signal_extraction.py:
+.. _sphx_glr_auto_examples_connectivity_plot_signal_extraction.py:
 
 
 Extracting signals from a brain parcellation
@@ -24,49 +24,192 @@ NeuroImage 2013
 This is just a code example, see the :ref:`corresponding section in the
 documentation <parcellation_time_series>` for more.
 
+Retrieve the atlas and the data
+
+
+.. code-block:: python
+
+    from nilearn import datasets
+
+    dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+    atlas_filename, labels = dataset.maps, dataset.labels
+
+    print('Atlas ROIs are located in nifti image (4D) at: %s' %
+          atlas_filename)  # 4D data
+
+    # One subject of resting-state data
+    data = datasets.fetch_adhd(n_subjects=1)
+    fmri_filenames = data.func[0]
+
+
 
 
 .. rst-class:: sphx-glr-horizontal
 
 
-    *
-
-      .. image:: images/plot_signal_extraction_001.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_signal_extraction_002.png
-            :scale: 47
-
-
-**Script output**:
 
 .. rst-class:: sphx-glr-script-out
 
+ **Output**:
+
+
   ::
 
-    Atlas ROIs are located in nifti image (4D) at: /home/lesteve/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
-    [NiftiLabelsMasker.fit_transform] loading data from /home/lesteve/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+    Atlas ROIs are located in nifti image (4D) at: /storage/data/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+
+
+Extract signals on a parcellation defined by labels using the
+NiftiLabelsMasker
+
+
+.. code-block:: python
+
+    from nilearn.input_data import NiftiLabelsMasker
+    masker = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True,
+                               memory='nilearn_cache', verbose=5)
+
+    # Here we go from nifti files to the signal time series in a numpy
+    # array. Note how we give confounds to be regressed out during signal
+    # extraction
+    time_series = masker.fit_transform(fmri_filenames, confounds=data.confounds)
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ **Output**:
+
+
+  ::
+
+    [NiftiLabelsMasker.fit_transform] loading data from /storage/data/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
     Resampling labels
-    [Memory]    0.0s, 0.0min: Loading _extract_signals...
-    _____________________________________extract_signals cache loaded - 0.0s, 0.0min
-    [NiftiLabelsMasker.fit_transform] loading data from /home/lesteve/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
     ________________________________________________________________________________
-    [Memory] Calling nilearn.input_data.nifti_labels_masker._extract_signals...
-    _extract_signals('/home/lesteve/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz', 
-    <nibabel.nifti1.Nifti1Image object at 0x7f9afd8fe550>, 0, None, None, True, False, None, None, None, Memory(cachedir='nilearn_cache/joblib'), 1, verbose=5, resample_on_labels=False)
-    Loading images: /home/lesteve/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
-    Extracting region signals
-    Cleaning extracted signals
-    __________________________________________________extract_signals - 1.5s, 0.0min
+    [Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
+    filter_and_extract('/storage/data/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz', 
+    <nilearn.input_data.nifti_labels_masker._ExtractionFunctor object at 0x2b5dfd934210>, 
+    { 'background_label': 0,
+      'detrend': False,
+      'high_pass': None,
+      'labels_img': '/storage/data/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz',
+      'low_pass': None,
+      'mask_img': None,
+      'smoothing_fwhm': None,
+      'standardize': True,
+      't_r': None,
+      'target_affine': None,
+      'target_shape': None}, confounds=['/storage/data/nilearn_data/adhd/data/0010042/0010042_regressors.csv'], memory_level=1, verbose=5, memory=Memory(cachedir='nilearn_cache/joblib'))
+    [NiftiLabelsMasker.transform_single_imgs] Loading data from /storage/data/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
+    [NiftiLabelsMasker.transform_single_imgs] Extracting region signals
+    [NiftiLabelsMasker.transform_single_imgs] Cleaning extracted signals
+    _______________________________________________filter_and_extract - 2.2s, 0.0min
 
 
-**Python source code:** :download:`plot_signal_extraction.py <plot_signal_extraction.py>`
+Compute and display a correlation matrix
 
-.. literalinclude:: plot_signal_extraction.py
-    :lines: 23-
 
-**Total running time of the example:**  1.86 seconds
-( 0 minutes  1.86 seconds)
-    
+.. code-block:: python
+
+    import numpy as np
+    correlation_matrix = np.corrcoef(time_series.T)
+
+    # Plot the correlation matrix
+    from matplotlib import pyplot as plt
+    plt.figure(figsize=(10, 10))
+    # Mask the main diagonal for visualization:
+    np.fill_diagonal(correlation_matrix, 0)
+
+    plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
+               vmax=0.8, vmin=-0.8)
+
+    # Add labels and adjust margins
+    x_ticks = plt.xticks(range(len(labels) - 1), labels[1:], rotation=90)
+    y_ticks = plt.yticks(range(len(labels) - 1), labels[1:])
+    plt.gca().yaxis.tick_right()
+    plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
+
+
+
+
+
+.. image:: /auto_examples/connectivity/images/sphx_glr_plot_signal_extraction_001.png
+    :align: center
+
+
+
+
+Same thing without confounds, to stress the importance of confounds
+
+
+.. code-block:: python
+
+
+    time_series = masker.fit_transform(fmri_filenames)
+    # Note how we did not specify confounds above. This is bad!
+
+    correlation_matrix = np.corrcoef(time_series.T)
+
+    # Mask the main diagonal for visualization:
+    np.fill_diagonal(correlation_matrix, 0)
+
+    plt.figure(figsize=(10, 10))
+    plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
+               vmax=0.8, vmin=-0.8)
+
+    x_ticks = plt.xticks(range(len(labels) - 1), labels[1:], rotation=90)
+    y_ticks = plt.yticks(range(len(labels) - 1), labels[1:])
+    plt.gca().yaxis.tick_right()
+    plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
+    plt.suptitle('No confounds', size=27)
+
+    plt.show()
+
+
+
+.. image:: /auto_examples/connectivity/images/sphx_glr_plot_signal_extraction_002.png
+    :align: center
+
+
+.. rst-class:: sphx-glr-script-out
+
+ **Output**:
+
+
+  ::
+
+    [NiftiLabelsMasker.fit_transform] loading data from /storage/data/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
+    filter_and_extract('/storage/data/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz', 
+    <nilearn.input_data.nifti_labels_masker._ExtractionFunctor object at 0x2b5dfd934890>, 
+    { 'background_label': 0,
+      'detrend': False,
+      'high_pass': None,
+      'labels_img': '/storage/data/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz',
+      'low_pass': None,
+      'mask_img': None,
+      'smoothing_fwhm': None,
+      'standardize': True,
+      't_r': None,
+      'target_affine': None,
+      'target_shape': None}, confounds=None, memory_level=1, verbose=5, memory=Memory(cachedir='nilearn_cache/joblib'))
+    [NiftiLabelsMasker.transform_single_imgs] Loading data from /storage/data/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
+    [NiftiLabelsMasker.transform_single_imgs] Extracting region signals
+    [NiftiLabelsMasker.transform_single_imgs] Cleaning extracted signals
+    _______________________________________________filter_and_extract - 1.8s, 0.0min
+
+
+**Total running time of the script:**
+(0 minutes 4.487 seconds)
+
+
+
+.. container:: sphx-glr-download
+
+    **Download Python source code:** :download:`plot_signal_extraction.py <plot_signal_extraction.py>`

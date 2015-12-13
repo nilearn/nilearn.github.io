@@ -35,18 +35,18 @@ example, we can download the data from the
 `Haxby 2001 paper <http://dx.doi.org/10.1126/science.1063736>`_ ::
 
     >>> from nilearn import datasets
-    >>> dataset = datasets.fetch_haxby()
+    >>> dataset = datasets.fetch_haxby() # doctest: +SKIP
 
 `dataset.func` contains filenames referring to dataset files on the disk::
 
-  >>> list(dataset.keys())
-  ['mask_house_little', 'anat', 'mask_house', 'mask_face', 'func', 'session_target', 'mask_vt', 'mask_face_little']
-  >>> dataset.func # doctest: +ELLIPSIS
+  >>> list(sorted(dataset.keys())) # doctest: +SKIP
+  ['anat', 'description', 'func', 'mask_face', 'mask_face_little', 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
+  >>> dataset.func # doctest: +ELLIPSIS +SKIP
   ['.../haxby2001/subj1/bold.nii.gz']
 
 Access supplementary information on the dataset:
 
-  >>> print haxby_dataset['description']
+  >>> print haxby_dataset['description'] # doctest: +SKIP
 
 The complete list of the data-downloading functions can be found in the
 :ref:`reference documentation for the datasets <datasets_ref>`.
@@ -64,16 +64,16 @@ These conditions are presented as string into a CSV file. The numpy function
 `recfromcsv` is very useful to load this kind of data.
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: ### Load Target labels ########################################################
-    :end-before: ### Keep only data corresponding to faces or cats ###########################
+    :start-after: # Load the behavioral labels
+    :end-before: # Keep only data corresponding to faces or cats
 
 
 For example, we will now remove the *rest* condition from our dataset.
 This can be done as follows:
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: ### Keep only data corresponding to faces or cats ###########################
-    :end-before: ### Prepare the data: apply the mask ##########################################
+    :start-after: # Keep only data corresponding to faces or cats
+    :end-before: ###########################################################################
 
 
 .. note::
@@ -116,7 +116,7 @@ We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
 Applying a mask
 ................
 
-.. figure:: ../auto_examples/images/plot_haxby_simple_002.png
+.. figure:: ../auto_examples/images/sphx_glr_plot_haxby_simple_002.png
     :target: ../auto_examples/plot_haxby_simple.html
     :align: right
     :scale: 30%
@@ -131,8 +131,8 @@ from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: ### Prepare the data: apply the mask ##########################################
-    :end-before: ### Prediction ################################################################
+    :start-after: # Prepare the data: apply the mask
+    :end-before: ###########################################################################
 
 
 Note that you can call `nifti_masker.transform(dataset.func[1])` on new
@@ -159,8 +159,8 @@ Here, we use scikit-learn Support Vector Classification to learn how to
 predict the category of picture seen by the subject:
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: ### Prediction ################################################################
-    :end-before: ### Cross-validation ##########################################################
+    :start-after: # The decoding
+    :end-before: ###########################################################################
 
 
 We will not detail it here since there is a very good documentation about it in the
@@ -177,8 +177,8 @@ can take data of dimension 1D (resp. 2D) to convert it back to 3D
 (resp. 4D).
 
 .. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: ### Unmasking #################################################################
-    :end-before: ### Visualization #############################################################
+    :start-after: # Retrieve the discriminating weights and save them
+    :end-before: ###########################################################################
 
 Here we want to see the discriminating weights of some voxels.
 
@@ -189,14 +189,14 @@ Again the visualization code is simple. We can use an fMRI slice as a
 background and plot the weights. Brighter points have a higher
 discriminating weight.
 
-.. figure:: ../auto_examples/images/plot_haxby_simple_001.png
+.. literalinclude:: ../../examples/plot_haxby_simple.py
+    :start-after: # Visualize the discriminating weights over the mean EPI
+    :end-before: ###########################################################################
+.. figure:: ../auto_examples/images/sphx_glr_plot_haxby_simple_001.png
     :target: ../auto_examples/plot_haxby_simple.html
-    :align: right
+    :align: center
     :scale: 50%
 
-.. literalinclude:: ../../examples/plot_haxby_simple.py
-    :start-after: ### Visualization #############################################################
-    :end-before: ### Visualize the mask ########################################################
 
 Going further
 =============
@@ -208,4 +208,3 @@ scratched the surface of its possibilities. It is described in more
 details in the section :ref:`nifti_masker`. Also, simple functions that
 can be used to perform elementary operations such as masking or filtering
 are described in :ref:`preprocessing_functions`.
-

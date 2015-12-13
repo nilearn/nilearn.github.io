@@ -1,6 +1,6 @@
 
 
-.. _example_manipulating_visualizing_plot_roi_extraction.py:
+.. _sphx_glr_auto_examples_manipulating_visualizing_plot_roi_extraction.py:
 
 
 Computing an ROI mask
@@ -10,6 +10,209 @@ Example showing how a T-test can be performed to compute an ROI
 mask, and how simple operations can improve the quality of the mask
 obtained.
 
+Coordinates of the slice we will be displaying
+
+
+.. code-block:: python
+
+
+    coronal = -24
+    sagittal = -33
+    axial = -17
+    cut_coords = (coronal, sagittal, axial)
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+
+
+
+Load the data
+
+
+.. code-block:: python
+
+
+    # Fetch the data files from Internet
+    from nilearn import datasets
+    from nilearn.image import new_img_like
+
+
+    haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+
+    # print basic information on the dataset
+    print('First subject anatomical nifti image (3D) located is at: %s' %
+          haxby_dataset.anat[0])
+    print('First subject functional nifti image (4D) is located at: %s' %
+          haxby_dataset.func[0])
+
+    # Second, load the labels
+    import numpy as np
+
+    session_target = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+    haxby_labels = session_target['labels']
+
+    import matplotlib.pyplot as plt
+    from nilearn.input_data import NiftiLabelsMasker
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ **Output**:
+
+
+  ::
+
+    First subject anatomical nifti image (3D) located is at: /storage/data/nilearn_data/haxby2001/subj1/anat.nii.gz
+    First subject functional nifti image (4D) is located at: /storage/data/nilearn_data/haxby2001/subj1/bold.nii.gz
+
+
+Build a statistical test to find voxels of interest
+
+
+.. code-block:: python
+
+
+    # Smooth the data
+    from nilearn import image
+    fmri_filename = haxby_dataset.func[0]
+    fmri_img = image.smooth_img(fmri_filename, fwhm=6)
+
+    # Plot the mean image
+    from nilearn.plotting import plot_epi
+    mean_img = image.mean_img(fmri_img)
+    plot_epi(mean_img, title='Smoothed mean EPI', cut_coords=cut_coords)
+
+
+
+
+.. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_001.png
+    :align: center
+
+
+
+
+Run a T-test for face and houses
+
+
+.. code-block:: python
+
+    from scipy import stats
+    fmri_data = fmri_img.get_data()
+    _, p_values = stats.ttest_ind(fmri_data[..., haxby_labels == b'face'],
+                                  fmri_data[..., haxby_labels == b'house'],
+                                  axis=-1)
+
+    # Use a log scale for p-values
+    log_p_values = -np.log10(p_values)
+    log_p_values[np.isnan(log_p_values)] = 0.
+    log_p_values[log_p_values > 10.] = 10.
+    from nilearn.plotting import plot_stat_map
+    plot_stat_map(new_img_like(fmri_img, log_p_values),
+                  mean_img, title="p-values", cut_coords=cut_coords)
+
+
+
+
+.. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_002.png
+    :align: center
+
+
+
+
+Build a mask from this statistical map
+
+
+.. code-block:: python
+
+
+    # Thresholding
+    log_p_values[log_p_values < 5] = 0
+    plot_stat_map(new_img_like(fmri_img, log_p_values),
+                  mean_img, title='Thresholded p-values', annotate=False,
+                  colorbar=False, cut_coords=cut_coords)
+
+
+
+
+.. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_003.png
+    :align: center
+
+
+
+
+Binarization and intersection with VT mask
+(intersection corresponds to an "AND conjunction")
+
+
+.. code-block:: python
+
+    bin_p_values = (log_p_values != 0)
+    mask_vt_filename = haxby_dataset.mask_vt[0]
+    import nibabel
+    vt = nibabel.load(mask_vt_filename).get_data().astype(bool)
+    bin_p_values_and_vt = np.logical_and(bin_p_values, vt)
+
+    from nilearn.plotting import plot_roi, show
+    plot_roi(new_img_like(fmri_img, bin_p_values_and_vt.astype(np.int)),
+             mean_img, title='Intersection with ventral temporal mask',
+             cut_coords=cut_coords)
+
+
+
+
+.. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_004.png
+    :align: center
+
+
+
+
+Dilation
+
+
+.. code-block:: python
+
+    from scipy import ndimage
+    dil_bin_p_values_and_vt = ndimage.binary_dilation(bin_p_values_and_vt)
+    plot_roi(new_img_like(fmri_img, dil_bin_p_values_and_vt.astype(np.int)),
+             mean_img, title='Dilated mask', cut_coords=cut_coords,
+             annotate=False)
+
+
+
+
+
+.. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_005.png
+    :align: center
+
+
+
+
+Identification of connected components
+
+
+.. code-block:: python
+
+    labels, n_labels = ndimage.label(dil_bin_p_values_and_vt)
+    first_roi_data = (labels == 1).astype(np.int)
+    second_roi_data = (labels == 2).astype(np.int)
+    plot_roi(new_img_like(fmri_img, first_roi_data),
+             mean_img, title='Connected components: first ROI')
+
+    plot_roi(new_img_like(fmri_img, second_roi_data),
+             mean_img, title='Connected components: second ROI')
+
+
+
 
 
 .. rst-class:: sphx-glr-horizontal
@@ -17,55 +220,82 @@ obtained.
 
     *
 
-      .. image:: images/plot_roi_extraction_001.png
+      .. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_006.png
             :scale: 47
 
     *
 
-      .. image:: images/plot_roi_extraction_002.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_roi_extraction_003.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_roi_extraction_004.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_roi_extraction_005.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_roi_extraction_006.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_roi_extraction_007.png
+      .. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_007.png
             :scale: 47
 
 
-**Script output**:
-
-.. rst-class:: sphx-glr-script-out
-
-  ::
-
-    First subject anatomical nifti image (3D) located is at: /home/lesteve/nilearn_data/haxby2001/subj1/anat.nii.gz
-    First subject functional nifti image (4D) is located at: /home/lesteve/nilearn_data/haxby2001/subj1/bold.nii.gz
 
 
-**Python source code:** :download:`plot_roi_extraction.py <plot_roi_extraction.py>`
+Use the new ROIs to extract data maps in both ROIs
 
-.. literalinclude:: plot_roi_extraction.py
-    :lines: 9-
 
-**Total running time of the example:**  23.94 seconds
-( 0 minutes  23.94 seconds)
-    
+.. code-block:: python
+
+    masker = NiftiLabelsMasker(
+        labels_img=new_img_like(fmri_img, labels),
+        resampling_target=None,
+        standardize=False,
+        detrend=False)
+    masker.fit()
+    condition_names = list(set(haxby_labels))
+    n_cond_img = fmri_data[..., haxby_labels == b'house'].shape[-1]
+    n_conds = len(condition_names)
+
+    X1, X2 = np.zeros((n_cond_img, n_conds)), np.zeros((n_cond_img, n_conds))
+    for i, cond in enumerate(condition_names):
+        cond_maps = new_img_like(
+            fmri_img, fmri_data[..., haxby_labels == cond][..., :n_cond_img])
+        mask_data = masker.transform(cond_maps)
+        X1[:, i], X2[:, i] = mask_data[:, 0], mask_data[:, 1]
+    condition_names[condition_names.index(b'scrambledpix')] = b'scrambled'
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+
+
+
+Plot the average in the different condition names
+
+
+.. code-block:: python
+
+    plt.figure(figsize=(15, 7))
+    for i in np.arange(2):
+        plt.subplot(1, 2, i + 1)
+        plt.boxplot(X1 if i == 0 else X2)
+        plt.xticks(np.arange(len(condition_names)) + 1, condition_names,
+                   rotation=25)
+        plt.title('Boxplots of data in ROI%i per condition' % (i + 1))
+
+    show()
+
+    # save the ROI 'atlas' to a single output Nifti
+    nibabel.save(new_img_like(fmri_img, labels),
+                 'mask_atlas.nii')
+
+
+
+.. image:: /auto_examples/manipulating_visualizing/images/sphx_glr_plot_roi_extraction_008.png
+    :align: center
+
+
+
+
+**Total running time of the script:**
+(0 minutes 31.666 seconds)
+
+
+
+.. container:: sphx-glr-download
+
+    **Download Python source code:** :download:`plot_roi_extraction.py <plot_roi_extraction.py>`

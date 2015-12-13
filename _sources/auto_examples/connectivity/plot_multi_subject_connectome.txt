@@ -1,6 +1,6 @@
 
 
-.. _example_connectivity_plot_multi_subject_connectome.py:
+.. _sphx_glr_auto_examples_connectivity_plot_multi_subject_connectome.py:
 
 
 Group Sparse inverse covariance for multi-subject connectome
@@ -11,73 +11,286 @@ using the group sparse inverse covariance estimate.
 
 
 
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    from nilearn import plotting
+
+
+    n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)
+
+
+    def plot_matrices(cov, prec, title):
+        """Plot covariance and precision matrices, for a given processing. """
+
+        prec = prec.copy()  # avoid side effects
+
+        # Put zeros on the diagonal, for graph clarity.
+        size = prec.shape[0]
+        prec[list(range(size)), list(range(size))] = 0
+        span = max(abs(prec.min()), abs(prec.max()))
+
+        # Display covariance matrix
+        plt.figure()
+        plt.imshow(cov, interpolation="nearest",
+                   vmin=-1, vmax=1, cmap=plotting.cm.bwr)
+        plt.colorbar()
+        plt.title("%s / covariance" % title)
+
+        # Display precision matrix
+        plt.figure()
+        plt.imshow(prec, interpolation="nearest",
+                   vmin=-span, vmax=span,
+                   cmap=plotting.cm.bwr)
+        plt.colorbar()
+        plt.title("%s / precision" % title)
+
+
+
+
 
 .. rst-class:: sphx-glr-horizontal
 
 
-    *
-
-      .. image:: images/plot_multi_subject_connectome_001.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_multi_subject_connectome_002.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_multi_subject_connectome_003.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_multi_subject_connectome_004.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_multi_subject_connectome_005.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_multi_subject_connectome_006.png
-            :scale: 47
-
-    *
-
-      .. image:: images/plot_multi_subject_connectome_007.png
-            :scale: 47
 
 
-**Script output**:
+
+Fetching datasets
+
+
+.. code-block:: python
+
+    from nilearn import datasets
+    msdl_atlas_dataset = datasets.fetch_msdl_atlas()
+    adhd_dataset = datasets.fetch_adhd(n_subjects=n_subjects)
+
+    # print basic information on the dataset
+    print('First subject functional nifti image (4D) is at: %s' %
+          adhd_dataset.func[0])  # 4D data
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
 
 .. rst-class:: sphx-glr-script-out
 
+ **Output**:
+
+
   ::
 
-    -- Fetching datasets ...
-    First subject functional nifti image (4D) is at: /home/lesteve/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
-    [NiftiMapsMasker.fit] loading regions from /home/lesteve/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
-    Processing file /home/lesteve/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
-    Processing file /home/lesteve/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz
+    First subject functional nifti image (4D) is at: /storage/data/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
+
+
+Extracting region signals
+
+
+.. code-block:: python
+
+    from nilearn import image
+    from nilearn import input_data
+
+    # A "memory" to avoid recomputation
+    from sklearn.externals.joblib import Memory
+    mem = Memory('nilearn_cache')
+
+    masker = input_data.NiftiMapsMasker(
+        msdl_atlas_dataset.maps, resampling_target="maps", detrend=True,
+        low_pass=None, high_pass=0.01, t_r=2.5, standardize=True,
+        memory='nilearn_cache', memory_level=1, verbose=2)
+    masker.fit()
+
+    subject_time_series = []
+    func_filenames = adhd_dataset.func
+    confound_filenames = adhd_dataset.confounds
+    for func_filename, confound_filename in zip(func_filenames,
+                                                confound_filenames):
+        print("Processing file %s" % func_filename)
+
+        # Computing some confounds
+        hv_confounds = mem.cache(image.high_variance_confounds)(
+            func_filename)
+
+        region_ts = masker.transform(func_filename,
+                                     confounds=[hv_confounds, confound_filename])
+        subject_time_series.append(region_ts)
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ **Output**:
+
+
+  ::
+
+    [NiftiMapsMasker.fit] loading regions from /storage/data/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+    Processing file /storage/data/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
     ________________________________________________________________________________
-    [Memory] Calling nilearn.input_data.nifti_maps_masker._extract_signals...
-    _extract_signals('/home/lesteve/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz', 
-    <nibabel.nifti1.Nifti1Image object at 0x7f9afe985090>, None, 2.5, True, True, None, 0.01, [ array([[-0.129865, ..., -0.043025],
+    [Memory] Calling nilearn.image.image.high_variance_confounds...
+    high_variance_confounds('/storage/data/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz')
+    __________________________________________high_variance_confounds - 2.2s, 0.0min
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
+    filter_and_extract('/storage/data/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz', 
+    <nilearn.input_data.nifti_maps_masker._ExtractionFunctor object at 0x2b5df79b7dd0>, 
+    { 'allow_overlap': True,
+      'detrend': True,
+      'high_pass': 0.01,
+      'low_pass': None,
+      'maps_img': '/storage/data/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
+      'mask_img': None,
+      'smoothing_fwhm': None,
+      'standardize': True,
+      't_r': 2.5,
+      'target_affine': array([[   4.,    0.,    0.,  -78.],
+           [   0.,    4.,    0., -111.],
+           [   0.,    0.,    4.,  -51.],
+           [   0.,    0.,    0.,    1.]]),
+      'target_shape': (40, 48, 35)}, confounds=[array([[-0.018015, ..., -0.103569],
            ..., 
-           [-0.03078 , ..., -0.122374]], dtype=float32),
-      '/home/lesteve/nilearn_data/adhd/data/0010064/0010064_regressors.csv'], 
-    Memory(cachedir='nilearn_cache/joblib'), 1, resample_on_maps=True, mask_img=None, verbose=2)
-    Loading images: /home/lesteve/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz
-    Resampling images
-    Extracting maps signals
-    Cleaning extracted signals
-    __________________________________________________extract_signals - 7.3s, 0.1min
-    Processing file /home/lesteve/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz
-    Processing file /home/lesteve/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz
-    -- Computing group-sparse precision matrices ...
+           [ 0.001785, ...,  0.031497]], dtype=float32),
+    '/storage/data/nilearn_data/adhd/data/0010042/0010042_regressors.csv'], memory_level=1, verbose=2, memory=Memory(cachedir='nilearn_cache/joblib'))
+    [NiftiMapsMasker.transform_single_imgs] Loading data from /storage/data/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
+    [NiftiMapsMasker.transform_single_imgs] Resampling images
+    [NiftiMapsMasker.transform_single_imgs] Extracting region signals
+    [NiftiMapsMasker.transform_single_imgs] Cleaning extracted signals
+    ______________________________________________filter_and_extract - 10.4s, 0.2min
+    Processing file /storage/data/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.image.image.high_variance_confounds...
+    high_variance_confounds('/storage/data/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz')
+    __________________________________________high_variance_confounds - 2.2s, 0.0min
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
+    filter_and_extract('/storage/data/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz', 
+    <nilearn.input_data.nifti_maps_masker._ExtractionFunctor object at 0x2b5df79da550>, 
+    { 'allow_overlap': True,
+      'detrend': True,
+      'high_pass': 0.01,
+      'low_pass': None,
+      'maps_img': '/storage/data/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
+      'mask_img': None,
+      'smoothing_fwhm': None,
+      'standardize': True,
+      't_r': 2.5,
+      'target_affine': array([[   4.,    0.,    0.,  -78.],
+           [   0.,    4.,    0., -111.],
+           [   0.,    0.,    4.,  -51.],
+           [   0.,    0.,    0.,    1.]]),
+      'target_shape': (40, 48, 35)}, confounds=[array([[-0.129865, ..., -0.043024],
+           ..., 
+           [-0.03078 , ..., -0.122373]], dtype=float32),
+    '/storage/data/nilearn_data/adhd/data/0010064/0010064_regressors.csv'], memory_level=1, verbose=2, memory=Memory(cachedir='nilearn_cache/joblib'))
+    [NiftiMapsMasker.transform_single_imgs] Loading data from /storage/data/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz
+    [NiftiMapsMasker.transform_single_imgs] Resampling images
+    [NiftiMapsMasker.transform_single_imgs] Extracting region signals
+    [NiftiMapsMasker.transform_single_imgs] Cleaning extracted signals
+    ______________________________________________filter_and_extract - 10.4s, 0.2min
+    Processing file /storage/data/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.image.image.high_variance_confounds...
+    high_variance_confounds('/storage/data/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz')
+    __________________________________________high_variance_confounds - 3.5s, 0.1min
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
+    filter_and_extract('/storage/data/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz', 
+    <nilearn.input_data.nifti_maps_masker._ExtractionFunctor object at 0x2b5df8a080d0>, 
+    { 'allow_overlap': True,
+      'detrend': True,
+      'high_pass': 0.01,
+      'low_pass': None,
+      'maps_img': '/storage/data/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
+      'mask_img': None,
+      'smoothing_fwhm': None,
+      'standardize': True,
+      't_r': 2.5,
+      'target_affine': array([[   4.,    0.,    0.,  -78.],
+           [   0.,    4.,    0., -111.],
+           [   0.,    0.,    4.,  -51.],
+           [   0.,    0.,    0.,    1.]]),
+      'target_shape': (40, 48, 35)}, confounds=[array([[ 0.017256, ...,  0.040763],
+           ..., 
+           [ 0.024104, ...,  0.018105]], dtype=float32),
+    '/storage/data/nilearn_data/adhd/data/0010128/0010128_regressors.csv'], memory_level=1, verbose=2, memory=Memory(cachedir='nilearn_cache/joblib'))
+    [NiftiMapsMasker.transform_single_imgs] Loading data from /storage/data/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz
+    [NiftiMapsMasker.transform_single_imgs] Resampling images
+    [NiftiMapsMasker.transform_single_imgs] Extracting region signals
+    [NiftiMapsMasker.transform_single_imgs] Cleaning extracted signals
+    _______________________________________________filter_and_extract - 9.9s, 0.2min
+    Processing file /storage/data/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.image.image.high_variance_confounds...
+    high_variance_confounds('/storage/data/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz')
+    __________________________________________high_variance_confounds - 2.3s, 0.0min
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
+    filter_and_extract('/storage/data/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz', 
+    <nilearn.input_data.nifti_maps_masker._ExtractionFunctor object at 0x2b5df870a8d0>, 
+    { 'allow_overlap': True,
+      'detrend': True,
+      'high_pass': 0.01,
+      'low_pass': None,
+      'maps_img': '/storage/data/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
+      'mask_img': None,
+      'smoothing_fwhm': None,
+      'standardize': True,
+      't_r': 2.5,
+      'target_affine': array([[   4.,    0.,    0.,  -78.],
+           [   0.,    4.,    0., -111.],
+           [   0.,    0.,    4.,  -51.],
+           [   0.,    0.,    0.,    1.]]),
+      'target_shape': (40, 48, 35)}, confounds=[array([[ 0.038218, ..., -0.021777],
+           ..., 
+           [ 0.063512, ...,  0.081869]], dtype=float32),
+    '/storage/data/nilearn_data/adhd/data/0021019/0021019_regressors.csv'], memory_level=1, verbose=2, memory=Memory(cachedir='nilearn_cache/joblib'))
+    [NiftiMapsMasker.transform_single_imgs] Loading data from /storage/data/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz
+    [NiftiMapsMasker.transform_single_imgs] Resampling images
+    [NiftiMapsMasker.transform_single_imgs] Extracting region signals
+    [NiftiMapsMasker.transform_single_imgs] Cleaning extracted signals
+    ______________________________________________filter_and_extract - 10.6s, 0.2min
+
+
+Computing group-sparse precision matrices
+
+
+.. code-block:: python
+
+    from nilearn.connectome import GroupSparseCovarianceCV
+    gsc = GroupSparseCovarianceCV(verbose=2)
+    gsc.fit(subject_time_series)
+
+    from sklearn import covariance
+    gl = covariance.GraphLassoCV(verbose=2)
+    gl.fit(np.concatenate(subject_time_series))
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ **Output**:
+
+
+  ::
+
     [GroupSparseCovarianceCV.fit] Log-likelihood on test set is decreasing. Stopping at iteration 1
     [GroupSparseCovarianceCV.fit] Log-likelihood on test set is decreasing. Stopping at iteration 4
     [GroupSparseCovarianceCV.fit] Log-likelihood on test set is decreasing. Stopping at iteration 0
@@ -122,22 +335,90 @@ using the group sparse inverse covariance estimate.
     [GroupSparseCovarianceCV.fit] [GroupSparseCovarianceCV] Done refinement  4 out of 4
     [GroupSparseCovarianceCV.fit] Final optimization
     [GroupSparseCovarianceCV.fit] tolerance reached at iteration number 14: 9.710e-04
-    -- Computing graph-lasso precision matrices ...
     [GraphLassoCV] Done refinement  1 out of 4:   0s
     [GraphLassoCV] Done refinement  2 out of 4:   0s
-    [GraphLassoCV] Done refinement  3 out of 4:   0s
-    [GraphLassoCV] Done refinement  4 out of 4:   0s
+    [GraphLassoCV] Done refinement  3 out of 4:   1s
+    [GraphLassoCV] Done refinement  4 out of 4:   1s
     [graph_lasso] Iteration   0, cost  1.71e+02, dual gap 7.910e-01
     [graph_lasso] Iteration   1, cost  1.71e+02, dual gap 5.064e-03
-    [graph_lasso] Iteration   2, cost  1.71e+02, dual gap 4.985e-04
+    [graph_lasso] Iteration   2, cost  1.71e+02, dual gap 4.986e-04
     [graph_lasso] Iteration   3, cost  1.71e+02, dual gap 5.540e-05
 
 
-**Python source code:** :download:`plot_multi_subject_connectome.py <plot_multi_subject_connectome.py>`
+Displaying results
 
-.. literalinclude:: plot_multi_subject_connectome.py
-    :lines: 9-
 
-**Total running time of the example:**  29.63 seconds
-( 0 minutes  29.63 seconds)
-    
+.. code-block:: python
+
+    atlas_imgs = image.iter_img(msdl_atlas_dataset.maps)
+    atlas_region_coords = [plotting.find_xyz_cut_coords(img) for img in atlas_imgs]
+
+    title = "GraphLasso"
+    plotting.plot_connectome(-gl.precision_, atlas_region_coords,
+                             edge_threshold='90%',
+                             title="Sparse inverse covariance (GraphLasso)")
+    plotting.plot_connectome(gl.covariance_,
+                             atlas_region_coords, edge_threshold='90%',
+                             title="Covariance")
+    plot_matrices(gl.covariance_, gl.precision_, title)
+
+    title = "GroupSparseCovariance"
+    plotting.plot_connectome(-gsc.precisions_[..., 0],
+                             atlas_region_coords, edge_threshold='90%',
+                             title=title)
+    plot_matrices(gsc.covariances_[..., 0],
+                  gsc.precisions_[..., 0], title)
+
+    plotting.show()
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /auto_examples/connectivity/images/sphx_glr_plot_multi_subject_connectome_001.png
+            :scale: 47
+
+    *
+
+      .. image:: /auto_examples/connectivity/images/sphx_glr_plot_multi_subject_connectome_002.png
+            :scale: 47
+
+    *
+
+      .. image:: /auto_examples/connectivity/images/sphx_glr_plot_multi_subject_connectome_003.png
+            :scale: 47
+
+    *
+
+      .. image:: /auto_examples/connectivity/images/sphx_glr_plot_multi_subject_connectome_004.png
+            :scale: 47
+
+    *
+
+      .. image:: /auto_examples/connectivity/images/sphx_glr_plot_multi_subject_connectome_005.png
+            :scale: 47
+
+    *
+
+      .. image:: /auto_examples/connectivity/images/sphx_glr_plot_multi_subject_connectome_006.png
+            :scale: 47
+
+    *
+
+      .. image:: /auto_examples/connectivity/images/sphx_glr_plot_multi_subject_connectome_007.png
+            :scale: 47
+
+
+
+
+**Total running time of the script:**
+(2 minutes 0.123 seconds)
+
+
+
+.. container:: sphx-glr-download
+
+    **Download Python source code:** :download:`plot_multi_subject_connectome.py <plot_multi_subject_connectome.py>`
