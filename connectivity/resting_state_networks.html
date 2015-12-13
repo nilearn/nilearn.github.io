@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.2.0',
+        VERSION:     '0.2.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -361,7 +361,23 @@ larger alpha yields sparser maps.</p>
 </pre></div>
 </div>
 <p>We can fit both estimators to compare them</p>
-<div class="highlight-python"><div class="highlight"><pre>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">estimators</span> <span class="o">=</span> <span class="p">[</span><span class="n">dict_learning</span><span class="p">,</span> <span class="n">canica</span><span class="p">]</span>
+<span class="n">names</span> <span class="o">=</span> <span class="p">{</span><span class="n">dict_learning</span><span class="p">:</span> <span class="s">&#39;DictionaryLearning&#39;</span><span class="p">,</span> <span class="n">canica</span><span class="p">:</span> <span class="s">&#39;CanICA&#39;</span><span class="p">}</span>
+<span class="n">components_imgs</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">estimator</span> <span class="ow">in</span> <span class="n">estimators</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;[Example] Learning maps using </span><span class="si">%s</span><span class="s"> model&#39;</span> <span class="o">%</span> <span class="n">names</span><span class="p">[</span><span class="n">estimator</span><span class="p">])</span>
+    <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">func_filenames</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;[Example] Saving results&#39;</span><span class="p">)</span>
+    <span class="c"># Decomposition estimator embeds their own masker</span>
+    <span class="n">masker</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">masker_</span>
+    <span class="c"># Drop output maps to a Nifti   file</span>
+    <span class="n">components_img</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">components_</span><span class="p">)</span>
+    <span class="n">components_img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s">_resting_state.nii.gz&#39;</span> <span class="o">%</span>
+                               <span class="n">names</span><span class="p">[</span><span class="n">estimator</span><span class="p">])</span>
+    <span class="n">components_imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">components_img</span><span class="p">)</span>
+
+<span class="c">###############################################################################</span>
 </pre></div>
 </div>
 </div>
@@ -441,7 +457,7 @@ classification tasks.</p>
     </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
-          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.2.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.
         <span style="padding-left: 5ex;">
           <a href="../_sources/connectivity/resting_state_networks.txt"
         	 rel="nofollow">Show this page source</a>

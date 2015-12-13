@@ -1,0 +1,964 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Nilearn: Machine learning for NeuroImaging in Python &mdash; Machine learning for NeuroImaging</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.5.dev0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Machine learning for NeuroImaging" href="../index.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+<script type="text/javascript">
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
+        sections = {},
+        i        = 0,
+	url	 = document.URL.replace(/#.*$/, ""),
+	current_section = 0;
+
+    // Grab positions of our sections
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+    });
+
+    $(window).scroll(function(event) {
+	var pos   = $(window).scrollTop();
+	// Lock the table of content to a fixed position once we scroll enough
+	if(pos > top){
+	    //begin to scroll
+	    $('.sphinxsidebarwrapper').css("position", "fixed");
+	    $('.sphinxsidebarwrapper').css("top", -105);
+	}
+	else{
+	    //lock it back into place
+	    $('.sphinxsidebarwrapper').css("position", "relative");
+	    $('.sphinxsidebarwrapper').css("top",0);
+	}
+
+	// Highlight the current section
+	$('a.internal').removeClass('active');
+        for(i in sections){
+            if(sections[i] > pos){
+		break;
+            };
+	    if($('a.internal[href$="' + i + '"]').is(':visible')){
+		current_section = i;
+	    };
+        }
+	$('a.internal[href$="' + current_section + '"]').addClass('active');
+    });
+
+});
+</script>
+
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head>
+  <body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="../index.html">
+      <img src="../_static/nilearn-logo.png" alt="Nilearn logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="decoding/plot_haxby_anova_svm.html">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="../connectivity/parcellating.html">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="../decoding/searchlight.html">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="../connectivity/resting_state_networks.html">ICA</a></big>
+    </li>
+    <li>
+      <a href="../manipulating_visualizing/data_preparation.html">Nifti IO</a>
+    </li>
+    <li>
+      <a href="../modules/reference.html#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nilearn:</h1>
+    <h2>Machine learning for Neuro-Imaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div id="cse" style="width: 100%;"></div>
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript">
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+      var customSearchControl = new google.search.CustomSearchControl('014136483057745874622:r-npolb1uki');
+      customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+      var options = new google.search.DrawOptions();
+      options.setAutoComplete(true);
+      customSearchControl.draw('cse', options);
+      }, true);
+    </script>
+  </div>
+</div>
+
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a></li>
+<li><a href="../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="index.html">Examples</a> |&nbsp;</li>
+<li><a href="../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../AUTHORS.html">About</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+ 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="../AUTHORS.html#citing">citing the
+                    scikit-learn</a> if you use it.</p></li>
+  </ul>
+
+
+<div class="navbar">
+</div> <!-- end navbar -->
+
+<script type="text/javascript">$('#searchbox-ml').show(0);</script>
+<script type="text/javascript">$('#searchbox-site').show(0);</script>
+
+
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="group-analysis-of-resting-state-fmri-with-ica-canica">
+<span id="example-plot-canica-resting-state-py"></span><h1>Group analysis of resting-state fMRI with ICA: CanICA<a class="headerlink" href="#group-analysis-of-resting-state-fmri-with-ica-canica" title="Permalink to this headline">¶</a></h1>
+<p>An example applying CanICA to resting-state data. This example applies it
+to 40 subjects of the ADHD200 datasets.</p>
+<p>CanICA is an ICA method for group-level analysis of fMRI data. Compared
+to other strategies, it brings a well-controlled group model, as well as a
+thresholding algorithm controlling for specificity and sensitivity with
+an explicit model of the signal. The reference papers are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>G. Varoquaux et al. &#8220;A group model for stable multi-subject ICA on
+fMRI datasets&#8221;, NeuroImage Vol 51 (2010), p. 288-299</li>
+<li>G. Varoquaux et al. &#8220;ICA-based sparse features recovery from fMRI
+datasets&#8221;, IEEE ISBI 2010, p. 1177</li>
+</ul>
+</div></blockquote>
+<p>Pre-prints for both papers are available on hal
+(<a class="reference external" href="http://hal.archives-ouvertes.fr">http://hal.archives-ouvertes.fr</a>)</p>
+<ul class="horizontal">
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_3.png"><img alt="../_images/plot_canica_resting_state_3.png" src="../_images/plot_canica_resting_state_3.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_7.png"><img alt="../_images/plot_canica_resting_state_7.png" src="../_images/plot_canica_resting_state_7.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_6.png"><img alt="../_images/plot_canica_resting_state_6.png" src="../_images/plot_canica_resting_state_6.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_1.png"><img alt="../_images/plot_canica_resting_state_1.png" src="../_images/plot_canica_resting_state_1.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_4.png"><img alt="../_images/plot_canica_resting_state_4.png" src="../_images/plot_canica_resting_state_4.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_5.png"><img alt="../_images/plot_canica_resting_state_5.png" src="../_images/plot_canica_resting_state_5.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_2.png"><img alt="../_images/plot_canica_resting_state_2.png" src="../_images/plot_canica_resting_state_2.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_9.png"><img alt="../_images/plot_canica_resting_state_9.png" src="../_images/plot_canica_resting_state_9.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_8.png"><img alt="../_images/plot_canica_resting_state_8.png" src="../_images/plot_canica_resting_state_8.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_19.png"><img alt="../_images/plot_canica_resting_state_19.png" src="../_images/plot_canica_resting_state_19.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_12.png"><img alt="../_images/plot_canica_resting_state_12.png" src="../_images/plot_canica_resting_state_12.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_15.png"><img alt="../_images/plot_canica_resting_state_15.png" src="../_images/plot_canica_resting_state_15.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_16.png"><img alt="../_images/plot_canica_resting_state_16.png" src="../_images/plot_canica_resting_state_16.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_18.png"><img alt="../_images/plot_canica_resting_state_18.png" src="../_images/plot_canica_resting_state_18.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_14.png"><img alt="../_images/plot_canica_resting_state_14.png" src="../_images/plot_canica_resting_state_14.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_17.png"><img alt="../_images/plot_canica_resting_state_17.png" src="../_images/plot_canica_resting_state_17.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_10.png"><img alt="../_images/plot_canica_resting_state_10.png" src="../_images/plot_canica_resting_state_10.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_11.png"><img alt="../_images/plot_canica_resting_state_11.png" src="../_images/plot_canica_resting_state_11.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+<li><a class="first reference internal image-reference" href="../_images/plot_canica_resting_state_13.png"><img alt="../_images/plot_canica_resting_state_13.png" src="../_images/plot_canica_resting_state_13.png" style="width: 103.4px; height: 107.63px;" /></a>
+</li>
+</ul>
+<p><strong>Script output</strong>:</p>
+<div class="max-height highlight-python"><div class="highlight"><pre>  ________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3902469/3902469_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3902469/3902469_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 2.8s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/7774305/7774305_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/7774305/7774305_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 2.8s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3699991/3699991_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3699991/3699991_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 2.8s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/2014113/2014113_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/2014113/2014113_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 2.3s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/4275075/4275075_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/4275075/4275075_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 2.3s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1019436/1019436_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1019436/1019436_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 2.9s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3154996/3154996_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3154996/3154996_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 3.0s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3884955/3884955_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3884955/3884955_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 2.3s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0027034/0027034_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0027034/0027034_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.8s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/4134561/4134561_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/4134561/4134561_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.8s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0027018/0027018_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0027018/0027018_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.9s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/6115230/6115230_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/6115230/6115230_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 6.2s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0027037/0027037_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0027037/0027037_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.9s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/8409791/8409791_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/8409791/8409791_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 5.0s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0027011/0027011_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0027011/0027011_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 5.0s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3007585/3007585_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3007585/3007585_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.9s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/8697774/8697774_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/8697774/8697774_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 3.2s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/9750701/9750701_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/9750701/9750701_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 3.2s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.3s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.0s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 3.2s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 3.2s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/2497695/2497695_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/2497695/2497695_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 3.2s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/4164316/4164316_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/4164316/4164316_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 3.6s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1552181/1552181_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1552181/1552181_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 1.4s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/4046678/4046678_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/4046678/4046678_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 1.3s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0023012/0023012_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0023012/0023012_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 1.3s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1679142/1679142_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1679142/1679142_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 1.3s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1206380/1206380_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1206380/1206380_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 1.3s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0023008/0023008_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/0023008/0023008_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 1.3s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/4016887/4016887_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/4016887/4016887_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 1.3s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1418396/1418396_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1418396/1418396_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 1.3s, 0.0min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/2950754/2950754_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/2950754/2950754_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.7s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3994098/3994098_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3994098/3994098_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.5s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3520880/3520880_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3520880/3520880_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.4s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1517058/1517058_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1517058/1517058_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.5s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/9744150/9744150_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/9744150/9744150_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 6.1s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1562298/1562298_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/1562298/1562298_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.3s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3205761/3205761_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3205761/3205761_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.3s, 0.1min
+________________________________________________________________________________
+[Memory] Calling nilearn.input_data.base_masker.filter_and_mask...
+filter_and_mask(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3624598/3624598_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
+&lt;nibabel.nifti1.Nifti1Image object at 0x2ae8ba8c4c90&gt;, { &#39;detrend&#39;: True,
+  &#39;high_pass&#39;: None,
+  &#39;low_pass&#39;: None,
+  &#39;mask&#39;: None,
+  &#39;smoothing_fwhm&#39;: 6.0,
+  &#39;standardize&#39;: True,
+  &#39;t_r&#39;: None,
+  &#39;target_affine&#39;: None,
+  &#39;target_shape&#39;: None}, ref_memory_level=5, confounds=None, copy=True, verbose=10, memory=&#39;nilearn_cache&#39;)
+[CanICA.fit] Resampling
+[CanICA.fit] Loading data from Nifti1Image(&#39;/home/varoquau/dev/nilearn/nilearn_data/adhd/data/3624598/3624598_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
+[CanICA.fit] Masking and smoothing
+[CanICA.fit] Cleaning signal
+__________________________________________________filter_and_mask - 4.1s, 0.1min
+</pre></div>
+</div>
+<p><strong>Python source code:</strong> <tt class="xref download docutils literal"><span class="pre">plot_canica_resting_state.py</span></tt></p>
+<p><strong>Total running time of the example:</strong>  198.47 seconds
+( 3 minutes  18.47 seconds)</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a></li>
+<li><a href="../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="index.html">Examples</a> |&nbsp;</li>
+<li><a href="../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../AUTHORS.html">About</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+            &copy; The nilearn developers 2010-2015.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.
+        <span style="padding-left: 5ex;">
+          <a href="../_sources/auto_examples/plot_canica_resting_state.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>
