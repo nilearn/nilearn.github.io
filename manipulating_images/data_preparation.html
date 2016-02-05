@@ -1,0 +1,694 @@
+
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Nilearn: Machine learning for NeuroImaging in Python &mdash; Machine learning for NeuroImaging</title>
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Machine learning for NeuroImaging" href="../index.html" />
+    <link rel="up" title="5. Image manipulation" href="index.html" />
+    <link rel="next" title="5.2. Manipulating brain volume: input/output, masking, ROIs, smoothing..." href="manipulating_images.html" />
+    <link rel="prev" title="5. Image manipulation" href="index.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+<script type="text/javascript">
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
+        sections = {},
+        i        = 0,
+	url	 = document.URL.replace(/#.*$/, ""),
+	current_section = 0;
+
+    // Grab positions of our sections
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+    });
+
+    $(window).scroll(function(event) {
+	var pos   = $(window).scrollTop();
+	// Lock the table of content to a fixed position once we scroll enough
+	if(pos > top){
+	    //begin to scroll
+	    $('.sphinxsidebarwrapper').css("position", "fixed");
+	    $('.sphinxsidebarwrapper').css("top", -105);
+	}
+	else{
+	    //lock it back into place
+	    $('.sphinxsidebarwrapper').css("position", "relative");
+	    $('.sphinxsidebarwrapper').css("top",0);
+	}
+
+	// Highlight the current section
+	$('a.internal').removeClass('active');
+        for(i in sections){
+            if(sections[i] > pos){
+		break;
+            };
+	    if($('a.internal[href$="' + i + '"]').is(':visible')){
+		current_section = i;
+	    };
+        }
+	$('a.internal[href$="' + current_section + '"]').addClass('active');
+    });
+
+});
+</script>
+
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head>
+  <body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="../index.html">
+      <img src="../_static/nilearn-logo.png" alt="Nilearn logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="../auto_examples/decoding/plot_haxby_anova_svm.html">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="../connectivity/parcellating.html">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="../decoding/searchlight.html">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="../connectivity/resting_state_networks.html">ICA</a></big>
+    </li>
+    <li>
+      <a href="../manipulating_visualizing/data_preparation.html">Nifti IO</a>
+    </li>
+    <li>
+      <a href="../modules/reference.html#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nilearn:</h1>
+    <h2>Machine learning for Neuro-Imaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div id="cse" style="width: 100%;"></div>
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript">
+      google.load('search', '1', {language : 'en'});
+      google.setOnLoadCallback(function() {
+      var customSearchControl = new google.search.CustomSearchControl('014136483057745874622:r-npolb1uki');
+      customSearchControl.setResultSetSize(google.search.Search.FILTERED_CSE_RESULTSET);
+      var options = new google.search.DrawOptions();
+      options.setAutoComplete(true);
+      customSearchControl.draw('cse', options);
+      }, true);
+    </script>
+  </div>
+</div>
+
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="manipulating_images.html" title="5.2. Manipulating brain volume: input/output, masking, ROIs, smoothing..."
+             accesskey="N">next</a></li>
+        <li class="right" >
+          <a href="index.html" title="5. Image manipulation"
+             accesskey="P">previous</a> |</li>
+<li><a href="../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="../auto_examples/index.html">Examples</a> |&nbsp;</li>
+<li><a href="../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../authors.html">About</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+          <li><a href="../user_guide.html" >User guide: table of contents</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">5. Image manipulation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="../authors.html#citing">citing the
+                    papers</a>.</p></li>
+  </ul>
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5.1. Data preparation: loading and basic signal extraction</a><ul>
+<li><a class="reference internal" href="#the-concept-of-masker-objects">5.1.1. The concept of &#8220;masker&#8221; objects</a></li>
+<li><a class="reference internal" href="#niftimasker-loading-masking-and-filtering">5.1.2. <tt class="docutils literal"><span class="pre">NiftiMasker</span></tt>: loading, masking and filtering</a><ul>
+<li><a class="reference internal" href="#custom-data-loading">5.1.2.1. Custom data loading</a></li>
+<li><a class="reference internal" href="#controlling-how-the-mask-is-computed-from-the-data">5.1.2.2. Controlling how the mask is computed from the data</a><ul>
+<li><a class="reference internal" href="#computing-the-mask">5.1.2.2.1. Computing the mask</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#common-data-preparation-steps-resampling-smoothing-filtering">5.1.2.3. Common data preparation steps: resampling, smoothing, filtering</a><ul>
+<li><a class="reference internal" href="#resampling">5.1.2.3.1. Resampling</a></li>
+<li><a class="reference internal" href="#smoothing">5.1.2.3.2. Smoothing</a></li>
+<li><a class="reference internal" href="#temporal-filtering">5.1.2.3.3. Temporal Filtering</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#inverse-transform-unmasking-data">5.1.2.4. Inverse transform: unmasking data</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#extraction-of-signals-from-regions-niftilabelsmasker-niftimapsmasker">5.1.3. Extraction of signals from regions: <tt class="docutils literal"><span class="pre">NiftiLabelsMasker</span></tt>, <tt class="docutils literal"><span class="pre">NiftiMapsMasker</span></tt>.</a><ul>
+<li><a class="reference internal" href="#regions-definition">5.1.3.1. Regions definition</a></li>
+<li><a class="reference internal" href="#niftilabelsmasker-usage">5.1.3.2. <tt class="docutils literal"><span class="pre">NiftiLabelsMasker</span></tt> Usage</a></li>
+<li><a class="reference internal" href="#niftimapsmasker-usage">5.1.3.3. <tt class="docutils literal"><span class="pre">NiftiMapsMasker</span></tt> Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#extraction-of-signals-from-seeds-niftispheresmasker">5.1.4. Extraction of signals from seeds: <tt class="docutils literal"><span class="pre">NiftiSpheresMasker</span></tt>.</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">5. Image manipulation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="manipulating_images.html"
+                        title="next chapter">5.2. Manipulating brain volume: input/output, masking, ROIs, smoothing...</a></p>
+
+<div class="navbar">
+</div> <!-- end navbar -->
+
+<script type="text/javascript">$('#searchbox-ml').show(0);</script>
+<script type="text/javascript">$('#searchbox-site').show(0);</script>
+
+
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="data-preparation-loading-and-basic-signal-extraction">
+<span id="extracting-data"></span><h1>5.1. Data preparation: loading and basic signal extraction<a class="headerlink" href="#data-preparation-loading-and-basic-signal-extraction" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<p class="topic-title first"><strong>Contents</strong></p>
+<ul class="simple">
+<li><a class="reference internal" href="#the-concept-of-masker-objects" id="id4">The concept of &#8220;masker&#8221; objects</a></li>
+<li><a class="reference internal" href="#niftimasker-loading-masking-and-filtering" id="id5"><a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a>: loading, masking and filtering</a></li>
+<li><a class="reference internal" href="#extraction-of-signals-from-regions-niftilabelsmasker-niftimapsmasker" id="id6">Extraction of signals from regions: <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="nilearn.input_data.NiftiLabelsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiLabelsMasker</span></tt></a>, <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMapsMasker</span></tt></a>.</a></li>
+<li><a class="reference internal" href="#extraction-of-signals-from-seeds-niftispheresmasker" id="id7">Extraction of signals from seeds: <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiSpheresMasker.html#nilearn.input_data.NiftiSpheresMasker" title="nilearn.input_data.NiftiSpheresMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiSpheresMasker</span></tt></a>.</a></li>
+</ul>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="topic">
+<p class="topic-title first"><strong>File names as arguments</strong></p>
+<p>Nilearn functions and objects accept file names as arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">smoothed_img</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">smooth_img</span><span class="p">(</span><span class="s">&#39;/home/user/t_map001.nii&#39;</span><span class="p">)</span> 
+</pre></div>
+</div>
+<p>Nilearn can operate on either file names or <a class="reference external" href="http://nipy.org/nibabel/nibabel_images.html">NiftiImage objects</a>. The later represent
+the specified nifti files loaded in memory.</p>
+<p>In nilearn, we often use the term &#8216;niimg&#8217; as abbreviation that denotes
+either a file name or a NiftiImage object. In the example above, the
+function smooth_img returns a NiftiImage object, which can then be
+readily passed to any other nilearn function that accepts niimg
+arguments.</p>
+<p>Niimgs can be 3D or 4D, and a 4D niimg can be a list of file names, or
+even a <em>wildcard</em> matching patterns. The &#8216;~&#8217; symbol is also expanded to the
+user home folder.For instance, to retrieve a 4D volume of
+all t maps smoothed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">smoothed_imgs</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">smooth_img</span><span class="p">(</span><span class="s">&#39;~/t_map*.nii&#39;</span><span class="p">)</span> 
+</pre></div>
+</div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="section" id="the-concept-of-masker-objects">
+<h2><a class="toc-backref" href="#id4">5.1.1. The concept of &#8220;masker&#8221; objects</a><a class="headerlink" href="#the-concept-of-masker-objects" title="Permalink to this headline">¶</a></h2>
+<p>In any analysis, the first step is to load the data.
+It is often convenient to apply some basic data
+transformations and to turn the data in a 2D (samples x features) matrix,
+where the samples could be different time points, and the features derived
+from different voxels (e.g., restrict analysis to the ventral visual stream),
+regions of interest (e.g., extract local signals from spheres/cubes), or
+prespecified networks (e.g., look at data from all voxels of a set of
+network nodes). Think of masker objects as swiss army knifes for shaping
+the raw neuroimaging data in 3D space into the units of observation
+relevant for the research questions at hand.</p>
+<p class="centered">
+<strong><a class="reference internal image-reference" href="../_images/niimgs1.jpg"><img alt="niimgs" src="../_images/niimgs1.jpg" style="width: 367.0px; height: 163.5px;" /></a>
+  <span style="padding: .5em; font-size: 400%">&rarr;</span>  <a class="reference internal image-reference" href="../_images/feature_array1.jpg"><img alt="arrays" src="../_images/feature_array1.jpg" style="width: 115.15px; height: 167.3px;" /></a>
+</strong></p><p>&#8220;masker&#8221; objects (found in modules <a class="reference internal" href="../modules/reference.html#module-nilearn.input_data" title="nilearn.input_data"><tt class="xref py py-mod docutils literal"><span class="pre">nilearn.input_data</span></tt></a>) aim at
+simplifying these &#8220;data folding&#8221; steps that often preceed the actual
+statistical analysis.</p>
+<p>On an advanced note,
+the underlying philosophy of these classes is similar to <a class="reference external" href="http://scikit-learn.org">scikit-learn</a>&#8216;s
+transformers. First, objects are initialized with some parameters guiding
+the transformation (unrelated to the data). Then the fit() method
+should be called, possibly specifying some data-related
+information (such as number of images to process), to perform some
+initial computation (e.g., fitting a mask based on the data). Finally,
+transform() can be called, with the data as argument, to perform some
+computation on data themselves (e.g. extracting time series from images).</p>
+<p>Note that the masker objects may not cover all the image transformations
+for specific tasks. Users who want to make some specific processing may
+have to call low-level functions (see e.g. <a class="reference internal" href="../modules/reference.html#module-nilearn.signal" title="nilearn.signal"><tt class="xref py py-mod docutils literal"><span class="pre">nilearn.signal</span></tt></a>,
+<a class="reference internal" href="../modules/reference.html#module-nilearn.masking" title="nilearn.masking"><tt class="xref py py-mod docutils literal"><span class="pre">nilearn.masking</span></tt></a>).</p>
+</div>
+<div class="section" id="niftimasker-loading-masking-and-filtering">
+<span id="nifti-masker"></span><h2><a class="toc-backref" href="#id5">5.1.2. <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a>: loading, masking and filtering</a><a class="headerlink" href="#niftimasker-loading-masking-and-filtering" title="Permalink to this headline">¶</a></h2>
+<p>This section details how to use the <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> class.
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> is a
+powerful tool to load images and extract voxel signals in the area
+defined by the mask. It is designed to apply some basic preprocessing
+steps by default with commonly used parameters as defaults. But it is
+<em>very important</em> to look at your data to see the effects of the
+preprocessings and validate them.</p>
+<p>In particular, <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> is a <a class="reference external" href="http://scikit-learn.org">scikit-learn</a> compliant
+transformer so that you can directly plug it into a <a class="reference external" href="http://scikit-learn.org/stable/modules/pipeline.html">scikit-learn
+pipeline</a>.</p>
+<div class="section" id="custom-data-loading">
+<h3>5.1.2.1. Custom data loading<a class="headerlink" href="#custom-data-loading" title="Permalink to this headline">¶</a></h3>
+<p>Sometimes, some custom preprocessing of data is necessary. For instance
+we can restrict a dataset to the first 100 frames. Below, we load
+a resting-state dataset with <a class="reference internal" href="../modules/generated/nilearn.datasets.fetch_nyu_rest.html#nilearn.datasets.fetch_nyu_rest" title="nilearn.datasets.fetch_nyu_rest"><tt class="xref py py-func docutils literal"><span class="pre">fetch_fetch_nyu_rest()</span></tt></a>, restrict it to 100 frames and
+build a brand new Nifti-like object to give it to the masker. Although
+possible, there is no need to save your data to a file to pass it to a
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a>. Simply use <a class="reference external" href="http://nipy.sourceforge.net/nibabel/">nibabel</a> to create a <a class="reference internal" href="manipulating_images.html#niimg"><em>Niimg</em></a>
+in memory:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">nyu_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_nyu_rest</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">nyu_filename</span> <span class="o">=</span> <span class="n">nyu_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">nyu_img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">nyu_filename</span><span class="p">)</span>
+
+<span class="c"># Restrict nyu to 100 frames to speed up computation</span>
+<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <span class="n">index_img</span>
+<span class="n">nyu_img</span> <span class="o">=</span> <span class="n">index_img</span><span class="p">(</span><span class="n">nyu_img</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="controlling-how-the-mask-is-computed-from-the-data">
+<h3>5.1.2.2. Controlling how the mask is computed from the data<a class="headerlink" href="#controlling-how-the-mask-is-computed-from-the-data" title="Permalink to this headline">¶</a></h3>
+<p>In this tutorial, we show how the masker object can compute a mask
+automatically for subsequent statistical analysis.
+On some datasets, the default algorithm may however perform poorly.
+This is why it is very important to
+<strong>always look at your data</strong> before and after feature
+engineering using masker objects.</p>
+<div class="section" id="computing-the-mask">
+<h4>5.1.2.2.1. Computing the mask<a class="headerlink" href="#computing-the-mask" title="Permalink to this headline">¶</a></h4>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The full example described in this section can be found here:
+<a class="reference internal" href="../auto_examples/04_manipulating_images/plot_mask_computation.html"><em>plot_mask_computation.py</em></a>.
+It is also related to this example:
+<a class="reference internal" href="../auto_examples/04_manipulating_images/plot_nifti_simple.html"><em>plot_nifti_simple.py</em></a>.</p>
+</div>
+<p>If a mask is not specified as an argument,
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> will try to compute
+one from the provided neuroimaging data.
+It is <em>very important</em> to verify the quality of the generated mask by
+visualization. This allows to see whether it
+is suitable for your data and intended analyses.
+Alternatively, the mask computation parameters can still be modified. See the
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> documentation for a complete list of mask computation
+parameters.</p>
+<p>As a first example, we will now automatically build a mask from a dataset.
+We will here use the Haxby dataset because it provides the original mask that
+we can compare the data-derived mask against.</p>
+<p>The first step is to generate a mask with default parameters and visualize it.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># We need to specify an &#39;epi&#39; mask_strategy, as this is raw EPI data</span>
+<span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_strategy</span><span class="o">=</span><span class="s">&#39;epi&#39;</span><span class="p">)</span>
+<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">nyu_img</span><span class="p">)</span>
+<span class="n">plot_roi</span><span class="p">(</span><span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="p">,</span> <span class="n">nyu_mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;EPI automatic mask&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure">
+<a class="reference external image-reference" href="../auto_examples/04_manipulating_images/plot_mask_computation.html"><img alt="../_images/sphx_glr_plot_mask_computation_0021.png" src="../_images/sphx_glr_plot_mask_computation_0021.png" style="width: 330.0px; height: 130.0px;" /></a>
+</div>
+<p>We can then fine-tune the outline of the mask by increasing the number of
+opening steps (<em>opening=10</em>) using the <cite>mask_args</cite> argument of the
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a>. This effectively performs erosion and dilation operations
+on the outer voxel layers of the mask, which can for example remove remaining
+skull parts in the image.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_strategy</span><span class="o">=</span><span class="s">&#39;epi&#39;</span><span class="p">,</span> <span class="n">mask_args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">opening</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">nyu_img</span><span class="p">)</span>
+<span class="n">plot_roi</span><span class="p">(</span><span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="p">,</span> <span class="n">nyu_mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;EPI Mask with strong opening&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure">
+<a class="reference external image-reference" href="../auto_examples/04_manipulating_images/plot_mask_computation.html"><img alt="../_images/sphx_glr_plot_mask_computation_0031.png" src="../_images/sphx_glr_plot_mask_computation_0031.png" style="width: 330.0px; height: 130.0px;" /></a>
+</div>
+<p>Looking at the <a class="reference internal" href="../modules/generated/nilearn.masking.compute_epi_mask.html#nilearn.masking.compute_epi_mask" title="nilearn.masking.compute_epi_mask"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.masking.compute_epi_mask</span></tt></a> called by the
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> object, we see two interesting parameters:
+<em>lower_cutoff</em> and <em>upper_cutoff</em>. These set the grey-value bounds in
+which the masking algorithm will search for its threshold
+(0 being the minimum of the image and 1 the maximum). We will here increase
+the lower cutoff to enforce selection of those
+voxels that appear as bright in the EPI image.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_strategy</span><span class="o">=</span><span class="s">&#39;epi&#39;</span><span class="p">,</span>
+                     <span class="n">mask_args</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">upper_cutoff</span><span class="o">=.</span><span class="mi">9</span><span class="p">,</span> <span class="n">lower_cutoff</span><span class="o">=.</span><span class="mi">8</span><span class="p">,</span>
+                                    <span class="n">opening</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">nyu_img</span><span class="p">)</span>
+<span class="n">plot_roi</span><span class="p">(</span><span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="p">,</span> <span class="n">nyu_mean_img</span><span class="p">,</span>
+         <span class="n">title</span><span class="o">=</span><span class="s">&#39;EPI Mask: high lower_cutoff&#39;</span><span class="p">)</span>
+
+<span class="c">###############################################################################</span>
+<span class="c"># Extract time series</span>
+
+<span class="c"># trended vs detrended</span>
+<span class="n">trended</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_strategy</span><span class="o">=</span><span class="s">&#39;epi&#39;</span><span class="p">)</span>
+<span class="n">detrended</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_strategy</span><span class="o">=</span><span class="s">&#39;epi&#39;</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">trended_data</span> <span class="o">=</span> <span class="n">trended</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">nyu_img</span><span class="p">)</span>
+<span class="n">detrended_data</span> <span class="o">=</span> <span class="n">detrended</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">nyu_img</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Trended: mean </span><span class="si">%.2f</span><span class="s">, std </span><span class="si">%.2f</span><span class="s">&quot;</span> <span class="o">%</span>
+      <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">trended_data</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">trended_data</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;Detrended: mean </span><span class="si">%.2f</span><span class="s">, std </span><span class="si">%.2f</span><span class="s">&quot;</span> <span class="o">%</span>
+      <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">detrended_data</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">detrended_data</span><span class="p">)))</span>
+
+<span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="figure">
+<a class="reference external image-reference" href="../auto_examples/04_manipulating_images/plot_mask_computation.html"><img alt="../_images/sphx_glr_plot_mask_computation_0041.png" src="../_images/sphx_glr_plot_mask_computation_0041.png" style="width: 330.0px; height: 130.0px;" /></a>
+</div>
+</div>
+</div>
+<div class="section" id="common-data-preparation-steps-resampling-smoothing-filtering">
+<h3>5.1.2.3. Common data preparation steps: resampling, smoothing, filtering<a class="headerlink" href="#common-data-preparation-steps-resampling-smoothing-filtering" title="Permalink to this headline">¶</a></h3>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">If you do not want to use the <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> to perform these
+simple operations on data, note that they can also be manually
+accessed in nilearn such as in
+<a class="reference internal" href="manipulating_images.html#preprocessing-functions"><em>corresponding functions</em></a>.</p>
+</div>
+<div class="section" id="resampling">
+<span id="id2"></span><h4>5.1.2.3.1. Resampling<a class="headerlink" href="#resampling" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> and many similar classes enable resampling
+(recasting of images into different resolutions and transformations of
+brain voxel data). The resampling procedure takes as input the
+<em>target_affine</em> to resample (resize, rotate...) images in order to match
+the spatial configuration defined by the new affine (i.e., matrix
+transforming from voxel space into world space). Additionally, a
+<em>target_shape</em> can be used to resize images (i.e., cropping or padding
+with zeros) to match an expected data image dimensions (shape composed of
+x, y, and z).</p>
+<p>As a common use case, resampling can be a viable means to
+downsample image quality on purpose to increase processing speed
+and lower memory consumption of an analysis pipeline.
+In fact, certain image viewers (e.g., FSLView) also require images to be
+resampled to display overlays.</p>
+<p>On an advanced note,
+automatic computation of offset and bounding box can be performed by
+specifying a 3x3 matrix instead of the 4x4 affine.
+In this case, nilearn
+computes automatically the translation part of the transformation
+matrix (i.e., affine).</p>
+<a class="reference external image-reference" href="../auto_examples/04_manipulating_images/plot_affine_transformation.html"><img alt="../_images/sphx_glr_plot_affine_transformation_0021.png" src="../_images/sphx_glr_plot_affine_transformation_0021.png" style="width: 264.0px; height: 198.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/04_manipulating_images/plot_affine_transformation.html"><img alt="../_images/sphx_glr_plot_affine_transformation_0041.png" src="../_images/sphx_glr_plot_affine_transformation_0041.png" style="width: 264.0px; height: 198.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/04_manipulating_images/plot_affine_transformation.html"><img alt="../_images/sphx_glr_plot_affine_transformation_0031.png" src="../_images/sphx_glr_plot_affine_transformation_0031.png" style="width: 264.0px; height: 198.0px;" /></a>
+<div class="topic">
+<p class="topic-title first"><strong>Special case: resampling to a given voxel size</strong></p>
+<p>Specifying a 3x3 matrix that is diagonal as a target_affine fixes the
+voxel size. For instance to resample to 3x3x3 mm voxels:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target_affine</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="../modules/generated/nilearn.image.resample_img.html#nilearn.image.resample_img" title="nilearn.image.resample_img"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.image.resample_img</span></tt></a></p>
+</div>
+</div>
+<div class="section" id="smoothing">
+<h4>5.1.2.3.2. Smoothing<a class="headerlink" href="#smoothing" title="Permalink to this headline">¶</a></h4>
+<p><a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> can further be used for local spatial filtering of
+the neuroimaging data to make the data more homogeneous and thus account
+for inter-individual differences in neuroanatomy.
+It is achieved by passing the full-width
+half maximum (FWHM; in millimeter scale)
+along the x, y, and z image axes by specifying the <cite>smoothing_fwhm</cite> parameter.
+For an isotropic filtering, passing a scalar is also possible. The underlying
+function handles properly the tricky case of non-cubic voxels by scaling the
+given widths appropriately.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="nilearn.image.smooth_img"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.image.smooth_img</span></tt></a></p>
+</div>
+</div>
+<div class="section" id="temporal-filtering">
+<span id="id3"></span><h4>5.1.2.3.3. Temporal Filtering<a class="headerlink" href="#temporal-filtering" title="Permalink to this headline">¶</a></h4>
+<p>Rather than optimizing spatial properties of the neuroimaging data,
+the user may want to improve aspects of temporal data properties,
+before conversion to voxel signals.
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> can also process voxel signals. Here are the possibilities:</p>
+<ul class="simple">
+<li>Confound removal. Two ways of removing confounds are provided. Any linear
+trend can be removed by activating the <cite>detrend</cite> option.
+This accounts for slow (as opposed to abrupt or transient) changes
+in voxel values along a series of brain images that are unrelated to the
+signal of interest (e.g., the neural correlates of cognitive tasks).
+It is not activated
+by default in <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> but is recommended in almost all scenarios.
+More complex confounds can
+be removed by passing them to <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker.transform" title="nilearn.input_data.NiftiMasker.transform"><tt class="xref py py-meth docutils literal"><span class="pre">NiftiMasker.transform</span></tt></a>. If the
+dataset provides a confounds file, just pass its path to the masker.</li>
+<li>Linear filtering. Low-pass and high-pass filters can be used to remove artifacts.
+It simply removes all voxel values lower or higher than the specified
+parameters, respectively.
+Care has been taken to automatically
+apply this processing to confounds if it appears necessary.</li>
+<li>Normalization. Signals can be normalized (scaled to unit variance) before
+returning them. This is performed by default.</li>
+</ul>
+<div class="topic">
+<p class="topic-title first"><strong>Exercise</strong></p>
+<p>You can, more as a training than as an exercise, try to play with
+the parameters in <a class="reference internal" href="../auto_examples/plot_haxby_simple.html#sphx-glr-auto-examples-plot-haxby-simple-py"><em>Simple example of decoding: the Haxby data</em></a>. Try to enable detrending
+and run the script: does it have a big impact on the result?</p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="../modules/generated/nilearn.signal.clean.html#nilearn.signal.clean" title="nilearn.signal.clean"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.signal.clean</span></tt></a></p>
+</div>
+</div>
+</div>
+<div class="section" id="inverse-transform-unmasking-data">
+<h3>5.1.2.4. Inverse transform: unmasking data<a class="headerlink" href="#inverse-transform-unmasking-data" title="Permalink to this headline">¶</a></h3>
+<p>Once voxel signals have been processed, the result can be visualized as
+images after unmasking (masked-reduced data transformed back into
+the original whole-brain space). This step is present in almost all
+the <a class="reference external" href="http://matplotlib.org/examples/index.html#examples-index" title="(in Matplotlib v1.5.1)"><em class="xref std std-ref">examples</em></a> provided in nilearn. Below you will find
+an excerpt of <a class="reference internal" href="../auto_examples/02_decoding/plot_haxby_anova_svm.html#sphx-glr-auto-examples-02-decoding-plot-haxby-anova-svm-py"><em>the example performing Anova-SVM on the Haxby data</em></a>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">coef</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">coef_</span>
+<span class="c"># reverse feature selection</span>
+<span class="n">coef</span> <span class="o">=</span> <span class="n">feature_selection</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span>
+<span class="c"># reverse masking</span>
+<span class="n">weight_img</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="topic">
+<p class="topic-title first"><strong>Examples to better understand the NiftiMasker</strong></p>
+<ul class="simple">
+<li><a class="reference internal" href="../auto_examples/04_manipulating_images/plot_nifti_simple.html#sphx-glr-auto-examples-04-manipulating-images-plot-nifti-simple-py"><em>Simple example of NiftiMasker use</em></a></li>
+<li><a class="reference internal" href="../auto_examples/04_manipulating_images/plot_mask_computation.html#sphx-glr-auto-examples-04-manipulating-images-plot-mask-computation-py"><em>Understanding NiftiMasker and mask computation</em></a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="extraction-of-signals-from-regions-niftilabelsmasker-niftimapsmasker">
+<span id="region"></span><h2><a class="toc-backref" href="#id6">5.1.3. Extraction of signals from regions: <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="nilearn.input_data.NiftiLabelsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiLabelsMasker</span></tt></a>, <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMapsMasker</span></tt></a>.</a><a class="headerlink" href="#extraction-of-signals-from-regions-niftilabelsmasker-niftimapsmasker" title="Permalink to this headline">¶</a></h2>
+<p>The purpose of <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="nilearn.input_data.NiftiLabelsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiLabelsMasker</span></tt></a> and <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMapsMasker</span></tt></a> is to
+compute signals from regions containing many voxels. They make it easy to get
+these signals once you have an atlas or a parcellation into brain regions.</p>
+<div class="section" id="regions-definition">
+<h3>5.1.3.1. Regions definition<a class="headerlink" href="#regions-definition" title="Permalink to this headline">¶</a></h3>
+<p>Nilearn understands two different ways of defining regions, which are called
+labels and maps, handled by <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="nilearn.input_data.NiftiLabelsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiLabelsMasker</span></tt></a> and
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMapsMasker</span></tt></a>, respectively.</p>
+<ul class="simple">
+<li>labels: a single region is defined as the set of all the voxels that have a
+common label (e.g., anatomical brain region definitions as integers)
+in the region definition array. The set of
+regions is defined by a single 3D array, containing a voxel-wise
+dictionary of label numbers that denote what
+region a given voxel belongs to. This technique has a big advantage: the
+required memory load is independent of the number of regions, allowing
+for a large number of regions. On the other hand, there are
+several disadvantages: regions cannot spatially overlap
+and are represented in a binary present-nonpresent coding (no weighting).</li>
+<li>maps: a single region is defined as the set of all the voxels that have a
+non-zero weight. A set of regions is thus defined by a set of 3D images (or a
+single 4D image), one 3D image per region (as opposed to all regions in a
+single 3D image such as for labels, cf. above).
+While these defined weighted regions can exhibit spatial
+overlap (as opposed to labels), storage cost scales linearly with the
+number of regions. Handling a large number (e.g., thousands)
+of regions will prove
+difficult with this data transformation of whole-brain voxel data
+into weighted region-wise data.</li>
+</ul>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">These usage are illustrated in the section <a class="reference internal" href="../connectivity/functional_connectomes.html#functional-connectomes"><em>Extracting times series to build a functional connectome</em></a></p>
+</div>
+</div>
+<div class="section" id="niftilabelsmasker-usage">
+<h3>5.1.3.2. <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="nilearn.input_data.NiftiLabelsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiLabelsMasker</span></tt></a> Usage<a class="headerlink" href="#niftilabelsmasker-usage" title="Permalink to this headline">¶</a></h3>
+<p>Usage of <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="nilearn.input_data.NiftiLabelsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiLabelsMasker</span></tt></a> is similar to that of
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMapsMasker</span></tt></a>. The main difference is that it requires a labels image
+instead of a set of maps as input.</p>
+<p>The <cite>background_label</cite> keyword of <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="nilearn.input_data.NiftiLabelsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiLabelsMasker</span></tt></a> deserves
+some explanation. The voxels that correspond to the brain or a region
+of interest in an fMRI image do not fill the entire
+image. Consequently, in the labels image, there must be a label value that
+corresponds to &#8220;outside&#8221; the brain (for which no signal should be
+extracted). By default, this label is set to zero in nilearn
+(refered to as &#8220;background&#8221;).
+Should some non-zero value encoding be necessary, it is
+possible to change the background value with the <cite>background_label</cite>
+keyword.</p>
+<div class="topic">
+<p class="topic-title first"><strong>Examples</strong></p>
+<ul class="simple">
+<li><a class="reference internal" href="../auto_examples/03_connectivity/plot_signal_extraction.html#sphx-glr-auto-examples-03-connectivity-plot-signal-extraction-py"><em>Extracting signals from a brain parcellation</em></a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="niftimapsmasker-usage">
+<h3>5.1.3.3. <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMapsMasker</span></tt></a> Usage<a class="headerlink" href="#niftimapsmasker-usage" title="Permalink to this headline">¶</a></h3>
+<p>This atlas defines its regions using maps. The path to the corresponding
+file is given in the &#8220;maps_img&#8221; argument.</p>
+<p>One important thing that happens transparently during the execution of
+<a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker.fit_transform" title="nilearn.input_data.NiftiMasker.fit_transform"><tt class="xref py py-meth docutils literal"><span class="pre">NiftiMasker.fit_transform</span></tt></a> is resampling. Initially, the images
+and the atlas do typically not have the same shape nor the same affine. Casting
+them into the same format is required for successful signal extraction
+The keyword argument <cite>resampling_target</cite> specifies which format (i.e.,
+dimensions and affine) the data should be resampled to.
+See the reference documentation for <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMapsMasker</span></tt></a> for every
+possible option.</p>
+<div class="topic">
+<p class="topic-title first"><strong>Examples</strong></p>
+<ul class="simple">
+<li><a class="reference internal" href="../auto_examples/03_connectivity/plot_probabilistic_atlas_extraction.html#sphx-glr-auto-examples-03-connectivity-plot-probabilistic-atlas-extraction-py"><em>Extracting signals of a probabilistic atlas of rest functional regions</em></a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="extraction-of-signals-from-seeds-niftispheresmasker">
+<h2><a class="toc-backref" href="#id7">5.1.4. Extraction of signals from seeds: <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiSpheresMasker.html#nilearn.input_data.NiftiSpheresMasker" title="nilearn.input_data.NiftiSpheresMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiSpheresMasker</span></tt></a>.</a><a class="headerlink" href="#extraction-of-signals-from-seeds-niftispheresmasker" title="Permalink to this headline">¶</a></h2>
+<p>The purpose of <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiSpheresMasker.html#nilearn.input_data.NiftiSpheresMasker" title="nilearn.input_data.NiftiSpheresMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiSpheresMasker</span></tt></a> is to compute signals from
+seeds containing voxels in spheres. It makes it easy to get these signals once
+you have a list of coordinates.
+A single seed is a sphere defined by the radius (in millimeters) and the
+coordinates (typically MNI or TAL) of its center.</p>
+<p>Using <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiSpheresMasker.html#nilearn.input_data.NiftiSpheresMasker" title="nilearn.input_data.NiftiSpheresMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiSpheresMasker</span></tt></a> needs to define a list of coordinates.
+&#8220;seeds&#8221; argument takes a list of 3D coordinates (tuples) of the spheres centers,
+they should be in the same space as the images.
+Seeds can overlap spatially and are represented in a binary present-nonpresent
+coding (no weighting).
+Below is an example of a coordinates list of four seeds from the default mode network:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">dmn_coords</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">52</span><span class="p">,</span> <span class="mi">18</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">46</span><span class="p">,</span> <span class="o">-</span><span class="mi">68</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span> <span class="p">(</span><span class="mi">46</span><span class="p">,</span> <span class="o">-</span><span class="mi">68</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>&#8220;radius&#8221; is an optional argument that takes a real value in millimeters.
+If no value is given for the &#8220;radius&#8221; argument, the single voxel at the given
+seed position is used.</p>
+<div class="topic">
+<p class="topic-title first"><strong>Examples</strong></p>
+<ul class="simple">
+<li><a class="reference internal" href="../auto_examples/03_connectivity/plot_adhd_spheres.html#sphx-glr-auto-examples-03-connectivity-plot-adhd-spheres-py"><em>Extracting brain signal from spheres</em></a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="manipulating_images.html" title="5.2. Manipulating brain volume: input/output, masking, ROIs, smoothing..."
+             >next</a></li>
+        <li class="right" >
+          <a href="index.html" title="5. Image manipulation"
+             >previous</a> |</li>
+<li><a href="../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="../auto_examples/index.html">Examples</a> |&nbsp;</li>
+<li><a href="../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../authors.html">About</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+          <li><a href="../user_guide.html" >User guide: table of contents</a> &raquo;</li>
+          <li><a href="index.html" >5. Image manipulation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+            &copy; The nilearn developers 2010-2015.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.2.
+        <span style="padding-left: 5ex;">
+          <a href="../_sources/manipulating_images/data_preparation.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>

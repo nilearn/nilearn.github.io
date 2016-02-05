@@ -1,0 +1,280 @@
+
+
+.. _sphx_glr_auto_examples_02_decoding_plot_oasis_vbm_space_net.py:
+
+
+Voxel-Based Morphometry on Oasis dataset with Space-Net prior
+=============================================================
+
+Predicting age from gray-matter concentration maps from OASIS
+dataset. Note that age is a continuous variable, we use the regressor
+here, and not the classification object.
+
+See also the SpaceNet documentation: :ref:`space_net`.
+
+
+
+.. code-block:: python
+
+    # Authors: DOHMATOB Elvis
+    #          FRITSCH Virgile
+
+
+
+
+
+
+
+Load the Oasis VBM dataset
+
+
+.. code-block:: python
+
+    import numpy as np
+    from nilearn import datasets
+    n_subjects = 200  # increase this number if you have more RAM on your box
+    dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
+    age = dataset_files.ext_vars['age'].astype(float)
+    age = np.array(age)
+    gm_imgs = np.array(dataset_files.gray_matter_maps)
+
+
+    # Split data into training set and test set
+    from sklearn.utils import check_random_state
+    from sklearn.cross_validation import train_test_split
+    rng = check_random_state(42)
+    gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
+        gm_imgs, age, train_size=.6, random_state=rng)
+
+    # Sort test data for better visualization (trend, etc.)
+    perm = np.argsort(age_test)[::-1]
+    age_test = age_test[perm]
+    gm_imgs_test = gm_imgs_test[perm]
+
+
+
+
+
+
+
+
+Fit the SpaceNet and predict with it
+
+
+.. code-block:: python
+
+    from nilearn.decoding import SpaceNetRegressor
+
+    # To save time (because these are anat images with many voxels), we include
+    # only the 5-percent voxels most correlated with the age variable to fit.
+    # Also, we set memory_level=2 so that more of the intermediate computations
+    # are cached. Also, you may pass and n_jobs=<some_high_value> to the
+    # SpaceNetRegressor class, to take advantage of a multi-core system.
+    #
+    # Also, here we use a graph-net penalty but more beautiful results can be
+    # obtained using the TV-l1 penalty, at the expense of longer runtimes.
+    decoder = SpaceNetRegressor(memory="nilearn_cache", penalty="graph-net",
+                                screening_percentile=5., memory_level=2)
+    decoder.fit(gm_imgs_train, age_train)  # fit
+    coef_img = decoder.coef_img_
+    y_pred = decoder.predict(gm_imgs_test).ravel()  # predict
+    mse = np.mean(np.abs(age_test - y_pred))
+    print('Mean square error (MSE) on the predicted age: %.2f' % mse)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      ________________________________________________________________________________
+    [Memory] Calling nilearn.decoding.space_net.path_scores...
+    path_scores(<function _graph_net_squared_loss at 0x2ad8365762a8>, array([[-1.96947 , ...,  1.847851],
+           ..., 
+           [-1.603358, ..., -0.099912]]), 
+    array([ 73., ...,  62.]), array([[[False, ..., False],
+            ..., 
+            [False, ..., False]],
+
+           ..., 
+           [[False, ..., False],
+            ..., 
+            [False, ..., False]]], dtype=bool), 
+    None, [0.5], array([False, ...,  True], dtype=bool), array([ True, ..., False], dtype=bool), { 'max_iter': 1000, 'tol': 0.0001}, debias=False, verbose=1, n_alphas=10, eps=0.001, key=(0, 0), screening_percentile=7.3428548695098659, is_classif=False)
+    _____________________________________________________path_scores - 84.5s, 1.4min
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.decoding.space_net.path_scores...
+    path_scores(<function _graph_net_squared_loss at 0x2ad8365762a8>, array([[-1.96947 , ...,  1.847851],
+           ..., 
+           [-1.603358, ..., -0.099912]]), 
+    array([ 73., ...,  62.]), array([[[False, ..., False],
+            ..., 
+            [False, ..., False]],
+
+           ..., 
+           [[False, ..., False],
+            ..., 
+            [False, ..., False]]], dtype=bool), 
+    None, [0.5], array([ True, ...,  True], dtype=bool), array([False, ..., False], dtype=bool), { 'max_iter': 1000, 'tol': 0.0001}, debias=False, verbose=1, n_alphas=10, eps=0.001, key=(0, 1), screening_percentile=7.3428548695098659, is_classif=False)
+    _____________________________________________________path_scores - 97.5s, 1.6min
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.decoding.space_net.path_scores...
+    path_scores(<function _graph_net_squared_loss at 0x2ad8365762a8>, array([[-1.96947 , ...,  1.847851],
+           ..., 
+           [-1.603358, ..., -0.099912]]), 
+    array([ 73., ...,  62.]), array([[[False, ..., False],
+            ..., 
+            [False, ..., False]],
+
+           ..., 
+           [[False, ..., False],
+            ..., 
+            [False, ..., False]]], dtype=bool), 
+    None, [0.5], array([ True, ...,  True], dtype=bool), array([False, ..., False], dtype=bool), { 'max_iter': 1000, 'tol': 0.0001}, debias=False, verbose=1, n_alphas=10, eps=0.001, key=(0, 2), screening_percentile=7.3428548695098659, is_classif=False)
+    _____________________________________________________path_scores - 81.8s, 1.4min
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.decoding.space_net.path_scores...
+    path_scores(<function _graph_net_squared_loss at 0x2ad8365762a8>, array([[-1.96947 , ...,  1.847851],
+           ..., 
+           [-1.603358, ..., -0.099912]]), 
+    array([ 73., ...,  62.]), array([[[False, ..., False],
+            ..., 
+            [False, ..., False]],
+
+           ..., 
+           [[False, ..., False],
+            ..., 
+            [False, ..., False]]], dtype=bool), 
+    None, [0.5], array([ True, ...,  True], dtype=bool), array([False, ..., False], dtype=bool), { 'max_iter': 1000, 'tol': 0.0001}, debias=False, verbose=1, n_alphas=10, eps=0.001, key=(0, 3), screening_percentile=7.3428548695098659, is_classif=False)
+    ____________________________________________________path_scores - 108.5s, 1.8min
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.decoding.space_net.path_scores...
+    path_scores(<function _graph_net_squared_loss at 0x2ad8365762a8>, array([[-1.96947 , ...,  1.847851],
+           ..., 
+           [-1.603358, ..., -0.099912]]), 
+    array([ 73., ...,  62.]), array([[[False, ..., False],
+            ..., 
+            [False, ..., False]],
+
+           ..., 
+           [[False, ..., False],
+            ..., 
+            [False, ..., False]]], dtype=bool), 
+    None, [0.5], array([ True, ...,  True], dtype=bool), array([False, ..., False], dtype=bool), { 'max_iter': 1000, 'tol': 0.0001}, debias=False, verbose=1, n_alphas=10, eps=0.001, key=(0, 4), screening_percentile=7.3428548695098659, is_classif=False)
+    _____________________________________________________path_scores - 73.2s, 1.2min
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.decoding.space_net.path_scores...
+    path_scores(<function _graph_net_squared_loss at 0x2ad8365762a8>, array([[-1.96947 , ...,  1.847851],
+           ..., 
+           [-1.603358, ..., -0.099912]]), 
+    array([ 73., ...,  62.]), array([[[False, ..., False],
+            ..., 
+            [False, ..., False]],
+
+           ..., 
+           [[False, ..., False],
+            ..., 
+            [False, ..., False]]], dtype=bool), 
+    None, [0.5], array([ True, ...,  True], dtype=bool), array([False, ..., False], dtype=bool), { 'max_iter': 1000, 'tol': 0.0001}, debias=False, verbose=1, n_alphas=10, eps=0.001, key=(0, 5), screening_percentile=7.3428548695098659, is_classif=False)
+    _____________________________________________________path_scores - 85.0s, 1.4min
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.decoding.space_net.path_scores...
+    path_scores(<function _graph_net_squared_loss at 0x2ad8365762a8>, array([[-1.96947 , ...,  1.847851],
+           ..., 
+           [-1.603358, ..., -0.099912]]), 
+    array([ 73., ...,  62.]), array([[[False, ..., False],
+            ..., 
+            [False, ..., False]],
+
+           ..., 
+           [[False, ..., False],
+            ..., 
+            [False, ..., False]]], dtype=bool), 
+    None, [0.5], array([ True, ...,  True], dtype=bool), array([False, ..., False], dtype=bool), { 'max_iter': 1000, 'tol': 0.0001}, debias=False, verbose=1, n_alphas=10, eps=0.001, key=(0, 6), screening_percentile=7.3428548695098659, is_classif=False)
+    _____________________________________________________path_scores - 91.0s, 1.5min
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.decoding.space_net.path_scores...
+    path_scores(<function _graph_net_squared_loss at 0x2ad8365762a8>, array([[-1.96947 , ...,  1.847851],
+           ..., 
+           [-1.603358, ..., -0.099912]]), 
+    array([ 73., ...,  62.]), array([[[False, ..., False],
+            ..., 
+            [False, ..., False]],
+
+           ..., 
+           [[False, ..., False],
+            ..., 
+            [False, ..., False]]], dtype=bool), 
+    None, [0.5], array([ True, ..., False], dtype=bool), array([False, ...,  True], dtype=bool), { 'max_iter': 1000, 'tol': 0.0001}, debias=False, verbose=1, n_alphas=10, eps=0.001, key=(0, 7), screening_percentile=7.3428548695098659, is_classif=False)
+    _____________________________________________________path_scores - 74.3s, 1.2min
+    Time Elapsed: 710.419 seconds, 11 minutes.
+    Mean square error (MSE) on the predicted age: 10.91
+
+
+Visualize the resulting maps
+
+
+.. code-block:: python
+
+    from nilearn.plotting import plot_stat_map
+    # weights map
+    background_img = gm_imgs[0]
+    plot_stat_map(coef_img, background_img, title="graph-net weights",
+                  display_mode="z", cut_coords=1)
+
+
+
+
+
+.. image:: /auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_space_net_001.png
+    :align: center
+
+
+
+
+Visualize the quality of predictions
+
+
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.suptitle("graph-net: Mean Absolute Error %.2f years" % mse)
+    linewidth = 3
+    ax1 = plt.subplot('211')
+    ax1.plot(age_test, label="True age", linewidth=linewidth)
+    ax1.plot(y_pred, '--', c="g", label="Predicted age", linewidth=linewidth)
+    ax1.set_ylabel("age")
+    plt.legend(loc="best")
+    ax2 = plt.subplot("212")
+    ax2.plot(age_test - y_pred, label="True age - predicted age",
+             linewidth=linewidth)
+    ax2.set_xlabel("subject")
+    plt.legend(loc="best")
+
+    plt.show()
+
+
+
+.. image:: /auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_space_net_002.png
+    :align: center
+
+
+
+
+**Total running time of the script:**
+(11 minutes 57.356 seconds)
+
+
+
+.. container:: sphx-glr-download
+
+    **Download Python source code:** :download:`plot_oasis_vbm_space_net.py <plot_oasis_vbm_space_net.py>`
+
+
+.. container:: sphx-glr-download
+
+    **Download IPython notebook:** :download:`plot_oasis_vbm_space_net.ipynb <plot_oasis_vbm_space_net.ipynb>`

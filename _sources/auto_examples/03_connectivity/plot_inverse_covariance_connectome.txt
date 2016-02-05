@@ -1,0 +1,228 @@
+
+
+.. _sphx_glr_auto_examples_03_connectivity_plot_inverse_covariance_connectome.py:
+
+
+Computing a connectome with sparse inverse covariance
+=======================================================
+
+This example constructs a functional connectome using the sparse inverse
+covariance.
+
+We use the `MSDL atlas
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
+of functional regions in rest, and the
+:class:`nilearn.input_data.NiftiMapsMasker` to extract time series.
+
+Note that the inverse covariance (or precision) contains values that can
+be linked to *negated* partial correlations, so we negated it for
+display.
+
+As the MSDL atlas comes with (x, y, z) MNI coordinates for the different
+regions, we can visualize the matrix as a graph of interaction in a
+brain. To avoid having too dense a graph, we represent only the 20% edges
+with the highest values.
+
+
+Retrieve the atlas and the data
+
+
+.. code-block:: python
+
+    from nilearn import datasets
+    atlas = datasets.fetch_atlas_msdl()
+    atlas_filename = atlas['maps']
+
+    # Load the labels
+    import numpy as np
+    csv_filename = atlas['labels']
+
+    # The recfromcsv function can load a csv file
+    labels = np.recfromcsv(csv_filename)
+    names = labels['name']
+
+    data = datasets.fetch_adhd(n_subjects=1)
+
+    # print basic information on the dataset
+    print('First subject functional nifti images (4D) are at: %s' %
+          data.func[0])  # 4D data
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      First subject functional nifti images (4D) are at: /vaporific/aa013911/nisl_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
+
+
+Extract time series
+
+
+.. code-block:: python
+
+    from nilearn.input_data import NiftiMapsMasker
+    masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
+                             memory='nilearn_cache', verbose=5)
+
+    time_series = masker.fit_transform(data.func[0],
+                                       confounds=data.confounds)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      [NiftiMapsMasker.fit_transform] loading regions from /vaporific/aa013911/nisl_data/msdl_atlas/MSDL_rois/msdl_rois.nii
+    Resampling maps
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.image.resampling.resample_img...
+    resample_img(<nibabel.nifti1.Nifti1Image object at 0x2ad83668dd50>, target_shape=(61, 73, 61), target_affine=array([[  -3.,   -0.,   -0.,   90.],
+           [  -0.,    3.,   -0., -126.],
+           [   0.,    0.,    3.,  -72.],
+           [   0.,    0.,    0.,    1.]]), interpolation='continuous')
+    _____________________________________________________resample_img - 3.8s, 0.1min
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
+    filter_and_extract('/vaporific/aa013911/nisl_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz', 
+    <nilearn.input_data.nifti_maps_masker._ExtractionFunctor object at 0x2ad836687d10>, 
+    { 'allow_overlap': True,
+      'detrend': False,
+      'high_pass': None,
+      'low_pass': None,
+      'maps_img': '/vaporific/aa013911/nisl_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
+      'mask_img': None,
+      'smoothing_fwhm': None,
+      'standardize': True,
+      't_r': None,
+      'target_affine': None,
+      'target_shape': None}, confounds=['/vaporific/aa013911/nisl_data/adhd/data/0010042/0010042_regressors.csv'], memory=Memory(cachedir='nilearn_cache/joblib'), memory_level=1, verbose=5)
+    [NiftiMapsMasker.transform_single_imgs] Loading data from /vaporific/aa013911/nisl_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
+    [NiftiMapsMasker.transform_single_imgs] Extracting region signals
+    [NiftiMapsMasker.transform_single_imgs] Cleaning extracted signals
+    _______________________________________________filter_and_extract - 8.7s, 0.1min
+
+
+Compute the sparse inverse covariance
+
+
+.. code-block:: python
+
+    from sklearn.covariance import GraphLassoCV
+    estimator = GraphLassoCV()
+
+    estimator.fit(time_series)
+
+
+
+
+
+
+
+Display the connectome matrix
+
+
+.. code-block:: python
+
+    from matplotlib import pyplot as plt
+
+    # Display the covariance
+    plt.figure(figsize=(10, 10))
+
+    # The covariance can be found at estimator.covariance_
+    plt.imshow(estimator.covariance_, interpolation="nearest",
+               vmax=1, vmin=-1, cmap=plt.cm.RdBu_r)
+    # And display the labels
+    x_ticks = plt.xticks(range(len(names)), names, rotation=90)
+    y_ticks = plt.yticks(range(len(names)), names)
+    plt.title('Covariance')
+
+
+
+
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_001.png
+    :align: center
+
+
+
+
+And now display the corresponding graph
+
+
+.. code-block:: python
+
+    from nilearn import plotting
+    coords = labels[['x', 'y', 'z']].tolist()
+
+    plotting.plot_connectome(estimator.covariance_, coords,
+                             title='Covariance')
+
+
+
+
+
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_002.png
+    :align: center
+
+
+
+
+Display the sparse inverse covariance (we negate it to get partial
+correlations)
+
+
+.. code-block:: python
+
+    plt.figure(figsize=(10, 10))
+    plt.imshow(-estimator.precision_, interpolation="nearest",
+               vmax=1, vmin=-1, cmap=plt.cm.RdBu_r)
+    # And display the labels
+    x_ticks = plt.xticks(range(len(names)), names, rotation=90)
+    y_ticks = plt.yticks(range(len(names)), names)
+    plt.title('Sparse inverse covariance')
+
+
+
+
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_003.png
+    :align: center
+
+
+
+
+And now display the corresponding graph
+
+
+.. code-block:: python
+
+    plotting.plot_connectome(-estimator.precision_, coords,
+                             title='Sparse inverse covariance')
+
+    plotting.show()
+
+
+
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
+    :align: center
+
+
+
+
+**Total running time of the script:**
+(0 minutes 21.949 seconds)
+
+
+
+.. container:: sphx-glr-download
+
+    **Download Python source code:** :download:`plot_inverse_covariance_connectome.py <plot_inverse_covariance_connectome.py>`
+
+
+.. container:: sphx-glr-download
+
+    **Download IPython notebook:** :download:`plot_inverse_covariance_connectome.ipynb <plot_inverse_covariance_connectome.ipynb>`
