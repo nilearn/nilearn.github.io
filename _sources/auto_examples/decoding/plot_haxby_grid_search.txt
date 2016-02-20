@@ -1,0 +1,87 @@
+
+
+.. _example_decoding_plot_haxby_grid_search.py:
+
+
+Setting a parameter by cross-validation
+=======================================================
+
+Here we set the number of features selected in an Anova-SVC approach to
+maximize the cross-validation score.
+
+After separating 2 sessions for validation, we vary that parameter and
+measure the cross-validation score. We also measure the prediction score
+on the left-out validation data. As we can see, the two scores vary by a
+significant amount: this is due to sampling noise in cross validation,
+and choosing the parameter k to maximize the cross-validation score,
+might not maximize the score on left-out data.
+
+Thus using data to maximize a cross-validation score computed on that
+same data is likely to optimistic and lead to an overfit.
+
+The proper appraoch is known as a "nested cross-validation". It consists
+in doing cross-validation loops to set the model parameters inside the
+cross-validation loop used to judge the prediction performance: the
+parameters are set separately on each fold, never using the data used to
+measure performance.
+
+In scikit-learn, this can be done using the GridSearchCV object, that
+will automatically select the best parameters of an estimator from a
+grid of parameter values.
+
+One difficulty here is that we are working with a composite estimator: a
+pipeline of feature selection followed by SVC. Thus to give the name
+of the parameter that we want to tune we need to give the name of the
+step in the pipeline, followed by the name of the parameter, with '__' as
+a separator.
+
+
+
+
+.. image:: images/plot_haxby_grid_search_001.png
+    :align: center
+
+
+**Script output**:
+
+.. rst-class:: sphx-glr-script-out
+
+  ::
+
+    Mask nifti image (3D) is located at: /storage/data/nilearn_data/haxby2001_simple/pymvpa-exampledata/mask.nii.gz
+    Functional nifti image (4D) are located at: /storage/data/nilearn_data/haxby2001_simple/pymvpa-exampledata/bold.nii.gz
+    CV score: 0.7167
+    score validation: 0.7222
+    CV score: 0.7056
+    score validation: 0.5556
+    CV score: 0.7500
+    score validation: 0.4444
+    CV score: 0.7722
+    score validation: 0.5000
+    CV score: 0.7389
+    score validation: 0.5000
+    CV score: 0.7222
+    score validation: 0.5000
+    CV score: 0.7167
+    score validation: 0.5000
+    CV score: 0.7167
+    score validation: 0.4444
+    CV score: 0.7444
+    score validation: 0.5000
+    CV score: 0.7278
+    score validation: 0.5556
+    CV score: 0.7389
+    score validation: 0.5556
+    Fitting 3 folds for each of 11 candidates, totalling 33 fits
+    Fitting 3 folds for each of 11 candidates, totalling 33 fits
+    Fitting 3 folds for each of 11 candidates, totalling 33 fits
+
+
+**Python source code:** :download:`plot_haxby_grid_search.py <plot_haxby_grid_search.py>`
+
+.. literalinclude:: plot_haxby_grid_search.py
+    :lines: 35-
+
+**Total running time of the example:**  325.24 seconds
+( 5 minutes  25.24 seconds)
+    
