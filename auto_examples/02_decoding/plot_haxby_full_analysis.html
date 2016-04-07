@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.3',
+        VERSION:     '0.2.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -208,61 +208,61 @@ three different masks: the full ventral stream (mask_vt), the house
 selective areas (mask_house) and the face selective areas (mask_face),
 that have been defined via a standard GLM-based analysis.</p>
 <p>First we load and prepare the data</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Fetch data using nilearn dataset fetcher</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Fetch data using nilearn dataset fetcher</span>
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="n">haxby_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">func_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="c"># Print basic information on the dataset</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;First subject anatomical nifti image (3D) located is at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span>
+<span class="c1"># Print basic information on the dataset</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;First subject anatomical nifti image (3D) located is at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
       <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">anat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;First subject functional nifti image (4D) is located at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;First subject functional nifti image (4D) is located at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
       <span class="n">func_filename</span><span class="p">)</span>
 
-<span class="c"># Load nilearn NiftiMasker, the practical masking and unmasking tool</span>
+<span class="c1"># Load nilearn NiftiMasker, the practical masking and unmasking tool</span>
 <span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
 
-<span class="c"># load labels</span>
+<span class="c1"># load labels</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="p">)</span>
-<span class="n">stimuli</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s">&#39;labels&#39;</span><span class="p">]</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+<span class="n">stimuli</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span>
 
-<span class="c"># identify resting state labels in order to be able to remove them</span>
-<span class="n">resting_state</span> <span class="o">=</span> <span class="n">stimuli</span> <span class="o">==</span> <span class="n">b</span><span class="s">&quot;rest&quot;</span>
+<span class="c1"># identify resting state labels in order to be able to remove them</span>
+<span class="n">resting_state</span> <span class="o">=</span> <span class="n">stimuli</span> <span class="o">==</span> <span class="n">b</span><span class="s2">&quot;rest&quot;</span>
 
-<span class="c"># find names of remaining active labels</span>
+<span class="c1"># find names of remaining active labels</span>
 <span class="n">categories</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.unique.html#numpy.unique"><span class="n">np</span><span class="o">.</span><span class="n">unique</span></a><span class="p">(</span><span class="n">stimuli</span><span class="p">[</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.logical_not.html#numpy.logical_not"><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span></a><span class="p">(</span><span class="n">resting_state</span><span class="p">)])</span>
 
-<span class="c"># extract tags indicating to which acquisition run a tag belongs</span>
-<span class="n">session_labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s">&quot;chunks&quot;</span><span class="p">][</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.logical_not.html#numpy.logical_not"><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span></a><span class="p">(</span><span class="n">resting_state</span><span class="p">)]</span>
+<span class="c1"># extract tags indicating to which acquisition run a tag belongs</span>
+<span class="n">session_labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s2">&quot;chunks&quot;</span><span class="p">][</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.logical_not.html#numpy.logical_not"><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span></a><span class="p">(</span><span class="n">resting_state</span><span class="p">)]</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-python"><div class="highlight"><pre>  First subject anatomical nifti image (3D) located is at: /storage/data/nilearn_data/haxby2001/subj1/anat.nii.gz
-First subject functional nifti image (4D) is located at: /storage/data/nilearn_data/haxby2001/subj1/bold.nii.gz
+<div class="sphx-glr-script-out highlight-python"><div class="highlight"><pre>  First subject anatomical nifti image (3D) located is at: /home/varoquau/nilearn_data/haxby2001/subj1/anat.nii.gz
+First subject functional nifti image (4D) is located at: /home/varoquau/nilearn_data/haxby2001/subj1/bold.nii.gz
 </pre></div>
 </div>
 <p>Then we use scikit-learn for decoding on the different masks</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># The classifier: a support vector classifier</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1"># The classifier: a support vector classifier</span>
 <span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">SVC</span></a>
-<span class="n">classifier</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s">&quot;linear&quot;</span><span class="p">)</span>
+<span class="n">classifier</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">)</span>
 
-<span class="c"># A classifier to set the chance level</span>
+<span class="c1"># A classifier to set the chance level</span>
 <span class="kn">from</span> <span class="nn">sklearn.dummy</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier"><span class="n">DummyClassifier</span></a>
 <span class="n">dummy_classifier</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier"><span class="n">DummyClassifier</span></a><span class="p">()</span>
 
-<span class="c"># Make a data splitting object for cross validation</span>
+<span class="c1"># Make a data splitting object for cross validation</span>
 <span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.LeaveOneLabelOut.html#sklearn.cross_validation.LeaveOneLabelOut"><span class="n">LeaveOneLabelOut</span></a><span class="p">,</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a>
 <span class="n">cv</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.LeaveOneLabelOut.html#sklearn.cross_validation.LeaveOneLabelOut"><span class="n">LeaveOneLabelOut</span></a><span class="p">(</span><span class="n">session_labels</span><span class="p">)</span>
 
-<span class="n">mask_names</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;mask_vt&#39;</span><span class="p">,</span> <span class="s">&#39;mask_face&#39;</span><span class="p">,</span> <span class="s">&#39;mask_house&#39;</span><span class="p">]</span>
+<span class="n">mask_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mask_vt&#39;</span><span class="p">,</span> <span class="s1">&#39;mask_face&#39;</span><span class="p">,</span> <span class="s1">&#39;mask_house&#39;</span><span class="p">]</span>
 
 <span class="n">mask_scores</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">mask_chance_scores</span> <span class="o">=</span> <span class="p">{}</span>
 
 <span class="k">for</span> <span class="n">mask_name</span> <span class="ow">in</span> <span class="n">mask_names</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Working on mask </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">mask_name</span><span class="p">)</span>
-    <span class="c"># For decoding, standardizing is often very important</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Working on mask </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">mask_name</span><span class="p">)</span>
+    <span class="c1"># For decoding, standardizing is often very important</span>
     <span class="n">mask_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="p">[</span><span class="n">mask_name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">masker</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">mask_filename</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
     <span class="n">masked_timecourses</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span>
@@ -272,22 +272,22 @@ First subject functional nifti image (4D) is located at: /storage/data/nilearn_d
     <span class="n">mask_chance_scores</span><span class="p">[</span><span class="n">mask_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Processing </span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mask_name</span><span class="p">,</span> <span class="n">category</span><span class="p">))</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Processing </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mask_name</span><span class="p">,</span> <span class="n">category</span><span class="p">))</span>
         <span class="n">task_mask</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.logical_not.html#numpy.logical_not"><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span></a><span class="p">(</span><span class="n">resting_state</span><span class="p">)</span>
         <span class="n">classification_target</span> <span class="o">=</span> <span class="p">(</span><span class="n">stimuli</span><span class="p">[</span><span class="n">task_mask</span><span class="p">]</span> <span class="o">==</span> <span class="n">category</span><span class="p">)</span>
         <span class="n">mask_scores</span><span class="p">[</span><span class="n">mask_name</span><span class="p">][</span><span class="n">category</span><span class="p">]</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span>
             <span class="n">classifier</span><span class="p">,</span>
             <span class="n">masked_timecourses</span><span class="p">,</span>
             <span class="n">classification_target</span><span class="p">,</span>
-            <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s">&quot;f1&quot;</span><span class="p">)</span>
+            <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s2">&quot;f1&quot;</span><span class="p">)</span>
 
         <span class="n">mask_chance_scores</span><span class="p">[</span><span class="n">mask_name</span><span class="p">][</span><span class="n">category</span><span class="p">]</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span>
             <span class="n">dummy_classifier</span><span class="p">,</span>
             <span class="n">masked_timecourses</span><span class="p">,</span>
             <span class="n">classification_target</span><span class="p">,</span>
-            <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s">&quot;f1&quot;</span><span class="p">)</span>
+            <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s2">&quot;f1&quot;</span><span class="p">)</span>
 
-        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Scores: </span><span class="si">%1.2f</span><span class="s"> +- </span><span class="si">%1.2f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Scores: </span><span class="si">%1.2f</span><span class="s2"> +- </span><span class="si">%1.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
             <span class="n">mask_scores</span><span class="p">[</span><span class="n">mask_name</span><span class="p">][</span><span class="n">category</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
             <span class="n">mask_scores</span><span class="p">[</span><span class="n">mask_name</span><span class="p">][</span><span class="n">category</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()))</span>
 </pre></div>
@@ -353,7 +353,7 @@ Scores: 0.26 +- 0.20
 <span class="n">tick_position</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.arange.html#numpy.arange"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">categories</span><span class="p">))</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xticks"><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span></a><span class="p">(</span><span class="n">tick_position</span><span class="p">,</span> <span class="n">categories</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">color</span><span class="p">,</span> <span class="n">mask_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="s">&#39;rgb&#39;</span><span class="p">,</span> <span class="n">mask_names</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">color</span><span class="p">,</span> <span class="n">mask_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="s1">&#39;rgb&#39;</span><span class="p">,</span> <span class="n">mask_names</span><span class="p">):</span>
     <span class="n">score_means</span> <span class="o">=</span> <span class="p">[</span><span class="n">mask_scores</span><span class="p">[</span><span class="n">mask_name</span><span class="p">][</span><span class="n">category</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
                    <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">]</span>
     <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.bar"><span class="n">plt</span><span class="o">.</span><span class="n">bar</span></a><span class="p">(</span><span class="n">tick_position</span><span class="p">,</span> <span class="n">score_means</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">mask_name</span><span class="p">,</span>
@@ -362,14 +362,14 @@ Scores: 0.26 +- 0.20
     <span class="n">score_chance</span> <span class="o">=</span> <span class="p">[</span><span class="n">mask_chance_scores</span><span class="p">[</span><span class="n">mask_name</span><span class="p">][</span><span class="n">category</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
                     <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">]</span>
     <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.bar"><span class="n">plt</span><span class="o">.</span><span class="n">bar</span></a><span class="p">(</span><span class="n">tick_position</span><span class="p">,</span> <span class="n">score_chance</span><span class="p">,</span>
-            <span class="n">width</span><span class="o">=.</span><span class="mi">25</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s">&#39;none&#39;</span><span class="p">)</span>
+            <span class="n">width</span><span class="o">=.</span><span class="mi">25</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
 
     <span class="n">tick_position</span> <span class="o">=</span> <span class="n">tick_position</span> <span class="o">+</span> <span class="o">.</span><span class="mi">2</span>
 
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.ylabel"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="s">&#39;Classification accurancy (f1 score)&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xlabel"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s">&#39;Visual stimuli category&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/legend_api.html#matplotlib.legend"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s">&#39;best&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&#39;Category-specific classification accuracy for different masks&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.ylabel"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="s1">&#39;Classification accurancy (f1 score)&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xlabel"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s1">&#39;Visual stimuli category&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/legend_api.html#matplotlib.legend"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s1">&#39;Category-specific classification accuracy for different masks&#39;</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/tight_layout_api.html#matplotlib.tight_layout"><span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span></a><span class="p">()</span>
 
 
@@ -378,7 +378,7 @@ Scores: 0.26 +- 0.20
 </div>
 <img alt="../../_images/sphx_glr_plot_haxby_full_analysis_001.png" class="align-center" src="../../_images/sphx_glr_plot_haxby_full_analysis_001.png" />
 <p><strong>Total running time of the script:</strong>
-(0 minutes 59.786 seconds)</p>
+(0 minutes 47.031 seconds)</p>
 <div class="sphx-glr-download container">
 <strong>Download Python source code:</strong> <a class="reference download internal" href="../../_downloads/plot_haxby_full_analysis.py"><tt class="xref download docutils literal"><span class="pre">plot_haxby_full_analysis.py</span></tt></a></div>
 <div class="sphx-glr-download container">
@@ -412,7 +412,7 @@ Scores: 0.26 +- 0.20
     </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
-          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.2.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.
         <span style="padding-left: 5ex;">
           <a href="../../_sources/auto_examples/02_decoding/plot_haxby_full_analysis.txt"
         	 rel="nofollow">Show this page source</a>
