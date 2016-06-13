@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.4',
+        VERSION:     '0.2.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -28,8 +28,8 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="top" title="Machine learning for NeuroImaging" href="../../index.html" />
     <link rel="up" title="General examples" href="../index.html" />
-    <link rel="next" title="Group Sparse inverse covariance for multi-subject connectome" href="plot_multi_subject_connectome.html" />
-    <link rel="prev" title="Comparing different functional connectivity measures" href="plot_connectivity_measures.html" />
+    <link rel="next" title="Comparing different functional connectivity measures" href="plot_connectivity_measures.html" />
+    <link rel="prev" title="Extracting signals and plotting a connectome for the Power-264 seed-region atlas" href="plot_power_connectome.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
@@ -117,7 +117,7 @@ $(function () {
       <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
     </li>
     <li>
-      <a href="../../manipulating_visualizing/data_preparation.html">Nifti IO</a>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
     </li>
     <li>
       <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
@@ -151,10 +151,10 @@ $(function () {
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="plot_multi_subject_connectome.html" title="Group Sparse inverse covariance for multi-subject connectome"
+          <a href="plot_connectivity_measures.html" title="Comparing different functional connectivity measures"
              accesskey="N">next</a></li>
         <li class="right" >
-          <a href="plot_connectivity_measures.html" title="Comparing different functional connectivity measures"
+          <a href="plot_power_connectome.html" title="Extracting signals and plotting a connectome for the Power-264 seed-region atlas"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
@@ -189,11 +189,11 @@ $(function () {
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="plot_connectivity_measures.html"
-                        title="previous chapter">Comparing different functional connectivity measures</a></p>
+  <p class="topless"><a href="plot_power_connectome.html"
+                        title="previous chapter">Extracting signals and plotting a connectome for the Power-264 seed-region atlas</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="plot_multi_subject_connectome.html"
-                        title="next chapter">Group Sparse inverse covariance for multi-subject connectome</a></p>
+  <p class="topless"><a href="plot_connectivity_measures.html"
+                        title="next chapter">Comparing different functional connectivity measures</a></p>
 
 <div class="navbar">
 </div> <!-- end navbar -->
@@ -218,14 +218,14 @@ correlation of a <strong>seed region</strong> with the <strong>rest of the brain
 <p>This example is an advanced one that requires manipulating the data with numpy.
 Note the difference between images, that lie in brain space, and the
 numpy array, corresponding to the data inside the mask.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># author: Franz Liem</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># author: Franz Liem</span>
 </pre></div>
 </div>
 <div class="section" id="getting-the-data">
 <h2>Getting the data<a class="headerlink" href="#getting-the-data" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># We will work with the first subject of the adhd data set.</span>
-<span class="c1"># adhd_dataset.func is a list of filenames. We select the 1st (0-based)</span>
-<span class="c1"># subject by indexing with [0]).</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># We will work with the first subject of the adhd data set.</span>
+<span class="c"># adhd_dataset.func is a list of filenames. We select the 1st (0-based)</span>
+<span class="c"># subject by indexing with [0]).</span>
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
 
 <span class="n">adhd_dataset</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_adhd.html#nilearn.datasets.fetch_adhd"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span></a><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -267,7 +267,7 @@ This will create a NiftiSpheresMasker object.</p>
     <span class="n">pcc_coords</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
     <span class="n">detrend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
     <span class="n">low_pass</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">high_pass</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">t_r</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span>
-    <span class="n">memory</span><span class="o">=</span><span class="s1">&#39;nilearn_cache&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">memory</span><span class="o">=</span><span class="s">&#39;nilearn_cache&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Then we extract the mean time series within the seed region while
@@ -284,7 +284,7 @@ arguments as in the seed_masker in addition to smoothing with a 6 mm kernel</p>
     <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
     <span class="n">detrend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
     <span class="n">low_pass</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">high_pass</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">t_r</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span>
-    <span class="n">memory</span><span class="o">=</span><span class="s1">&#39;nilearn_cache&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">memory</span><span class="o">=</span><span class="s">&#39;nilearn_cache&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Then we extract the brain-wide voxel-wise time series while regressing
@@ -296,8 +296,8 @@ out the confounds as before</p>
 <p>We can now inspect the extracted time series. Note that the <strong>seed time
 series</strong> is an array with shape n_volumes, 1), while the
 <strong>brain time series</strong> is an array with shape (n_volumes, n_voxels).</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s2">&quot;seed time series shape: (</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">seed_time_series</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;brain time series shape: (</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">brain_time_series</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&quot;seed time series shape: (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="n">seed_time_series</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;brain time series shape: (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="n">brain_time_series</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -309,9 +309,9 @@ brain time series shape: (176, 69681)
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><span class="n">seed_time_series</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s1">&#39;Seed time series (Posterior cingulate cortex)&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xlabel"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s1">&#39;Scan number&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.ylabel"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="s1">&#39;Normalized signal&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&#39;Seed time series (Posterior cingulate cortex)&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xlabel"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s">&#39;Scan number&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.ylabel"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="s">&#39;Normalized signal&#39;</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/tight_layout_api.html#matplotlib.tight_layout"><span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span></a><span class="p">()</span>
 </pre></div>
 </div>
@@ -319,9 +319,9 @@ brain time series shape: (176, 69681)
 <p>Exemplarily, we can also select 5 random voxels from the <strong>brain-wide
 data</strong> and plot the time series from.</p>
 <div class="highlight-python"><div class="highlight"><pre><a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.plot"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><span class="n">brain_time_series</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]])</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s1">&#39;Time series from 5 random voxels&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xlabel"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s1">&#39;Scan number&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.ylabel"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="s1">&#39;Normalized signal&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&#39;Time series from 5 random voxels&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xlabel"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s">&#39;Scan number&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.ylabel"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="s">&#39;Normalized signal&#39;</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/tight_layout_api.html#matplotlib.tight_layout"><span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span></a><span class="p">()</span>
 </pre></div>
 </div>
@@ -346,8 +346,8 @@ series.</p>
 values between the signal in the <strong>seed region</strong> of interest and <strong>each
 voxel&#8217;s signal</strong>, and will be of shape (n_voxels, 1). The correlation
 values can potentially range between -1 and 1.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s2">&quot;seed-based correlation shape: (</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">seed_based_correlations</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;seed-based correlation: min = </span><span class="si">%.3f</span><span class="s2">; max = </span><span class="si">%.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="s">&quot;seed-based correlation shape: (</span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="n">seed_based_correlations</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;seed-based correlation: min = </span><span class="si">%.3f</span><span class="s">; max = </span><span class="si">%.3f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
     <span class="n">seed_based_correlations</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">seed_based_correlations</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
 </pre></div>
 </div>
@@ -362,15 +362,15 @@ seed-based correlation: min = -0.715; max = 0.972
 <p>Now we can Fisher-z transform the data to achieve a normal distribution.
 The transformed array can now have values more extreme than +/- 1.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">seed_based_correlations_fisher_z</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.arctanh.html#numpy.arctanh"><span class="n">np</span><span class="o">.</span><span class="n">arctanh</span></a><span class="p">(</span><span class="n">seed_based_correlations</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;seed-based correlation Fisher-z transformed: min = </span><span class="si">%.3f</span><span class="s2">; max = </span><span class="si">%.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;seed-based correlation Fisher-z transformed: min = </span><span class="si">%.3f</span><span class="s">; max = </span><span class="si">%.3f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
     <span class="n">seed_based_correlations_fisher_z</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span>
     <span class="n">seed_based_correlations_fisher_z</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
 
-<span class="c1"># Finally, we can tranform the correlation array back to a Nifti image</span>
-<span class="c1"># object, that we can save.</span>
+<span class="c"># Finally, we can tranform the correlation array back to a Nifti image</span>
+<span class="c"># object, that we can save.</span>
 <span class="n">seed_based_correlation_img</span> <span class="o">=</span> <span class="n">brain_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span>
     <span class="n">seed_based_correlations</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-<span class="n">seed_based_correlation_img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s1">&#39;sbc_z.nii.gz&#39;</span><span class="p">)</span>
+<span class="n">seed_based_correlation_img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s">&#39;sbc_z.nii.gz&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -388,10 +388,10 @@ interest.</p>
 
 <span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">seed_based_correlation_img</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
                                  <span class="n">cut_coords</span><span class="o">=</span><span class="n">pcc_coords</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="n">display</span><span class="o">.</span><span class="n">add_markers</span><span class="p">(</span><span class="n">marker_coords</span><span class="o">=</span><span class="n">pcc_coords</span><span class="p">,</span> <span class="n">marker_color</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span>
+<span class="n">display</span><span class="o">.</span><span class="n">add_markers</span><span class="p">(</span><span class="n">marker_coords</span><span class="o">=</span><span class="n">pcc_coords</span><span class="p">,</span> <span class="n">marker_color</span><span class="o">=</span><span class="s">&#39;g&#39;</span><span class="p">,</span>
                     <span class="n">marker_size</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
-<span class="c1"># At last, we save the plot as pdf.</span>
-<span class="n">display</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;sbc_z.pdf&#39;</span><span class="p">)</span>
+<span class="c"># At last, we save the plot as pdf.</span>
+<span class="n">display</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&#39;sbc_z.pdf&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_seed_based_correlation_003.png" class="align-center" src="../../_images/sphx_glr_plot_seed_based_correlation_003.png" />
@@ -414,10 +414,10 @@ interest.</p>
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="plot_multi_subject_connectome.html" title="Group Sparse inverse covariance for multi-subject connectome"
+          <a href="plot_connectivity_measures.html" title="Comparing different functional connectivity measures"
              >next</a></li>
         <li class="right" >
-          <a href="plot_connectivity_measures.html" title="Comparing different functional connectivity measures"
+          <a href="plot_power_connectome.html" title="Extracting signals and plotting a connectome for the Power-264 seed-region atlas"
              >previous</a> |</li>
 <li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>

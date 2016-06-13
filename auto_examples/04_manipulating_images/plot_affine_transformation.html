@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.4',
+        VERSION:     '0.2.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -28,7 +28,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="top" title="Machine learning for NeuroImaging" href="../../index.html" />
     <link rel="up" title="General examples" href="../index.html" />
-    <link rel="next" title="Computing an ROI mask" href="plot_roi_extraction.html" />
+    <link rel="next" title="Computing a Region of Interest (ROI) mask manually" href="plot_roi_extraction.html" />
     <link rel="prev" title="Understanding NiftiMasker and mask computation" href="plot_mask_computation.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -117,7 +117,7 @@ $(function () {
       <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
     </li>
     <li>
-      <a href="../../manipulating_visualizing/data_preparation.html">Nifti IO</a>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
     </li>
     <li>
       <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
@@ -151,7 +151,7 @@ $(function () {
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="plot_roi_extraction.html" title="Computing an ROI mask"
+          <a href="plot_roi_extraction.html" title="Computing a Region of Interest (ROI) mask manually"
              accesskey="N">next</a></li>
         <li class="right" >
           <a href="plot_mask_computation.html" title="Understanding NiftiMasker and mask computation"
@@ -181,7 +181,7 @@ $(function () {
                         title="previous chapter">Understanding NiftiMasker and mask computation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="plot_roi_extraction.html"
-                        title="next chapter">Computing an ROI mask</a></p>
+                        title="next chapter">Computing a Region of Interest (ROI) mask manually</a></p>
 
 <div class="navbar">
 </div> <!-- end navbar -->
@@ -233,7 +233,7 @@ causes an error message, because <cite>resample_img</cite> will not know where t
 the bounding box (there is no intelligent way of inferring this given the
 bounding box shape).</p>
 <p>First make a simple synthetic image</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Create the data with numpy</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Create the data with numpy</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="n">grid</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.mgrid.html#numpy.mgrid"><span class="n">np</span><span class="o">.</span><span class="n">mgrid</span></a><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">192</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">128</span><span class="p">]</span>
 <span class="n">circle</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.sum.html#numpy.sum"><span class="n">np</span><span class="o">.</span><span class="n">sum</span></a><span class="p">(</span>
@@ -252,17 +252,17 @@ bounding box shape).</p>
 <span class="n">vmax</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
 
 <span class="n">source_affine</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.eye.html#numpy.eye"><span class="n">np</span><span class="o">.</span><span class="n">eye</span></a><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-<span class="c1"># Use canonical vectors for affine</span>
-<span class="c1"># Give the affine an offset</span>
+<span class="c"># Use canonical vectors for affine</span>
+<span class="c"># Give the affine an offset</span>
 <span class="n">source_affine</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.array.html#numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mi">96</span><span class="p">,</span> <span class="mi">64</span><span class="p">])</span>
 
-<span class="c1"># Rotate it slightly</span>
+<span class="c"># Rotate it slightly</span>
 <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span> <span class="o">*</span> <span class="mi">15</span>
 <span class="n">rotation_matrix</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.array.html#numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([[</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.cos.html#numpy.cos"><span class="n">np</span><span class="o">.</span><span class="n">cos</span></a><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <span class="o">-</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.sin.html#numpy.sin"><span class="n">np</span><span class="o">.</span><span class="n">sin</span></a><span class="p">(</span><span class="n">angle</span><span class="p">)],</span>
                             <span class="p">[</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.sin.html#numpy.sin"><span class="n">np</span><span class="o">.</span><span class="n">sin</span></a><span class="p">(</span><span class="n">angle</span><span class="p">),</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.cos.html#numpy.cos"><span class="n">np</span><span class="o">.</span><span class="n">cos</span></a><span class="p">(</span><span class="n">angle</span><span class="p">)]])</span>
-<span class="n">source_affine</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">rotation_matrix</span> <span class="o">*</span> <span class="mf">2.0</span>  <span class="c1"># 2.0mm voxel size</span>
+<span class="n">source_affine</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">rotation_matrix</span> <span class="o">*</span> <span class="mf">2.0</span>  <span class="c"># 2.0mm voxel size</span>
 
-<span class="c1"># We need to turn this data into a nibabel image</span>
+<span class="c"># We need to turn this data into a nibabel image</span>
 <span class="kn">import</span> <span class="nn">nibabel</span>
 <span class="n">img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/arrays.indexing.html#numpy.newaxis"><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span></a><span class="p">],</span> <span class="n">affine</span><span class="o">=</span><span class="n">source_affine</span><span class="p">)</span>
 </pre></div>
@@ -295,24 +295,24 @@ bounding box shape).</p>
 <p>Finally, visualize</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s2">&quot;The original data in voxel space&quot;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&quot;The original data in voxel space&quot;</span><span class="p">)</span>
 
 <a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">img_in_mm_space</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s2">&quot;The original data in mm space&quot;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&quot;The original data in mm space&quot;</span><span class="p">)</span>
 
 <a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">img_3d_affine_in_mm_space</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">],</span>
            <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s2">&quot;Transformed using a 3x3 affine -</span><span class="se">\n</span><span class="s2"> leads to &quot;</span>
-          <span class="s2">&quot;re-estimation of bounding box&quot;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&quot;Transformed using a 3x3 affine -</span><span class="se">\n</span><span class="s"> leads to &quot;</span>
+          <span class="s">&quot;re-estimation of bounding box&quot;</span><span class="p">)</span>
 
 <a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">img_4d_affine_in_mm_space</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">],</span>
            <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s2">&quot;Transformed using a 4x4 affine -</span><span class="se">\n</span><span class="s2"> Uses affine anchor &quot;</span>
-          <span class="s2">&quot;and estimates bounding box size&quot;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&quot;Transformed using a 4x4 affine -</span><span class="se">\n</span><span class="s"> Uses affine anchor &quot;</span>
+          <span class="s">&quot;and estimates bounding box size&quot;</span><span class="p">)</span>
 
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
@@ -345,7 +345,7 @@ bounding box shape).</p>
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="plot_roi_extraction.html" title="Computing an ROI mask"
+          <a href="plot_roi_extraction.html" title="Computing a Region of Interest (ROI) mask manually"
              >next</a></li>
         <li class="right" >
           <a href="plot_mask_computation.html" title="Understanding NiftiMasker and mask computation"

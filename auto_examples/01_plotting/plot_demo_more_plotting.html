@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.4',
+        VERSION:     '0.2.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -117,7 +117,7 @@ $(function () {
       <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
     </li>
     <li>
-      <a href="../../manipulating_visualizing/data_preparation.html">Nifti IO</a>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
     </li>
     <li>
       <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
@@ -198,108 +198,227 @@ $(function () {
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="more-nilearn-plotting">
-<span id="sphx-glr-auto-examples-01-plotting-plot-demo-more-plotting-py"></span><h1>More nilearn plotting<a class="headerlink" href="#more-nilearn-plotting" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="more-plotting-tools-from-nilearn">
+<span id="sphx-glr-auto-examples-01-plotting-plot-demo-more-plotting-py"></span><h1>More plotting tools from nilearn<a class="headerlink" href="#more-plotting-tools-from-nilearn" title="Permalink to this headline">¶</a></h1>
+<p>In this example, we demonstrate how to use plotting options from
+nilearn essential in visualizing brain image analysis results.</p>
+<p>We emphasize the use of parameters such as <cite>display_mode</cite> and <cite>cut_coords</cite>
+with plotting function <a class="reference internal" href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.plotting.plot_stat_map</span></tt></a>. Also,
+we show how to use various features such as <cite>add_edges</cite>, <cite>add_contours</cite>,
+<cite>add_markers</cite> essential in visualizing regions of interest images or
+mask images overlaying on subject specific anatomical/EPI image.
+The display features shown here are inherited from the
+<a class="reference internal" href="../../modules/generated/nilearn.plotting.displays.OrthoSlicer.html#nilearn.plotting.displays.OrthoSlicer" title="nilearn.plotting.displays.OrthoSlicer"><tt class="xref py py-class docutils literal"><span class="pre">nilearn.plotting.displays.OrthoSlicer</span></tt></a> class.</p>
+<p>The parameter <cite>display_mode</cite> is used to draw brain slices along given
+specific directions, where directions can be one of &#8216;ortho&#8217;,
+&#8216;x&#8217;, &#8216;y&#8217;, &#8216;z&#8217;, &#8216;xy&#8217;, &#8216;xz&#8217;, &#8216;yz&#8217;. whereas parameter <cite>cut_coords</cite>
+is used to specify a limited number of slices to visualize along given
+specific slice direction. The parameter <cite>cut_coords</cite> can also be used
+to draw the specific cuts in the slices by giving its particular
+coordinates in MNI space accordingly with particular slice direction.
+This helps us point to the activation specific location of the brain slices.</p>
 <p>See <a class="reference internal" href="../../plotting/index.html#plotting"><em>Plotting brain images</em></a> for more details.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># The imports from nilearn plotting and image processing</span>
-<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">plotting</span><span class="p">,</span> <span class="n">image</span>
-</pre></div>
-</div>
-<p>Retrieve the data: haxby dataset to have EPI images and masks, and
-localizer dataset to have contrast maps</p>
+<p>First, we retrieve data from nilearn provided (general-purpose) datasets</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+
+<span class="c"># haxby dataset to have anatomical image, EPI images and masks</span>
 <span class="n">haxby_dataset</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_haxby.html#nilearn.datasets.fetch_haxby"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span></a><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">haxby_anat_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">anat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">haxby_mask_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">haxby_func_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="n">localizer_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_localizer_contrasts</span><span class="p">(</span>
-    <span class="p">[</span><span class="s2">&quot;left vs right button press&quot;</span><span class="p">],</span>
-    <span class="n">n_subjects</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">get_anats</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">localizer_anat_filename</span> <span class="o">=</span> <span class="n">localizer_dataset</span><span class="o">.</span><span class="n">anats</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">localizer_cmap_filename</span> <span class="o">=</span> <span class="n">localizer_dataset</span><span class="o">.</span><span class="n">cmaps</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="c"># localizer dataset to have contrast maps</span>
+<span class="n">localizer_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_localizer_button_task</span><span class="p">(</span><span class="n">get_anats</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">localizer_anat_filename</span> <span class="o">=</span> <span class="n">localizer_dataset</span><span class="o">.</span><span class="n">anats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">localizer_tmap_filename</span> <span class="o">=</span> <span class="n">localizer_dataset</span><span class="o">.</span><span class="n">tmaps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">localizer_cmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;ortho&#39;</span><span class="p">,</span>
-                       <span class="n">cut_coords</span><span class="o">=</span><span class="p">(</span><span class="mi">36</span><span class="p">,</span> <span class="o">-</span><span class="mi">27</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span>
-                       <span class="n">title</span><span class="o">=</span><span class="s2">&quot;display_mode=&#39;ortho&#39;, cut_coords=(36, -27, 60)&quot;</span><span class="p">)</span>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-python"><div class="highlight"><pre>Downloading data from http://brainomics.cea.fr/localizer/brainomics_data_anats.zip ...
+</pre></div>
+</div>
+<p>Now, we show from here how to visualize the retrieved datasets using plotting
+tools from nilearn.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">plotting</span>
+</pre></div>
+</div>
+<p>Visualizing contrast map in three different orthogonal views - &#8216;sagittal&#8217;,
+&#8216;coronal&#8217; and &#8216;axial&#8217; with coordinate positions in each view are given
+of interest manually also with colorbar on the right side of the plots.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># The first argument is a path to the filename of a constrast map,</span>
+<span class="c"># optional argument `display_mode` is given as string &#39;ortho&#39; to visualize</span>
+<span class="c"># the map in three specific directions xyz and the optional `cut_coords`</span>
+<span class="c"># argument, is here a list of integers denotes coordinates of each slice</span>
+<span class="c"># in the order [x, y, z]. By default the `colorbar` argument is set to True</span>
+<span class="c"># in plot_stat_map.</span>
+<span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&#39;ortho&#39;</span><span class="p">,</span>
+                       <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="mi">36</span><span class="p">,</span> <span class="o">-</span><span class="mi">27</span><span class="p">,</span> <span class="mi">60</span><span class="p">],</span>
+                       <span class="n">title</span><span class="o">=</span><span class="s">&quot;display_mode=&#39;ortho&#39;, cut_coords=[36, -27, 60]&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_001.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_001.png" />
-<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">localizer_cmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-                       <span class="n">title</span><span class="o">=</span><span class="s2">&quot;display_mode=&#39;z&#39;, cut_coords=5&quot;</span><span class="p">)</span>
+<p>Visualizing contrast map in single view &#8216;axial&#8217; with maximum number of
+slices in this view are limited to 5. The coordinates to cut the slices
+are selected automatically.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># In this type of visualization, the `display_mode` argument is given as</span>
+<span class="c"># string &#39;z&#39; for axial direction and `cut_coords` as integer 5 without a</span>
+<span class="c"># list implies that number of cuts in the slices should be maximum of 5.</span>
+<span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                       <span class="n">title</span><span class="o">=</span><span class="s">&quot;display_mode=&#39;z&#39;, cut_coords=5&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_002.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_002.png" />
-<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">localizer_cmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span>
-                       <span class="n">cut_coords</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">36</span><span class="p">,</span> <span class="mi">36</span><span class="p">),</span>
-                       <span class="n">title</span><span class="o">=</span><span class="s2">&quot;display_mode=&#39;x&#39;, cut_coords=(-36, 36)&quot;</span><span class="p">)</span>
+<p>Visualizing contrast map in another single view &#8216;sagittal&#8217; and also showing
+how to select two slices of particular interest manually by giving the
+coordinates to cut each slice.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># In this type, `display_mode` should be given as string &#39;x&#39; for sagittal</span>
+<span class="c"># view and coordinates should be given as integers in a list</span>
+<span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&#39;x&#39;</span><span class="p">,</span>
+                       <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">36</span><span class="p">,</span> <span class="mi">36</span><span class="p">],</span>
+                       <span class="n">title</span><span class="o">=</span><span class="s">&quot;display_mode=&#39;x&#39;, cut_coords=[-36, 36]&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_003.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_003.png" />
-<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">localizer_cmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                       <span class="n">title</span><span class="o">=</span><span class="s2">&quot;display_mode=&#39;x&#39;, cut_coords=(-36, 36)&quot;</span><span class="p">)</span>
+<p>Now constrast map is visualized in &#8216;coronal&#8217; view with single cut where
+coordinates are located automatically</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># For coronal view, `display_mode` is given as string &#39;y&#39; and `cut_coords`</span>
+<span class="c"># as integer 1 not as a list for single cut</span>
+<span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                       <span class="n">title</span><span class="o">=</span><span class="s">&quot;display_mode=&#39;y&#39;, cut_coords=1&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_004.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_004.png" />
-<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">localizer_cmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span>
+<p>Now contrast map is shown without a colorbar on the right side.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># The argument `colorbar` should be given as False to show plots without</span>
+<span class="c"># a colorbar on the right side.</span>
+<span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&#39;z&#39;</span><span class="p">,</span>
                        <span class="n">cut_coords</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-                       <span class="n">title</span><span class="o">=</span><span class="s2">&quot;display_mode=&#39;z&#39;, cut_coords=1, colorbar=False&quot;</span><span class="p">)</span>
+                       <span class="n">title</span><span class="o">=</span><span class="s">&quot;display_mode=&#39;z&#39;, cut_coords=1, colorbar=False&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_005.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_005.png" />
-<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">localizer_cmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;xz&#39;</span><span class="p">,</span>
-                       <span class="n">cut_coords</span><span class="o">=</span><span class="p">(</span><span class="mi">36</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span>
-                       <span class="n">title</span><span class="o">=</span><span class="s2">&quot;display_mode=&#39;xz&#39;, cut_coords=(36, 60)&quot;</span><span class="p">)</span>
+<p>Now we visualize the contrast map with two views - &#8216;sagittal&#8217; and &#8216;axial&#8217;
+and coordinates are given manually to select particular cuts in two views.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># argument display_mode=&#39;xz&#39; where &#39;x&#39; for sagittal and &#39;z&#39; for axial view.</span>
+<span class="c"># argument `cut_coords` should match with input number of views therefore two</span>
+<span class="c"># integers should be given in a list to select the slices to be displayed</span>
+<span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&#39;xz&#39;</span><span class="p">,</span>
+                       <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="mi">36</span><span class="p">,</span> <span class="mi">60</span><span class="p">],</span>
+                       <span class="n">title</span><span class="o">=</span><span class="s">&quot;display_mode=&#39;xz&#39;, cut_coords=[36, 60]&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_006.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_006.png" />
-<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">localizer_cmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;yx&#39;</span><span class="p">,</span>
-                       <span class="n">cut_coords</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">27</span><span class="p">,</span> <span class="mi">36</span><span class="p">),</span>
-                       <span class="n">title</span><span class="o">=</span><span class="s2">&quot;display_mode=&#39;yx&#39;, cut_coords=(-27, 36)&quot;</span><span class="p">)</span>
+<p>Visualizing the contrast map with &#8216;coronal&#8217;, &#8216;sagittal&#8217; views and coordinates
+are given manually in two cuts with two views.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># display_mode=&#39;yx&#39; for coronal and saggital view and coordinates will be</span>
+<span class="c"># assigned in the order of direction as [x, y, z]</span>
+<span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&#39;yx&#39;</span><span class="p">,</span>
+                       <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">27</span><span class="p">,</span> <span class="mi">36</span><span class="p">],</span>
+                       <span class="n">title</span><span class="o">=</span><span class="s">&quot;display_mode=&#39;yx&#39;, cut_coords=[-27, 36]&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_007.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_007.png" />
-<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">localizer_cmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;yz&#39;</span><span class="p">,</span>
-                       <span class="n">cut_coords</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">27</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span>
-                       <span class="n">title</span><span class="o">=</span><span class="s2">&quot;display_mode=&#39;yz&#39;, cut_coords=(-27, 60)&quot;</span><span class="p">)</span>
+<p>Visualizing contrast map with &#8216;coronal&#8217; and &#8216;axial&#8217; views with manual
+positioning of coordinates with each directional view</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&#39;yz&#39;</span><span class="p">,</span>
+                       <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">27</span><span class="p">,</span> <span class="mi">60</span><span class="p">],</span>
+                       <span class="n">title</span><span class="o">=</span><span class="s">&quot;display_mode=&#39;yz&#39;, cut_coords=[-27, 60]&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_008.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_008.png" />
-<p>demo display objects with add_* methods</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">mean_haxby_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img"><span class="n">image</span><span class="o">.</span><span class="n">mean_img</span></a><span class="p">(</span><span class="n">haxby_func_filename</span><span class="p">)</span>
+<p>In second part, we switch to demonstrating various features add_* from
+nilearn where each specific feature will be helpful in projecting brain
+imaging results for further interpretation.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Import image processing tool for basic processing of functional brain image</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">image</span>
 
-<span class="c1"># Plot T1 outline on top of the mean EPI (useful for checking coregistration)</span>
-<span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_anat</span></a><span class="p">(</span><span class="n">mean_haxby_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;add_edges&quot;</span><span class="p">)</span>
+<span class="c"># Compute voxel-wise mean functional image across time dimension. Now we have</span>
+<span class="c"># functional image in 3D assigned in mean_haxby_img</span>
+<span class="n">mean_haxby_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img"><span class="n">image</span><span class="o">.</span><span class="n">mean_img</span></a><span class="p">(</span><span class="n">haxby_func_filename</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let us see how to use <cite>add_edges</cite>, method useful for checking
+coregistration by overlaying anatomical image as edges (red) on top of
+mean functional image (background), both being of same subject.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># First, we call the `plot_anat` plotting function, with a background image</span>
+<span class="c"># as first argument, in this case the mean fMRI image.</span>
+<span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_anat</span></a><span class="p">(</span><span class="n">mean_haxby_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;add_edges&quot;</span><span class="p">)</span>
+
+<span class="c"># We are now able to use add_edges method inherited in plotting object named as</span>
+<span class="c"># display. First argument - anatomical image  and by default edges will be</span>
+<span class="c"># displayed as red &#39;r&#39;, to choose different colors green &#39;g&#39; and  blue &#39;b&#39;.</span>
 <span class="n">display</span><span class="o">.</span><span class="n">add_edges</span><span class="p">(</span><span class="n">haxby_anat_filename</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_009.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_009.png" />
-<p>Plotting outline of the mask on top of the EPI</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_anat</span></a><span class="p">(</span><span class="n">mean_haxby_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;add_contours&quot;</span><span class="p">,</span>
-                             <span class="n">cut_coords</span><span class="o">=</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="o">-</span><span class="mi">34</span><span class="p">,</span> <span class="o">-</span><span class="mi">22</span><span class="p">))</span>
-<span class="n">display</span><span class="o">.</span><span class="n">add_contours</span><span class="p">(</span><span class="n">haxby_mask_filename</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">],</span> <span class="n">colors</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<p>Plotting outline of the mask (red) on top of the mean EPI image with
+<cite>add_contours</cite>. This method is useful for region specific interpretation
+of brain images</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># As seen before, we call the `plot_anat` function with a background image</span>
+<span class="c"># as first argument, in this case again the mean fMRI image and argument</span>
+<span class="c"># `cut_coords` as list for manual cut with coordinates pointing at masked</span>
+<span class="c"># brain regions</span>
+<span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_anat</span></a><span class="p">(</span><span class="n">mean_haxby_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;add_contours&quot;</span><span class="p">,</span>
+                             <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="mi">28</span><span class="p">,</span> <span class="o">-</span><span class="mi">34</span><span class="p">,</span> <span class="o">-</span><span class="mi">22</span><span class="p">])</span>
+<span class="c"># Now use `add_contours` in display object with the path to a mask image from</span>
+<span class="c"># the Haxby dataset as first argument and argument `levels` given as list</span>
+<span class="c"># of values to select particular level in the contour to display and argument</span>
+<span class="c"># `colors` specified as red &#39;r&#39; to see edges as red in color.</span>
+<span class="c"># See help on matplotlib.pyplot.contour to use more options with this method</span>
+<span class="n">display</span><span class="o">.</span><span class="n">add_contours</span><span class="p">(</span><span class="n">haxby_mask_filename</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">],</span> <span class="n">colors</span><span class="o">=</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_010.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_010.png" />
-<p>demo saving plots to file</p>
-<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">localizer_cmap_filename</span><span class="p">,</span>
-                       <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Using plot_stat_map output_file&#39;</span><span class="p">,</span>
-                       <span class="n">output_file</span><span class="o">=</span><span class="s1">&#39;plot_stat_map.png&#39;</span><span class="p">)</span>
+<p>Plotting outline of the mask (blue) with color fillings using same method
+<cite>add_contours</cite>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_anat</span></a><span class="p">(</span><span class="n">mean_haxby_img</span><span class="p">,</span>
+                             <span class="n">title</span><span class="o">=</span><span class="s">&quot;add_contours with filled=True&quot;</span><span class="p">,</span>
+                             <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="mi">28</span><span class="p">,</span> <span class="o">-</span><span class="mi">34</span><span class="p">,</span> <span class="o">-</span><span class="mi">22</span><span class="p">])</span>
+
+<span class="c"># By default, no color fillings will be shown using `add_contours`. To see</span>
+<span class="c"># contours with color fillings use argument filled=True. contour colors are</span>
+<span class="c"># changed to blue &#39;b&#39; with alpha=0.7 sets the transparency of color fillings.</span>
+<span class="c"># See help on matplotlib.pyplot.contourf to use more options given that filled</span>
+<span class="c"># should be True</span>
+<span class="n">display</span><span class="o">.</span><span class="n">add_contours</span><span class="p">(</span><span class="n">haxby_mask_filename</span><span class="p">,</span> <span class="n">filled</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+                     <span class="n">levels</span><span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">],</span> <span class="n">colors</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">localizer_cmap_filename</span><span class="p">,</span>
-                                 <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Using display savefig&#39;</span><span class="p">)</span>
-<span class="n">display</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;plot_stat_map_from_display.png&#39;</span><span class="p">)</span>
-<span class="c1"># In non-interactive settings make sure you close your displays</span>
+<img alt="../../_images/sphx_glr_plot_demo_more_plotting_011.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_011.png" />
+<p>Plotting seed regions of interest as spheres using new feature <cite>add_markers</cite>
+with MNI coordinates of interest.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_anat</span></a><span class="p">(</span><span class="n">mean_haxby_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;add_markers&quot;</span><span class="p">,</span>
+                             <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="mi">28</span><span class="p">,</span> <span class="o">-</span><span class="mi">34</span><span class="p">,</span> <span class="o">-</span><span class="mi">22</span><span class="p">])</span>
+
+<span class="c"># Coordinates of seed regions should be specified in first argument and second</span>
+<span class="c"># argument `marker_color` denotes color of the sphere in this case yellow &#39;y&#39;</span>
+<span class="c"># and third argument `marker_size` denotes size of the sphere</span>
+<span class="n">coords</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">28</span><span class="p">,</span> <span class="o">-</span><span class="mi">34</span><span class="p">,</span> <span class="o">-</span><span class="mi">22</span><span class="p">)]</span>
+<span class="n">display</span><span class="o">.</span><span class="n">add_markers</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">marker_color</span><span class="o">=</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">marker_size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../../_images/sphx_glr_plot_demo_more_plotting_012.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_012.png" />
+<p>Finally, saving the plots to file with two different ways</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Contrast maps plotted with function `plot_stat_map` can be saved using an</span>
+<span class="c"># inbuilt parameter output_file as filename + .extension as string. Valid</span>
+<span class="c"># extensions are .png, .pdf, .svg</span>
+<span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span>
+                       <span class="n">title</span><span class="o">=</span><span class="s">&#39;Using plot_stat_map output_file&#39;</span><span class="p">,</span>
+                       <span class="n">output_file</span><span class="o">=</span><span class="s">&#39;plot_stat_map.png&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Another way of saving plots is using &#8216;savefig&#8217; option from display object</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">display</span> <span class="o">=</span> <span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span>
+                                 <span class="n">title</span><span class="o">=</span><span class="s">&#39;Using display savefig&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&#39;plot_stat_map_from_display.png&#39;</span><span class="p">)</span>
+<span class="c"># In non-interactive settings make sure you close your displays</span>
 <span class="n">display</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show"><span class="n">plotting</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
 <p><strong>Total running time of the script:</strong>
-(0 minutes 9.334 seconds)</p>
+(1 minutes 3.537 seconds)</p>
 <div class="sphx-glr-download container">
 <strong>Download Python source code:</strong> <a class="reference download internal" href="../../_downloads/plot_demo_more_plotting.py"><tt class="xref download docutils literal"><span class="pre">plot_demo_more_plotting.py</span></tt></a></div>
 <div class="sphx-glr-download container">

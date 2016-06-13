@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.4',
+        VERSION:     '0.2.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -29,7 +29,7 @@
     <link rel="top" title="Machine learning for NeuroImaging" href="../../index.html" />
     <link rel="up" title="General examples" href="../index.html" />
     <link rel="next" title="Comparing the means of 2 images" href="../04_manipulating_images/plot_compare_mean_image.html" />
-    <link rel="prev" title="Ward clustering to learn a brain parcellation from rest fMRI" href="plot_rest_clustering.html" />
+    <link rel="prev" title="Group Sparse inverse covariance for multi-subject connectome" href="plot_multi_subject_connectome.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
@@ -117,7 +117,7 @@ $(function () {
       <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
     </li>
     <li>
-      <a href="../../manipulating_visualizing/data_preparation.html">Nifti IO</a>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
     </li>
     <li>
       <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
@@ -154,7 +154,7 @@ $(function () {
           <a href="../04_manipulating_images/plot_compare_mean_image.html" title="Comparing the means of 2 images"
              accesskey="N">next</a></li>
         <li class="right" >
-          <a href="plot_rest_clustering.html" title="Ward clustering to learn a brain parcellation from rest fMRI"
+          <a href="plot_multi_subject_connectome.html" title="Group Sparse inverse covariance for multi-subject connectome"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
@@ -177,8 +177,8 @@ $(function () {
   </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="plot_rest_clustering.html"
-                        title="previous chapter">Ward clustering to learn a brain parcellation from rest fMRI</a></p>
+  <p class="topless"><a href="plot_multi_subject_connectome.html"
+                        title="previous chapter">Group Sparse inverse covariance for multi-subject connectome</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../04_manipulating_images/plot_compare_mean_image.html"
                         title="next chapter">Comparing the means of 2 images</a></p>
@@ -220,96 +220,96 @@ utilities</p>
 </pre></div>
 </div>
 <p>Extracting resting-state networks with DictionaryLearning</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Import dictionary learning algorithm from decomposition module and call the</span>
-<span class="c1"># object and fit the model to the functional datasets</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Import dictionary learning algorithm from decomposition module and call the</span>
+<span class="c"># object and fit the model to the functional datasets</span>
 <span class="kn">from</span> <span class="nn">nilearn.decomposition</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.decomposition.DictLearning.html#nilearn.decomposition.DictLearning"><span class="n">DictLearning</span></a>
 
-<span class="c1"># Initialize DictLearning object</span>
+<span class="c"># Initialize DictLearning object</span>
 <span class="n">dict_learn</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.decomposition.DictLearning.html#nilearn.decomposition.DictLearning"><span class="n">DictLearning</span></a><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mf">6.</span><span class="p">,</span>
-                          <span class="n">memory</span><span class="o">=</span><span class="s2">&quot;nilearn_cache&quot;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                          <span class="n">memory</span><span class="o">=</span><span class="s">&quot;nilearn_cache&quot;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                           <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="c1"># Fit to the data</span>
+<span class="c"># Fit to the data</span>
 <span class="n">dict_learn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">func_filenames</span><span class="p">)</span>
-<span class="c1"># Resting state networks/maps</span>
+<span class="c"># Resting state networks/maps</span>
 <span class="n">components_img</span> <span class="o">=</span> <span class="n">dict_learn</span><span class="o">.</span><span class="n">masker_</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">dict_learn</span><span class="o">.</span><span class="n">components_</span><span class="p">)</span>
 
-<span class="c1"># Visualization of resting state networks</span>
-<span class="c1"># Show networks using plotting utilities</span>
+<span class="c"># Visualization of resting state networks</span>
+<span class="c"># Show networks using plotting utilities</span>
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">plotting</span>
 
-<a href="../../modules/generated/nilearn.plotting.plot_prob_atlas.html#nilearn.plotting.plot_prob_atlas"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_prob_atlas</span></a><span class="p">(</span><span class="n">components_img</span><span class="p">,</span> <span class="n">view_type</span><span class="o">=</span><span class="s1">&#39;filled_contours&#39;</span><span class="p">,</span>
-                         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Dictionary Learning maps&#39;</span><span class="p">)</span>
+<a href="../../modules/generated/nilearn.plotting.plot_prob_atlas.html#nilearn.plotting.plot_prob_atlas"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_prob_atlas</span></a><span class="p">(</span><span class="n">components_img</span><span class="p">,</span> <span class="n">view_type</span><span class="o">=</span><span class="s">&#39;filled_contours&#39;</span><span class="p">,</span>
+                         <span class="n">title</span><span class="o">=</span><span class="s">&#39;Dictionary Learning maps&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_extract_regions_dictlearning_maps_001.png" class="align-center" src="../../_images/sphx_glr_plot_extract_regions_dictlearning_maps_001.png" />
 <p>Extracting regions from networks</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Import Region Extractor algorithm from regions module</span>
-<span class="c1"># threshold=0.5 indicates that we keep nominal of amount nonzero voxels across all</span>
-<span class="c1"># maps, less the threshold means that more intense non-voxels will be survived.</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Import Region Extractor algorithm from regions module</span>
+<span class="c"># threshold=0.5 indicates that we keep nominal of amount nonzero voxels across all</span>
+<span class="c"># maps, less the threshold means that more intense non-voxels will be survived.</span>
 <span class="kn">from</span> <span class="nn">nilearn.regions</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.regions.RegionExtractor.html#nilearn.regions.RegionExtractor"><span class="n">RegionExtractor</span></a>
 
 <span class="n">extractor</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.regions.RegionExtractor.html#nilearn.regions.RegionExtractor"><span class="n">RegionExtractor</span></a><span class="p">(</span><span class="n">components_img</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-                            <span class="n">thresholding_strategy</span><span class="o">=</span><span class="s1">&#39;ratio_n_voxels&#39;</span><span class="p">,</span>
-                            <span class="n">extractor</span><span class="o">=</span><span class="s1">&#39;local_regions&#39;</span><span class="p">,</span>
+                            <span class="n">thresholding_strategy</span><span class="o">=</span><span class="s">&#39;ratio_n_voxels&#39;</span><span class="p">,</span>
+                            <span class="n">extractor</span><span class="o">=</span><span class="s">&#39;local_regions&#39;</span><span class="p">,</span>
                             <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">min_region_size</span><span class="o">=</span><span class="mi">1350</span><span class="p">)</span>
-<span class="c1"># Just call fit() to process for regions extraction</span>
+<span class="c"># Just call fit() to process for regions extraction</span>
 <span class="n">extractor</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-<span class="c1"># Extracted regions are stored in regions_img_</span>
+<span class="c"># Extracted regions are stored in regions_img_</span>
 <span class="n">regions_extracted_img</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">regions_img_</span>
-<span class="c1"># Each region index is stored in index_</span>
+<span class="c"># Each region index is stored in index_</span>
 <span class="n">regions_index</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">index_</span>
-<span class="c1"># Total number of regions extracted</span>
+<span class="c"># Total number of regions extracted</span>
 <span class="n">n_regions_extracted</span> <span class="o">=</span> <span class="n">regions_extracted_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-<span class="c1"># Visualization of region extraction results</span>
-<span class="n">title</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> regions are extracted from </span><span class="si">%d</span><span class="s1"> components.&#39;</span>
-         <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Each separate color of region indicates extracted region&#39;</span>
+<span class="c"># Visualization of region extraction results</span>
+<span class="n">title</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;</span><span class="si">%d</span><span class="s"> regions are extracted from </span><span class="si">%d</span><span class="s"> components.&#39;</span>
+         <span class="s">&#39;</span><span class="se">\n</span><span class="s">Each separate color of region indicates extracted region&#39;</span>
          <span class="o">%</span> <span class="p">(</span><span class="n">n_regions_extracted</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-<a href="../../modules/generated/nilearn.plotting.plot_prob_atlas.html#nilearn.plotting.plot_prob_atlas"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_prob_atlas</span></a><span class="p">(</span><span class="n">regions_extracted_img</span><span class="p">,</span> <span class="n">view_type</span><span class="o">=</span><span class="s1">&#39;filled_contours&#39;</span><span class="p">,</span>
+<a href="../../modules/generated/nilearn.plotting.plot_prob_atlas.html#nilearn.plotting.plot_prob_atlas"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_prob_atlas</span></a><span class="p">(</span><span class="n">regions_extracted_img</span><span class="p">,</span> <span class="n">view_type</span><span class="o">=</span><span class="s">&#39;filled_contours&#39;</span><span class="p">,</span>
                          <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_extract_regions_dictlearning_maps_002.png" class="align-center" src="../../_images/sphx_glr_plot_extract_regions_dictlearning_maps_002.png" />
 <p>Computing correlation coefficients and plotting a connectome</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># First we need to do subjects timeseries signals extraction and then estimating</span>
-<span class="c1"># correlation matrices on those signals.</span>
-<span class="c1"># To extract timeseries signals, we call transform() from RegionExtractor object</span>
-<span class="c1"># onto each subject functional data stored in func_filenames.</span>
-<span class="c1"># To estimate correlation matrices we import connectome utilities from nilearn</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># First we need to do subjects timeseries signals extraction and then estimating</span>
+<span class="c"># correlation matrices on those signals.</span>
+<span class="c"># To extract timeseries signals, we call transform() from RegionExtractor object</span>
+<span class="c"># onto each subject functional data stored in func_filenames.</span>
+<span class="c"># To estimate correlation matrices we import connectome utilities from nilearn</span>
 <span class="kn">from</span> <span class="nn">nilearn.connectome</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.connectome.ConnectivityMeasure.html#nilearn.connectome.ConnectivityMeasure"><span class="n">ConnectivityMeasure</span></a>
 
 <span class="n">correlations</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="c1"># Initializing ConnectivityMeasure object with kind=&#39;correlation&#39;</span>
-<span class="n">connectome_measure</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.connectome.ConnectivityMeasure.html#nilearn.connectome.ConnectivityMeasure"><span class="n">ConnectivityMeasure</span></a><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;correlation&#39;</span><span class="p">)</span>
+<span class="c"># Initializing ConnectivityMeasure object with kind=&#39;correlation&#39;</span>
+<span class="n">connectome_measure</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.connectome.ConnectivityMeasure.html#nilearn.connectome.ConnectivityMeasure"><span class="n">ConnectivityMeasure</span></a><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s">&#39;correlation&#39;</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">confound</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">func_filenames</span><span class="p">,</span> <span class="n">confounds</span><span class="p">):</span>
-    <span class="c1"># call transform from RegionExtractor object to extract timeseries signals</span>
+    <span class="c"># call transform from RegionExtractor object to extract timeseries signals</span>
     <span class="n">timeseries_each_subject</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">confounds</span><span class="o">=</span><span class="n">confound</span><span class="p">)</span>
-    <span class="c1"># call fit_transform from ConnectivityMeasure object</span>
+    <span class="c"># call fit_transform from ConnectivityMeasure object</span>
     <span class="n">correlation</span> <span class="o">=</span> <span class="n">connectome_measure</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">([</span><span class="n">timeseries_each_subject</span><span class="p">])</span>
-    <span class="c1"># saving each subject correlation to correlations</span>
+    <span class="c"># saving each subject correlation to correlations</span>
     <span class="n">correlations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">correlation</span><span class="p">)</span>
 
-<span class="c1"># Mean of all correlations</span>
+<span class="c"># Mean of all correlations</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
 <span class="n">mean_correlations</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.mean.html#numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">correlations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_regions_extracted</span><span class="p">,</span>
                                                           <span class="n">n_regions_extracted</span><span class="p">)</span>
 
-<span class="c1"># Visualization</span>
-<span class="c1"># Plotting connectome results</span>
+<span class="c"># Visualization</span>
+<span class="c"># Plotting connectome results</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">image</span>
 
 <span class="n">regions_imgs</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.iter_img.html#nilearn.image.iter_img"><span class="n">image</span><span class="o">.</span><span class="n">iter_img</span></a><span class="p">(</span><span class="n">regions_extracted_img</span><span class="p">)</span>
 <span class="n">coords_connectome</span> <span class="o">=</span> <span class="p">[</span><span class="n">plotting</span><span class="o">.</span><span class="n">find_xyz_cut_coords</span><span class="p">(</span><span class="n">img</span><span class="p">)</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">regions_imgs</span><span class="p">]</span>
-<span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Correlation interactions between </span><span class="si">%d</span><span class="s1"> regions&#39;</span> <span class="o">%</span> <span class="n">n_regions_extracted</span>
+<span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Correlation interactions between </span><span class="si">%d</span><span class="s"> regions&#39;</span> <span class="o">%</span> <span class="n">n_regions_extracted</span>
 <a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">mean_correlations</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">mean_correlations</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span>
            <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">bwr</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/colorbar_api.html#matplotlib.colorbar"><span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span></a><span class="p">()</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="n">title</span><span class="p">)</span>
 <a href="../../modules/generated/nilearn.plotting.plot_connectome.html#nilearn.plotting.plot_connectome"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_connectome</span></a><span class="p">(</span><span class="n">mean_correlations</span><span class="p">,</span> <span class="n">coords_connectome</span><span class="p">,</span>
-                         <span class="n">edge_threshold</span><span class="o">=</span><span class="s1">&#39;90%&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+                         <span class="n">edge_threshold</span><span class="o">=</span><span class="s">&#39;90%&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
@@ -319,25 +319,25 @@ utilities</p>
 </li>
 </ul>
 <p>Plotting regions extracted for only one specific network</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># First, we plot a network of index=4 without region extraction (left plot)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># First, we plot a network of index=4 without region extraction (left plot)</span>
 <span class="n">img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.index_img.html#nilearn.image.index_img"><span class="n">image</span><span class="o">.</span><span class="n">index_img</span></a><span class="p">(</span><span class="n">components_img</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 <span class="n">coords</span> <span class="o">=</span> <span class="n">plotting</span><span class="o">.</span><span class="n">find_xyz_cut_coords</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
 <span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span>
-                                 <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Showing one specific network&#39;</span><span class="p">)</span>
+                                 <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Showing one specific network&#39;</span><span class="p">)</span>
 
-<span class="c1"># Now, we plot (right side) same network after region extraction to show that</span>
-<span class="c1"># connected regions are nicely seperated.</span>
-<span class="c1"># Each brain extracted region is identified as separate color.</span>
+<span class="c"># Now, we plot (right side) same network after region extraction to show that</span>
+<span class="c"># connected regions are nicely seperated.</span>
+<span class="c"># Each brain extracted region is identified as separate color.</span>
 
-<span class="c1"># For this, we take the indices of the all regions extracted related to original</span>
-<span class="c1"># network given as 4.</span>
+<span class="c"># For this, we take the indices of the all regions extracted related to original</span>
+<span class="c"># network given as 4.</span>
 <span class="n">regions_indices_of_map3</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.where.html#numpy.where"><span class="n">np</span><span class="o">.</span><span class="n">where</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.array.html#numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">regions_index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span>
 
 <span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_anat</span></a><span class="p">(</span><span class="n">cut_coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span>
-                             <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Extracted regions in one specific network&#39;</span><span class="p">)</span>
+                             <span class="n">title</span><span class="o">=</span><span class="s">&#39;Extracted regions in one specific network&#39;</span><span class="p">)</span>
 
-<span class="c1"># Now add as an overlay by looping over all the regions of index 4</span>
-<span class="c1"># color list is random (you can choose your own color)</span>
+<span class="c"># Now add as an overlay by looping over all the regions of index 4</span>
+<span class="c"># color list is random (you can choose your own color)</span>
 <span class="n">color_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.29</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.54</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span>
               <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.78</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.96</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span>
               <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.73</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.47</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span>
@@ -377,7 +377,7 @@ utilities</p>
           <a href="../04_manipulating_images/plot_compare_mean_image.html" title="Comparing the means of 2 images"
              >next</a></li>
         <li class="right" >
-          <a href="plot_rest_clustering.html" title="Ward clustering to learn a brain parcellation from rest fMRI"
+          <a href="plot_multi_subject_connectome.html" title="Group Sparse inverse covariance for multi-subject connectome"
              >previous</a> |</li>
 <li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>

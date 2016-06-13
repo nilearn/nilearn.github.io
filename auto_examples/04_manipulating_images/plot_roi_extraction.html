@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.4',
+        VERSION:     '0.2.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -117,7 +117,7 @@ $(function () {
       <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
     </li>
     <li>
-      <a href="../../manipulating_visualizing/data_preparation.html">Nifti IO</a>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
     </li>
     <li>
       <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
@@ -176,6 +176,16 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Computing a Region of Interest (ROI) mask manually</a><ul>
+<li><a class="reference internal" href="#loading-the-data">Loading the data</a></li>
+<li><a class="reference internal" href="#build-a-statistical-test-to-find-voxels-of-interest">Build a statistical test to find voxels of interest</a></li>
+<li><a class="reference internal" href="#build-a-mask-from-this-statistical-map-improving-the-quality-of-the-mask">Build a mask from this statistical map (Improving the quality of the mask)</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="plot_affine_transformation.html"
                         title="previous chapter">Visualization of affine resamplings</a></p>
@@ -198,119 +208,282 @@ $(function () {
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="computing-an-roi-mask">
-<span id="sphx-glr-auto-examples-04-manipulating-images-plot-roi-extraction-py"></span><h1>Computing an ROI mask<a class="headerlink" href="#computing-an-roi-mask" title="Permalink to this headline">¶</a></h1>
-<p>Example showing how a T-test can be performed to compute an ROI
-mask, and how simple operations can improve the quality of the mask
-obtained.</p>
-<p>Coordinates of the slice we will be displaying</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">coronal</span> <span class="o">=</span> <span class="o">-</span><span class="mi">24</span>
+  <div class="section" id="computing-a-region-of-interest-roi-mask-manually">
+<span id="sphx-glr-auto-examples-04-manipulating-images-plot-roi-extraction-py"></span><h1>Computing a Region of Interest (ROI) mask manually<a class="headerlink" href="#computing-a-region-of-interest-roi-mask-manually" title="Permalink to this headline">¶</a></h1>
+<p>This example shows manual steps to create and further modify an ROI spatial
+mask. They represent a means for &#8220;data folding&#8221;, i.e., extracting and then
+analyzing brain data from a subset of voxels rather than whole brain images.
+Example can also help alleviate curse of dimensionality (i.e., statistical
+problems that arise in the context of high-dimensional input variables).</p>
+<p>We demonstrate how to compute a ROI mask using <strong>T-test</strong> and then how simple
+image operations can be used before and after computing ROI to improve the
+quality of the computed mask.</p>
+<p>These chains of operations are easy to set up using Nilearn and Scipy Python
+libraries. Here we give clear guidelines about these steps, starting with
+pre-image operations to post-image operations. The main point is that
+visualization &amp; results checking be possible at each step.</p>
+<p>See also <a class="reference internal" href="plot_extract_rois_smith_atlas.html"><em>Regions Extraction of Default Mode Networks using Smith Atlas</em></a> for automatic ROI extraction
+of brain connected networks given in 4D image.</p>
+<p>Coordinates of the slice we are interested in each direction. We will be
+using them for visualization.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># cut in x-direction</span>
 <span class="n">sagittal</span> <span class="o">=</span> <span class="o">-</span><span class="mi">33</span>
+<span class="c"># cut in y-direction</span>
+<span class="n">coronal</span> <span class="o">=</span> <span class="o">-</span><span class="mi">24</span>
+<span class="c"># cut in z-direction</span>
 <span class="n">axial</span> <span class="o">=</span> <span class="o">-</span><span class="mi">17</span>
-<span class="n">cut_coords</span> <span class="o">=</span> <span class="p">(</span><span class="n">coronal</span><span class="p">,</span> <span class="n">sagittal</span><span class="p">,</span> <span class="n">axial</span><span class="p">)</span>
+
+<span class="c"># coordinates displaying should be prepared as a list</span>
+<span class="n">cut_coords</span> <span class="o">=</span> <span class="p">[</span><span class="n">sagittal</span><span class="p">,</span> <span class="n">coronal</span><span class="p">,</span> <span class="n">axial</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Load the data</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Fetch the data files from Internet</span>
+<div class="section" id="loading-the-data">
+<h2>Loading the data<a class="headerlink" href="#loading-the-data" title="Permalink to this headline">¶</a></h2>
+<p>We rely on the Haxby datasets and its experiments to demonstrate the complete
+list of operations. Fetching datasets is easy, shipping with Nilearn using a
+function named as <cite>fetch_haxby</cite>. The data will then be automatically stored
+in a home directory with &#8220;nilearn_data&#8221; folder in your computer. From which,
+we process data using paths of the Nifti images.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># We load data from nilearn by import datasets</span>
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
-<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a>
 
-
+<span class="c"># First, we fetch single subject specific data with haxby datasets: to have</span>
+<span class="c"># anatomical image, EPI images and masks images</span>
 <span class="n">haxby_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="c1"># print basic information on the dataset</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;First subject anatomical nifti image (3D) located is at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+<span class="c"># print basic information on the dataset</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;First subject anatomical nifti image (3D) located is at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span>
       <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">anat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;First subject functional nifti image (4D) is located at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;First subject functional nifti image (4D) is located at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span>
       <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;Labels of haxby dataset (text file) is located at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span>
+      <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-<span class="c1"># Second, load the labels</span>
+<span class="c"># Second, load the labels stored in a text file into array using numpy</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
-<span class="n">session_target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
-<span class="n">haxby_labels</span> <span class="o">=</span> <span class="n">session_target</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span>
-
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker"><span class="n">NiftiLabelsMasker</span></a>
+<span class="n">session_target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="p">)</span>
+<span class="c"># Now, we have the labels and will be useful while computing student&#39;s t-test</span>
+<span class="n">haxby_labels</span> <span class="o">=</span> <span class="n">session_target</span><span class="p">[</span><span class="s">&#39;labels&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-python"><div class="highlight"><pre>  First subject anatomical nifti image (3D) located is at: /home/varoquau/nilearn_data/haxby2001/subj1/anat.nii.gz
 First subject functional nifti image (4D) is located at: /home/varoquau/nilearn_data/haxby2001/subj1/bold.nii.gz
+Labels of haxby dataset (text file) is located at: /home/varoquau/nilearn_data/haxby2001/subj1/labels.txt
 </pre></div>
 </div>
-<p>Build a statistical test to find voxels of interest</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Smooth the data</span>
+<p>We have the datasets in hand especially paths to the locations. Now, we do
+simple pre-processing step called as image smoothing on functional images
+and then build a statistical test on smoothed images.</p>
+</div>
+<div class="section" id="build-a-statistical-test-to-find-voxels-of-interest">
+<h2>Build a statistical test to find voxels of interest<a class="headerlink" href="#build-a-statistical-test-to-find-voxels-of-interest" title="Permalink to this headline">¶</a></h2>
+<p><strong>Smoothing</strong>: Functional MRI data have a low signal-to-noise ratio.
+When using methods that are not robust to noise, it is useful to apply a
+spatial filtering kernel on the data. Such data smoothing is usually applied
+using a Gaussian function with 4mm to 12mm full-width at half-maximum (this
+is where the FWHM comes from). The function <a class="reference internal" href="../../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="nilearn.image.smooth_img"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.image.smooth_img</span></tt></a>
+accounts for potential anisotropy in the image affine (i.e., non-indentical
+voxel size in all the three dimensions). Analogous to the majority of nilearn
+functions, smooth_img function can also use file names as input parameters.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Smooth the data using image processing module from nilearn</span>
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">image</span>
+
+<span class="c"># Functional data</span>
 <span class="n">fmri_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="c"># smoothing: first argument as functional data filename and smoothing value</span>
+<span class="c"># (integer) in second argument. Output returns in Nifti image.</span>
 <span class="n">fmri_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img"><span class="n">image</span><span class="o">.</span><span class="n">smooth_img</span></a><span class="p">(</span><span class="n">fmri_filename</span><span class="p">,</span> <span class="n">fwhm</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 
-<span class="c1"># Plot the mean image</span>
+<span class="c"># Visualize the mean of the smoothed EPI image using plotting function</span>
+<span class="c"># `plot_epi`</span>
 <span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_epi.html#nilearn.plotting.plot_epi"><span class="n">plot_epi</span></a>
+
+<span class="c"># First, compute the voxel-wise mean of smooth EPI image (first argument) using</span>
+<span class="c"># image processing module `image`</span>
 <span class="n">mean_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img"><span class="n">image</span><span class="o">.</span><span class="n">mean_img</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">)</span>
-<a href="../../modules/generated/nilearn.plotting.plot_epi.html#nilearn.plotting.plot_epi"><span class="n">plot_epi</span></a><span class="p">(</span><span class="n">mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Smoothed mean EPI&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="n">cut_coords</span><span class="p">)</span>
+<span class="c"># Second, we visualize the mean image with coordinates positioned manually</span>
+<a href="../../modules/generated/nilearn.plotting.plot_epi.html#nilearn.plotting.plot_epi"><span class="n">plot_epi</span></a><span class="p">(</span><span class="n">mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Smoothed mean EPI&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="n">cut_coords</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_roi_extraction_001.png" class="align-center" src="../../_images/sphx_glr_plot_roi_extraction_001.png" />
-<p>Run a T-test for face and houses</p>
+<p>Given the smoothed functional data stored in variable &#8216;fmri_img&#8217;, we then
+select two features of interest with face and house experimental conditions.
+The method we will be using is a simple Student&#8217;s t-test. The below section
+gives us brief motivation example about why selecting features in high
+dimensional FMRI data setting.</p>
+<p>Functional MRI data can be considered &#8220;high dimensional&#8221; given the p-versus-n
+ratio (e.g., p=~20,000-200,000 voxels for n=1000 samples or less). In this
+setting, machine-learning algorithms can perform poorly due to the so-called
+curse of dimensionality. However, simple means from the realms of classical
+statistics can help reducing the number of voxels.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">fmri_data</span> <span class="o">=</span> <span class="n">fmri_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+<span class="c"># number of voxels being x*y*z, samples in 4th dimension</span>
+<span class="k">print</span><span class="p">(</span><span class="n">fmri_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1452</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Selecting features using T-test</strong>: The Student&#8217;s t-test
+(<a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html#scipy.stats.ttest_ind" title="(in SciPy v0.17.1)"><tt class="xref py py-func docutils literal"><span class="pre">scipy.stats.ttest_ind</span></tt></a>) is an established method to determine whether
+two distributions have a different mean value. It can be used to compare voxel
+time-series from two different experimental conditions (e.g., when houses or
+faces are shown to individuals during brain scanning). If the time-series
+distribution is similar in the two conditions, then the voxel is not very
+interesting to discriminate the condition.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
-<span class="n">fmri_data</span> <span class="o">=</span> <span class="n">fmri_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
-<span class="n">_</span><span class="p">,</span> <span class="n">p_values</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/scipy-0.11.0/reference/generated/scipy.stats.ttest_ind.html#scipy.stats.ttest_ind"><span class="n">stats</span><span class="o">.</span><span class="n">ttest_ind</span></a><span class="p">(</span><span class="n">fmri_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">haxby_labels</span> <span class="o">==</span> <span class="n">b</span><span class="s1">&#39;face&#39;</span><span class="p">],</span>
-                              <span class="n">fmri_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">haxby_labels</span> <span class="o">==</span> <span class="n">b</span><span class="s1">&#39;house&#39;</span><span class="p">],</span>
+
+<span class="c"># This test returns p-values that represent probabilities that the two</span>
+<span class="c"># time-series were not drawn from the same distribution. The lower the</span>
+<span class="c"># p-value, the more discriminative is the voxel in distinguishing the two</span>
+<span class="c"># conditions (faces and houses).</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">p_values</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/scipy-0.11.0/reference/generated/scipy.stats.ttest_ind.html#scipy.stats.ttest_ind"><span class="n">stats</span><span class="o">.</span><span class="n">ttest_ind</span></a><span class="p">(</span><span class="n">fmri_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">haxby_labels</span> <span class="o">==</span> <span class="n">b</span><span class="s">&#39;face&#39;</span><span class="p">],</span>
+                              <span class="n">fmri_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">haxby_labels</span> <span class="o">==</span> <span class="n">b</span><span class="s">&#39;house&#39;</span><span class="p">],</span>
                               <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="c1"># Use a log scale for p-values</span>
+<span class="c"># Use a log scale for p-values</span>
 <span class="n">log_p_values</span> <span class="o">=</span> <span class="o">-</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.log10.html#numpy.log10"><span class="n">np</span><span class="o">.</span><span class="n">log10</span></a><span class="p">(</span><span class="n">p_values</span><span class="p">)</span>
+<span class="c"># NAN values to zero</span>
 <span class="n">log_p_values</span><span class="p">[</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.isnan.html#numpy.isnan"><span class="n">np</span><span class="o">.</span><span class="n">isnan</span></a><span class="p">(</span><span class="n">log_p_values</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.</span>
 <span class="n">log_p_values</span><span class="p">[</span><span class="n">log_p_values</span> <span class="o">&gt;</span> <span class="mf">10.</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.</span>
+
+<span class="c"># Visualize statistical p-values using plotting function `plot_stat_map`</span>
 <span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a>
-<a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">log_p_values</span><span class="p">),</span>
-              <span class="n">mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;p-values&quot;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="n">cut_coords</span><span class="p">)</span>
+
+<span class="c"># Before visualizing, we transform the computed p-values to Nifti-like image</span>
+<span class="c"># using function `new_img_like` from nilearn.</span>
+<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a>
+
+<span class="c"># First argument being a reference image and second argument should be p-values</span>
+<span class="c"># data to convert to a new image as output. This new image will have same header</span>
+<span class="c"># information as reference image.</span>
+<span class="n">log_p_values_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">log_p_values</span><span class="p">)</span>
+
+<span class="c"># Now, we visualize log p-values image on functional mean image as background</span>
+<span class="c"># with coordinates given manually and colorbar on the right side of plot (by</span>
+<span class="c"># default colorbar=True)</span>
+<a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">log_p_values_img</span><span class="p">,</span> <span class="n">mean_img</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s">&quot;p-values&quot;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="n">cut_coords</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_roi_extraction_002.png" class="align-center" src="../../_images/sphx_glr_plot_roi_extraction_002.png" />
-<p>Build a mask from this statistical map</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Thresholding</span>
+<p><strong>Selecting features using f_classif</strong>: Feature selection method is also
+available in the scikit-learn Python package, where it has been extended to
+several classes, using the <cite>sklearn.feature_selection.f_classif</cite> function.</p>
+</div>
+<div class="section" id="build-a-mask-from-this-statistical-map-improving-the-quality-of-the-mask">
+<h2>Build a mask from this statistical map (Improving the quality of the mask)<a class="headerlink" href="#build-a-mask-from-this-statistical-map-improving-the-quality-of-the-mask" title="Permalink to this headline">¶</a></h2>
+<p><strong>Thresholding</strong> - We build the t-map to have better representation of voxels
+of interest and voxels with lower p-values correspond to the most intense
+voxels. This can be done easily by applying a threshold to a t-map data in
+array.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Note that we use log p-values data; we force values below 5 to 0 by</span>
+<span class="c"># thresholding.</span>
 <span class="n">log_p_values</span><span class="p">[</span><span class="n">log_p_values</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-<a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">log_p_values</span><span class="p">),</span>
-              <span class="n">mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Thresholded p-values&#39;</span><span class="p">,</span> <span class="n">annotate</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+
+<span class="c"># Visualize the reduced voxels of interest using statistical image plotting</span>
+<span class="c"># function. As shown above, we first transform data in array to Nifti image.</span>
+<span class="n">log_p_values_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">log_p_values</span><span class="p">)</span>
+
+<span class="c"># Now, visualizing the created log p-values to image without colorbar and</span>
+<span class="c"># without Left - &#39;L&#39;, Right - &#39;R&#39; annotation</span>
+<a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">log_p_values_img</span><span class="p">,</span> <span class="n">mean_img</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s">&#39;Thresholded p-values&#39;</span><span class="p">,</span> <span class="n">annotate</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
               <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="n">cut_coords</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_roi_extraction_003.png" class="align-center" src="../../_images/sphx_glr_plot_roi_extraction_003.png" />
-<p>Binarization and intersection with VT mask
-(intersection corresponds to an &#8220;AND conjunction&#8221;)</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">bin_p_values</span> <span class="o">=</span> <span class="p">(</span><span class="n">log_p_values</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+<p>We can post-process the results obtained with simple operations such as mask
+intersection and dilation to regularize the mask definition. The idea of using
+these operations are to have more compact or sparser blobs.</p>
+<p><strong>Binarization</strong> and <strong>Intersection</strong> with Ventral Temporal (VT) mask - We
+now want to restrict our investigation to the VT area. The corresponding
+spatial mask is provided in haxby_dataset.mask_vt. We want to compute the
+intersection of this provided mask with our self-computed mask.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># self-computed mask</span>
+<span class="n">bin_p_values</span> <span class="o">=</span> <span class="p">(</span><span class="n">log_p_values</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="c"># VT mask</span>
 <span class="n">mask_vt_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="kn">import</span> <span class="nn">nibabel</span>
-<span class="n">vt</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">mask_vt_filename</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+
+<span class="c"># The first step is to load VT mask and same time convert data type</span>
+<span class="c"># numbers to boolean type</span>
+<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <span class="n">load_img</span>
+
+<span class="n">vt</span> <span class="o">=</span> <span class="n">load_img</span><span class="p">(</span><span class="n">mask_vt_filename</span><span class="p">)</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+
+<span class="c"># We can then use a logical &quot;and&quot; operation - numpy.logical_and - to keep only</span>
+<span class="c"># voxels that have been selected in both masks. In neuroimaging jargon, this</span>
+<span class="c"># is called an &quot;AND conjunction&quot;. We use already imported numpy as np</span>
 <span class="n">bin_p_values_and_vt</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.logical_and.html#numpy.logical_and"><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span></a><span class="p">(</span><span class="n">bin_p_values</span><span class="p">,</span> <span class="n">vt</span><span class="p">)</span>
 
+<span class="c"># Visualizing the mask intersection results using plotting function `plot_roi`,</span>
+<span class="c"># a function which can be used for visualizing target specific voxels.</span>
 <span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi"><span class="n">plot_roi</span></a><span class="p">,</span> <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show"><span class="n">show</span></a>
-<a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi"><span class="n">plot_roi</span></a><span class="p">(</span><a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">bin_p_values_and_vt</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)),</span>
-         <span class="n">mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Intersection with ventral temporal mask&#39;</span><span class="p">,</span>
-         <span class="n">cut_coords</span><span class="o">=</span><span class="n">cut_coords</span><span class="p">)</span>
+
+<span class="c"># First, we create new image type of binarized and intersected mask (second</span>
+<span class="c"># argument) and use this created Nifti image type in visualization. Binarized</span>
+<span class="c"># values in data type boolean should be converted to int data type at the same</span>
+<span class="c"># time. Otherwise, an error will be raised</span>
+<span class="n">bin_p_values_and_vt_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span>
+                                       <span class="n">bin_p_values_and_vt</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">))</span>
+<span class="c"># Visualizing goes here with background as computed mean of functional images</span>
+<a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi"><span class="n">plot_roi</span></a><span class="p">(</span><span class="n">bin_p_values_and_vt_img</span><span class="p">,</span> <span class="n">mean_img</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="n">cut_coords</span><span class="p">,</span>
+         <span class="n">title</span><span class="o">=</span><span class="s">&#39;Intersection with ventral temporal mask&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_roi_extraction_004.png" class="align-center" src="../../_images/sphx_glr_plot_roi_extraction_004.png" />
-<p>Dilation</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
+<p><strong>Dilation</strong> - Thresholded functional brain images often contain scattered
+voxels across the brain. To consolidate such brain images towards more compact
+shapes, we use a <a class="reference external" href="http://en.wikipedia.org/wiki/Dilation_(morphology)">morphological dilation</a>. This is a common step
+to be sure not to forget voxels located on the edge of a ROI. In other words,
+such operations can fill &#8220;holes&#8221; in masked voxel representations.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># We use ndimage function from scipy Python library for mask dilation</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">ndimage</span>
+
+<span class="c"># Input here is a binarized and intersected mask data from previous section</span>
 <span class="n">dil_bin_p_values_and_vt</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">binary_dilation</span><span class="p">(</span><span class="n">bin_p_values_and_vt</span><span class="p">)</span>
-<a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi"><span class="n">plot_roi</span></a><span class="p">(</span><a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">dil_bin_p_values_and_vt</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)),</span>
-         <span class="n">mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Dilated mask&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="n">cut_coords</span><span class="p">,</span>
+
+<span class="c"># Now, we visualize the same using `plot_roi` with data being converted to Nifti</span>
+<span class="c"># image. In all new image like, reference image is the same but second argument</span>
+<span class="c"># varies with data specific</span>
+<span class="n">dil_bin_p_values_and_vt_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span>
+    <span class="n">fmri_img</span><span class="p">,</span>
+    <span class="n">dil_bin_p_values_and_vt</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">))</span>
+<span class="c"># Visualization goes here without &#39;L&#39;, &#39;R&#39; annotation and coordinates being the</span>
+<span class="c"># same</span>
+<a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi"><span class="n">plot_roi</span></a><span class="p">(</span><span class="n">dil_bin_p_values_and_vt_img</span><span class="p">,</span> <span class="n">mean_img</span><span class="p">,</span>
+         <span class="n">title</span><span class="o">=</span><span class="s">&#39;Dilated mask&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="n">cut_coords</span><span class="p">,</span>
          <span class="n">annotate</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_roi_extraction_005.png" class="align-center" src="../../_images/sphx_glr_plot_roi_extraction_005.png" />
-<p>Identification of connected components</p>
+<p>Finally, we end with splitting the connected ROIs to two hemispheres into two
+separate regions (ROIs). The function <cite>scipy.ndimage.label</cite> from the scipy
+Python library.</p>
+<p><strong>Identification of connected components</strong> - The function
+<a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.label.html#scipy.ndimage.label" title="(in SciPy v0.17.1)"><tt class="xref py py-func docutils literal"><span class="pre">scipy.ndimage.label</span></tt></a> from the scipy Python library identifies
+immediately neighboring voxels in our voxels mask. It assigns a separate
+integer label to each one of them.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">labels</span><span class="p">,</span> <span class="n">n_labels</span> <span class="o">=</span> <span class="n">ndimage</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">dil_bin_p_values_and_vt</span><span class="p">)</span>
+<span class="c"># we take first roi data with labels assigned as integer 1</span>
 <span class="n">first_roi_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">labels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+<span class="c"># Similarly, second roi data is assigned as integer 2</span>
 <span class="n">second_roi_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">labels</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
-<a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi"><span class="n">plot_roi</span></a><span class="p">(</span><a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">first_roi_data</span><span class="p">),</span>
-         <span class="n">mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Connected components: first ROI&#39;</span><span class="p">)</span>
-
-<a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi"><span class="n">plot_roi</span></a><span class="p">(</span><a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">second_roi_data</span><span class="p">),</span>
-         <span class="n">mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Connected components: second ROI&#39;</span><span class="p">)</span>
+<span class="c"># Visualizing the connected components</span>
+<span class="c"># First, we create a Nifti image type from first roi data in a array</span>
+<span class="n">first_roi_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">first_roi_data</span><span class="p">)</span>
+<span class="c"># Then, visualize the same created Nifti image in first argument and mean of</span>
+<span class="c"># functional images as background (second argument), cut_coords is default now</span>
+<span class="c"># and coordinates are selected automatically pointed exactly on the roi data</span>
+<a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi"><span class="n">plot_roi</span></a><span class="p">(</span><span class="n">first_roi_img</span><span class="p">,</span> <span class="n">mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Connected components: first ROI&#39;</span><span class="p">)</span>
+<span class="c"># we do the same for second roi data</span>
+<span class="n">second_roi_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">second_roi_data</span><span class="p">)</span>
+<span class="c"># Visualization goes here with second roi image and cut_coords are default with</span>
+<span class="c"># coordinates selected automatically pointed on the data</span>
+<a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi"><span class="n">plot_roi</span></a><span class="p">(</span><span class="n">second_roi_img</span><span class="p">,</span> <span class="n">mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Connected components: second ROI&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
@@ -319,49 +492,67 @@ First subject functional nifti image (4D) is located at: /home/varoquau/nilearn_
 <li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_roi_extraction_007.png"><img alt="../../_images/sphx_glr_plot_roi_extraction_007.png" src="../../_images/sphx_glr_plot_roi_extraction_007.png" style="width: 310.2px; height: 122.2px;" /></a>
 </li>
 </ul>
-<p>Use the new ROIs to extract data maps in both ROIs</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">masker</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker"><span class="n">NiftiLabelsMasker</span></a><span class="p">(</span>
-    <span class="n">labels_img</span><span class="o">=</span><a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">labels</span><span class="p">),</span>
-    <span class="n">resampling_target</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-    <span class="n">standardize</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
-    <span class="n">detrend</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<p>Use the new ROIs, to extract data maps in both ROIs</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># We extract data from ROIs using nilearn&#39;s NiftiLabelsMasker</span>
+<span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker"><span class="n">NiftiLabelsMasker</span></a>
+
+<span class="c"># Before data extraction, we convert an array labels to Nifti like image. All</span>
+<span class="c"># inputs to NiftiLabelsMasker must be Nifti-like images or filename to Nifti</span>
+<span class="c"># images. We use the same reference image as used above in previous sections</span>
+<span class="n">labels_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="c"># First, initialize masker with parameters suited for data extraction using</span>
+<span class="c"># labels as input image, resampling_target is None as affine, shape/size is same</span>
+<span class="c"># for all the data used here, time series signal processing parameters</span>
+<span class="c"># standardize and detrend are set to False</span>
+<span class="n">masker</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker"><span class="n">NiftiLabelsMasker</span></a><span class="p">(</span><span class="n">labels_img</span><span class="p">,</span> <span class="n">resampling_target</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                           <span class="n">standardize</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="c"># After initialization of masker object, we call fit() for preparing labels_img</span>
+<span class="c"># data according to given parameters</span>
 <span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="c"># Preparing for data extraction: setting number of conditions, size, etc from</span>
+<span class="c"># haxby dataset</span>
 <span class="n">condition_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">haxby_labels</span><span class="p">))</span>
-<span class="n">n_cond_img</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">haxby_labels</span> <span class="o">==</span> <span class="n">b</span><span class="s1">&#39;house&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">n_cond_img</span> <span class="o">=</span> <span class="n">fmri_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">haxby_labels</span> <span class="o">==</span> <span class="n">b</span><span class="s">&#39;house&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 <span class="n">n_conds</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">condition_names</span><span class="p">)</span>
 
 <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.zeros.html#numpy.zeros"><span class="n">np</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">n_cond_img</span><span class="p">,</span> <span class="n">n_conds</span><span class="p">)),</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.zeros.html#numpy.zeros"><span class="n">np</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">n_cond_img</span><span class="p">,</span> <span class="n">n_conds</span><span class="p">))</span>
+<span class="c"># Gathering data for each condition and then use transformer from masker</span>
+<span class="c"># object transform() on each data. The transformer extracts data in condition</span>
+<span class="c"># maps where the target regions are specified by labels images</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">cond</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">condition_names</span><span class="p">):</span>
     <span class="n">cond_maps</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span>
         <span class="n">fmri_img</span><span class="p">,</span> <span class="n">fmri_data</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">haxby_labels</span> <span class="o">==</span> <span class="n">cond</span><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="n">n_cond_img</span><span class="p">])</span>
     <span class="n">mask_data</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">cond_maps</span><span class="p">)</span>
     <span class="n">X1</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">X2</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">mask_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">condition_names</span><span class="p">[</span><span class="n">condition_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">b</span><span class="s1">&#39;scrambledpix&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">b</span><span class="s1">&#39;scrambled&#39;</span>
+<span class="n">condition_names</span><span class="p">[</span><span class="n">condition_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">b</span><span class="s">&#39;scrambledpix&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">b</span><span class="s">&#39;scrambled&#39;</span>
+</pre></div>
+</div>
+<p>save the ROI &#8216;atlas&#8217; to a Nifti file</p>
+<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s">&#39;mask_atlas.nii.gz&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Plot the average in the different condition names</p>
-<div class="highlight-python"><div class="highlight"><pre><a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.arange.html#numpy.arange"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
     <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.subplot"><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.boxplot"><span class="n">plt</span><span class="o">.</span><span class="n">boxplot</span></a><span class="p">(</span><span class="n">X1</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">X2</span><span class="p">)</span>
     <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xticks"><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.arange.html#numpy.arange"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">condition_names</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">condition_names</span><span class="p">,</span>
                <span class="n">rotation</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
-    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s1">&#39;Boxplots of data in ROI</span><span class="si">%i</span><span class="s1"> per condition&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&#39;Boxplots of data in ROI</span><span class="si">%i</span><span class="s"> per condition&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
 
 <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show"><span class="n">show</span></a><span class="p">()</span>
-
-<span class="c1"># save the ROI &#39;atlas&#39; to a single output Nifti</span>
-<span class="n">nibabel</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like"><span class="n">new_img_like</span></a><span class="p">(</span><span class="n">fmri_img</span><span class="p">,</span> <span class="n">labels</span><span class="p">),</span>
-             <span class="s1">&#39;mask_atlas.nii&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_roi_extraction_008.png" class="align-center" src="../../_images/sphx_glr_plot_roi_extraction_008.png" />
 <p><strong>Total running time of the script:</strong>
-(0 minutes 46.731 seconds)</p>
+(0 minutes 50.877 seconds)</p>
 <div class="sphx-glr-download container">
 <strong>Download Python source code:</strong> <a class="reference download internal" href="../../_downloads/plot_roi_extraction.py"><tt class="xref download docutils literal"><span class="pre">plot_roi_extraction.py</span></tt></a></div>
 <div class="sphx-glr-download container">
 <strong>Download IPython notebook:</strong> <a class="reference download internal" href="../../_downloads/plot_roi_extraction.ipynb"><tt class="xref download docutils literal"><span class="pre">plot_roi_extraction.ipynb</span></tt></a></div>
+</div>
 </div>
 
 

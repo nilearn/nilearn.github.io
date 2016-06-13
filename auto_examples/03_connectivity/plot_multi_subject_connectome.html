@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.4',
+        VERSION:     '0.2.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -28,8 +28,8 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="top" title="Machine learning for NeuroImaging" href="../../index.html" />
     <link rel="up" title="General examples" href="../index.html" />
-    <link rel="next" title="Ward clustering to learn a brain parcellation from rest fMRI" href="plot_rest_clustering.html" />
-    <link rel="prev" title="Producing single subject maps of seed-based correlation" href="plot_seed_based_correlation.html" />
+    <link rel="next" title="Regions extraction using Dictionary Learning and functional connectomes" href="plot_extract_regions_dictlearning_maps.html" />
+    <link rel="prev" title="Ward clustering to learn a brain parcellation from rest fMRI" href="plot_rest_clustering.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
@@ -117,7 +117,7 @@ $(function () {
       <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
     </li>
     <li>
-      <a href="../../manipulating_visualizing/data_preparation.html">Nifti IO</a>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
     </li>
     <li>
       <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
@@ -151,10 +151,10 @@ $(function () {
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="plot_rest_clustering.html" title="Ward clustering to learn a brain parcellation from rest fMRI"
+          <a href="plot_extract_regions_dictlearning_maps.html" title="Regions extraction using Dictionary Learning and functional connectomes"
              accesskey="N">next</a></li>
         <li class="right" >
-          <a href="plot_seed_based_correlation.html" title="Producing single subject maps of seed-based correlation"
+          <a href="plot_rest_clustering.html" title="Ward clustering to learn a brain parcellation from rest fMRI"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
@@ -177,11 +177,11 @@ $(function () {
   </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="plot_seed_based_correlation.html"
-                        title="previous chapter">Producing single subject maps of seed-based correlation</a></p>
-  <h4>Next topic</h4>
   <p class="topless"><a href="plot_rest_clustering.html"
-                        title="next chapter">Ward clustering to learn a brain parcellation from rest fMRI</a></p>
+                        title="previous chapter">Ward clustering to learn a brain parcellation from rest fMRI</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plot_extract_regions_dictlearning_maps.html"
+                        title="next chapter">Regions extraction using Dictionary Learning and functional connectomes</a></p>
 
 <div class="navbar">
 </div> <!-- end navbar -->
@@ -208,33 +208,33 @@ using the group sparse inverse covariance estimate.</p>
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">plotting</span>
 
 
-<span class="n">n_subjects</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># subjects to consider for group-sparse covariance (max: 40)</span>
+<span class="n">n_subjects</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c"># subjects to consider for group-sparse covariance (max: 40)</span>
 
 
 <span class="k">def</span> <span class="nf">plot_matrices</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">prec</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Plot covariance and precision matrices, for a given processing. &quot;&quot;&quot;</span>
 
-    <span class="n">prec</span> <span class="o">=</span> <span class="n">prec</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># avoid side effects</span>
+    <span class="n">prec</span> <span class="o">=</span> <span class="n">prec</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c"># avoid side effects</span>
 
-    <span class="c1"># Put zeros on the diagonal, for graph clarity.</span>
+    <span class="c"># Put zeros on the diagonal, for graph clarity.</span>
     <span class="n">size</span> <span class="o">=</span> <span class="n">prec</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">prec</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">))]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">span</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">prec</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">prec</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
 
-    <span class="c1"># Display covariance matrix</span>
+    <span class="c"># Display covariance matrix</span>
     <a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
-    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span>
                <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plotting</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">bwr</span><span class="p">)</span>
     <a href="http://matplotlib.org/api/colorbar_api.html#matplotlib.colorbar"><span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span></a><span class="p">()</span>
-    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> / covariance&quot;</span> <span class="o">%</span> <span class="n">title</span><span class="p">)</span>
+    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> / covariance&quot;</span> <span class="o">%</span> <span class="n">title</span><span class="p">)</span>
 
-    <span class="c1"># Display precision matrix</span>
+    <span class="c"># Display precision matrix</span>
     <a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
-    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">prec</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span>
+    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">prec</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span>
                <span class="n">vmin</span><span class="o">=-</span><span class="n">span</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">span</span><span class="p">,</span>
                <span class="n">cmap</span><span class="o">=</span><span class="n">plotting</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">bwr</span><span class="p">)</span>
     <a href="http://matplotlib.org/api/colorbar_api.html#matplotlib.colorbar"><span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span></a><span class="p">()</span>
-    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> / precision&quot;</span> <span class="o">%</span> <span class="n">title</span><span class="p">)</span>
+    <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> / precision&quot;</span> <span class="o">%</span> <span class="n">title</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Fetching datasets</p>
@@ -242,9 +242,9 @@ using the group sparse inverse covariance estimate.</p>
 <span class="n">msdl_atlas_dataset</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_atlas_msdl.html#nilearn.datasets.fetch_atlas_msdl"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_atlas_msdl</span></a><span class="p">()</span>
 <span class="n">adhd_dataset</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_adhd.html#nilearn.datasets.fetch_adhd"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span></a><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="n">n_subjects</span><span class="p">)</span>
 
-<span class="c1"># print basic information on the dataset</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;First subject functional nifti image (4D) is at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
-      <span class="n">adhd_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># 4D data</span>
+<span class="c"># print basic information on the dataset</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;First subject functional nifti image (4D) is at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span>
+      <span class="n">adhd_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c"># 4D data</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -255,14 +255,14 @@ using the group sparse inverse covariance estimate.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">image</span>
 <span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">input_data</span>
 
-<span class="c1"># A &quot;memory&quot; to avoid recomputation</span>
+<span class="c"># A &quot;memory&quot; to avoid recomputation</span>
 <span class="kn">from</span> <span class="nn">sklearn.externals.joblib</span> <span class="kn">import</span> <span class="n">Memory</span>
-<span class="n">mem</span> <span class="o">=</span> <span class="n">Memory</span><span class="p">(</span><span class="s1">&#39;nilearn_cache&#39;</span><span class="p">)</span>
+<span class="n">mem</span> <span class="o">=</span> <span class="n">Memory</span><span class="p">(</span><span class="s">&#39;nilearn_cache&#39;</span><span class="p">)</span>
 
 <span class="n">masker</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker"><span class="n">input_data</span><span class="o">.</span><span class="n">NiftiMapsMasker</span></a><span class="p">(</span>
-    <span class="n">msdl_atlas_dataset</span><span class="o">.</span><span class="n">maps</span><span class="p">,</span> <span class="n">resampling_target</span><span class="o">=</span><span class="s2">&quot;maps&quot;</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">msdl_atlas_dataset</span><span class="o">.</span><span class="n">maps</span><span class="p">,</span> <span class="n">resampling_target</span><span class="o">=</span><span class="s">&quot;maps&quot;</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
     <span class="n">low_pass</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">high_pass</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">t_r</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-    <span class="n">memory</span><span class="o">=</span><span class="s1">&#39;nilearn_cache&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">memory</span><span class="o">=</span><span class="s">&#39;nilearn_cache&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
 
 <span class="n">subject_time_series</span> <span class="o">=</span> <span class="p">[]</span>
@@ -270,9 +270,9 @@ using the group sparse inverse covariance estimate.</p>
 <span class="n">confound_filenames</span> <span class="o">=</span> <span class="n">adhd_dataset</span><span class="o">.</span><span class="n">confounds</span>
 <span class="k">for</span> <span class="n">func_filename</span><span class="p">,</span> <span class="n">confound_filename</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">func_filenames</span><span class="p">,</span>
                                             <span class="n">confound_filenames</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Processing file </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">func_filename</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Processing file </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">func_filename</span><span class="p">)</span>
 
-    <span class="c1"># Computing some confounds</span>
+    <span class="c"># Computing some confounds</span>
     <span class="n">hv_confounds</span> <span class="o">=</span> <span class="n">mem</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">high_variance_confounds</span><span class="p">)(</span>
         <span class="n">func_filename</span><span class="p">)</span>
 
@@ -284,129 +284,13 @@ using the group sparse inverse covariance estimate.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-python"><div class="highlight"><pre>  [NiftiMapsMasker.fit] loading regions from /home/varoquau/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii
 Processing file /home/varoquau/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
-________________________________________________________________________________
-[Memory] Calling nilearn.image.image.high_variance_confounds...
-high_variance_confounds(&#39;/home/varoquau/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
-__________________________________________high_variance_confounds - 6.1s, 0.1min
-________________________________________________________________________________
-[Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
-filter_and_extract(&#39;/home/varoquau/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
-&lt;nilearn.input_data.nifti_maps_masker._ExtractionFunctor object at 0x7ff48f0eae10&gt;,
-{ &#39;allow_overlap&#39;: True,
-  &#39;detrend&#39;: True,
-  &#39;high_pass&#39;: 0.01,
-  &#39;low_pass&#39;: None,
-  &#39;maps_img&#39;: &#39;/home/varoquau/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii&#39;,
-  &#39;mask_img&#39;: None,
-  &#39;smoothing_fwhm&#39;: None,
-  &#39;standardize&#39;: True,
-  &#39;t_r&#39;: 2.5,
-  &#39;target_affine&#39;: array([[   4.,    0.,    0.,  -78.],
-       [   0.,    4.,    0., -111.],
-       [   0.,    0.,    4.,  -51.],
-       [   0.,    0.,    0.,    1.]]),
-  &#39;target_shape&#39;: (40, 48, 35)}, confounds=[array([[-0.018014, ..., -0.103569],
-       ...,
-       [ 0.001785, ...,  0.031497]], dtype=float32),
-&#39;/home/varoquau/nilearn_data/adhd/data/0010042/0010042_regressors.csv&#39;], memory_level=1, verbose=2, memory=Memory(cachedir=&#39;nilearn_cache/joblib&#39;))
-[NiftiMapsMasker.transform_single_imgs] Loading data from /home/varoquau/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
-[NiftiMapsMasker.transform_single_imgs] Resampling images
-[NiftiMapsMasker.transform_single_imgs] Extracting region signals
-[NiftiMapsMasker.transform_single_imgs] Cleaning extracted signals
-______________________________________________filter_and_extract - 13.1s, 0.2min
+[Memory]    0.0s, 0.0min: Loading filter_and_extract...
 Processing file /home/varoquau/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz
-________________________________________________________________________________
-[Memory] Calling nilearn.image.image.high_variance_confounds...
-high_variance_confounds(&#39;/home/varoquau/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
-__________________________________________high_variance_confounds - 6.8s, 0.1min
-________________________________________________________________________________
-[Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
-filter_and_extract(&#39;/home/varoquau/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
-&lt;nilearn.input_data.nifti_maps_masker._ExtractionFunctor object at 0x7ff48f7e5a50&gt;,
-{ &#39;allow_overlap&#39;: True,
-  &#39;detrend&#39;: True,
-  &#39;high_pass&#39;: 0.01,
-  &#39;low_pass&#39;: None,
-  &#39;maps_img&#39;: &#39;/home/varoquau/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii&#39;,
-  &#39;mask_img&#39;: None,
-  &#39;smoothing_fwhm&#39;: None,
-  &#39;standardize&#39;: True,
-  &#39;t_r&#39;: 2.5,
-  &#39;target_affine&#39;: array([[   4.,    0.,    0.,  -78.],
-       [   0.,    4.,    0., -111.],
-       [   0.,    0.,    4.,  -51.],
-       [   0.,    0.,    0.,    1.]]),
-  &#39;target_shape&#39;: (40, 48, 35)}, confounds=[array([[-0.129865, ..., -0.043025],
-       ...,
-       [-0.03078 , ..., -0.122374]], dtype=float32),
-&#39;/home/varoquau/nilearn_data/adhd/data/0010064/0010064_regressors.csv&#39;], memory_level=1, verbose=2, memory=Memory(cachedir=&#39;nilearn_cache/joblib&#39;))
-[NiftiMapsMasker.transform_single_imgs] Loading data from /home/varoquau/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz
-[NiftiMapsMasker.transform_single_imgs] Resampling images
-[NiftiMapsMasker.transform_single_imgs] Extracting region signals
-[NiftiMapsMasker.transform_single_imgs] Cleaning extracted signals
-______________________________________________filter_and_extract - 16.3s, 0.3min
+[Memory]    0.0s, 0.0min: Loading filter_and_extract...
 Processing file /home/varoquau/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz
-________________________________________________________________________________
-[Memory] Calling nilearn.image.image.high_variance_confounds...
-high_variance_confounds(&#39;/home/varoquau/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
-__________________________________________high_variance_confounds - 7.6s, 0.1min
-________________________________________________________________________________
-[Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
-filter_and_extract(&#39;/home/varoquau/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
-&lt;nilearn.input_data.nifti_maps_masker._ExtractionFunctor object at 0x7ff48f112790&gt;,
-{ &#39;allow_overlap&#39;: True,
-  &#39;detrend&#39;: True,
-  &#39;high_pass&#39;: 0.01,
-  &#39;low_pass&#39;: None,
-  &#39;maps_img&#39;: &#39;/home/varoquau/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii&#39;,
-  &#39;mask_img&#39;: None,
-  &#39;smoothing_fwhm&#39;: None,
-  &#39;standardize&#39;: True,
-  &#39;t_r&#39;: 2.5,
-  &#39;target_affine&#39;: array([[   4.,    0.,    0.,  -78.],
-       [   0.,    4.,    0., -111.],
-       [   0.,    0.,    4.,  -51.],
-       [   0.,    0.,    0.,    1.]]),
-  &#39;target_shape&#39;: (40, 48, 35)}, confounds=[array([[ 0.017256, ...,  0.040763],
-       ...,
-       [ 0.024104, ...,  0.018105]], dtype=float32),
-&#39;/home/varoquau/nilearn_data/adhd/data/0010128/0010128_regressors.csv&#39;], memory_level=1, verbose=2, memory=Memory(cachedir=&#39;nilearn_cache/joblib&#39;))
-[NiftiMapsMasker.transform_single_imgs] Loading data from /home/varoquau/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz
-[NiftiMapsMasker.transform_single_imgs] Resampling images
-[NiftiMapsMasker.transform_single_imgs] Extracting region signals
-[NiftiMapsMasker.transform_single_imgs] Cleaning extracted signals
-______________________________________________filter_and_extract - 14.8s, 0.2min
+[Memory]    0.0s, 0.0min: Loading filter_and_extract...
 Processing file /home/varoquau/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz
-________________________________________________________________________________
-[Memory] Calling nilearn.image.image.high_variance_confounds...
-high_variance_confounds(&#39;/home/varoquau/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz&#39;)
-__________________________________________high_variance_confounds - 7.0s, 0.1min
-________________________________________________________________________________
-[Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
-filter_and_extract(&#39;/home/varoquau/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz&#39;,
-&lt;nilearn.input_data.nifti_maps_masker._ExtractionFunctor object at 0x7ff48f0ea850&gt;,
-{ &#39;allow_overlap&#39;: True,
-  &#39;detrend&#39;: True,
-  &#39;high_pass&#39;: 0.01,
-  &#39;low_pass&#39;: None,
-  &#39;maps_img&#39;: &#39;/home/varoquau/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii&#39;,
-  &#39;mask_img&#39;: None,
-  &#39;smoothing_fwhm&#39;: None,
-  &#39;standardize&#39;: True,
-  &#39;t_r&#39;: 2.5,
-  &#39;target_affine&#39;: array([[   4.,    0.,    0.,  -78.],
-       [   0.,    4.,    0., -111.],
-       [   0.,    0.,    4.,  -51.],
-       [   0.,    0.,    0.,    1.]]),
-  &#39;target_shape&#39;: (40, 48, 35)}, confounds=[array([[-0.038218, ..., -0.021777],
-       ...,
-       [-0.063512, ...,  0.081868]], dtype=float32),
-&#39;/home/varoquau/nilearn_data/adhd/data/0021019/0021019_regressors.csv&#39;], memory_level=1, verbose=2, memory=Memory(cachedir=&#39;nilearn_cache/joblib&#39;))
-[NiftiMapsMasker.transform_single_imgs] Loading data from /home/varoquau/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz
-[NiftiMapsMasker.transform_single_imgs] Resampling images
-[NiftiMapsMasker.transform_single_imgs] Extracting region signals
-[NiftiMapsMasker.transform_single_imgs] Cleaning extracted signals
-______________________________________________filter_and_extract - 13.4s, 0.2min
+[Memory]    0.0s, 0.0min: Loading filter_and_extract...
 </pre></div>
 </div>
 <p>Computing group-sparse precision matrices</p>
@@ -465,9 +349,9 @@ ______________________________________________filter_and_extract - 13.4s, 0.2min
 [GroupSparseCovarianceCV.fit] Final optimization
 [GroupSparseCovarianceCV.fit] tolerance reached at iteration number 14: 9.710e-04
 [GraphLassoCV] Done refinement  1 out of 4:   0s
-[GraphLassoCV] Done refinement  2 out of 4:   0s
-[GraphLassoCV] Done refinement  3 out of 4:   0s
-[GraphLassoCV] Done refinement  4 out of 4:   1s
+[GraphLassoCV] Done refinement  2 out of 4:   1s
+[GraphLassoCV] Done refinement  3 out of 4:   1s
+[GraphLassoCV] Done refinement  4 out of 4:   2s
 [graph_lasso] Iteration   0, cost  1.71e+02, dual gap 7.910e-01
 [graph_lasso] Iteration   1, cost  1.71e+02, dual gap 5.064e-03
 [graph_lasso] Iteration   2, cost  1.71e+02, dual gap 4.986e-04
@@ -478,19 +362,23 @@ ______________________________________________filter_and_extract - 13.4s, 0.2min
 <div class="highlight-python"><div class="highlight"><pre><span class="n">atlas_imgs</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.iter_img.html#nilearn.image.iter_img"><span class="n">image</span><span class="o">.</span><span class="n">iter_img</span></a><span class="p">(</span><span class="n">msdl_atlas_dataset</span><span class="o">.</span><span class="n">maps</span><span class="p">)</span>
 <span class="n">atlas_region_coords</span> <span class="o">=</span> <span class="p">[</span><a href="../../modules/generated/nilearn.plotting.find_xyz_cut_coords.html#nilearn.plotting.find_xyz_cut_coords"><span class="n">plotting</span><span class="o">.</span><span class="n">find_xyz_cut_coords</span></a><span class="p">(</span><span class="n">img</span><span class="p">)</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">atlas_imgs</span><span class="p">]</span>
 
-<span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;GraphLasso&quot;</span>
-<a href="../../modules/generated/nilearn.plotting.plot_connectome.html#nilearn.plotting.plot_connectome"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_connectome</span></a><span class="p">(</span><span class="o">-</span><span class="n">gl</span><span class="o">.</span><span class="n">precision_</span><span class="p">,</span> <span class="n">atlas_region_coords</span><span class="p">,</span>
-                         <span class="n">edge_threshold</span><span class="o">=</span><span class="s1">&#39;90%&#39;</span><span class="p">,</span>
-                         <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Sparse inverse covariance (GraphLasso)&quot;</span><span class="p">)</span>
 <a href="../../modules/generated/nilearn.plotting.plot_connectome.html#nilearn.plotting.plot_connectome"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_connectome</span></a><span class="p">(</span><span class="n">gl</span><span class="o">.</span><span class="n">covariance_</span><span class="p">,</span>
-                         <span class="n">atlas_region_coords</span><span class="p">,</span> <span class="n">edge_threshold</span><span class="o">=</span><span class="s1">&#39;90%&#39;</span><span class="p">,</span>
-                         <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Covariance&quot;</span><span class="p">)</span>
-<span class="n">plot_matrices</span><span class="p">(</span><span class="n">gl</span><span class="o">.</span><span class="n">covariance_</span><span class="p">,</span> <span class="n">gl</span><span class="o">.</span><span class="n">precision_</span><span class="p">,</span> <span class="n">title</span><span class="p">)</span>
+                         <span class="n">atlas_region_coords</span><span class="p">,</span> <span class="n">edge_threshold</span><span class="o">=</span><span class="s">&#39;90%&#39;</span><span class="p">,</span>
+                         <span class="n">title</span><span class="o">=</span><span class="s">&quot;Covariance&quot;</span><span class="p">,</span>
+                         <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;lzr&quot;</span><span class="p">)</span>
+<a href="../../modules/generated/nilearn.plotting.plot_connectome.html#nilearn.plotting.plot_connectome"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_connectome</span></a><span class="p">(</span><span class="o">-</span><span class="n">gl</span><span class="o">.</span><span class="n">precision_</span><span class="p">,</span> <span class="n">atlas_region_coords</span><span class="p">,</span>
+                         <span class="n">edge_threshold</span><span class="o">=</span><span class="s">&#39;90%&#39;</span><span class="p">,</span>
+                         <span class="n">title</span><span class="o">=</span><span class="s">&quot;Sparse inverse covariance (GraphLasso)&quot;</span><span class="p">,</span>
+                         <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;lzr&quot;</span><span class="p">,</span>
+                         <span class="n">edge_vmax</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">edge_vmin</span><span class="o">=-.</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">plot_matrices</span><span class="p">(</span><span class="n">gl</span><span class="o">.</span><span class="n">covariance_</span><span class="p">,</span> <span class="n">gl</span><span class="o">.</span><span class="n">precision_</span><span class="p">,</span> <span class="s">&quot;GraphLasso&quot;</span><span class="p">)</span>
 
-<span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;GroupSparseCovariance&quot;</span>
+<span class="n">title</span> <span class="o">=</span> <span class="s">&quot;GroupSparseCovariance&quot;</span>
 <a href="../../modules/generated/nilearn.plotting.plot_connectome.html#nilearn.plotting.plot_connectome"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_connectome</span></a><span class="p">(</span><span class="o">-</span><span class="n">gsc</span><span class="o">.</span><span class="n">precisions_</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-                         <span class="n">atlas_region_coords</span><span class="p">,</span> <span class="n">edge_threshold</span><span class="o">=</span><span class="s1">&#39;90%&#39;</span><span class="p">,</span>
-                         <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+                         <span class="n">atlas_region_coords</span><span class="p">,</span> <span class="n">edge_threshold</span><span class="o">=</span><span class="s">&#39;90%&#39;</span><span class="p">,</span>
+                         <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+                         <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;lzr&quot;</span><span class="p">,</span>
+                         <span class="n">edge_vmax</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">edge_vmin</span><span class="o">=-.</span><span class="mi">5</span><span class="p">)</span>
 <span class="n">plot_matrices</span><span class="p">(</span><span class="n">gsc</span><span class="o">.</span><span class="n">covariances_</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
               <span class="n">gsc</span><span class="o">.</span><span class="n">precisions_</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">title</span><span class="p">)</span>
 
@@ -514,7 +402,7 @@ ______________________________________________filter_and_extract - 13.4s, 0.2min
 </li>
 </ul>
 <p><strong>Total running time of the script:</strong>
-(2 minutes 5.625 seconds)</p>
+(0 minutes 45.266 seconds)</p>
 <div class="sphx-glr-download container">
 <strong>Download Python source code:</strong> <a class="reference download internal" href="../../_downloads/plot_multi_subject_connectome.py"><tt class="xref download docutils literal"><span class="pre">plot_multi_subject_connectome.py</span></tt></a></div>
 <div class="sphx-glr-download container">
@@ -531,10 +419,10 @@ ______________________________________________filter_and_extract - 13.4s, 0.2min
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="plot_rest_clustering.html" title="Ward clustering to learn a brain parcellation from rest fMRI"
+          <a href="plot_extract_regions_dictlearning_maps.html" title="Regions extraction using Dictionary Learning and functional connectomes"
              >next</a></li>
         <li class="right" >
-          <a href="plot_seed_based_correlation.html" title="Producing single subject maps of seed-based correlation"
+          <a href="plot_rest_clustering.html" title="Ward clustering to learn a brain parcellation from rest fMRI"
              >previous</a> |</li>
 <li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>

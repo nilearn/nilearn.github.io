@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.4',
+        VERSION:     '0.2.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -29,7 +29,7 @@
     <link rel="top" title="Machine learning for NeuroImaging" href="../../index.html" />
     <link rel="up" title="General examples" href="../index.html" />
     <link rel="next" title="Dictionary Learning and ICA for doing group analysis of resting-state fMRI" href="plot_compare_resting_state_decomposition.html" />
-    <link rel="prev" title="Computing a connectome with sparse inverse covariance" href="plot_inverse_covariance_connectome.html" />
+    <link rel="prev" title="Extract signals and plot a connectome for seed-based atlases" href="plot_seed_based_connectome.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
@@ -117,7 +117,7 @@ $(function () {
       <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
     </li>
     <li>
-      <a href="../../manipulating_visualizing/data_preparation.html">Nifti IO</a>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
     </li>
     <li>
       <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
@@ -154,7 +154,7 @@ $(function () {
           <a href="plot_compare_resting_state_decomposition.html" title="Dictionary Learning and ICA for doing group analysis of resting-state fMRI"
              accesskey="N">next</a></li>
         <li class="right" >
-          <a href="plot_inverse_covariance_connectome.html" title="Computing a connectome with sparse inverse covariance"
+          <a href="plot_seed_based_connectome.html" title="Extract signals and plot a connectome for seed-based atlases"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
@@ -177,8 +177,8 @@ $(function () {
   </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="plot_inverse_covariance_connectome.html"
-                        title="previous chapter">Computing a connectome with sparse inverse covariance</a></p>
+  <p class="topless"><a href="plot_seed_based_connectome.html"
+                        title="previous chapter">Extract signals and plot a connectome for seed-based atlases</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="plot_compare_resting_state_decomposition.html"
                         title="next chapter">Dictionary Learning and ICA for doing group analysis of resting-state fMRI</a></p>
@@ -215,13 +215,13 @@ documentation</em></a> for more.</p>
 <p>Retrieve the atlas and the data</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
 
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_atlas_harvard_oxford</span><span class="p">(</span><span class="s1">&#39;cort-maxprob-thr25-2mm&#39;</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_atlas_harvard_oxford</span><span class="p">(</span><span class="s">&#39;cort-maxprob-thr25-2mm&#39;</span><span class="p">)</span>
 <span class="n">atlas_filename</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">maps</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">labels</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Atlas ROIs are located in nifti image (4D) at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
-      <span class="n">atlas_filename</span><span class="p">)</span>  <span class="c1"># 4D data</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;Atlas ROIs are located in nifti image (4D) at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span>
+      <span class="n">atlas_filename</span><span class="p">)</span>  <span class="c"># 4D data</span>
 
-<span class="c1"># One subject of resting-state data</span>
+<span class="c"># One subject of resting-state data</span>
 <span class="n">data</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_adhd.html#nilearn.datasets.fetch_adhd"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_adhd</span></a><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">fmri_filenames</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
@@ -234,11 +234,11 @@ documentation</em></a> for more.</p>
 NiftiLabelsMasker</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker"><span class="n">NiftiLabelsMasker</span></a>
 <span class="n">masker</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker"><span class="n">NiftiLabelsMasker</span></a><span class="p">(</span><span class="n">labels_img</span><span class="o">=</span><span class="n">atlas_filename</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                           <span class="n">memory</span><span class="o">=</span><span class="s1">&#39;nilearn_cache&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+                           <span class="n">memory</span><span class="o">=</span><span class="s">&#39;nilearn_cache&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 
-<span class="c1"># Here we go from nifti files to the signal time series in a numpy</span>
-<span class="c1"># array. Note how we give confounds to be regressed out during signal</span>
-<span class="c1"># extraction</span>
+<span class="c"># Here we go from nifti files to the signal time series in a numpy</span>
+<span class="c"># array. Note how we give confounds to be regressed out during signal</span>
+<span class="c"># extraction</span>
 <span class="n">time_series</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">fmri_filenames</span><span class="p">,</span> <span class="n">confounds</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">confounds</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -270,16 +270,16 @@ _______________________________________________filter_and_extract - 2.1s, 0.0min
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="n">correlation_matrix</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.corrcoef.html#numpy.corrcoef"><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span></a><span class="p">(</span><span class="n">time_series</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 
-<span class="c1"># Plot the correlation matrix</span>
+<span class="c"># Plot the correlation matrix</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-<span class="c1"># Mask the main diagonal for visualization:</span>
+<span class="c"># Mask the main diagonal for visualization:</span>
 <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.fill_diagonal.html#numpy.fill_diagonal"><span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span></a><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;RdBu_r&quot;</span><span class="p">,</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s">&quot;RdBu_r&quot;</span><span class="p">,</span>
            <span class="n">vmax</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mf">0.8</span><span class="p">)</span>
 
-<span class="c1"># Add labels and adjust margins</span>
+<span class="c"># Add labels and adjust margins</span>
 <span class="n">x_ticks</span> <span class="o">=</span> <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xticks"><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span></a><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">labels</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
 <span class="n">y_ticks</span> <span class="o">=</span> <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.yticks"><span class="n">plt</span><span class="o">.</span><span class="n">yticks</span></a><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">labels</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.gca"><span class="n">plt</span><span class="o">.</span><span class="n">gca</span></a><span class="p">()</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">tick_right</span><span class="p">()</span>
@@ -289,22 +289,22 @@ _______________________________________________filter_and_extract - 2.1s, 0.0min
 <img alt="../../_images/sphx_glr_plot_signal_extraction_001.png" class="align-center" src="../../_images/sphx_glr_plot_signal_extraction_001.png" />
 <p>Same thing without confounds, to stress the importance of confounds</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">time_series</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">fmri_filenames</span><span class="p">)</span>
-<span class="c1"># Note how we did not specify confounds above. This is bad!</span>
+<span class="c"># Note how we did not specify confounds above. This is bad!</span>
 
 <span class="n">correlation_matrix</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.corrcoef.html#numpy.corrcoef"><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span></a><span class="p">(</span><span class="n">time_series</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 
-<span class="c1"># Mask the main diagonal for visualization:</span>
+<span class="c"># Mask the main diagonal for visualization:</span>
 <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.fill_diagonal.html#numpy.fill_diagonal"><span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span></a><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
 <a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;RdBu_r&quot;</span><span class="p">,</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">correlation_matrix</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">&quot;nearest&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s">&quot;RdBu_r&quot;</span><span class="p">,</span>
            <span class="n">vmax</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mf">0.8</span><span class="p">)</span>
 
 <span class="n">x_ticks</span> <span class="o">=</span> <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xticks"><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span></a><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">labels</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
 <span class="n">y_ticks</span> <span class="o">=</span> <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.yticks"><span class="n">plt</span><span class="o">.</span><span class="n">yticks</span></a><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">labels</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.gca"><span class="n">plt</span><span class="o">.</span><span class="n">gca</span></a><span class="p">()</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">tick_right</span><span class="p">()</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.subplots_adjust"><span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span></a><span class="p">(</span><span class="n">left</span><span class="o">=.</span><span class="mo">01</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=.</span><span class="mi">3</span><span class="p">,</span> <span class="n">top</span><span class="o">=.</span><span class="mi">99</span><span class="p">,</span> <span class="n">right</span><span class="o">=.</span><span class="mi">62</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.suptitle"><span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span></a><span class="p">(</span><span class="s1">&#39;No confounds&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">27</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.suptitle"><span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span></a><span class="p">(</span><span class="s">&#39;No confounds&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">27</span><span class="p">)</span>
 
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
@@ -354,7 +354,7 @@ _______________________________________________filter_and_extract - 2.1s, 0.0min
           <a href="plot_compare_resting_state_decomposition.html" title="Dictionary Learning and ICA for doing group analysis of resting-state fMRI"
              >next</a></li>
         <li class="right" >
-          <a href="plot_inverse_covariance_connectome.html" title="Computing a connectome with sparse inverse covariance"
+          <a href="plot_seed_based_connectome.html" title="Extract signals and plot a connectome for seed-based atlases"
              >previous</a> |</li>
 <li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>

@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.4',
+        VERSION:     '0.2.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -117,7 +117,7 @@ $(function () {
       <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
     </li>
     <li>
-      <a href="../../manipulating_visualizing/data_preparation.html">Nifti IO</a>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
     </li>
     <li>
       <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
@@ -176,6 +176,18 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Plotting tools in nilearn</a><ul>
+<li><a class="reference internal" href="#plotting-statistical-maps-with-function-plot-stat-map">Plotting statistical maps with function <cite>plot_stat_map</cite></a></li>
+<li><a class="reference internal" href="#plotting-statistical-maps-in-a-glass-brain-with-function-plot-glass-brain">Plotting statistical maps in a glass brain with function <cite>plot_glass_brain</cite></a></li>
+<li><a class="reference internal" href="#plotting-anatomical-images-with-function-plot-anat">Plotting anatomical images with function <cite>plot_anat</cite></a></li>
+<li><a class="reference internal" href="#plotting-rois-here-the-mask-with-function-plot-roi">Plotting ROIs (here the mask) with function <cite>plot_roi</cite></a></li>
+<li><a class="reference internal" href="#plotting-epi-image-with-function-plot-epi">Plotting EPI image with function <cite>plot_epi</cite></a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="plot_dim_plotting.html"
                         title="previous chapter">Controling the contrast of the background when plotting</a></p>
@@ -198,36 +210,33 @@ $(function () {
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="plotting-in-nilearn">
-<span id="sphx-glr-auto-examples-01-plotting-plot-demo-plotting-py"></span><h1>Plotting in nilearn<a class="headerlink" href="#plotting-in-nilearn" title="Permalink to this headline">¶</a></h1>
-<p>Nilearn comes with a set of plotting function for Nifti-like images,
-see <a class="reference internal" href="../../plotting/index.html#plotting"><em>Plotting brain images</em></a> for more details.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Import plotting and image processing tools</span>
-<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">plotting</span><span class="p">,</span> <span class="n">image</span>
-</pre></div>
-</div>
-<p>Retrieve the data: haxby dataset to have EPI images and masks, and
-localizer dataset to have contrast maps</p>
+  <div class="section" id="plotting-tools-in-nilearn">
+<span id="sphx-glr-auto-examples-01-plotting-plot-demo-plotting-py"></span><h1>Plotting tools in nilearn<a class="headerlink" href="#plotting-tools-in-nilearn" title="Permalink to this headline">¶</a></h1>
+<p>Nilearn comes with a set of plotting functions for easy visualization of
+Nifti-like images such as statistical maps mapped onto anatomical images
+or onto glass brain representation, anatomical images, functional/EPI images,
+region specific mask images.</p>
+<p>See <a class="reference internal" href="../../plotting/index.html#plotting"><em>Plotting brain images</em></a> for more details.</p>
+<p>First, we retrieve from nilearn provided (general-purpose) datasets</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+
+<span class="c"># haxby dataset to have EPI images and masks</span>
 <span class="n">haxby_dataset</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_haxby.html#nilearn.datasets.fetch_haxby"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span></a><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="c1"># print basic information on the dataset</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;First subject anatomical nifti image (3D) is at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+<span class="c"># print basic information on the dataset</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;First subject anatomical nifti image (3D) is at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span>
       <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">anat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;First subject functional nifti image (4D) is at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
-      <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># 4D data</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;First subject functional nifti image (4D) is at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span>
+      <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c"># 4D data</span>
 
 <span class="n">haxby_anat_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">anat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">haxby_mask_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">haxby_func_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="n">localizer_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_localizer_contrasts</span><span class="p">(</span>
-    <span class="p">[</span><span class="s2">&quot;left vs right button press&quot;</span><span class="p">],</span>
-    <span class="n">n_subjects</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">get_anats</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-    <span class="n">get_tmaps</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">localizer_anat_filename</span> <span class="o">=</span> <span class="n">localizer_dataset</span><span class="o">.</span><span class="n">anats</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">localizer_tmap_filename</span> <span class="o">=</span> <span class="n">localizer_dataset</span><span class="o">.</span><span class="n">tmaps</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="c"># localizer dataset to have contrast maps</span>
+<span class="n">localizer_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_localizer_button_task</span><span class="p">(</span><span class="n">get_anats</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">localizer_anat_filename</span> <span class="o">=</span> <span class="n">localizer_dataset</span><span class="o">.</span><span class="n">anats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">localizer_tmap_filename</span> <span class="o">=</span> <span class="n">localizer_dataset</span><span class="o">.</span><span class="n">tmaps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -235,44 +244,74 @@ localizer dataset to have contrast maps</p>
 First subject functional nifti image (4D) is at: /home/varoquau/nilearn_data/haxby2001/subj1/bold.nii.gz
 </pre></div>
 </div>
-<p>Plotting statistical maps</p>
-<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><span class="n">localizer_anat_filename</span><span class="p">,</span>
-                       <span class="n">threshold</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;plot_stat_map&quot;</span><span class="p">,</span>
-                       <span class="n">cut_coords</span><span class="o">=</span><span class="p">(</span><span class="mi">36</span><span class="p">,</span> <span class="o">-</span><span class="mi">27</span><span class="p">,</span> <span class="mi">66</span><span class="p">))</span>
+<div class="section" id="plotting-statistical-maps-with-function-plot-stat-map">
+<h2>Plotting statistical maps with function <cite>plot_stat_map</cite><a class="headerlink" href="#plotting-statistical-maps-with-function-plot-stat-map" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">plotting</span>
+
+<span class="c"># Visualizing t-map image on subject specific anatomical image with manual</span>
+<span class="c"># positioning of coordinates using cut_coords given as a list</span>
+<a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><span class="n">localizer_anat_filename</span><span class="p">,</span>
+                       <span class="n">threshold</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;plot_stat_map&quot;</span><span class="p">,</span>
+                       <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="mi">36</span><span class="p">,</span> <span class="o">-</span><span class="mi">27</span><span class="p">,</span> <span class="mi">66</span><span class="p">])</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_plotting_001.png" class="align-center" src="../../_images/sphx_glr_plot_demo_plotting_001.png" />
-<p>Plotting glass brain</p>
-<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_glass_brain.html#nilearn.plotting.plot_glass_brain"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_glass_brain</span></a><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;plot_glass_brain&#39;</span><span class="p">,</span>
+</div>
+<div class="section" id="plotting-statistical-maps-in-a-glass-brain-with-function-plot-glass-brain">
+<h2>Plotting statistical maps in a glass brain with function <cite>plot_glass_brain</cite><a class="headerlink" href="#plotting-statistical-maps-in-a-glass-brain-with-function-plot-glass-brain" title="Permalink to this headline">¶</a></h2>
+<p>Now, the t-map image is mapped on glass brain representation where glass
+brain is always a fixed background template</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plotting</span><span class="o">.</span><span class="n">plot_glass_brain</span><span class="p">(</span><span class="n">localizer_tmap_filename</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;plot_glass_brain&#39;</span><span class="p">,</span>
                           <span class="n">threshold</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_plotting_002.png" class="align-center" src="../../_images/sphx_glr_plot_demo_plotting_002.png" />
-<p>Plotting anatomical maps</p>
-<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_anat</span></a><span class="p">(</span><span class="n">haxby_anat_filename</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;plot_anat&quot;</span><span class="p">)</span>
+</div>
+<div class="section" id="plotting-anatomical-images-with-function-plot-anat">
+<h2>Plotting anatomical images with function <cite>plot_anat</cite><a class="headerlink" href="#plotting-anatomical-images-with-function-plot-anat" title="Permalink to this headline">¶</a></h2>
+<p>Visualizing anatomical image of haxby dataset</p>
+<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_anat</span></a><span class="p">(</span><span class="n">haxby_anat_filename</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;plot_anat&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_plotting_003.png" class="align-center" src="../../_images/sphx_glr_plot_demo_plotting_003.png" />
-<p>Plotting ROIs (here the mask)</p>
+</div>
+<div class="section" id="plotting-rois-here-the-mask-with-function-plot-roi">
+<h2>Plotting ROIs (here the mask) with function <cite>plot_roi</cite><a class="headerlink" href="#plotting-rois-here-the-mask-with-function-plot-roi" title="Permalink to this headline">¶</a></h2>
+<p>Visualizing ventral temporal region image from haxby dataset overlayed on
+subject specific anatomical image with coordinates positioned automatically on
+region of interest (roi)</p>
 <div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_roi</span></a><span class="p">(</span><span class="n">haxby_mask_filename</span><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><span class="n">haxby_anat_filename</span><span class="p">,</span>
-                  <span class="n">title</span><span class="o">=</span><span class="s2">&quot;plot_roi&quot;</span><span class="p">)</span>
+                  <span class="n">title</span><span class="o">=</span><span class="s">&quot;plot_roi&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_plotting_004.png" class="align-center" src="../../_images/sphx_glr_plot_demo_plotting_004.png" />
-<p>Plotting EPI haxby</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">mean_haxby_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img"><span class="n">image</span><span class="o">.</span><span class="n">mean_img</span></a><span class="p">(</span><span class="n">haxby_func_filename</span><span class="p">)</span>
-<a href="../../modules/generated/nilearn.plotting.plot_epi.html#nilearn.plotting.plot_epi"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_epi</span></a><span class="p">(</span><span class="n">mean_haxby_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;plot_epi&quot;</span><span class="p">)</span>
+</div>
+<div class="section" id="plotting-epi-image-with-function-plot-epi">
+<h2>Plotting EPI image with function <cite>plot_epi</cite><a class="headerlink" href="#plotting-epi-image-with-function-plot-epi" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Import image processing tool</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">image</span>
 
-<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show"><span class="n">plotting</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+<span class="c"># Compute the voxel_wise mean of functional images across time.</span>
+<span class="c"># Basically reducing the functional image from 4D to 3D</span>
+<span class="n">mean_haxby_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img"><span class="n">image</span><span class="o">.</span><span class="n">mean_img</span></a><span class="p">(</span><span class="n">haxby_func_filename</span><span class="p">)</span>
+
+<span class="c"># Visualizing mean image (3D)</span>
+<a href="../../modules/generated/nilearn.plotting.plot_epi.html#nilearn.plotting.plot_epi"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_epi</span></a><span class="p">(</span><span class="n">mean_haxby_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;plot_epi&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_plotting_005.png" class="align-center" src="../../_images/sphx_glr_plot_demo_plotting_005.png" />
+<p>A call to plotting.show is needed to display the plots when running
+in script mode (ie outside IPython)</p>
+<div class="highlight-python"><div class="highlight"><pre><a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show"><span class="n">plotting</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
 <p><strong>Total running time of the script:</strong>
-(0 minutes 7.845 seconds)</p>
+(0 minutes 14.856 seconds)</p>
 <div class="sphx-glr-download container">
 <strong>Download Python source code:</strong> <a class="reference download internal" href="../../_downloads/plot_demo_plotting.py"><tt class="xref download docutils literal"><span class="pre">plot_demo_plotting.py</span></tt></a></div>
 <div class="sphx-glr-download container">
 <strong>Download IPython notebook:</strong> <a class="reference download internal" href="../../_downloads/plot_demo_plotting.ipynb"><tt class="xref download docutils literal"><span class="pre">plot_demo_plotting.ipynb</span></tt></a></div>
+</div>
 </div>
 
 

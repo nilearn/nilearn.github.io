@@ -3,7 +3,7 @@ Group analysis of resting-state fMRI with ICA: CanICA
 =====================================================
 
 An example applying CanICA to resting-state data. This example applies it
-to 40 subjects of the ADHD200 datasets. Then it plots a map with all the
+to 30 subjects of the ADHD200 datasets. Then it plots a map with all the
 components together and an axial cut for each of the components separately.
 
 CanICA is an ICA method for group-level analysis of fMRI data. Compared
@@ -35,7 +35,7 @@ print('First functional nifti image (4D) is at: %s' %
 
 ####################################################################
 # Here we apply CanICA on the data
-from nilearn.decomposition.canica import CanICA
+from nilearn.decomposition import CanICA
 
 canica = CanICA(n_components=20, smoothing_fwhm=6.,
                 memory="nilearn_cache", memory_level=5,

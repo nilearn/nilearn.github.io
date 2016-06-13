@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.4',
+        VERSION:     '0.2.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -117,7 +117,7 @@ $(function () {
       <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
     </li>
     <li>
-      <a href="../../manipulating_visualizing/data_preparation.html">Nifti IO</a>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
     </li>
     <li>
       <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
@@ -205,16 +205,12 @@ $(function () {
 We use the MNI152 template as the reference for resampling a t-map image.
 Function <a class="reference internal" href="../../modules/generated/nilearn.image.resample_img.html#nilearn.image.resample_img" title="nilearn.image.resample_img"><tt class="xref py py-func docutils literal"><span class="pre">nilearn.image.resample_img</span></tt></a> could also be used to achieve this.</p>
 <p>First we load the required datasets using the nilearn datasets module.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.datasets</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.datasets.fetch_localizer_contrasts.html#nilearn.datasets.fetch_localizer_contrasts"><span class="n">fetch_localizer_contrasts</span></a>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.datasets</span> <span class="kn">import</span> <span class="n">fetch_localizer_button_task</span>
 <span class="kn">from</span> <span class="nn">nilearn.datasets</span> <span class="kn">import</span> <span class="n">load_mni152_template</span>
 
 <span class="n">template</span> <span class="o">=</span> <span class="n">load_mni152_template</span><span class="p">()</span>
 
-<span class="n">localizer_dataset</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_localizer_contrasts.html#nilearn.datasets.fetch_localizer_contrasts"><span class="n">fetch_localizer_contrasts</span></a><span class="p">(</span>
-    <span class="p">[</span><span class="s2">&quot;left vs right button press&quot;</span><span class="p">],</span>
-    <span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">get_anats</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-    <span class="n">get_tmaps</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">localizer_dataset</span> <span class="o">=</span> <span class="n">fetch_localizer_button_task</span><span class="p">(</span><span class="n">get_anats</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 <span class="n">localizer_tmap_filename</span> <span class="o">=</span> <span class="n">localizer_dataset</span><span class="o">.</span><span class="n">tmaps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">localizer_anat_filename</span> <span class="o">=</span> <span class="n">localizer_dataset</span><span class="o">.</span><span class="n">anats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -227,27 +223,30 @@ Function <a class="reference internal" href="../../modules/generated/nilearn.ima
 </pre></div>
 </div>
 <p>Let&#8217;s check the shape and affine have been correctly updated.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.image.index_img.html#nilearn.image.index_img"><span class="n">index_img</span></a>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># First load the original t-map in memory:</span>
+<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <span class="n">load_img</span>
+<span class="n">tmap_img</span> <span class="o">=</span> <span class="n">load_img</span><span class="p">(</span><span class="n">localizer_dataset</span><span class="o">.</span><span class="n">tmaps</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-<span class="n">original_shape</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.index_img.html#nilearn.image.index_img"><span class="n">index_img</span></a><span class="p">([</span><span class="n">localizer_dataset</span><span class="o">.</span><span class="n">tmaps</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
-<span class="n">original_affine</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.index_img.html#nilearn.image.index_img"><span class="n">index_img</span></a><span class="p">([</span><span class="n">localizer_dataset</span><span class="o">.</span><span class="n">tmaps</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()</span>
+<span class="n">original_shape</span> <span class="o">=</span> <span class="n">tmap_img</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">original_affine</span> <span class="o">=</span> <span class="n">tmap_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()</span>
 
 <span class="n">resampled_shape</span> <span class="o">=</span> <span class="n">resampled_localizer_tmap</span><span class="o">.</span><span class="n">shape</span>
 <span class="n">resampled_affine</span> <span class="o">=</span> <span class="n">resampled_localizer_tmap</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()</span>
 
-<span class="n">template_shape</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.index_img.html#nilearn.image.index_img"><span class="n">index_img</span></a><span class="p">([</span><span class="n">template</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
-<span class="n">template_affine</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.index_img.html#nilearn.image.index_img"><span class="n">index_img</span></a><span class="p">([</span><span class="n">template</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Shape comparison:</span>
-<span class="s2">- Original t-map image shape : {0}</span>
-<span class="s2">- Resampled t-map image shape: {1}</span>
-<span class="s2">- Template image shape       : {2}</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">original_shape</span><span class="p">,</span> <span class="n">resampled_shape</span><span class="p">,</span> <span class="n">template_shape</span><span class="p">))</span>
+<span class="n">template_img</span> <span class="o">=</span> <span class="n">load_img</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+<span class="n">template_shape</span> <span class="o">=</span> <span class="n">template_img</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">template_affine</span> <span class="o">=</span> <span class="n">template_img</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Shape comparison:</span>
+<span class="s">- Original t-map image shape : {0}</span>
+<span class="s">- Resampled t-map image shape: {1}</span>
+<span class="s">- Template image shape       : {2}</span>
+<span class="s">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">original_shape</span><span class="p">,</span> <span class="n">resampled_shape</span><span class="p">,</span> <span class="n">template_shape</span><span class="p">))</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Affine comparison:</span>
-<span class="s2">- Original t-map image affine :</span><span class="se">\n</span><span class="s2"> {0}</span>
-<span class="s2">- Resampled t-map image affine:</span><span class="se">\n</span><span class="s2"> {1}</span>
-<span class="s2">- Template image affine       :</span><span class="se">\n</span><span class="s2"> {2}</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">original_affine</span><span class="p">,</span> <span class="n">resampled_affine</span><span class="p">,</span> <span class="n">template_affine</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;&quot;&quot;Affine comparison:</span>
+<span class="s">- Original t-map image affine :</span><span class="se">\n</span><span class="s"> {0}</span>
+<span class="s">- Resampled t-map image affine:</span><span class="se">\n</span><span class="s"> {1}</span>
+<span class="s">- Template image affine       :</span><span class="se">\n</span><span class="s"> {2}</span>
+<span class="s">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">original_affine</span><span class="p">,</span> <span class="n">resampled_affine</span><span class="p">,</span> <span class="n">template_affine</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -281,12 +280,12 @@ Affine comparison:
                        <span class="n">bg_img</span><span class="o">=</span><span class="n">localizer_anat_filename</span><span class="p">,</span>
                        <span class="n">cut_coords</span><span class="o">=</span><span class="p">(</span><span class="mi">36</span><span class="p">,</span> <span class="o">-</span><span class="mi">27</span><span class="p">,</span> <span class="mi">66</span><span class="p">),</span>
                        <span class="n">threshold</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-                       <span class="n">title</span><span class="o">=</span><span class="s2">&quot;t-map on original anat&quot;</span><span class="p">)</span>
+                       <span class="n">title</span><span class="o">=</span><span class="s">&quot;t-map on original anat&quot;</span><span class="p">)</span>
 <span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span><span class="p">(</span><span class="n">resampled_localizer_tmap</span><span class="p">,</span>
                        <span class="n">bg_img</span><span class="o">=</span><span class="n">template</span><span class="p">,</span>
                        <span class="n">cut_coords</span><span class="o">=</span><span class="p">(</span><span class="mi">36</span><span class="p">,</span> <span class="o">-</span><span class="mi">27</span><span class="p">,</span> <span class="mi">66</span><span class="p">),</span>
                        <span class="n">threshold</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-                       <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Resampled t-map on MNI template anat&quot;</span><span class="p">)</span>
+                       <span class="n">title</span><span class="o">=</span><span class="s">&quot;Resampled t-map on MNI template anat&quot;</span><span class="p">)</span>
 <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show"><span class="n">plotting</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
@@ -297,7 +296,7 @@ Affine comparison:
 </li>
 </ul>
 <p><strong>Total running time of the script:</strong>
-(0 minutes 1.089 seconds)</p>
+(0 minutes 1.031 seconds)</p>
 <div class="sphx-glr-download container">
 <strong>Download Python source code:</strong> <a class="reference download internal" href="../../_downloads/plot_resample_to_template.py"><tt class="xref download docutils literal"><span class="pre">plot_resample_to_template.py</span></tt></a></div>
 <div class="sphx-glr-download container">

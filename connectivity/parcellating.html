@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.2.4',
+        VERSION:     '0.2.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -28,8 +28,8 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="top" title="Machine learning for NeuroImaging" href="../index.html" />
     <link rel="up" title="3. Functional connectivity and resting state" href="index.html" />
-    <link rel="next" title="3.5. Region Extraction for better brain parcellations" href="region_extraction.html" />
-    <link rel="prev" title="3.3. Extracting resting-state networks: ICA and related" href="resting_state_networks.html" />
+    <link rel="next" title="4. Plotting brain images" href="../plotting/index.html" />
+    <link rel="prev" title="3.4. Region Extraction for better brain parcellations" href="region_extraction.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
@@ -117,7 +117,7 @@ $(function () {
       <big><a href="resting_state_networks.html">ICA</a></big>
     </li>
     <li>
-      <a href="../manipulating_visualizing/data_preparation.html">Nifti IO</a>
+      <a href="../manipulating_images/data_preparation.html">Nifti IO</a>
     </li>
     <li>
       <a href="../modules/reference.html#module-nilearn.datasets">Datasets</a>
@@ -151,10 +151,10 @@ $(function () {
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="region_extraction.html" title="3.5. Region Extraction for better brain parcellations"
+          <a href="../plotting/index.html" title="4. Plotting brain images"
              accesskey="N">next</a></li>
         <li class="right" >
-          <a href="resting_state_networks.html" title="3.3. Extracting resting-state networks: ICA and related"
+          <a href="region_extraction.html" title="3.4. Region Extraction for better brain parcellations"
              accesskey="P">previous</a> |</li>
 <li><a href="../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
@@ -179,17 +179,16 @@ $(function () {
 
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">3.4. Parcellating the brain in regions</a><ul>
-<li><a class="reference internal" href="#a-resting-state-dataset">3.4.1. A resting-state dataset</a></li>
-<li><a class="reference internal" href="#preprocessing-loading-and-masking">3.4.2. Preprocessing: loading and masking</a></li>
-<li><a class="reference internal" href="#applying-ward-clustering">3.4.3. Applying Ward clustering</a><ul>
-<li><a class="reference internal" href="#running-the-ward-algorithm">3.4.3.1. Running the Ward algorithm</a></li>
+<li><a class="reference internal" href="#">3.5. Clustering to parcellate the brain in regions</a><ul>
+<li><a class="reference internal" href="#data-loading-and-massaging">3.5.1. Data loading and massaging</a><ul>
+<li><a class="reference internal" href="#resting-state-data">3.5.1.1. Resting-state data</a></li>
+<li><a class="reference internal" href="#loading-and-masking-and-with-niftimasker">3.5.1.2. Loading and masking and with NiftiMasker</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#post-processing-and-visualizing-the-parcels">3.4.4. Post-Processing and visualizing the parcels</a><ul>
-<li><a class="reference internal" href="#unmasking">3.4.4.1. Unmasking</a></li>
-<li><a class="reference internal" href="#label-visualization">3.4.4.2. Label visualization</a></li>
-<li><a class="reference internal" href="#compressed-picture">3.4.4.3. Compressed picture</a></li>
+<li><a class="reference internal" href="#applying-clustering">3.5.2. Applying clustering</a></li>
+<li><a class="reference internal" href="#using-and-visualizing-the-resulting-parcellation">3.5.3. Using and visualizing the resulting parcellation</a><ul>
+<li><a class="reference internal" href="#visualizing-the-parcellation">3.5.3.1. Visualizing the parcellation</a></li>
+<li><a class="reference internal" href="#compressed-representation">3.5.3.2. Compressed representation</a></li>
 </ul>
 </li>
 </ul>
@@ -197,11 +196,11 @@ $(function () {
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="resting_state_networks.html"
-                        title="previous chapter">3.3. Extracting resting-state networks: ICA and related</a></p>
-  <h4>Next topic</h4>
   <p class="topless"><a href="region_extraction.html"
-                        title="next chapter">3.5. Region Extraction for better brain parcellations</a></p>
+                        title="previous chapter">3.4. Region Extraction for better brain parcellations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../plotting/index.html"
+                        title="next chapter">4. Plotting brain images</a></p>
 
 <div class="navbar">
 </div> <!-- end navbar -->
@@ -218,63 +217,76 @@ $(function () {
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="parcellating-the-brain-in-regions">
-<span id="parcellating-brain"></span><h1>3.4. Parcellating the brain in regions<a class="headerlink" href="#parcellating-the-brain-in-regions" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="clustering-to-parcellate-the-brain-in-regions">
+<span id="parcellating-brain"></span><h1>3.5. Clustering to parcellate the brain in regions<a class="headerlink" href="#clustering-to-parcellate-the-brain-in-regions" title="Permalink to this headline">¶</a></h1>
+<p>This page discusses how clustering can be used to parcellate the brain
+into homogeneous regions from functional imaging data.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
 <div class="topic">
-<p class="topic-title first"><strong>Page summary</strong></p>
-<p>This page demonstrates how clustering can be used to parcellate the
-brain into homogeneous regions from resting-state time series.</p>
+<p class="topic-title first"><strong>Reference</strong></p>
+<p>A big-picture reference on the use of clustering for brain
+parcellations.</p>
+<blockquote>
+<div>Thirion, et al. <a class="reference external" href="http://journal.frontiersin.org/article/10.3389/fnins.2014.00167/full">&#8220;Which fMRI clustering gives good brain
+parcellations?.&#8221;</a>
+Frontiers in neuroscience 8.167 (2014): 13.</div></blockquote>
 </div>
-<div class="section" id="a-resting-state-dataset">
-<h2>3.4.1. A resting-state dataset<a class="headerlink" href="#a-resting-state-dataset" title="Permalink to this headline">¶</a></h2>
-<p>Here, we use a <a class="reference external" href="http://www.nitrc.org/projects/nyu_trt/">resting-state</a>
-dataset from test-retest study performed at NYU. Details on the data
-can be found in the documentation for the downloading function
-<a class="reference internal" href="../modules/generated/nilearn.datasets.fetch_nyu_rest.html#nilearn.datasets.fetch_nyu_rest" title="nilearn.datasets.fetch_nyu_rest"><tt class="xref py py-func docutils literal"><span class="pre">fetch_nyu_rest</span></tt></a>.</p>
+<div class="section" id="data-loading-and-massaging">
+<h2>3.5.1. Data loading and massaging<a class="headerlink" href="#data-loading-and-massaging" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="resting-state-data">
+<h3>3.5.1.1. Resting-state data<a class="headerlink" href="#resting-state-data" title="Permalink to this headline">¶</a></h3>
+<p>Clustering is commonly applied to resting-state data, but any brain
+functional data will give rise of a functional parcellation, capturing
+intrinsic brain architecture in the case of resting-state data.
+In the examples, we use rest data downloaded with the function
+<a class="reference internal" href="../modules/generated/nilearn.datasets.fetch_adhd.html#nilearn.datasets.fetch_adhd" title="nilearn.datasets.fetch_adhd"><tt class="xref py py-func docutils literal"><span class="pre">fetch_adhd</span></tt></a> (see <a class="reference internal" href="../manipulating_images/input_output.html#loading-data"><em>Inputing data: file names or image objects</em></a>).</p>
 </div>
-<div class="section" id="preprocessing-loading-and-masking">
-<h2>3.4.2. Preprocessing: loading and masking<a class="headerlink" href="#preprocessing-loading-and-masking" title="Permalink to this headline">¶</a></h2>
-<p>We fetch the data from Internet and load it with a dedicated function
-(see <a class="reference internal" href="../manipulating_images/manipulating_images.html#loading-data"><em>Loading data</em></a>):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
-<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">input_data</span>
-<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <span class="n">plot_roi</span><span class="p">,</span> <span class="n">plot_epi</span><span class="p">,</span> <span class="n">show</span>
-<span class="n">nyu_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_nyu_rest</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="c1"># print basic information on the dataset</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;First subject anatomical nifti image (3D) is at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
-      <span class="n">nyu_dataset</span><span class="o">.</span><span class="n">anat_anon</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;First subject functional nifti image (4D) is at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
-      <span class="n">nyu_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># 4D data</span>
-
-<span class="c1"># This is resting-state data: the background has not been removed yet,</span>
-<span class="c1"># thus we need to use mask_strategy=&#39;epi&#39; to compute the mask from the</span>
-<span class="c1"># EPI images</span>
-<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">NiftiMasker</span><span class="p">(</span><span class="n">memory</span><span class="o">=</span><span class="s1">&#39;nilearn_cache&#39;</span><span class="p">,</span>
-                                      <span class="n">mask_strategy</span><span class="o">=</span><span class="s1">&#39;epi&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                      <span class="n">standardize</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="n">func_filename</span> <span class="o">=</span> <span class="n">nyu_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
-<span class="n">mask</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
-</pre></div>
+<div class="section" id="loading-and-masking-and-with-niftimasker">
+<h3>3.5.1.2. Loading and masking and with NiftiMasker<a class="headerlink" href="#loading-and-masking-and-with-niftimasker" title="Permalink to this headline">¶</a></h3>
+<p>Before clustering, the brain volumes need to be turned to a data matrix,
+for instance of time-series. The <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">nilearn.input_data.NiftiMasker</span></tt></a>
+extract these on a mask. If no mask is given with the data, the masker
+can compute one.</p>
+<p>The masker can perform important <a class="reference internal" href="../manipulating_images/masker_objects.html#masker-preprocessing-steps"><em>preprocessing operations</em></a>, such as detrending signals, standardizing
+them, removing confounds, or smoothing the images.</p>
+<div class="topic">
+<p class="topic-title first"><strong>Example code</strong></p>
+<p>All the steps discussed in this section can be seen implemented in
+<a class="reference internal" href="../auto_examples/03_connectivity/plot_rest_clustering.html#sphx-glr-auto-examples-03-connectivity-plot-rest-clustering-py"><em>a full code example</em></a>.</p>
 </div>
-<p>No mask is given with the data so we let the masker compute one.
-The result is a niimg from which we extract a numpy array that is
-used to mask our original images.</p>
 </div>
-<div class="section" id="applying-ward-clustering">
-<h2>3.4.3. Applying Ward clustering<a class="headerlink" href="#applying-ward-clustering" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="applying-clustering">
+<h2>3.5.2. Applying clustering<a class="headerlink" href="#applying-clustering" title="Permalink to this headline">¶</a></h2>
+<div class="topic">
+<p class="topic-title first"><strong>Which clustering to use</strong></p>
+<p>The question of which clustering method to use is in itself subject
+to debate. There are many clustering methods; their computational
+cost will vary, as well as their results. A <a class="reference external" href="http://journal.frontiersin.org/article/10.3389/fnins.2014.00167/full">well-cited empirical
+comparison</a>
+suggests that:</p>
+<ul class="simple">
+<li>For a large number of clusters, it is preferable to use Ward
+agglomerative clustering with spatial constraints</li>
+<li>For a small number of clusters, it is preferable to use Kmeans
+clustering after spatially-smoothing the data.</li>
+</ul>
+<p>Both clustering algorithms (as well as many others) are provided by
+<a class="reference external" href="http://scikit-learn.org/stable/modules/clustering.html">scikit-learn</a>. Ward
+clustering is the easiest to use, as it can be done with the Feature
+agglomeration object. It is also very fast. We detail it bellow.</p>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
 <p><strong>Compute a connectivity matrix</strong>
 Before applying Ward&#8217;s method, we compute a spatial neighborhood matrix,
 aka connectivity matrix. This is useful to constrain clusters to form
-contiguous parcels (see <a class="reference external" href="http://scikit-learn.org/stable//modules/clustering.html#adding-connectivity-constraints">the scikit-learn documentation</a>)</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.feature_extraction</span> <span class="kn">import</span> <span class="n">image</span>
-<span class="n">shape</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span>
-<span class="n">connectivity</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">grid_to_graph</span><span class="p">(</span><span class="n">n_x</span><span class="o">=</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n_y</span><span class="o">=</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                   <span class="n">n_z</span><span class="o">=</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
-</pre></div>
-</div>
+contiguous parcels (see <a class="reference external" href="http://scikit-learn.org/stable/modules/clustering.html#adding-connectivity-constraints">the scikit-learn documentation</a>)</p>
+<p>This is done from the mask computed by the masker: a niimg from which we
+extract a numpy array and then the connectivity matrix.</p>
 <p><strong>Ward clustering principle</strong>
 Ward&#8217;s algorithm is a hierarchical clustering algorithm: it
 recursively merges voxels, then clusters that have similar signal
@@ -287,146 +299,49 @@ number of clusters. In Wards clustering,
 the <em>memory</em> parameter is used to cache the computed component tree. You
 can give it either a <em>joblib.Memory</em> instance or the name of a directory
 used for caching.</p>
-<div class="section" id="running-the-ward-algorithm">
-<h3>3.4.3.1. Running the Ward algorithm<a class="headerlink" href="#running-the-ward-algorithm" title="Permalink to this headline">¶</a></h3>
-<p>Here we simply launch Ward&#8217;s algorithm to find 1000 clusters and we time it.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">FeatureAgglomeration</span>
-<span class="c1"># If you have scikit-learn older than 0.14, you need to import</span>
-<span class="c1"># WardAgglomeration instead of FeatureAgglomeration</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">ward</span> <span class="o">=</span> <span class="n">FeatureAgglomeration</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">,</span>
-                            <span class="n">linkage</span><span class="o">=</span><span class="s1">&#39;ward&#39;</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="s1">&#39;nilearn_cache&#39;</span><span class="p">)</span>
-<span class="n">ward</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Ward agglomeration 1000 clusters: </span><span class="si">%.2f</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>This runs in about 10 seconds (depending on your computer configuration). Now,
-we are not satisfied of the result and we want to cluster the picture in 2000
-elements.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># the caching mechanism</span>
-<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">ward</span> <span class="o">=</span> <span class="n">FeatureAgglomeration</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">connectivity</span><span class="o">=</span><span class="n">connectivity</span><span class="p">,</span>
-                            <span class="n">linkage</span><span class="o">=</span><span class="s1">&#39;ward&#39;</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="s1">&#39;nilearn_cache&#39;</span><span class="p">)</span>
-<span class="n">ward</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Ward agglomeration 2000 clusters: </span><span class="si">%.2f</span><span class="s2">s&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>Now that the component tree has been computed, computation is must faster
-thanks to caching. You should have the result in less than 1 second.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The Ward clustering computing 1000 parcels runs typically in about 10
+seconds. Admitedly, this is very fast.</p>
 </div>
 </div>
-<div class="section" id="post-processing-and-visualizing-the-parcels">
-<h2>3.4.4. Post-Processing and visualizing the parcels<a class="headerlink" href="#post-processing-and-visualizing-the-parcels" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="unmasking">
-<h3>3.4.4.1. Unmasking<a class="headerlink" href="#unmasking" title="Permalink to this headline">¶</a></h3>
-<p>After applying the ward, we must unmask the data. This can be done simply :</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Avoid 0 label</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">labels_</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="n">labels_img</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
-
-<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <span class="n">mean_img</span>
-<span class="n">mean_func_img</span> <span class="o">=</span> <span class="n">mean_img</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
-
-<span class="c1"># common cut coordinates for all plots</span>
-
-<span class="n">first_plot</span> <span class="o">=</span> <span class="n">plot_roi</span><span class="p">(</span><span class="n">labels_img</span><span class="p">,</span> <span class="n">mean_func_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Ward parcellation&quot;</span><span class="p">,</span>
-                      <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;xz&#39;</span><span class="p">)</span>
-<span class="c1"># labels_img is a Nifti1Image object, it can be saved to file with the</span>
-<span class="c1"># following code:</span>
-<span class="n">labels_img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s1">&#39;parcellation.nii&#39;</span><span class="p">)</span>
-
-
-<span class="c1"># Display the original data</span>
-<span class="n">plot_epi</span><span class="p">(</span><span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
-         <span class="n">cut_coords</span><span class="o">=</span><span class="n">first_plot</span><span class="o">.</span><span class="n">cut_coords</span><span class="p">,</span>
-         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Original (</span><span class="si">%i</span><span class="s1"> voxels)&#39;</span> <span class="o">%</span> <span class="n">fmri_masked</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-         <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;xz&#39;</span><span class="p">)</span>
-
-<span class="c1"># A reduced data can be create by taking the parcel-level average:</span>
-<span class="c1"># Note that, as many objects in the scikit-learn, the ward object exposes</span>
-<span class="c1"># a transform method that modifies input features. Here it reduces their</span>
-<span class="c1"># dimension</span>
-<span class="n">fmri_reduced</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">)</span>
-
-<span class="c1"># Display the corresponding data compressed using the parcellation</span>
-<span class="n">fmri_compressed</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">fmri_reduced</span><span class="p">)</span>
-<span class="n">compressed_img</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">fmri_compressed</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-<span class="n">plot_epi</span><span class="p">(</span><span class="n">compressed_img</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="n">first_plot</span><span class="o">.</span><span class="n">cut_coords</span><span class="p">,</span>
-         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Compressed representation (2000 parcels)&#39;</span><span class="p">,</span>
-         <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;xz&#39;</span><span class="p">)</span>
-
-<span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>You can see that masked data is filled with -1 values. This is done for the
-sake of visualization. In fact, clusters are labeled from 0 to
-(n_clusters - 1). By putting every background value to -1, we assure that
-they will not mess with the visualization.</p>
-</div>
-<div class="section" id="label-visualization">
-<h3>3.4.4.2. Label visualization<a class="headerlink" href="#label-visualization" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="using-and-visualizing-the-resulting-parcellation">
+<h2>3.5.3. Using and visualizing the resulting parcellation<a class="headerlink" href="#using-and-visualizing-the-resulting-parcellation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="visualizing-the-parcellation">
+<h3>3.5.3.1. Visualizing the parcellation<a class="headerlink" href="#visualizing-the-parcellation" title="Permalink to this headline">¶</a></h3>
+<p>For every scikit-learn clustering object, the labels of the parcellation
+are found its <cite>labels_</cite> after fitting it to the data. To turn them into a
+brain image, we need to unmask them with the <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a>
+<em>inverse_transform</em> method.</p>
+<p>Note that by default, clusters are labeled from 0 to
+(n_clusters - 1), and the label 0 may be confused with a background.</p>
 <p>To visualize the clusters, we assign random colors to each cluster
 for the labels visualization.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># Unmask data</span>
-<span class="c1"># Avoid 0 label</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">labels_</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="n">labels_img</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
-
-<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <span class="n">mean_img</span>
-<span class="n">mean_func_img</span> <span class="o">=</span> <span class="n">mean_img</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
-
-<span class="c1"># common cut coordinates for all plots</span>
-
-<span class="n">first_plot</span> <span class="o">=</span> <span class="n">plot_roi</span><span class="p">(</span><span class="n">labels_img</span><span class="p">,</span> <span class="n">mean_func_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Ward parcellation&quot;</span><span class="p">,</span>
-                      <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;xz&#39;</span><span class="p">)</span>
-<span class="c1"># labels_img is a Nifti1Image object, it can be saved to file with the</span>
-<span class="c1"># following code:</span>
-<span class="n">labels_img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s1">&#39;parcellation.nii&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
 <div class="figure align-center">
 <a class="reference external image-reference" href="../auto_examples/03_connectivity/plot_rest_clustering.html"><img alt="../_images/sphx_glr_plot_rest_clustering_0011.png" src="../_images/sphx_glr_plot_rest_clustering_0011.png" style="width: 352.0px; height: 208.0px;" /></a>
 </div>
 </div>
-<div class="section" id="compressed-picture">
-<h3>3.4.4.3. Compressed picture<a class="headerlink" href="#compressed-picture" title="Permalink to this headline">¶</a></h3>
-<p>By transforming a picture in a new one in which the value of each voxel
-is the mean value of the cluster it belongs to, we are creating a
-compressed version of the original picture. We can obtain this
-representation thanks to a two-step procedure :</p>
+<div class="section" id="compressed-representation">
+<h3>3.5.3.2. Compressed representation<a class="headerlink" href="#compressed-representation" title="Permalink to this headline">¶</a></h3>
+<p>The clustering can be used to transform the data into a smaller
+representation, taking the average on each parcel:</p>
 <ul class="simple">
 <li>call <em>ward.transform</em> to obtain the mean value of each cluster (for each
 scan)</li>
 <li>call <em>ward.inverse_transform</em> on the previous result to turn it back into
 the masked picture shape</li>
 </ul>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">plot_epi</span><span class="p">(</span><span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
-         <span class="n">cut_coords</span><span class="o">=</span><span class="n">first_plot</span><span class="o">.</span><span class="n">cut_coords</span><span class="p">,</span>
-         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Original (</span><span class="si">%i</span><span class="s1"> voxels)&#39;</span> <span class="o">%</span> <span class="n">fmri_masked</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-         <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;xz&#39;</span><span class="p">)</span>
-
-<span class="c1"># A reduced data can be create by taking the parcel-level average:</span>
-<span class="c1"># Note that, as many objects in the scikit-learn, the ward object exposes</span>
-<span class="c1"># a transform method that modifies input features. Here it reduces their</span>
-<span class="c1"># dimension</span>
-<span class="n">fmri_reduced</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">)</span>
-
-<span class="c1"># Display the corresponding data compressed using the parcellation</span>
-<span class="n">fmri_compressed</span> <span class="o">=</span> <span class="n">ward</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">fmri_reduced</span><span class="p">)</span>
-<span class="n">compressed_img</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">fmri_compressed</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-<span class="n">plot_epi</span><span class="p">(</span><span class="n">compressed_img</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="n">first_plot</span><span class="o">.</span><span class="n">cut_coords</span><span class="p">,</span>
-         <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Compressed representation (2000 parcels)&#39;</span><span class="p">,</span>
-         <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;xz&#39;</span><span class="p">)</span>
-
-<span class="n">show</span><span class="p">()</span>
-</pre></div>
-</div>
 <p><a class="reference external" href="../auto_examples/03_connectivity/plot_rest_clustering.html"><img alt="left_img" src="../_images/sphx_glr_plot_rest_clustering_0021.png" style="width: 49%;" /></a> <a class="reference external" href="../auto_examples/03_connectivity/plot_rest_clustering.html"><img alt="right_img" src="../_images/sphx_glr_plot_rest_clustering_0031.png" style="width: 49%;" /></a></p>
 <p>We can see that using only 2000 parcels, the original image is well
 approximated.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="topic">
+<p class="topic-title first"><strong>Example code</strong></p>
+<p>All the steps discussed in this section can be seen implemented in
+<a class="reference internal" href="../auto_examples/03_connectivity/plot_rest_clustering.html#sphx-glr-auto-examples-03-connectivity-plot-rest-clustering-py"><em>a full code example</em></a>.</p>
+</div>
 </div>
 </div>
 </div>
@@ -441,10 +356,10 @@ approximated.</p>
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="region_extraction.html" title="3.5. Region Extraction for better brain parcellations"
+          <a href="../plotting/index.html" title="4. Plotting brain images"
              >next</a></li>
         <li class="right" >
-          <a href="resting_state_networks.html" title="3.3. Extracting resting-state networks: ICA and related"
+          <a href="region_extraction.html" title="3.4. Region Extraction for better brain parcellations"
              >previous</a> |</li>
 <li><a href="../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
