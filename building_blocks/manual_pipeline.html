@@ -278,17 +278,23 @@ to the subjects from the brain activation.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="c"># Load target information as string and give a numerical identifier to each</span>
 <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="p">)</span>
-
-<span class="c"># scikit-learn &gt;= 0.14 supports text labels. You can replace this line by:</span>
-<span class="c"># target = labels[&#39;labels&#39;]</span>
-<span class="n">_</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="s">&#39;labels&#39;</span><span class="p">],</span> <span class="n">return_inverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
 </pre></div>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<ul class="last simple">
+<li><a class="reference external" href="http://pandas.pydata.org/">pandas</a> is a very useful Python
+library to load CSV files and process their data</li>
+</ul>
 </div>
 <p>For example, we will now remove the <em>rest</em> condition from our dataset.
 This can be done as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">condition_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="s">&#39;labels&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">b</span><span class="s">&#39;face&#39;</span><span class="p">,</span>
-                               <span class="n">labels</span><span class="p">[</span><span class="s">&#39;labels&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">b</span><span class="s">&#39;cat&#39;</span><span class="p">)</span>
-<span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">condition_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">target</span> <span class="o">==</span> <span class="n">b</span><span class="s">&#39;face&#39;</span><span class="p">,</span> <span class="n">target</span> <span class="o">==</span> <span class="n">b</span><span class="s">&#39;cat&#39;</span><span class="p">)</span>
+
+<span class="c"># We apply this mask in the sampe direction to restrict the</span>
+<span class="c"># classification to the face vs cat discrimination</span>
+<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">fmri_masked</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -316,7 +322,7 @@ samples and features.</p>
 <div class="section" id="applying-a-mask">
 <h4>6.1.1.3.1. Applying a mask<a class="headerlink" href="#applying-a-mask" title="Permalink to this headline">¶</a></h4>
 <div class="figure align-right">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_simple.html"><img alt="../_images/sphx_glr_plot_haxby_simple_0021.png" src="../_images/sphx_glr_plot_haxby_simple_0021.png" style="width: 132.0px; height: 78.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/plot_decoding_tutorial.html"><img alt="../_images/sphx_glr_plot_decoding_tutorial_0021.png" src="../_images/sphx_glr_plot_decoding_tutorial_0021.png" style="width: 153.0px; height: 78.0px;" /></a>
 </div>
 <p>If your dataset provides a mask, the <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> can apply it
 automatically. All you have to do is to pass your mask as a parameter when
@@ -325,18 +331,16 @@ provided with the Haxby dataset.</p>
 <p>The <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><tt class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></tt></a> can be seen as a <em>tube</em> that transforms data
 from 4D images to 2D arrays, but first it needs to &#8216;fit&#8217; this data in
 order to learn simple parameters from it, such as its shape:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <span class="n">NiftiMasker</span>
-<span class="n">mask_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="c"># For decoding, standardizing is often very important</span>
-<span class="n">nifti_masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">mask_filename</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#</span>
+<span class="c"># We first create a masker, giving it the options that we care</span>
+<span class="c"># about. Here we use standardizing of the data, as it is often important</span>
+<span class="c"># for decoding</span>
+<span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <span class="n">NiftiMasker</span>
+<span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">mask_filename</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
-<span class="n">func_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="c"># We give the nifti_masker a filename and retrieve a 2D array ready</span>
+<span class="c"># We give the masker a filename and retrieve a 2D array ready</span>
 <span class="c"># for machine learning with scikit-learn</span>
-<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
-
-<span class="c"># Restrict the classification to the face vs cat discrimination</span>
-<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">fmri_masked</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span>
+<span class="n">fmri_masked</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">fmri_filename</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that you can call <cite>nifti_masker.transform(dataset.func[1])</cite> on new
@@ -359,13 +363,14 @@ one for you in the <cite>fit</cite> step. The generated mask can be accessed via
 scikit-learn, using its <cite>fit</cite>, <cite>predict</cite> or <cite>transform</cite> methods.</p>
 <p>Here, we use scikit-learn Support Vector Classification to learn how to
 predict the category of picture seen by the subject:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Here we use a Support Vector Classification, with a linear kernel</span>
-<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
-<span class="n">svc</span> <span class="o">=</span> <span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">svc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 
-<span class="c"># And we run it</span>
-<span class="n">svc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<span class="c">###########################################################################</span>
+<span class="c"># We can then predict the labels from the data</span>
 <span class="n">prediction</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">fmri_masked</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">prediction</span><span class="p">)</span>
+
+<span class="c">###########################################################################</span>
 </pre></div>
 </div>
 <p>We will not detail it here since there is a very good documentation about it in the
@@ -379,14 +384,8 @@ unmask several kinds of data (not only the data that you previously
 masked but also the results of an algorithm), the masker is clever and
 can take data of dimension 1D (resp. 2D) to convert it back to 3D
 (resp. 4D).</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># Retrieve the SVC discriminating weights</span>
-<span class="n">coef_</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">coef_</span>
-
-<span class="c"># Reverse masking thanks to the Nifti Masker</span>
-<span class="n">coef_img</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef_</span><span class="p">)</span>
-
-<span class="c"># Save the coefficients as a Nifti image</span>
-<span class="n">coef_img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="s">&#39;haxby_svc_weights.nii&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">coef_img</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">coef_</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">coef_img</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Here we want to see the discriminating weights of some voxels.</p>
@@ -396,15 +395,16 @@ can take data of dimension 1D (resp. 2D) to convert it back to 3D
 <p>Again the visualization code is simple. We can use an fMRI slice as a
 background and plot the weights. Brighter points have a higher
 discriminating weight.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <span class="n">mean_img</span>
-<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <span class="n">plot_roi</span><span class="p">,</span> <span class="n">plot_stat_map</span><span class="p">,</span> <span class="n">show</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <span class="n">plot_stat_map</span><span class="p">,</span> <span class="n">show</span>
 
-<span class="n">mean_epi</span> <span class="o">=</span> <span class="n">mean_img</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
-<span class="n">plot_stat_map</span><span class="p">(</span><span class="n">coef_img</span><span class="p">,</span> <span class="n">mean_epi</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;SVM weights&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;yx&quot;</span><span class="p">)</span>
+<span class="n">plot_stat_map</span><span class="p">(</span><span class="n">coef_img</span><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">anat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+              <span class="n">title</span><span class="o">=</span><span class="s">&quot;SVM weights&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s">&quot;yx&quot;</span><span class="p">)</span>
+
+<span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 <div class="figure align-center">
-<a class="reference external image-reference" href="../auto_examples/plot_haxby_simple.html"><img alt="../_images/sphx_glr_plot_haxby_simple_0011.png" src="../_images/sphx_glr_plot_haxby_simple_0011.png" style="width: 255.0px; height: 130.0px;" /></a>
+<a class="reference external image-reference" href="../auto_examples/plot_decoding_tutorial.html"><img alt="../_images/sphx_glr_plot_decoding_tutorial_0021.png" src="../_images/sphx_glr_plot_decoding_tutorial_0021.png" style="width: 255.0px; height: 130.0px;" /></a>
 </div>
 </div>
 <div class="section" id="going-further">
@@ -445,7 +445,7 @@ are described in <a class="reference internal" href="../manipulating_images/mani
     </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
-          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.2.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.
         <span style="padding-left: 5ex;">
           <a href="../_sources/building_blocks/manual_pipeline.txt"
         	 rel="nofollow">Show this page source</a>

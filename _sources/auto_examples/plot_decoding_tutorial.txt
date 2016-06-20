@@ -1,0 +1,836 @@
+
+
+.. _sphx_glr_auto_examples_plot_decoding_tutorial.py:
+
+
+A introduction tutorial to fMRI decoding
+==========================================
+
+Here is a simple tutorial on decoding with nilearn. It reproduces the
+Haxby 2001 study on a face vs cat discrimination task in a mask of the
+ventral stream.
+
+This tutorial is meant as an introduction to the various steps of a
+decoding analysis.
+
+It is not a minimalistic example, as it strives to be didactic. It is not
+meant to be copied to analyze new data: many of the steps are unecessary.
+
+.. contents:: **Contents**
+    :local:
+    :depth: 1
+
+
+
+Retrieve and load the fMRI data from the  Haxby study
+-----------------------------------------------------
+
+First download the data
+.......................
+
+The :func:`nilearn.datasets.fetch_haxby` function will download the
+Haxby dataset if not present on the disk, in the nilear data directory.
+
+
+.. code-block:: python
+
+    from nilearn import datasets
+    haxby_dataset = datasets.fetch_haxby()
+    fmri_filename = haxby_dataset.func[0]
+
+    # print basic information on the dataset
+    print('First subject functional nifti images (4D) are at: %s' %
+          fmri_filename)  # 4D data
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      First subject functional nifti images (4D) are at: /home/varoquau/nilearn_data/haxby2001/subj1/bold.nii.gz
+
+
+Convert the fMRI volume's to a data matrix
+..........................................
+
+We will use the :class:`nilearn.input_data.NiftiMasker` to extract the
+fMRI data on a mask and convert it to data series.
+
+The mask is a mask of the Ventral Temporal streaming coming from the
+Haxby study:
+
+
+.. code-block:: python
+
+    mask_filename = haxby_dataset.mask_vt[0]
+
+    # Let's visualize it, using the subject's anatomical image as a
+    # background
+    from nilearn import plotting
+    plotting.plot_roi(mask_filename, bg_img=haxby_dataset.anat[0],
+                     cmap='Paired')
+
+
+
+
+.. image:: /auto_examples/images/sphx_glr_plot_decoding_tutorial_001.png
+    :align: center
+
+
+
+
+Now we use the NiftiMasker.
+
+We first create a masker, giving it the options that we care
+about. Here we use standardizing of the data, as it is often important
+for decoding
+
+
+.. code-block:: python
+
+    from nilearn.input_data import NiftiMasker
+    masker = NiftiMasker(mask_img=mask_filename, standardize=True)
+
+    # We give the masker a filename and retrieve a 2D array ready
+    # for machine learning with scikit-learn
+    fmri_masked = masker.fit_transform(fmri_filename)
+
+
+
+
+
+
+
+The variable "fmri_masked" is a numpy array:
+
+
+.. code-block:: python
+
+    print(fmri_masked)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      [[-2.25146627  1.11008501 -0.38940424 ..., -1.31005859 -0.82755452
+       1.04562497]
+     [-1.99929178  0.90351063 -0.78263468 ..., -1.76820636 -0.66073179
+      -0.30779985]
+     [-1.72771943  0.8471722  -0.71709627 ..., -1.16538048 -1.11570287
+       0.35240737]
+     ..., 
+     [ 0.28967512 -1.70683813 -2.66686344 ...,  1.28209257  1.0074954
+       1.24368715]
+     [ 0.75522774 -1.61294067 -2.8307097  ...,  1.71612716  1.37147236
+       1.07863522]
+     [ 0.17328696 -1.59416115 -2.71601725 ...,  1.58350551  1.56862628
+       1.57379067]]
+
+
+Its shape corresponds to the number of time-points times the number of
+voxels in the mask
+
+
+.. code-block:: python
+
+    print(fmri_masked.shape)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      (1452, 577)
+
+
+Load the behavioral labels
+..........................
+
+The behavioral labels are stored in a CSV file, separated by spaces.
+
+We use numpy to load them in an array.
+
+
+.. code-block:: python
+
+    import numpy as np
+    # Load target information as string and give a numerical identifier to each
+    labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+    print(labels)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      [('rest', 0) ('rest', 0) ('rest', 0) ..., ('rest', 11) ('rest', 11)
+     ('rest', 11)]
+
+
+Retrieve the behavioral targets, that we are going to predict in the
+decoding
+
+
+.. code-block:: python
+
+    target = labels['labels']
+    print(target)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      ['rest' 'rest' 'rest' ..., 'rest' 'rest' 'rest']
+
+
+Restrict the analysis to cats and faces
+........................................
+
+As we can see from the targets above, the experiment contains many
+conditions, not all that interest us for decoding.
+
+To keep only data corresponding to faces or cats, we create a
+mask of the samples belonging to the condition.
+
+
+.. code-block:: python
+
+    condition_mask = np.logical_or(target == b'face', target == b'cat')
+
+    # We apply this mask in the sampe direction to restrict the
+    # classification to the face vs cat discrimination
+    fmri_masked = fmri_masked[condition_mask]
+
+
+
+
+
+
+
+We now have less samples
+
+
+.. code-block:: python
+
+    print(fmri_masked.shape)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      (216, 577)
+
+
+We apply the same mask to the targets
+
+
+.. code-block:: python
+
+    target = target[condition_mask]
+    print(target.shape)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      (216,)
+
+
+Decoding with an SVM
+----------------------
+
+We will now use the `scikit-learn <http://www.scikit-learn.org>`_
+machine-learning toolbox on the fmri_masked data.
+
+As a decoder, we use a Support Vector Classification, with a linear
+kernel.
+
+We first create it:
+
+
+.. code-block:: python
+
+    from sklearn.svm import SVC
+    svc = SVC(kernel='linear')
+    print(svc)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
+      decision_function_shape=None, degree=3, gamma='auto', kernel='linear',
+      max_iter=-1, probability=False, random_state=None, shrinking=True,
+      tol=0.001, verbose=False)
+
+
+The svc object is an object that can be fit (or trained) on data with
+labels, and then predict labels on data without.
+
+We first fit it on the data
+
+
+.. code-block:: python
+
+    svc.fit(fmri_masked, target)
+
+
+
+
+
+
+
+We can then predict the labels from the data
+
+
+.. code-block:: python
+
+    prediction = svc.predict(fmri_masked)
+    print(prediction)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      ['face' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'cat' 'cat'
+     'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'face' 'face' 'face' 'face'
+     'face' 'face' 'face' 'face' 'face' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat'
+     'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat'
+     'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'cat' 'cat'
+     'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'face' 'face' 'face' 'face'
+     'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face'
+     'face' 'face' 'face' 'face' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat'
+     'cat' 'cat' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face'
+     'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'face' 'face' 'face'
+     'face' 'face' 'face' 'face' 'face' 'face' 'cat' 'cat' 'cat' 'cat' 'cat'
+     'cat' 'cat' 'cat' 'cat' 'face' 'face' 'face' 'face' 'face' 'face' 'face'
+     'face' 'face' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'face'
+     'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'cat' 'cat' 'cat'
+     'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'face' 'face' 'face' 'face' 'face'
+     'face' 'face' 'face' 'face' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat'
+     'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'face'
+     'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face'
+     'face' 'face' 'face' 'face' 'face' 'face' 'face' 'cat' 'cat' 'cat' 'cat'
+     'cat' 'cat' 'cat' 'cat' 'cat']
+
+
+Let's measure the error rate:
+
+
+.. code-block:: python
+
+    print((prediction == target).sum() / float(len(target)))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      1.0
+
+
+This error rate is meaningless. Why?
+
+Measuring prediction scores using cross-validation
+---------------------------------------------------
+
+The proper way to measure error rates or prediction accuracy is via
+cross-validation: leaving out some data and testing on it.
+
+Manually leaving out data
+..........................
+
+Let's leave out the 30 last data points during training, and test the
+prediction on these 30 last points:
+
+
+.. code-block:: python
+
+    svc.fit(fmri_masked[:-30], target[:-30])
+
+    prediction = svc.predict(fmri_masked[-30:])
+    print((prediction == target[-30:]).sum() / float(len(target[-30:])))
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      0.633333333333
+
+
+Implementing a KFold loop
+.........................
+
+We can split the data in train and test set repetitively in a `KFold`
+strategy:
+
+
+.. code-block:: python
+
+    from sklearn.cross_validation import KFold
+
+    cv = KFold(n=len(fmri_masked), n_folds=5)
+
+    for train, test in cv:
+        svc.fit(fmri_masked[train], target[train])
+        prediction = svc.predict(fmri_masked[test])
+        print((prediction == target[test]).sum() / float(len(target[test])))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      0.727272727273
+    0.46511627907
+    0.720930232558
+    0.581395348837
+    0.744186046512
+
+
+Cross-validation with scikit-learn
+...................................
+
+Scikit-learn has tools to perform cross-validation easier:
+
+
+.. code-block:: python
+
+    from sklearn.cross_validation import cross_val_score
+    cv_score = cross_val_score(svc, fmri_masked, target)
+    print(cv_score)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      [ 0.625       0.52777778  0.68055556]
+
+
+Note that we can speed things up to use all the CPUs of our computer
+with the n_jobs parameter.
+
+By default, cross_val_score uses a 3-fold KFold. We can control this by
+passing the "cv" object, here a 5-fold:
+
+
+.. code-block:: python
+
+    cv_score = cross_val_score(svc, fmri_masked, target, cv=cv)
+    print(cv_score)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      [ 0.72727273  0.46511628  0.72093023  0.58139535  0.74418605]
+
+
+The best way to do cross-validation is to respect the structure of
+the experiment, for instance by leaving out full sessions of
+acquisition.
+
+The number of the session is stored in the CSV file giving the
+behavioral data. We have to apply our session mask, to select only cats
+and faces. To leave a session out, we pass it to a
+LeaveOneLabelOut object:
+
+
+.. code-block:: python
+
+    session_label = labels['chunks'][condition_mask]
+
+    from sklearn.cross_validation import LeaveOneLabelOut
+    cv = LeaveOneLabelOut(session_label)
+    cv_score = cross_val_score(svc, fmri_masked, target, cv=cv)
+    print(cv_score)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      [ 1.          0.61111111  0.94444444  0.88888889  0.88888889  0.94444444
+      0.72222222  0.94444444  0.5         0.72222222  0.5         0.55555556]
+
+
+Inspecting the model weights
+-----------------------------
+
+Finally, it may be useful to inspect and display the model weights.
+
+Turning the weights into a nifti image
+.......................................
+
+We retrieve the SVC discriminating weights
+
+
+.. code-block:: python
+
+    coef_ = svc.coef_
+    print(coef_)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      [[ -4.03108891e-02  -3.49412808e-02  -1.70223087e-02  -3.42159057e-03
+       -2.33893667e-02  -1.22940103e-02  -2.79866312e-02  -1.52685970e-02
+       -1.36452221e-02  -3.23905377e-02  -2.26553880e-03  -6.13453888e-02
+       -2.50680842e-02   2.41239333e-02  -3.97237046e-02   2.46573345e-02
+       -2.67997500e-02  -2.41813969e-02  -5.66277288e-02  -1.62779798e-02
+        3.59979712e-03  -3.51138649e-03  -2.19785252e-02  -1.03746823e-02
+        3.41675262e-02  -6.03516535e-04  -3.16508567e-02  -1.26717950e-02
+       -2.68206252e-02   1.56282120e-02  -4.60449159e-02  -3.08783179e-02
+       -3.09531222e-02  -2.60623211e-02  -4.04018099e-02  -1.91451953e-02
+       -1.79200521e-02   4.20827401e-04  -1.63643999e-04   1.28799775e-02
+       -2.14542008e-02  -3.79804039e-02   3.47548934e-03  -2.27829740e-02
+        1.05304886e-02   5.10571035e-02  -5.96033709e-02  -1.21514715e-02
+       -1.32891972e-02   2.74404987e-03  -2.64419989e-02  -2.72180564e-02
+        9.81565551e-03  -2.28569302e-02   1.79850222e-02   5.12699359e-03
+        2.26668770e-02   1.13485019e-02  -1.37285976e-02  -8.42849382e-03
+        1.80805127e-02   3.25851907e-02   4.49505926e-02   2.65420287e-02
+       -4.14040229e-03  -2.57342422e-03   9.49777195e-03  -8.87820161e-03
+       -1.43446551e-02  -3.28213123e-02   1.85465075e-02   1.15539312e-02
+        1.58250066e-02  -3.66900390e-02   1.33679808e-02  -2.80167282e-03
+       -6.78624970e-03  -1.39389464e-02   7.11005106e-03   1.25255293e-03
+       -9.93324998e-03  -1.98938034e-02   9.30365154e-03  -1.80082169e-02
+       -7.50651663e-02  -1.36555015e-02  -1.93083157e-04  -1.00708412e-02
+        2.27116741e-02  -7.27886725e-03  -1.09759670e-03  -1.64105528e-02
+        1.86844766e-02   2.23105459e-02   3.25910235e-02  -1.43157291e-02
+       -5.12380653e-02  -3.09087809e-03   1.99446574e-02   4.30448615e-03
+        1.03896134e-02  -1.25207421e-02  -2.59542007e-02  -4.62812876e-02
+       -1.94396688e-02  -9.39224302e-02  -5.27409151e-02  -1.38402826e-02
+       -3.66717507e-02  -8.61988081e-04  -1.67515616e-02   1.99479815e-02
+        4.93914020e-02   1.03880545e-02  -2.39692667e-02   3.38233360e-02
+        1.18487942e-02  -9.22433128e-03  -1.74728954e-02  -1.42393835e-02
+        2.75995625e-02   6.96505909e-02   2.63890287e-02   2.30069534e-03
+       -4.37956237e-03   7.33019162e-02   5.96415015e-02   6.77320376e-03
+       -6.03426341e-03  -1.09072532e-02   3.29295133e-02  -3.73092079e-02
+       -2.69077918e-02  -1.42559791e-01  -2.80880331e-02   1.78805165e-03
+       -2.85045028e-03   2.10780059e-02  -2.12275771e-02   3.02096376e-02
+        1.69047062e-02  -1.79925330e-02   6.29726008e-03   1.97070458e-02
+        5.19257553e-03  -1.71189697e-02  -4.96526668e-02  -2.60450246e-02
+        1.01453352e-02   5.22672481e-03   2.72231882e-02  -2.27722438e-03
+        4.06790595e-02  -1.21596262e-02  -1.19305198e-02   1.82343302e-02
+        9.83757520e-03  -2.61979484e-02   2.04487598e-02   5.51516204e-02
+        7.21752269e-04   7.12426523e-03   2.27884198e-02  -5.51432951e-03
+       -5.05484283e-03  -1.25750447e-02  -9.98317335e-03   9.10102525e-03
+       -4.12577513e-02   6.75056663e-03  -1.28852503e-02  -2.05455613e-02
+       -3.05885998e-03  -4.23882426e-02  -1.94251852e-02  -4.39963778e-02
+       -3.93118786e-02  -4.25212537e-03  -9.29729400e-03   2.56150442e-02
+       -3.66289624e-02  -1.59079974e-02   7.69945408e-02   2.28973357e-02
+       -2.00362095e-02  -3.96060401e-03   2.75528018e-02  -1.91182026e-02
+        5.73627828e-03   1.97838417e-03  -1.36419000e-02  -5.48799304e-04
+        2.95456136e-02  -2.15121074e-02  -2.12279788e-02  -1.48681968e-02
+       -2.14180763e-02  -1.53681694e-02   3.07962434e-02  -1.78962651e-02
+       -1.97521183e-02  -8.21820309e-02  -2.02482742e-02  -8.85823966e-03
+        1.02113474e-03   7.67524477e-05  -1.70879074e-02  -1.14176182e-02
+       -2.43713099e-02  -2.76552412e-02   1.91091641e-02  -1.14726012e-02
+       -1.86286609e-02  -1.31084709e-02   7.40567457e-03   1.75635633e-02
+        1.11522464e-02   2.42276238e-02  -8.01769572e-03  -1.05413539e-01
+        5.62218585e-02  -2.92319255e-02  -1.00402219e-02   1.68063753e-02
+       -6.01120414e-02  -2.22246216e-03   2.14606826e-02   3.99100298e-02
+        6.12458034e-03  -1.08740372e-02  -1.09971322e-02   3.42789960e-02
+       -5.59461192e-02  -7.63054757e-02  -8.03146839e-02  -3.58863642e-02
+        1.61196907e-02   3.21940269e-03   1.21636577e-03  -2.90197989e-02
+       -9.35227221e-03  -1.59688625e-05  -3.29350938e-02  -4.41580502e-02
+        3.21163741e-02  -6.60394390e-03  -1.73136473e-02  -3.59917312e-02
+        3.52603276e-02   4.06738206e-02   7.22910793e-03  -5.58496922e-02
+       -1.09184634e-01   1.52286149e-02  -9.31198759e-02  -7.09771286e-03
+        2.60766459e-02   1.99467826e-02  -1.23325181e-02  -1.46052290e-02
+       -2.16200660e-02   2.36714194e-02  -2.13157498e-02   4.43838061e-02
+       -1.79283588e-02   1.12783423e-02  -3.25686235e-02   7.66889933e-04
+       -9.23260146e-03   8.27999553e-03   1.28849945e-02  -1.15072543e-02
+       -5.20747227e-02  -6.63801714e-03   9.26696052e-03   4.63252367e-02
+        1.05965089e-02  -3.50972605e-02   1.59798251e-02  -2.76032133e-02
+        6.46913401e-03  -1.45474501e-02   9.02755230e-03   2.34789967e-02
+        1.64502659e-02  -8.94965280e-03  -2.62138765e-02   3.97881583e-02
+        4.01252416e-02  -2.05344672e-02  -6.87990335e-03   1.61253144e-02
+       -1.10220314e-03  -3.16495887e-04  -9.53361811e-03  -6.49180524e-03
+        1.87385687e-02  -4.54779685e-03  -1.23768254e-02  -1.88580352e-02
+        4.28713729e-03   3.45707900e-02  -3.35144317e-02  -1.17520774e-02
+       -2.54358765e-02   1.47666417e-02   1.51702191e-03  -1.33425440e-03
+        3.85942176e-03   5.85566965e-02   5.59697784e-02   2.83093817e-02
+        4.46591596e-02  -7.55808499e-02  -7.04415066e-02   1.83652278e-02
+       -3.85744338e-02  -1.05279986e-02  -2.81058743e-02   3.06858267e-02
+        1.03214014e-02   2.49989745e-02   2.83181834e-02   9.25965200e-03
+        2.74379410e-02  -6.12138693e-02  -8.19938790e-03  -1.26716634e-02
+       -7.34556842e-03  -5.80696316e-02  -1.34963397e-02   4.41847145e-02
+       -8.97369676e-03  -2.98443811e-02  -2.26838214e-03  -3.34088721e-02
+        3.08623716e-02  -1.52511409e-02   3.50665596e-02   1.54337145e-02
+        8.34288538e-03   9.54533492e-03   8.47157471e-03   2.48006868e-02
+        5.10038981e-03  -1.03542929e-02  -4.37854909e-03   5.93693735e-03
+        2.35804002e-02   9.73416728e-03   1.81055033e-02  -3.55955732e-02
+       -1.72570256e-02   7.86218384e-03  -2.67356837e-02  -1.90421278e-02
+       -2.50366010e-02  -4.50170335e-02  -1.98435444e-02  -7.20490055e-02
+       -3.52624629e-02   9.31020471e-03  -1.95318978e-02  -2.08288676e-02
+        7.52467063e-02  -1.91827012e-03  -9.39457021e-03  -7.58961250e-03
+        1.08116296e-02  -5.98220171e-02  -3.76435773e-02   5.24512539e-03
+        4.13630203e-02   1.57091839e-02   1.08518413e-02   1.92760170e-02
+       -3.86927118e-03   2.34315748e-02   2.32312137e-02   1.58486834e-02
+        3.26069386e-02   1.32669420e-02  -9.31780115e-03   3.90870899e-02
+        6.08225404e-03  -1.86155505e-02   2.57141711e-03   1.53096590e-02
+        1.67025866e-02  -1.88378432e-02  -9.56235969e-06  -2.09577691e-02
+       -4.67431028e-02  -6.20644361e-02  -1.35635191e-02  -4.28685651e-02
+       -6.59800161e-02  -3.33360025e-02  -2.20968900e-03  -6.47142033e-02
+       -2.76189682e-02   4.91147020e-03  -3.05262193e-02  -7.04413608e-03
+       -2.47297910e-03   4.43022724e-02   7.19417357e-02  -3.18219972e-03
+       -9.82646723e-03  -1.82706365e-03   1.63706221e-02   1.90412779e-02
+       -2.16736959e-02  -1.85392963e-02  -1.25785116e-02  -1.48458540e-02
+       -8.00540470e-03  -1.53274638e-02  -1.23672325e-02  -2.27229510e-02
+       -2.93591476e-02   1.15777766e-02  -9.80380940e-03   4.09331314e-03
+        1.19922289e-02   3.02399018e-02   8.03025658e-03  -1.19018408e-04
+       -6.77773968e-03  -2.93086031e-02   3.14479909e-02  -1.60359551e-03
+        7.78314600e-03   2.06700717e-02  -8.75949539e-05  -1.93882021e-02
+       -3.15032075e-02   7.75133590e-03  -1.55123588e-02  -5.44747779e-02
+       -2.68593288e-02   2.09385420e-02  -7.97514014e-03   8.18536534e-02
+       -2.66469105e-02  -5.09135597e-03  -2.55842803e-05  -2.97755016e-02
+       -3.68015492e-02   2.46763293e-02   4.76807369e-03   1.20080528e-02
+       -2.11372076e-02   4.04368095e-02   2.68156215e-02  -7.63188274e-03
+       -1.21033579e-02   4.32613239e-02   4.98555591e-03   1.74822656e-02
+        1.24958330e-02  -2.65123986e-02   1.45474469e-02  -5.81669849e-03
+        3.17016600e-02   1.13393724e-02   2.97475539e-02  -2.21944622e-02
+        2.00943734e-03  -3.68775954e-03  -2.22269870e-02   1.51721842e-02
+        5.36333386e-03  -7.71686424e-03  -2.28463563e-02  -3.56265036e-04
+       -3.95075487e-02   3.90486582e-03   3.06183572e-04  -3.45055119e-02
+        2.26583449e-02   4.02002762e-02  -6.16801739e-03  -4.62610868e-02
+        2.12373237e-02   6.00461431e-02   2.08901672e-02  -3.24164540e-02
+        5.68871576e-02   3.27982341e-02   4.09861103e-03   2.54232284e-02
+       -1.59434361e-03  -3.41047524e-02   5.47714727e-03  -7.10876631e-03
+        3.75923401e-02   2.35386137e-02  -1.82586051e-02  -1.09479009e-02
+        2.60533982e-03  -1.40905371e-03   2.75199971e-02  -3.43646595e-04
+        5.04911799e-02   3.38722272e-02   5.48546341e-02   1.82817373e-02
+       -1.03574388e-02   3.47202484e-02  -1.05740989e-02  -7.01238419e-03
+        1.49009287e-02  -9.48353938e-03   5.72621304e-02   2.69253847e-02
+       -2.21845869e-03   1.12307845e-02   4.11254390e-02  -2.71719293e-02
+       -3.17634546e-02   2.25042431e-02   5.04721630e-02   2.46462900e-02
+       -3.37808131e-02  -4.27184634e-02  -1.78258571e-02  -2.21585722e-03
+        3.18972300e-02  -5.62737367e-02  -4.43641310e-03  -1.71371122e-02
+       -1.19589983e-02   3.62066014e-02   2.30375845e-02   1.76171689e-02
+        6.41621890e-04   2.70469680e-02  -1.27140166e-02   2.89744043e-02
+       -3.26445301e-02  -1.41582264e-02  -3.67447104e-02  -2.76041142e-02
+       -2.97790642e-02  -2.96674617e-02  -4.09775759e-02  -9.04346759e-03
+       -1.78011679e-02   2.63841911e-02  -5.89516299e-02  -1.10771568e-02
+        1.72603074e-02   1.47990524e-02   1.58001613e-02   3.17601230e-02
+       -1.36228106e-02   1.98247751e-02  -2.17712212e-02   2.32370266e-02
+       -1.03451901e-02   1.03070681e-02  -2.28218870e-02  -1.18930486e-02
+       -2.82862676e-02  -3.34766468e-02  -8.93257958e-03  -5.70712203e-03
+        4.16808764e-03   2.87900361e-02  -7.43285918e-03  -1.70139356e-02
+       -8.99402530e-03   4.83385635e-02  -1.56222594e-02  -1.57487687e-02
+       -5.48830102e-03]]
+
+
+It's a numpy array
+
+
+.. code-block:: python
+
+    print(coef_.shape)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      (1, 577)
+
+
+We need to turn it back into a Nifti image, in essence, "inverting"
+what the NiftiMasker has done.
+
+For this, we can call inverse_transform on the NiftiMasker:
+
+
+.. code-block:: python
+
+    coef_img = masker.inverse_transform(coef_)
+    print(coef_img)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+      <class 'nibabel.nifti1.Nifti1Image'>
+    data shape (40, 64, 64, 1)
+    affine: 
+    [[  -3.5      0.       0.      68.25 ]
+     [   0.       3.75     0.    -118.125]
+     [   0.       0.       3.75  -118.125]
+     [   0.       0.       0.       1.   ]]
+    metadata:
+    <class 'nibabel.nifti1.Nifti1Header'> object, endian='<'
+    sizeof_hdr      : 348
+    data_type       : 
+    db_name         : 
+    extents         : 0
+    session_error   : 0
+    regular         : 
+    dim_info        : 0
+    dim             : [ 4 40 64 64  1  1  1  1]
+    intent_p1       : 0.0
+    intent_p2       : 0.0
+    intent_p3       : 0.0
+    intent_code     : none
+    datatype        : float64
+    bitpix          : 64
+    slice_start     : 0
+    pixdim          : [-1.    3.5   3.75  3.75  1.    1.    1.    1.  ]
+    vox_offset      : 0.0
+    scl_slope       : nan
+    scl_inter       : nan
+    slice_end       : 0
+    slice_code      : unknown
+    xyzt_units      : 0
+    cal_max         : 0.0
+    cal_min         : 0.0
+    slice_duration  : 0.0
+    toffset         : 0.0
+    glmax           : 0
+    glmin           : 0
+    descrip         : 
+    aux_file        : 
+    qform_code      : unknown
+    sform_code      : aligned
+    quatern_b       : 0.0
+    quatern_c       : 1.0
+    quatern_d       : 0.0
+    qoffset_x       : 68.25
+    qoffset_y       : -118.125
+    qoffset_z       : -118.125
+    srow_x          : [ -3.5    0.     0.    68.25]
+    srow_y          : [   0.       3.75     0.    -118.125]
+    srow_z          : [   0.       0.       3.75  -118.125]
+    intent_name     : 
+    magic           : n+1
+
+
+coef_img is now a NiftiImage.
+
+We can save the coefficients as a nii.gz file:
+
+
+.. code-block:: python
+
+    coef_img.to_filename('haxby_svc_weights.nii.gz')
+
+
+
+
+
+
+
+Plotting the SVM weights
+.........................
+
+We can plot the weights, using the subject's anatomical as a background
+
+
+.. code-block:: python
+
+    from nilearn.plotting import plot_stat_map, show
+
+    plot_stat_map(coef_img, bg_img=haxby_dataset.anat[0],
+                  title="SVM weights", display_mode="yx")
+
+    show()
+
+
+
+
+.. image:: /auto_examples/images/sphx_glr_plot_decoding_tutorial_002.png
+    :align: center
+
+
+
+
+Further reading
+----------------
+
+* The :ref:`section of the documentation on decoding <decoding_tutorial>`
+
+* :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
+
+* :ref:`space_net`
+
+**Total running time of the script:**
+(0 minutes 12.071 seconds)
+
+
+
+.. container:: sphx-glr-download
+
+    **Download Python source code:** :download:`plot_decoding_tutorial.py <plot_decoding_tutorial.py>`
+
+
+.. container:: sphx-glr-download
+
+    **Download IPython notebook:** :download:`plot_decoding_tutorial.ipynb <plot_decoding_tutorial.ipynb>`
