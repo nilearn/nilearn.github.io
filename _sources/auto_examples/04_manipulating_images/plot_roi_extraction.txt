@@ -24,19 +24,21 @@ visualization & results checking be possible at each step.
 See also :doc:`plot_extract_rois_smith_atlas` for automatic ROI extraction
 of brain connected networks given in 4D image.
 
+
 Coordinates of the slice we are interested in each direction. We will be
 using them for visualization.
+
 
 
 .. code-block:: python
 
 
     # cut in x-direction
-    sagittal = -33
+    sagittal = -25
     # cut in y-direction
-    coronal = -24
+    coronal = -37
     # cut in z-direction
-    axial = -17
+    axial = -6
 
     # coordinates displaying should be prepared as a list
     cut_coords = [sagittal, coronal, axial]
@@ -56,6 +58,7 @@ in a home directory with "nilearn_data" folder in your computer. From which,
 we process data using paths of the Nifti images.
 
 
+
 .. code-block:: python
 
 
@@ -64,7 +67,7 @@ we process data using paths of the Nifti images.
 
     # First, we fetch single subject specific data with haxby datasets: to have
     # anatomical image, EPI images and masks images
-    haxby_dataset = datasets.fetch_haxby(n_subjects=1)
+    haxby_dataset = datasets.fetch_haxby()
 
     # print basic information on the dataset
     print('First subject anatomical nifti image (3D) located is at: %s' %
@@ -89,14 +92,15 @@ we process data using paths of the Nifti images.
 
  Out::
 
-      First subject anatomical nifti image (3D) located is at: /home/varoquau/nilearn_data/haxby2001/subj1/anat.nii.gz
-    First subject functional nifti image (4D) is located at: /home/varoquau/nilearn_data/haxby2001/subj1/bold.nii.gz
-    Labels of haxby dataset (text file) is located at: /home/varoquau/nilearn_data/haxby2001/subj1/labels.txt
+    First subject anatomical nifti image (3D) located is at: /home/parietal/gvaroqua/nilearn_data/haxby2001/subj2/anat.nii.gz
+    First subject functional nifti image (4D) is located at: /home/parietal/gvaroqua/nilearn_data/haxby2001/subj2/bold.nii.gz
+    Labels of haxby dataset (text file) is located at: /home/parietal/gvaroqua/nilearn_data/haxby2001/subj2/labels.txt
 
 
 We have the datasets in hand especially paths to the locations. Now, we do
 simple pre-processing step called as image smoothing on functional images
 and then build a statistical test on smoothed images.
+
 
 Build a statistical test to find voxels of interest
 ---------------------------------------------------
@@ -108,6 +112,7 @@ is where the FWHM comes from). The function :func:`nilearn.image.smooth_img`
 accounts for potential anisotropy in the image affine (i.e., non-indentical
 voxel size in all the three dimensions). Analogous to the majority of nilearn
 functions, smooth_img function can also use file names as input parameters.
+
 
 
 .. code-block:: python
@@ -147,11 +152,13 @@ The method we will be using is a simple Student's t-test. The below section
 gives us brief motivation example about why selecting features in high
 dimensional FMRI data setting.
 
+
 Functional MRI data can be considered "high dimensional" given the p-versus-n
 ratio (e.g., p=~20,000-200,000 voxels for n=1000 samples or less). In this
 setting, machine-learning algorithms can perform poorly due to the so-called
 curse of dimensionality. However, simple means from the realms of classical
 statistics can help reducing the number of voxels.
+
 
 
 .. code-block:: python
@@ -169,7 +176,7 @@ statistics can help reducing the number of voxels.
 
  Out::
 
-      (40, 64, 64, 1452)
+    (40, 64, 64, 1452)
 
 
 **Selecting features using T-test**: The Student's t-test
@@ -179,6 +186,7 @@ time-series from two different experimental conditions (e.g., when houses or
 faces are shown to individuals during brain scanning). If the time-series
 distribution is similar in the two conditions, then the voxel is not very
 interesting to discriminate the condition.
+
 
 
 .. code-block:: python
@@ -231,12 +239,14 @@ interesting to discriminate the condition.
 available in the scikit-learn Python package, where it has been extended to
 several classes, using the `sklearn.feature_selection.f_classif` function.
 
+
 Build a mask from this statistical map (Improving the quality of the mask)
 --------------------------------------------------------------------------
 **Thresholding** - We build the t-map to have better representation of voxels
 of interest and voxels with lower p-values correspond to the most intense
 voxels. This can be done easily by applying a threshold to a t-map data in
 array.
+
 
 
 .. code-block:: python
@@ -269,10 +279,12 @@ We can post-process the results obtained with simple operations such as mask
 intersection and dilation to regularize the mask definition. The idea of using
 these operations are to have more compact or sparser blobs.
 
+
 **Binarization** and **Intersection** with Ventral Temporal (VT) mask - We
 now want to restrict our investigation to the VT area. The corresponding
 spatial mask is provided in haxby_dataset.mask_vt. We want to compute the
 intersection of this provided mask with our self-computed mask.
+
 
 
 .. code-block:: python
@@ -325,6 +337,7 @@ to be sure not to forget voxels located on the edge of a ROI. In other words,
 such operations can fill "holes" in masked voxel representations.
 
 
+
 .. code-block:: python
 
 
@@ -358,19 +371,21 @@ Finally, we end with splitting the connected ROIs to two hemispheres into two
 separate regions (ROIs). The function `scipy.ndimage.label` from the scipy
 Python library.
 
+
 **Identification of connected components** - The function
 :func:`scipy.ndimage.label` from the scipy Python library identifies
 immediately neighboring voxels in our voxels mask. It assigns a separate
 integer label to each one of them.
 
 
+
 .. code-block:: python
 
     labels, n_labels = ndimage.label(dil_bin_p_values_and_vt)
     # we take first roi data with labels assigned as integer 1
-    first_roi_data = (labels == 1).astype(np.int)
+    first_roi_data = (labels == 5).astype(np.int)
     # Similarly, second roi data is assigned as integer 2
-    second_roi_data = (labels == 2).astype(np.int)
+    second_roi_data = (labels == 3).astype(np.int)
     # Visualizing the connected components
     # First, we create a Nifti image type from first roi data in a array
     first_roi_img = new_img_like(fmri_img, first_roi_data)
@@ -405,6 +420,7 @@ integer label to each one of them.
 
 
 Use the new ROIs, to extract data maps in both ROIs
+
 
 
 .. code-block:: python
@@ -452,6 +468,7 @@ Use the new ROIs, to extract data maps in both ROIs
 save the ROI 'atlas' to a Nifti file
 
 
+
 .. code-block:: python
 
     new_img_like(fmri_img, labels).to_filename('mask_atlas.nii.gz')
@@ -463,6 +480,7 @@ save the ROI 'atlas' to a Nifti file
 
 
 Plot the average in the different condition names
+
 
 
 .. code-block:: python
@@ -489,16 +507,20 @@ Plot the average in the different condition names
 
 
 
-**Total running time of the script:**
-(0 minutes 50.877 seconds)
+**Total running time of the script:** ( 1 minutes  30.136 seconds)
 
 
 
 .. container:: sphx-glr-download
 
-    **Download Python source code:** :download:`plot_roi_extraction.py <plot_roi_extraction.py>`
+    :download:`Download Python source code: plot_roi_extraction.py <plot_roi_extraction.py>`
+
 
 
 .. container:: sphx-glr-download
 
-    **Download IPython notebook:** :download:`plot_roi_extraction.ipynb <plot_roi_extraction.ipynb>`
+    :download:`Download Jupyter notebook: plot_roi_extraction.ipynb <plot_roi_extraction.ipynb>`
+
+.. rst-class:: sphx-glr-signature
+
+    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_

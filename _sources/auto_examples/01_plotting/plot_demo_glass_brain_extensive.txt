@@ -6,36 +6,94 @@
 Glass brain plotting in nilearn (all options)
 =============================================
 
-This example goes through different options of the :func:`nilearn.plotting.plot_glass_brain` function
-(including plotting negative values).
+First part of this example goes through different options of the
+:func:`nilearn.plotting.plot_glass_brain` function (including plotting
+negative values).
 
-See :ref:`plotting` for more plotting functionalities.
+Second part, goes through same options but selected of the same glass brain
+function but plotting is seen with contours.
+
+See :ref:`plotting` for more plotting functionalities and
+:ref:`Section 4.3 <display_modules>` for more details about display objects
+in Nilearn.
+
+Also, see :func:`nilearn.datasets.fetch_localizer_button_task` for details
+about the plotting data and its experiments.
+
 
 Retrieve the data
+------------------
+
+Nilearn comes with set of functions that download public data from Internet
+
+Let us first see where the data will be downloded and stored on our disk:
+
+
 
 
 .. code-block:: python
 
     from nilearn import datasets
-
-    localizer_dataset = datasets.fetch_localizer_button_task()
-    localizer_tmap_filename = localizer_dataset.tmaps[0]
+    print('Datasets shipped with nilearn are stored in: %r' % datasets.get_data_dirs())
 
 
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    Datasets shipped with nilearn are stored in: ['/home/parietal/gvaroqua/nilearn_data']
 
 
-Demo glass brain plotting.
+Let us now retrieve a motor task contrast maps corresponding to second subject
+from a localizer experiment
+
+
+
+.. code-block:: python
+
+    tmap_filenames = datasets.fetch_localizer_button_task()['tmaps']
+    print(tmap_filenames)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    ['/home/parietal/gvaroqua/nilearn_data/brainomics_localizer/brainomics_data/S02/t_map_left_auditory_&_visual_click_vs_right_auditory&visual_click.nii.gz']
+
+
+tmap_filenames is returned as a list. We need to take first one
+
+
+
+.. code-block:: python
+
+    tmap_filename = tmap_filenames[0]
+
+
+
+
+
+
+
+
+Demo glass brain plotting
+--------------------------
+
 
 
 .. code-block:: python
 
     from nilearn import plotting
 
-    # Whole brain sagittal cuts
-    plotting.plot_glass_brain(localizer_tmap_filename, threshold=3)
+    # Whole brain sagittal cuts and map is thresholded at 3
+    plotting.plot_glass_brain(tmap_filename, threshold=3)
 
 
 
@@ -50,9 +108,10 @@ Demo glass brain plotting.
 With a colorbar
 
 
+
 .. code-block:: python
 
-    plotting.plot_glass_brain(localizer_tmap_filename, threshold=3, colorbar=True)
+    plotting.plot_glass_brain(tmap_filename, threshold=3, colorbar=True)
 
 
 
@@ -67,9 +126,10 @@ With a colorbar
 Black background, and only the (x, z) cuts
 
 
+
 .. code-block:: python
 
-    plotting.plot_glass_brain(localizer_tmap_filename, title='plot_glass_brain',
+    plotting.plot_glass_brain(tmap_filename, title='plot_glass_brain',
                               black_bg=True, display_mode='xz', threshold=3)
 
 
@@ -82,12 +142,13 @@ Black background, and only the (x, z) cuts
 
 
 
-Plotting the sign of the activation
+Plotting the sign of the activation with plot_abs to False
+
 
 
 .. code-block:: python
 
-    plotting.plot_glass_brain(localizer_tmap_filename, threshold=0, colorbar=True,
+    plotting.plot_glass_brain(tmap_filename, threshold=0, colorbar=True,
                               plot_abs=False)
 
 
@@ -103,9 +164,10 @@ Plotting the sign of the activation
 The sign of the activation and a colorbar
 
 
+
 .. code-block:: python
 
-    plotting.plot_glass_brain(localizer_tmap_filename, threshold=3,
+    plotting.plot_glass_brain(tmap_filename, threshold=3,
                               colorbar=True, plot_abs=False)
 
 
@@ -124,9 +186,10 @@ Different projections for the left and right hemispheres
 Hemispheric sagittal cuts
 
 
+
 .. code-block:: python
 
-    plotting.plot_glass_brain(localizer_tmap_filename,
+    plotting.plot_glass_brain(tmap_filename,
                               title='plot_glass_brain with display_mode="lzr"',
                               black_bg=True, display_mode='lzr', threshold=3)
 
@@ -142,11 +205,10 @@ Hemispheric sagittal cuts
 
 .. code-block:: python
 
-    plotting.plot_glass_brain(localizer_tmap_filename, threshold=0, colorbar=True,
+    plotting.plot_glass_brain(tmap_filename, threshold=0, colorbar=True,
                               title='plot_glass_brain with display_mode="lyrz"',
                               plot_abs=False, display_mode='lyrz')
 
-    plotting.show()
 
 
 
@@ -156,16 +218,161 @@ Hemispheric sagittal cuts
 
 
 
-**Total running time of the script:**
-(0 minutes 4.178 seconds)
+Demo glass brain plotting with contours
+----------------------------------------
+To plot maps with contours, we call the plotting function into variable from
+which we can use specific display features which are inherited automatically.
+In this case, we focus on using add_contours
+First, we initialize the plotting function into "display" and first
+argument set to None since we want an empty glass brain to plotting the
+statistical maps with "add_contours"
+
+
+
+.. code-block:: python
+
+    display = plotting.plot_glass_brain(None)
+    # Here, we project statistical maps
+    display.add_contours(tmap_filename)
+    # and a title
+    display.title('"tmap_filename" on glass brain without threshold')
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_008.png
+    :align: center
+
+
+
+
+With specific level (cut-off) in the statistical map
+
+
+
+.. code-block:: python
+
+
+    # Here, we set the threshold using parameter called `levels` with value given
+    # in a list and choosing color to Red.
+    display = plotting.plot_glass_brain(None)
+    display.add_contours(tmap_filename, levels=[3.], colors='r')
+    display.title('"tmap_filename" on glass brain with threshold')
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_009.png
+    :align: center
+
+
+
+
+Black background
+
+
+
+.. code-block:: python
+
+
+    # We can set black background using black_bg=True
+    display = plotting.plot_glass_brain(None, black_bg=True)
+    display.add_contours(tmap_filename, levels=[3.], colors='g')
+    display.title('"tmap_filename" on glass brain with black background')
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_010.png
+    :align: center
+
+
+
+
+Display contour projections in both hemispheres
+-------------------------------------------------
+
+
+
+.. code-block:: python
+
+
+    # Now, display_mode is chosen as 'lr' for both hemispheric plots
+    display = plotting.plot_glass_brain(None, display_mode='lr')
+    display.add_contours(tmap_filename, levels=[3.], colors='r')
+    display.title('"tmap_filename" on glass brain only "l" "r" hemispheres')
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_011.png
+    :align: center
+
+
+
+
+With positive and negative sign of activations
+
+
+
+.. code-block:: python
+
+
+    # By default parameter `plot_abs` is True and sign of activations can done by
+    # changing `plot_abs` to False
+    display = plotting.plot_glass_brain(None, plot_abs=False, display_mode='lzry')
+    display.add_contours(tmap_filename)
+    display.title("Contours with both sign of activations without threshold")
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_012.png
+    :align: center
+
+
+
+
+Both sign (positive and negative) of activations with threshold
+
+
+
+.. code-block:: python
+
+
+    # positive threshold implies positive value in a list and negative threshold
+    # implies negative value (both values are used as cut-off)
+    display = plotting.plot_glass_brain(None, plot_abs=False, display_mode='lzry')
+    # positive level and negative level and each level with different colors as a
+    # list. Additionally, with thick line widths
+    display.add_contours(tmap_filename, levels=[-2.8, 3.], colors=['b', 'r'],
+                         linewidths=4.)
+    display.title('Contours with both sign of activations with threshold')
+
+    # Finally, displaying them
+    plotting.show()
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_extensive_013.png
+    :align: center
+
+
+
+
+**Total running time of the script:** ( 0 minutes  11.437 seconds)
 
 
 
 .. container:: sphx-glr-download
 
-    **Download Python source code:** :download:`plot_demo_glass_brain_extensive.py <plot_demo_glass_brain_extensive.py>`
+    :download:`Download Python source code: plot_demo_glass_brain_extensive.py <plot_demo_glass_brain_extensive.py>`
+
 
 
 .. container:: sphx-glr-download
 
-    **Download IPython notebook:** :download:`plot_demo_glass_brain_extensive.ipynb <plot_demo_glass_brain_extensive.ipynb>`
+    :download:`Download Jupyter notebook: plot_demo_glass_brain_extensive.ipynb <plot_demo_glass_brain_extensive.ipynb>`
+
+.. rst-class:: sphx-glr-signature
+
+    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_

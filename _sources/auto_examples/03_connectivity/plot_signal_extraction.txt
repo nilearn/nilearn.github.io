@@ -24,7 +24,9 @@ NeuroImage 2013
 This is just a code example, see the :ref:`corresponding section in the
 documentation <parcellation_time_series>` for more.
 
+
 Retrieve the atlas and the data
+
 
 
 .. code-block:: python
@@ -49,11 +51,12 @@ Retrieve the atlas and the data
 
  Out::
 
-      Atlas ROIs are located in nifti image (4D) at: /home/varoquau/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+    Atlas ROIs are located in nifti image (4D) at: /home/parietal/gvaroqua/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
 
 
 Extract signals on a parcellation defined by labels using the
 NiftiLabelsMasker
+
 
 
 .. code-block:: python
@@ -76,38 +79,24 @@ NiftiLabelsMasker
 
  Out::
 
-      [NiftiLabelsMasker.fit_transform] loading data from /home/varoquau/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+    [NiftiLabelsMasker.fit_transform] loading data from /home/parietal/gvaroqua/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
     Resampling labels
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
-    filter_and_extract('/home/varoquau/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz', 
-    <nilearn.input_data.nifti_labels_masker._ExtractionFunctor object at 0x7ff48c519b10>, 
-    { 'background_label': 0,
-      'detrend': False,
-      'high_pass': None,
-      'labels_img': '/home/varoquau/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz',
-      'low_pass': None,
-      'mask_img': None,
-      'smoothing_fwhm': None,
-      'standardize': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, confounds=['/home/varoquau/nilearn_data/adhd/data/0010042/0010042_regressors.csv'], memory_level=1, verbose=5, memory=Memory(cachedir='nilearn_cache/joblib'))
-    [NiftiLabelsMasker.transform_single_imgs] Loading data from /home/varoquau/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
-    [NiftiLabelsMasker.transform_single_imgs] Extracting region signals
-    [NiftiLabelsMasker.transform_single_imgs] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 2.1s, 0.0min
+    [Memory]    0.0s, 0.0min: Loading filter_and_extract...
+    __________________________________filter_and_extract cache loaded - 0.0s, 0.0min
 
 
 Compute and display a correlation matrix
 
 
+
 .. code-block:: python
 
-    import numpy as np
-    correlation_matrix = np.corrcoef(time_series.T)
+    from nilearn.connectome import ConnectivityMeasure
+    correlation_measure = ConnectivityMeasure(kind='correlation')
+    correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
     # Plot the correlation matrix
+    import numpy as np
     from matplotlib import pyplot as plt
     plt.figure(figsize=(10, 10))
     # Mask the main diagonal for visualization:
@@ -135,13 +124,14 @@ Compute and display a correlation matrix
 Same thing without confounds, to stress the importance of confounds
 
 
+
 .. code-block:: python
 
 
     time_series = masker.fit_transform(fmri_filenames)
     # Note how we did not specify confounds above. This is bad!
 
-    correlation_matrix = np.corrcoef(time_series.T)
+    correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
     # Mask the main diagonal for visualization:
     np.fill_diagonal(correlation_matrix, 0)
@@ -168,38 +158,25 @@ Same thing without confounds, to stress the importance of confounds
 
  Out::
 
-      [NiftiLabelsMasker.fit_transform] loading data from /home/varoquau/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
-    filter_and_extract('/home/varoquau/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz', 
-    <nilearn.input_data.nifti_labels_masker._ExtractionFunctor object at 0x7ff484e07d50>, 
-    { 'background_label': 0,
-      'detrend': False,
-      'high_pass': None,
-      'labels_img': '/home/varoquau/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz',
-      'low_pass': None,
-      'mask_img': None,
-      'smoothing_fwhm': None,
-      'standardize': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, confounds=None, memory_level=1, verbose=5, memory=Memory(cachedir='nilearn_cache/joblib'))
-    [NiftiLabelsMasker.transform_single_imgs] Loading data from /home/varoquau/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
-    [NiftiLabelsMasker.transform_single_imgs] Extracting region signals
-    [NiftiLabelsMasker.transform_single_imgs] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 2.1s, 0.0min
+    [NiftiLabelsMasker.fit_transform] loading data from /home/parietal/gvaroqua/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+    [Memory]    0.9s, 0.0min: Loading filter_and_extract...
+    __________________________________filter_and_extract cache loaded - 0.0s, 0.0min
 
 
-**Total running time of the script:**
-(0 minutes 4.556 seconds)
+**Total running time of the script:** ( 0 minutes  0.640 seconds)
 
 
 
 .. container:: sphx-glr-download
 
-    **Download Python source code:** :download:`plot_signal_extraction.py <plot_signal_extraction.py>`
+    :download:`Download Python source code: plot_signal_extraction.py <plot_signal_extraction.py>`
+
 
 
 .. container:: sphx-glr-download
 
-    **Download IPython notebook:** :download:`plot_signal_extraction.ipynb <plot_signal_extraction.ipynb>`
+    :download:`Download Jupyter notebook: plot_signal_extraction.ipynb <plot_signal_extraction.ipynb>`
+
+.. rst-class:: sphx-glr-signature
+
+    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_

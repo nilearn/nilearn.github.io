@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.2.5',
+        VERSION:     '0.2.6',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -307,7 +307,7 @@ automatically downloads reference
 datasets and atlases. They can be imported from
 <a class="reference internal" href="../modules/reference.html#module-nilearn.datasets" title="nilearn.datasets"><tt class="xref py py-mod docutils literal"><span class="pre">nilearn.datasets</span></tt></a>:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">haxby_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">haxby_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">()</span>  
 </pre></div>
 </div>
 <p>They return a data structure that contains different pieces of
@@ -387,15 +387,17 @@ research. Three main components are:</p>
 <tr class="field-even field"><th class="field-name">affine:</th><td class="field-body">returns the transformation matrix that maps
 from voxel indices of the numpy array to actual real-world
 locations of the brain:
-<tt class="docutils literal"><span class="pre">affine</span> <span class="pre">=</span> <span class="pre">img.get_affine()</span></tt></td>
+<tt class="docutils literal"><span class="pre">affine</span> <span class="pre">=</span> <span class="pre">img.affine</span></tt></td>
 </tr>
 <tr class="field-odd field"><th class="field-name">header:</th><td class="field-body">low-level informations about the data (slice duration, etc.):
-<tt class="docutils literal"><span class="pre">header</span> <span class="pre">=</span> <span class="pre">img.get_header()</span></tt></td>
+<tt class="docutils literal"><span class="pre">header</span> <span class="pre">=</span> <span class="pre">img.header</span></tt></td>
 </tr>
 </tbody>
 </table>
 <p>If you need to load the data without using nilearn, read the <a class="reference external" href="http://nipy.sourceforge.net/nibabel/">nibabel</a>
 documentation.</p>
+<p>Note: For older versions of <a class="reference external" href="http://nipy.sourceforge.net/nibabel/">nibabel</a>, affine and header can be retrieved
+with <tt class="docutils literal"><span class="pre">get_affine()</span></tt> and <tt class="docutils literal"><span class="pre">get_header()</span></tt>.</p>
 <div class="topic">
 <p class="topic-title first"><strong>Dataset formatting: data shape</strong></p>
 <p>It is important to appreciate two main representations for
@@ -422,7 +424,7 @@ objects&#8221;:</p>
 <div><ul class="simple">
 <li>A string with a file path to a Nifti or Analyse image</li>
 <li>An <tt class="docutils literal"><span class="pre">SpatialImage</span></tt> from nibabel, ie an object exposing <tt class="docutils literal"><span class="pre">get_data()</span></tt>
-and <tt class="docutils literal"><span class="pre">get_affine()</span></tt> methods, typically a <tt class="docutils literal"><span class="pre">Nifti1Image</span></tt> from <a class="reference external" href="http://nipy.sourceforge.net/nibabel/">nibabel</a>.</li>
+method and <tt class="docutils literal"><span class="pre">affine</span></tt> attribute, typically a <tt class="docutils literal"><span class="pre">Nifti1Image</span></tt> from <a class="reference external" href="http://nipy.sourceforge.net/nibabel/">nibabel</a>.</li>
 </ul>
 </div></blockquote>
 <p><strong>Niimg-4D:</strong> Similarly, some functions require 4D Nifti-like
@@ -450,7 +452,7 @@ can be loaded with <cite>numpy.genfromtxt</cite> but you may have to specify som
 <p>For the Haxby datasets, we can load the categories of the images
 presented to the subject:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">haxby_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  
+<span class="gp">&gt;&gt;&gt; </span><span class="n">haxby_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">()</span>  
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="p">)</span>  
 <span class="gp">&gt;&gt;&gt; </span><span class="n">stimuli</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s">&#39;labels&#39;</span><span class="p">]</span>  
@@ -499,7 +501,7 @@ data from CSV files and manipulate them.</p>
     </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
-          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.2.
         <span style="padding-left: 5ex;">
           <a href="../_sources/manipulating_images/input_output.txt"
         	 rel="nofollow">Show this page source</a>
