@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.6',
+        VERSION:     '0.3.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -92,7 +92,7 @@ $(function () {
     </script>
 
   </head>
-  <body>
+  <body role="document">
 <div id="logo-banner">
   <div class="logo">
     <a href="../../index.html">
@@ -147,7 +147,7 @@ $(function () {
 
 
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -163,10 +163,11 @@ $(function () {
 <li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li><a href="../index.html" accesskey="U">8. Nilearn usage examples</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">8. Nilearn usage examples</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
 
@@ -196,54 +197,54 @@ $(function () {
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="the-haxby-dataset-different-multi-class-strategies">
 <span id="sphx-glr-auto-examples-02-decoding-plot-haxby-multiclass-py"></span><h1>8.3.5. The haxby dataset: different multi-class strategies<a class="headerlink" href="#the-haxby-dataset-different-multi-class-strategies" title="Permalink to this headline">¶</a></h1>
 <p>We compare one vs all and one vs one multi-class strategies: the overall
 cross-validated accuracy and the confusion matrix.</p>
 <p>Load the Haxby data dataset</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="c"># By default 2nd subject from haxby datasets will be fetched.</span>
+<span class="c1"># By default 2nd subject from haxby datasets will be fetched.</span>
 <span class="n">haxby_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span><span class="p">()</span>
 
-<span class="c"># Print basic information on the dataset</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;Mask nifti images are located at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;Functional nifti images are located at: </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="c1"># Print basic information on the dataset</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Mask nifti images are located at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Functional nifti images are located at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
 <span class="n">func_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">mask_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask</span>
 
-<span class="c"># Load the behavioral data that we will predict</span>
-<span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s">&#39;labels&#39;</span><span class="p">]</span>
-<span class="n">session</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s">&#39;chunks&#39;</span><span class="p">]</span>
+<span class="c1"># Load the behavioral data that we will predict</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recfromcsv</span><span class="p">(</span><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span>
+<span class="n">session</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s1">&#39;chunks&#39;</span><span class="p">]</span>
 
-<span class="c"># Remove the rest condition, it is not very interesting</span>
-<span class="n">non_rest</span> <span class="o">=</span> <span class="n">y</span> <span class="o">!=</span> <span class="n">b</span><span class="s">&#39;rest&#39;</span>
+<span class="c1"># Remove the rest condition, it is not very interesting</span>
+<span class="n">non_rest</span> <span class="o">=</span> <span class="n">y</span> <span class="o">!=</span> <span class="sa">b</span><span class="s1">&#39;rest&#39;</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">non_rest</span><span class="p">]</span>
 
-<span class="c"># Get the labels of the numerical conditions represented by the vector y</span>
+<span class="c1"># Get the labels of the numerical conditions represented by the vector y</span>
 <span class="n">unique_conditions</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.unique.html#numpy.unique" class="sphx-glr-code-links" tooltip="Link to documentation for numpy.unique"><span class="n">np</span><span class="o">.</span><span class="n">unique</span></a><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">return_index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="c"># Sort the conditions by the order of appearance</span>
+<span class="c1"># Sort the conditions by the order of appearance</span>
 <span class="n">unique_conditions</span> <span class="o">=</span> <span class="n">unique_conditions</span><span class="p">[</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.argsort.html#numpy.argsort" class="sphx-glr-code-links" tooltip="Link to documentation for numpy.argsort"><span class="n">np</span><span class="o">.</span><span class="n">argsort</span></a><span class="p">(</span><span class="n">order</span><span class="p">)]</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-python"><div class="highlight"><pre>Mask nifti images are located at: /home/parietal/gvaroqua/nilearn_data/haxby2001/mask.nii.gz
-Functional nifti images are located at: /home/parietal/gvaroqua/nilearn_data/haxby2001/subj2/bold.nii.gz
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Mask</span> <span class="n">nifti</span> <span class="n">images</span> <span class="n">are</span> <span class="n">located</span> <span class="n">at</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">kamalakar</span><span class="o">/</span><span class="n">nilearn_data</span><span class="o">/</span><span class="n">haxby2001</span><span class="o">/</span><span class="n">mask</span><span class="o">.</span><span class="n">nii</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">Functional</span> <span class="n">nifti</span> <span class="n">images</span> <span class="n">are</span> <span class="n">located</span> <span class="n">at</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">kamalakar</span><span class="o">/</span><span class="n">nilearn_data</span><span class="o">/</span><span class="n">haxby2001</span><span class="o">/</span><span class="n">subj2</span><span class="o">/</span><span class="n">bold</span><span class="o">.</span><span class="n">nii</span><span class="o">.</span><span class="n">gz</span>
 </pre></div>
 </div>
 <p>Prepare the fMRI data</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" class="sphx-glr-code-links" tooltip="Link to documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
-<span class="c"># For decoding, standardizing is often very important</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" class="sphx-glr-code-links" tooltip="Link to documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
+<span class="c1"># For decoding, standardizing is often very important</span>
 <span class="n">nifti_masker</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" class="sphx-glr-code-links" tooltip="Link to documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">mask_filename</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
                            <span class="n">sessions</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-                           <span class="n">memory</span><span class="o">=</span><span class="s">&quot;nilearn_cache&quot;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                           <span class="n">memory</span><span class="o">=</span><span class="s2">&quot;nilearn_cache&quot;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
 
-<span class="c"># Remove the &quot;rest&quot; condition</span>
+<span class="c1"># Remove the &quot;rest&quot; condition</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">non_rest</span><span class="p">]</span>
 <span class="n">session</span> <span class="o">=</span> <span class="n">session</span><span class="p">[</span><span class="n">non_rest</span><span class="p">]</span>
 </pre></div>
@@ -251,65 +252,65 @@ Functional nifti images are located at: /home/parietal/gvaroqua/nilearn_data/hax
 <p>Build the decoders, using scikit-learn</p>
 <p>Here we use a Support Vector Classification, with a linear kernel,
 and a simple feature selection step</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.svm.SVC"><span class="n">SVC</span></a>
-<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.feature_selection.SelectKBest"><span class="n">SelectKBest</span></a><span class="p">,</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.feature_selection.f_classif"><span class="n">f_classif</span></a>
-<span class="kn">from</span> <span class="nn">sklearn.multiclass</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.multiclass.OneVsOneClassifier.html#sklearn.multiclass.OneVsOneClassifier" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.multiclass.OneVsOneClassifier"><span class="n">OneVsOneClassifier</span></a><span class="p">,</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.multiclass.OneVsRestClassifier.html#sklearn.multiclass.OneVsRestClassifier" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.multiclass.OneVsRestClassifier"><span class="n">OneVsRestClassifier</span></a>
-<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.svm.SVC"><span class="n">SVC</span></a>
+<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.feature_selection.SelectKBest"><span class="n">SelectKBest</span></a><span class="p">,</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.feature_selection.f_classif"><span class="n">f_classif</span></a>
+<span class="kn">from</span> <span class="nn">sklearn.multiclass</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.multiclass.OneVsOneClassifier.html#sklearn.multiclass.OneVsOneClassifier" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.multiclass.OneVsOneClassifier"><span class="n">OneVsOneClassifier</span></a><span class="p">,</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.multiclass.OneVsRestClassifier.html#sklearn.multiclass.OneVsRestClassifier" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.multiclass.OneVsRestClassifier"><span class="n">OneVsRestClassifier</span></a>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a>
 
-<span class="n">svc_ovo</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.multiclass.OneVsOneClassifier.html#sklearn.multiclass.OneVsOneClassifier" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.multiclass.OneVsOneClassifier"><span class="n">OneVsOneClassifier</span></a><span class="p">(</span><a href="http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a><span class="p">([</span>
-    <span class="p">(</span><span class="s">&#39;anova&#39;</span><span class="p">,</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.feature_selection.SelectKBest"><span class="n">SelectKBest</span></a><span class="p">(</span><a href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.feature_selection.f_classif"><span class="n">f_classif</span></a><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">500</span><span class="p">)),</span>
-    <span class="p">(</span><span class="s">&#39;svc&#39;</span><span class="p">,</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">))</span>
+<span class="n">svc_ovo</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.multiclass.OneVsOneClassifier.html#sklearn.multiclass.OneVsOneClassifier" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.multiclass.OneVsOneClassifier"><span class="n">OneVsOneClassifier</span></a><span class="p">(</span><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a><span class="p">([</span>
+    <span class="p">(</span><span class="s1">&#39;anova&#39;</span><span class="p">,</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.feature_selection.SelectKBest"><span class="n">SelectKBest</span></a><span class="p">(</span><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.feature_selection.f_classif"><span class="n">f_classif</span></a><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">500</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">))</span>
 <span class="p">]))</span>
 
-<span class="n">svc_ova</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.multiclass.OneVsRestClassifier.html#sklearn.multiclass.OneVsRestClassifier" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.multiclass.OneVsRestClassifier"><span class="n">OneVsRestClassifier</span></a><span class="p">(</span><a href="http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a><span class="p">([</span>
-    <span class="p">(</span><span class="s">&#39;anova&#39;</span><span class="p">,</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.feature_selection.SelectKBest"><span class="n">SelectKBest</span></a><span class="p">(</span><a href="http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.feature_selection.f_classif"><span class="n">f_classif</span></a><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">500</span><span class="p">)),</span>
-    <span class="p">(</span><span class="s">&#39;svc&#39;</span><span class="p">,</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">))</span>
+<span class="n">svc_ova</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.multiclass.OneVsRestClassifier.html#sklearn.multiclass.OneVsRestClassifier" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.multiclass.OneVsRestClassifier"><span class="n">OneVsRestClassifier</span></a><span class="p">(</span><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a><span class="p">([</span>
+    <span class="p">(</span><span class="s1">&#39;anova&#39;</span><span class="p">,</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.feature_selection.SelectKBest"><span class="n">SelectKBest</span></a><span class="p">(</span><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.feature_selection.f_classif"><span class="n">f_classif</span></a><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">500</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">))</span>
 <span class="p">]))</span>
 </pre></div>
 </div>
 <p>Now we compute cross-validation scores</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a>
 
-<span class="n">cv_scores_ovo</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span><span class="n">svc_ovo</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">cv_scores_ovo</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span><span class="n">svc_ovo</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="n">cv_scores_ova</span> <span class="o">=</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span><span class="n">svc_ova</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">cv_scores_ova</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span><span class="n">svc_ova</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;OvO:&#39;</span><span class="p">,</span> <span class="n">cv_scores_ovo</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&#39;OvA:&#39;</span><span class="p">,</span> <span class="n">cv_scores_ova</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;OvO:&#39;</span><span class="p">,</span> <span class="n">cv_scores_ovo</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;OvA:&#39;</span><span class="p">,</span> <span class="n">cv_scores_ova</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-python"><div class="highlight"><pre>OvO: 0.595292207792
-OvA: 0.6704004329
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">OvO</span><span class="p">:</span> <span class="mf">0.595292207792</span>
+<span class="n">OvA</span><span class="p">:</span> <span class="mf">0.6704004329</span>
 </pre></div>
 </div>
 <p>Plot barplots of the prediction scores</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<a href="http://matplotlib.org/api/figure_api.html#matplotlib.figure" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.boxplot" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.boxplot"><span class="n">plt</span><span class="o">.</span><span class="n">boxplot</span></a><span class="p">([</span><span class="n">cv_scores_ova</span><span class="p">,</span> <span class="n">cv_scores_ovo</span><span class="p">])</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xticks" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.xticks"><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span></a><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="s">&#39;One vs All&#39;</span><span class="p">,</span> <span class="s">&#39;One vs One&#39;</span><span class="p">])</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&#39;Prediction: accuracy score&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xticks" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.xticks"><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span></a><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;One vs All&#39;</span><span class="p">,</span> <span class="s1">&#39;One vs One&#39;</span><span class="p">])</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s1">&#39;Prediction: accuracy score&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_haxby_multiclass_001.png" class="align-center" src="../../_images/sphx_glr_plot_haxby_multiclass_001.png" />
 <p>Plot a confusion matrix</p>
 <p>We fit on the the first 10 sessions and plot a confusion matrix on the
 last 2 sessions</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <a href="http://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html#sklearn.metrics.confusion_matrix" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.metrics.confusion_matrix"><span class="n">confusion_matrix</span></a>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.metrics.confusion_matrix.html#sklearn.metrics.confusion_matrix" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.metrics.confusion_matrix"><span class="n">confusion_matrix</span></a>
 
 <span class="n">svc_ovo</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">])</span>
 <span class="n">y_pred_ovo</span> <span class="o">=</span> <span class="n">svc_ovo</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">session</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">])</span>
 
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.matshow" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.matshow"><span class="n">plt</span><span class="o">.</span><span class="n">matshow</span></a><span class="p">(</span><a href="http://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html#sklearn.metrics.confusion_matrix" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.metrics.confusion_matrix"><span class="n">confusion_matrix</span></a><span class="p">(</span><span class="n">y_pred_ovo</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">session</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">]))</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&#39;Confusion matrix: One vs One&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.matshow" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.matshow"><span class="n">plt</span><span class="o">.</span><span class="n">matshow</span></a><span class="p">(</span><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.metrics.confusion_matrix.html#sklearn.metrics.confusion_matrix" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.metrics.confusion_matrix"><span class="n">confusion_matrix</span></a><span class="p">(</span><span class="n">y_pred_ovo</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">session</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">]))</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s1">&#39;Confusion matrix: One vs One&#39;</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xticks" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.xticks"><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.arange.html#numpy.arange" class="sphx-glr-code-links" tooltip="Link to documentation for numpy.arange"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">unique_conditions</span><span class="p">)),</span> <span class="n">unique_conditions</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.yticks" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.yticks"><span class="n">plt</span><span class="o">.</span><span class="n">yticks</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.arange.html#numpy.arange" class="sphx-glr-code-links" tooltip="Link to documentation for numpy.arange"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">unique_conditions</span><span class="p">)),</span> <span class="n">unique_conditions</span><span class="p">)</span>
 
 <span class="n">svc_ova</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">])</span>
 <span class="n">y_pred_ova</span> <span class="o">=</span> <span class="n">svc_ova</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">session</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">])</span>
 
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.matshow" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.matshow"><span class="n">plt</span><span class="o">.</span><span class="n">matshow</span></a><span class="p">(</span><a href="http://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html#sklearn.metrics.confusion_matrix" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.metrics.confusion_matrix"><span class="n">confusion_matrix</span></a><span class="p">(</span><span class="n">y_pred_ova</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">session</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">]))</span>
-<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s">&#39;Confusion matrix: One vs All&#39;</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.matshow" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.matshow"><span class="n">plt</span><span class="o">.</span><span class="n">matshow</span></a><span class="p">(</span><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.metrics.confusion_matrix.html#sklearn.metrics.confusion_matrix" class="sphx-glr-code-links" tooltip="Link to documentation for sklearn.metrics.confusion_matrix"><span class="n">confusion_matrix</span></a><span class="p">(</span><span class="n">y_pred_ova</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">session</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">]))</span>
+<a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.title" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.title"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s1">&#39;Confusion matrix: One vs All&#39;</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.xticks" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.xticks"><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.arange.html#numpy.arange" class="sphx-glr-code-links" tooltip="Link to documentation for numpy.arange"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">unique_conditions</span><span class="p">)),</span> <span class="n">unique_conditions</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.yticks" class="sphx-glr-code-links" tooltip="Link to documentation for matplotlib.pyplot.yticks"><span class="n">plt</span><span class="o">.</span><span class="n">yticks</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.arange.html#numpy.arange" class="sphx-glr-code-links" tooltip="Link to documentation for numpy.arange"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">unique_conditions</span><span class="p">)),</span> <span class="n">unique_conditions</span><span class="p">)</span>
 
@@ -317,16 +318,18 @@ last 2 sessions</p>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_haxby_multiclass_002.png"><img alt="../../_images/sphx_glr_plot_haxby_multiclass_002.png" src="../../_images/sphx_glr_plot_haxby_multiclass_002.png" style="width: 282.0px; height: 282.0px;" /></a>
+<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_haxby_multiclass_002.png"><img alt="../../_images/sphx_glr_plot_haxby_multiclass_002.png" src="../../_images/sphx_glr_plot_haxby_multiclass_002.png" style="width: 225.6px; height: 225.6px;" /></a>
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_haxby_multiclass_003.png"><img alt="../../_images/sphx_glr_plot_haxby_multiclass_003.png" src="../../_images/sphx_glr_plot_haxby_multiclass_003.png" style="width: 282.0px; height: 282.0px;" /></a>
+<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_haxby_multiclass_003.png"><img alt="../../_images/sphx_glr_plot_haxby_multiclass_003.png" src="../../_images/sphx_glr_plot_haxby_multiclass_003.png" style="width: 225.6px; height: 225.6px;" /></a>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 1 minutes  33.915 seconds)</p>
-<div class="sphx-glr-download container">
-<a class="reference download internal" href="../../_downloads/plot_haxby_multiclass.py"><tt class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_haxby_multiclass.py</span></tt></a></div>
-<div class="sphx-glr-download container">
-<a class="reference download internal" href="../../_downloads/plot_haxby_multiclass.ipynb"><tt class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_haxby_multiclass.ipynb</span></tt></a></div>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  35.344 seconds)</p>
+<div class="sphx-glr-footer docutils container">
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" href="../../_downloads/plot_haxby_multiclass.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_haxby_multiclass.py</span></code></a></div>
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" href="../../_downloads/plot_haxby_multiclass.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_haxby_multiclass.ipynb</span></code></a></div>
+</div>
 <p class="sphx-glr-signature"><a class="reference external" href="http://sphinx-gallery.readthedocs.io">Generated by Sphinx-Gallery</a></p>
 </div>
 
@@ -336,7 +339,7 @@ last 2 sessions</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -352,12 +355,13 @@ last 2 sessions</p>
 <li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li><a href="../index.html" >8. Nilearn usage examples</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &raquo;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >8. Nilearn usage examples</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
-          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.2.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.4.3.
         <span style="padding-left: 5ex;">
           <a href="../../_sources/auto_examples/02_decoding/plot_haxby_multiclass.txt"
         	 rel="nofollow">Show this page source</a>
