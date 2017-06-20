@@ -1,0 +1,190 @@
+
+
+.. _sphx_glr_auto_examples_03_connectivity_plot_signal_extraction.py:
+
+
+Extracting signals from a brain parcellation
+============================================
+
+Here we show how to extract signals from a brain parcellation and compute
+a correlation matrix.
+
+We also show the importance of defining good confounds signals: the
+first correlation matrix is computed after regressing out simple
+confounds signals: movement regressors, white matter and CSF signals, ...
+The second one is without any confounds: all regions are connected to
+each other.
+
+
+One reference that discusses the importance of confounds is `Varoquaux and
+Craddock, Learning and comparing functional connectomes across subjects,
+NeuroImage 2013
+<http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+
+This is just a code example, see the :ref:`corresponding section in the
+documentation <parcellation_time_series>` for more.
+
+
+Retrieve the atlas and the data
+--------------------------------
+
+
+
+.. code-block:: python
+
+    from nilearn import datasets
+
+    dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+    atlas_filename = dataset.maps
+    labels = dataset.labels
+
+    print('Atlas ROIs are located in nifti image (4D) at: %s' %
+          atlas_filename)  # 4D data
+
+    # One subject of resting-state data
+    data = datasets.fetch_adhd(n_subjects=1)
+    fmri_filenames = data.func[0]
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    Atlas ROIs are located in nifti image (4D) at: /home/kamalakar/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+
+
+Extract signals on a parcellation defined by labels
+-----------------------------------------------------
+Using the NiftiLabelsMasker
+
+
+
+.. code-block:: python
+
+    from nilearn.input_data import NiftiLabelsMasker
+    masker = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True,
+                               memory='nilearn_cache', verbose=5)
+
+    # Here we go from nifti files to the signal time series in a numpy
+    # array. Note how we give confounds to be regressed out during signal
+    # extraction
+    time_series = masker.fit_transform(fmri_filenames, confounds=data.confounds)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    [NiftiLabelsMasker.fit_transform] loading data from /home/kamalakar/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+    Resampling labels
+    [Memory]    0.0s, 0.0min: Loading filter_and_extract...
+    __________________________________filter_and_extract cache loaded - 0.0s, 0.0min
+
+
+Compute and display a correlation matrix
+-----------------------------------------
+
+
+
+.. code-block:: python
+
+    from nilearn.connectome import ConnectivityMeasure
+    correlation_measure = ConnectivityMeasure(kind='correlation')
+    correlation_matrix = correlation_measure.fit_transform([time_series])[0]
+
+    # Plot the correlation matrix
+    import numpy as np
+    from matplotlib import pyplot as plt
+    plt.figure(figsize=(10, 10))
+    # Mask the main diagonal for visualization:
+    np.fill_diagonal(correlation_matrix, 0)
+
+    plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
+               vmax=0.8, vmin=-0.8)
+
+    # Add labels and adjust margins
+    x_ticks = plt.xticks(range(len(labels) - 1), labels[1:], rotation=90)
+    y_ticks = plt.yticks(range(len(labels) - 1), labels[1:])
+    plt.gca().yaxis.tick_right()
+    plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
+
+
+
+
+
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_signal_extraction_001.png
+    :align: center
+
+
+
+
+Same thing without confounds, to stress the importance of confounds
+--------------------------------------------------------------------
+
+
+
+.. code-block:: python
+
+
+    time_series = masker.fit_transform(fmri_filenames)
+    # Note how we did not specify confounds above. This is bad!
+
+    correlation_matrix = correlation_measure.fit_transform([time_series])[0]
+
+    # Mask the main diagonal for visualization:
+    np.fill_diagonal(correlation_matrix, 0)
+
+    plt.figure(figsize=(10, 10))
+    plt.imshow(correlation_matrix, interpolation="nearest", cmap="RdBu_r",
+               vmax=0.8, vmin=-0.8)
+
+    x_ticks = plt.xticks(range(len(labels) - 1), labels[1:], rotation=90)
+    y_ticks = plt.yticks(range(len(labels) - 1), labels[1:])
+    plt.gca().yaxis.tick_right()
+    plt.subplots_adjust(left=.01, bottom=.3, top=.99, right=.62)
+    plt.suptitle('No confounds', size=27)
+
+    plt.show()
+
+
+
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_signal_extraction_002.png
+    :align: center
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    [NiftiLabelsMasker.fit_transform] loading data from /home/kamalakar/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+    [Memory]    1.5s, 0.0min: Loading filter_and_extract...
+    __________________________________filter_and_extract cache loaded - 0.0s, 0.0min
+
+
+**Total running time of the script:** ( 0 minutes  2.439 seconds)
+
+
+
+.. container:: sphx-glr-footer
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: plot_signal_extraction.py <plot_signal_extraction.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: plot_signal_extraction.ipynb <plot_signal_extraction.ipynb>`
+
+.. rst-class:: sphx-glr-signature
+
+    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_

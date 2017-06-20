@@ -1,0 +1,244 @@
+
+
+.. _sphx_glr_auto_examples_plot_nilearn_101.py:
+
+
+Basic nilearn example: manipulating and looking at data
+=======================================================
+
+A simple example showing how to load an existing Nifti file and use
+basic nilearn functionalities.
+
+
+
+.. code-block:: python
+
+
+    # Let us use a Nifti file that is shipped with nilearn
+    from nilearn.datasets import MNI152_FILE_PATH
+
+    # Note that the variable MNI152_FILE_PATH is just a path to a Nifti file
+    print('Path to MNI152 template: %r' % MNI152_FILE_PATH)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    Path to MNI152 template: '/home/kamalakar/Kamalakar/work/nilearn/nilearn/datasets/data/avg152T1_brain.nii.gz'
+
+
+A first step: looking at our data
+----------------------------------
+
+Let's quickly plot this file:
+
+
+
+.. code-block:: python
+
+    from nilearn import plotting
+    plotting.plot_img(MNI152_FILE_PATH)
+
+
+
+
+.. image:: /auto_examples/images/sphx_glr_plot_nilearn_101_001.png
+    :align: center
+
+
+
+
+This is not a very pretty plot. We just used the simplest possible
+code. There is a whole :ref:`section of the documentation <plotting>`
+on making prettier code.
+
+**Exercise**: Try plotting one of your own files. In the above,
+MNI152_FILE_PATH is nothing more than a string with a path pointing to
+a nifti image. You can replace it with a string pointing to a file on
+your disk. Note that it should be a 3D volume, and not a 4D volume.
+
+
+Simple image manipulation: smoothing
+-------------------------------------
+
+Let's use an image-smoothing function from nilearn:
+:func:`nilearn.image.smooth_img`
+
+Functions containing 'img' can take either a filename or an image as input.
+
+Here we give as inputs the image filename and the smoothing value in mm
+
+
+
+.. code-block:: python
+
+    from nilearn import image
+    smooth_anat_img = image.smooth_img(MNI152_FILE_PATH, fwhm=3)
+
+    # While we are giving a file name as input, the function returns
+    # an in-memory object:
+    print(smooth_anat_img)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    <class 'nibabel.nifti1.Nifti1Image'>
+    data shape (91, 109, 91)
+    affine: 
+    [[  -2.    0.    0.   90.]
+     [   0.    2.    0. -126.]
+     [   0.    0.    2.  -72.]
+     [   0.    0.    0.    1.]]
+    metadata:
+    <class 'nibabel.nifti1.Nifti1Header'> object, endian='<'
+    sizeof_hdr      : 348
+    data_type       : 
+    db_name         : 
+    extents         : 0
+    session_error   : 0
+    regular         : r
+    dim_info        : 0
+    dim             : [  3  91 109  91   1   1   1   1]
+    intent_p1       : 0.0
+    intent_p2       : 0.0
+    intent_p3       : 0.0
+    intent_code     : none
+    datatype        : int16
+    bitpix          : 16
+    slice_start     : 0
+    pixdim          : [-1.  2.  2.  2.  1.  1.  1.  1.]
+    vox_offset      : 0.0
+    scl_slope       : nan
+    scl_inter       : nan
+    slice_end       : 0
+    slice_code      : unknown
+    xyzt_units      : 10
+    cal_max         : 8274.6796875
+    cal_min         : 0.0
+    slice_duration  : 0.0
+    toffset         : 0.0
+    glmax           : 0
+    glmin           : 0
+    descrip         : FSL3.3
+    aux_file        : 
+    qform_code      : mni
+    sform_code      : mni
+    quatern_b       : 0.0
+    quatern_c       : 1.0
+    quatern_d       : 0.0
+    qoffset_x       : 90.0
+    qoffset_y       : -126.0
+    qoffset_z       : -72.0
+    srow_x          : [ -2.   0.   0.  90.]
+    srow_y          : [   0.    2.    0. -126.]
+    srow_z          : [  0.   0.   2. -72.]
+    intent_name     : 
+    magic           : n+1
+
+
+This is an in-memory object. We can pass it to nilearn function, for
+instance to look at it
+
+
+
+.. code-block:: python
+
+    plotting.plot_img(smooth_anat_img)
+
+
+
+
+.. image:: /auto_examples/images/sphx_glr_plot_nilearn_101_002.png
+    :align: center
+
+
+
+
+We could also pass it to the smoothing function
+
+
+
+.. code-block:: python
+
+    more_smooth_anat_img = image.smooth_img(smooth_anat_img, fwhm=3)
+    plotting.plot_img(more_smooth_anat_img)
+
+
+
+
+.. image:: /auto_examples/images/sphx_glr_plot_nilearn_101_003.png
+    :align: center
+
+
+
+
+Saving results to a file
+-------------------------
+
+We can save any in-memory object as follows:
+
+
+
+.. code-block:: python
+
+    more_smooth_anat_img.to_filename('more_smooth_anat_img.nii.gz')
+
+
+
+
+
+
+
+Finally, calling plotting.show() is necessary to display the figure
+when running as a script outside IPython
+
+
+
+.. code-block:: python
+
+    plotting.show()
+
+
+
+
+
+
+
+|
+
+______
+
+To recap, all the nilearn tools can take data as filenames or in-memory
+objects, and return brain volumes as in-memory objects. These can be
+passed on to other nilearn tools, or saved to disk.
+
+
+**Total running time of the script:** ( 0 minutes  1.131 seconds)
+
+
+
+.. container:: sphx-glr-footer
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: plot_nilearn_101.py <plot_nilearn_101.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: plot_nilearn_101.ipynb <plot_nilearn_101.ipynb>`
+
+.. rst-class:: sphx-glr-signature
+
+    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_

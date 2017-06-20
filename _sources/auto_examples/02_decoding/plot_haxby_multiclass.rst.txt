@@ -1,0 +1,230 @@
+
+
+.. _sphx_glr_auto_examples_02_decoding_plot_haxby_multiclass.py:
+
+
+The haxby dataset: different multi-class strategies
+=======================================================
+
+We compare one vs all and one vs one multi-class strategies: the overall
+cross-validated accuracy and the confusion matrix.
+
+
+
+Load the Haxby data dataset
+----------------------------
+
+
+
+.. code-block:: python
+
+    from nilearn import datasets
+    import numpy as np
+    # By default 2nd subject from haxby datasets will be fetched.
+    haxby_dataset = datasets.fetch_haxby()
+
+    # Print basic information on the dataset
+    print('Mask nifti images are located at: %s' % haxby_dataset.mask)
+    print('Functional nifti images are located at: %s' % haxby_dataset.func[0])
+
+    func_filename = haxby_dataset.func[0]
+    mask_filename = haxby_dataset.mask
+
+    # Load the behavioral data that we will predict
+    labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+    y = labels['labels']
+    session = labels['chunks']
+
+    # Remove the rest condition, it is not very interesting
+    non_rest = y != b'rest'
+    y = y[non_rest]
+
+    # Get the labels of the numerical conditions represented by the vector y
+    unique_conditions, order = np.unique(y, return_index=True)
+    # Sort the conditions by the order of appearance
+    unique_conditions = unique_conditions[np.argsort(order)]
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    Mask nifti images are located at: /home/kamalakar/nilearn_data/haxby2001/mask.nii.gz
+    Functional nifti images are located at: /home/kamalakar/nilearn_data/haxby2001/subj2/bold.nii.gz
+
+
+Prepare the fMRI data
+----------------------
+
+
+
+.. code-block:: python
+
+    from nilearn.input_data import NiftiMasker
+    # For decoding, standardizing is often very important
+    nifti_masker = NiftiMasker(mask_img=mask_filename, standardize=True,
+                               sessions=session, smoothing_fwhm=4,
+                               memory="nilearn_cache", memory_level=1)
+    X = nifti_masker.fit_transform(func_filename)
+
+    # Remove the "rest" condition
+    X = X[non_rest]
+    session = session[non_rest]
+
+
+
+
+
+
+
+Build the decoders, using scikit-learn
+----------------------------------------
+Here we use a Support Vector Classification, with a linear kernel,
+and a simple feature selection step
+
+
+
+.. code-block:: python
+
+
+    from sklearn.svm import SVC
+    from sklearn.feature_selection import SelectKBest, f_classif
+    from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
+    from sklearn.pipeline import Pipeline
+
+    svc_ovo = OneVsOneClassifier(Pipeline([
+        ('anova', SelectKBest(f_classif, k=500)),
+        ('svc', SVC(kernel='linear'))
+    ]))
+
+    svc_ova = OneVsRestClassifier(Pipeline([
+        ('anova', SelectKBest(f_classif, k=500)),
+        ('svc', SVC(kernel='linear'))
+    ]))
+
+
+
+
+
+
+
+Now we compute cross-validation scores
+----------------------------------------
+
+
+
+.. code-block:: python
+
+    from sklearn.cross_validation import cross_val_score
+
+    cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=5, verbose=1)
+
+    cv_scores_ova = cross_val_score(svc_ova, X, y, cv=5, verbose=1)
+
+    print('OvO:', cv_scores_ovo.mean())
+    print('OvA:', cv_scores_ova.mean())
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    OvO: 0.595292207792
+    OvA: 0.6704004329
+
+
+Plot barplots of the prediction scores
+----------------------------------------
+
+
+
+.. code-block:: python
+
+    from matplotlib import pyplot as plt
+    plt.figure(figsize=(4, 3))
+    plt.boxplot([cv_scores_ova, cv_scores_ovo])
+    plt.xticks([1, 2], ['One vs All', 'One vs One'])
+    plt.title('Prediction: accuracy score')
+
+
+
+
+.. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_multiclass_001.png
+    :align: center
+
+
+
+
+Plot a confusion matrix
+------------------------
+We fit on the the first 10 sessions and plot a confusion matrix on the
+last 2 sessions
+
+
+
+.. code-block:: python
+
+    from sklearn.metrics import confusion_matrix
+
+    svc_ovo.fit(X[session < 10], y[session < 10])
+    y_pred_ovo = svc_ovo.predict(X[session >= 10])
+
+    plt.matshow(confusion_matrix(y_pred_ovo, y[session >= 10]))
+    plt.title('Confusion matrix: One vs One')
+    plt.xticks(np.arange(len(unique_conditions)), unique_conditions)
+    plt.yticks(np.arange(len(unique_conditions)), unique_conditions)
+
+    svc_ova.fit(X[session < 10], y[session < 10])
+    y_pred_ova = svc_ova.predict(X[session >= 10])
+
+    plt.matshow(confusion_matrix(y_pred_ova, y[session >= 10]))
+    plt.title('Confusion matrix: One vs All')
+    plt.xticks(np.arange(len(unique_conditions)), unique_conditions)
+    plt.yticks(np.arange(len(unique_conditions)), unique_conditions)
+
+    plt.show()
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_multiclass_002.png
+            :scale: 47
+
+    *
+
+      .. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_multiclass_003.png
+            :scale: 47
+
+
+
+
+**Total running time of the script:** ( 0 minutes  38.210 seconds)
+
+
+
+.. container:: sphx-glr-footer
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: plot_haxby_multiclass.py <plot_haxby_multiclass.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: plot_haxby_multiclass.ipynb <plot_haxby_multiclass.ipynb>`
+
+.. rst-class:: sphx-glr-signature
+
+    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_

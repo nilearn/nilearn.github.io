@@ -1,0 +1,372 @@
+
+
+.. _sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py:
+
+
+Extract signals on spheres from an atlas and plot a connectome
+==============================================================
+
+This example shows how to extract signals from spherical regions
+centered on coordinates from Power-264 atlas [1] and Dosenbach-160 [2].
+We estimate connectome using **sparse inverse covariance**, to recover
+the functional brain **networks structure**.
+
+**References**
+
+[1] Power, Jonathan D., et al. "Functional network organization of the
+human brain." Neuron 72.4 (2011): 665-678.
+
+[2] Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
+using fMRI.", 2010, Science 329, 1358-1361.
+
+
+
+Load fMRI data and Power atlas
+------------------------------
+
+We are going to use a single subject from the ADHD dataset.
+
+
+
+.. code-block:: python
+
+    from nilearn import datasets
+
+    adhd = datasets.fetch_adhd(n_subjects=1)
+
+
+
+
+
+
+
+We store the paths to its functional image and the confounds file.
+
+
+
+.. code-block:: python
+
+    fmri_filename = adhd.func[0]
+    confounds_filename = adhd.confounds[0]
+    print('Functional image is {0},\nconfounds are {1}.'.format(fmri_filename,
+          confounds_filename))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    Functional image is /home/kamalakar/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz,
+    confounds are /home/kamalakar/nilearn_data/adhd/data/0010042/0010042_regressors.csv.
+
+
+We fetch the coordinates of Power atlas.
+
+
+
+.. code-block:: python
+
+    power = datasets.fetch_coords_power_2011()
+    print('Power atlas comes with {0}.'.format(power.keys()))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    Power atlas comes with ['rois', 'description'].
+
+
+Compute within spheres averaged time-series
+-------------------------------------------
+
+We can compute the mean signal within **spheres** of a fixed radius around
+a sequence of (x, y, z) coordinates with the object
+:class:`nilearn.input_data.NiftiSpheresMasker`.
+So we collect the regions coordinates in a numpy array
+
+
+
+.. code-block:: python
+
+    import numpy as np
+
+    coords = np.vstack((power.rois['x'], power.rois['y'], power.rois['z'])).T
+
+    print('Stacked power coordinates in array of shape {0}.'.format(coords.shape))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    Stacked power coordinates in array of shape (264, 3).
+
+
+and define spheres masker, with small enough radius to avoid regions overlap.
+
+
+
+.. code-block:: python
+
+    from nilearn import  input_data
+
+    spheres_masker = input_data.NiftiSpheresMasker(
+        seeds=coords, smoothing_fwhm=4, radius=5.,
+        detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2.5)
+
+
+
+
+
+
+
+Voxel-wise time-series within each sphere are averaged. The resulting signal
+is then prepared by the masker object: Detrended, cleaned from counfounds,
+band-pass filtered and **standardized to 1 variance**.
+
+
+
+.. code-block:: python
+
+    timeseries = spheres_masker.fit_transform(fmri_filename,
+                                              confounds=confounds_filename)
+
+
+
+
+
+
+
+Estimate correlations
+---------------------
+
+All starts with the estimation of the signals **covariance** matrix. Here the
+number of ROIs exceeds the number of samples,
+
+
+
+.. code-block:: python
+
+    print('time series has {0} samples'.format(timeseries.shape[0]))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    time series has 176 samples
+
+
+in which situation the graphical lasso **sparse inverse covariance**
+estimator captures well the covariance **structure**.
+
+
+
+.. code-block:: python
+
+    from sklearn.covariance import GraphLassoCV
+
+    covariance_estimator = GraphLassoCV(verbose=1)
+
+
+
+
+
+
+
+We just fit our regions signals into the `GraphLassoCV` object
+
+
+
+.. code-block:: python
+
+    covariance_estimator.fit(timeseries)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    [GraphLassoCV] Done refinement  1 out of 4:   4s
+    [GraphLassoCV] Done refinement  2 out of 4:  13s
+    [GraphLassoCV] Done refinement  3 out of 4:  28s
+    [GraphLassoCV] Done refinement  4 out of 4:  42s
+
+
+and get the ROI-to-ROI covariance matrix.
+
+
+
+.. code-block:: python
+
+    matrix = covariance_estimator.covariance_
+    print('Covariance matrix has shape {0}.'.format(matrix.shape))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    Covariance matrix has shape (264, 264).
+
+
+Plot matrix and graph
+---------------------
+
+We use `matplotlib` plotting functions to visualize our correlation matrix
+and display the graph of connections with `nilearn.plotting.plot_connectome`.
+
+
+
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+    from nilearn import plotting
+
+    plt.imshow(matrix, vmin=-1., vmax=1., cmap='RdBu_r', interpolation='nearest')
+    plt.colorbar()
+    plt.title('Power correlation matrix')
+
+    # Tweak edge_threshold to keep only the strongest connections.
+    plotting.plot_connectome(matrix, coords, title='Power correlation graph',
+                             edge_threshold='99.8%', node_size=20, colorbar=True)
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_001.png
+            :scale: 47
+
+    *
+
+      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_002.png
+            :scale: 47
+
+
+
+
+Note the 1. on the matrix diagonal: These are the signals variances, set to
+1. by the `spheres_masker`. Hence the covariance of the signal is a
+correlation matrix
+
+
+Connectome extracted from Dosenbach's atlas
+-------------------------------------------
+
+We repeat the same steps for Dosenbach's atlas.
+
+
+
+.. code-block:: python
+
+    dosenbach = datasets.fetch_coords_dosenbach_2010()
+
+    coords = np.vstack((
+        dosenbach.rois['x'],
+        dosenbach.rois['y'],
+        dosenbach.rois['z'],
+    )).T
+
+    spheres_masker = input_data.NiftiSpheresMasker(
+        seeds=coords, smoothing_fwhm=4, radius=4.5,
+        detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2.5)
+
+    timeseries = spheres_masker.fit_transform(fmri_filename,
+                                              confounds=confounds_filename)
+
+    covariance_estimator = GraphLassoCV()
+    covariance_estimator.fit(timeseries)
+    matrix = covariance_estimator.covariance_
+
+    plt.figure()
+    plt.imshow(matrix, vmin=-1., vmax=1., cmap='RdBu_r', interpolation='nearest')
+    plt.colorbar()
+    plt.title('Dosenbach correlation matrix')
+
+    plotting.plot_connectome(matrix, coords, title='Dosenbach correlation graph',
+                             edge_threshold="99.7%", node_size=20, colorbar=True)
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_003.png
+            :scale: 47
+
+    *
+
+      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_004.png
+            :scale: 47
+
+
+
+
+We can easily identify the Dosenbach's networks from the matrix blocks.
+
+
+
+.. code-block:: python
+
+    print('Dosenbach networks names are {0}'.format(np.unique(dosenbach.networks)))
+
+    plotting.show()
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    Dosenbach networks names are ['cerebellum' 'cingulo-opercular' 'default' 'fronto-parietal' 'occipital'
+     'sensorimotor']
+
+
+**Total running time of the script:** ( 1 minutes  26.824 seconds)
+
+
+
+.. container:: sphx-glr-footer
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: plot_sphere_based_connectome.py <plot_sphere_based_connectome.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: plot_sphere_based_connectome.ipynb <plot_sphere_based_connectome.ipynb>`
+
+.. rst-class:: sphx-glr-signature
+
+    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_
