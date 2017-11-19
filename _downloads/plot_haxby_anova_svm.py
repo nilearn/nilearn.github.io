@@ -23,17 +23,18 @@ print('Functional nifti image (4D) is located at: %s' %
 #############################################################################
 # Load the behavioral data
 # -------------------------
-import numpy as np
+import pandas as pd
+
 # Load target information as string and give a numerical identifier to each
-behavioral = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 conditions = behavioral['labels']
 
 # Restrict the analysis to faces and places
-condition_mask = np.logical_or(conditions == b'face', conditions == b'house')
+condition_mask = behavioral['labels'].isin(['face', 'house'])
 conditions = conditions[condition_mask]
 
 # We now have 2 conditions
-print(np.unique(conditions))
+print(conditions.unique())
 session = behavioral[condition_mask]
 
 #############################################################################
@@ -88,18 +89,18 @@ from sklearn.cross_validation import LeaveOneLabelOut, cross_val_score
 # Define the cross-validation scheme used for validation.
 # Here we use a LeaveOneLabelOut cross-validation on the session label
 # which corresponds to a leave-one-session-out
-cv = LeaveOneLabelOut(session)
+cv = LeaveOneLabelOut(session['chunks'])
 
 # Compute the prediction accuracy for the different folds (i.e. session)
-cv_scores = cross_val_score(anova_svc, X, conditions)
+cv_scores = cross_val_score(anova_svc, X, conditions, cv=cv)
 
 # Return the corresponding mean prediction accuracy
 classification_accuracy = cv_scores.mean()
 
 # Print the results
 print("Classification accuracy: %.4f / Chance level: %f" %
-      (classification_accuracy, 1. / len(np.unique(conditions))))
-# Classification accuracy: 0.8009 / Chance level: 0.5000
+      (classification_accuracy, 1. / len(conditions.unique())))
+# Classification accuracy:  0.70370 / Chance level: 0.5000
 
 
 #############################################################################

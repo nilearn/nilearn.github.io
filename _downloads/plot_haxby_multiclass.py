@@ -12,6 +12,7 @@ cross-validated accuracy and the confusion matrix.
 # ----------------------------
 from nilearn import datasets
 import numpy as np
+import pandas as pd
 # By default 2nd subject from haxby datasets will be fetched.
 haxby_dataset = datasets.fetch_haxby()
 
@@ -23,12 +24,12 @@ func_filename = haxby_dataset.func[0]
 mask_filename = haxby_dataset.mask
 
 # Load the behavioral data that we will predict
-labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 y = labels['labels']
 session = labels['chunks']
 
 # Remove the rest condition, it is not very interesting
-non_rest = y != b'rest'
+non_rest = (y != 'rest')
 y = y[non_rest]
 
 # Get the labels of the numerical conditions represented by the vector y
@@ -98,21 +99,20 @@ plt.title('Prediction: accuracy score')
 # We fit on the the first 10 sessions and plot a confusion matrix on the
 # last 2 sessions
 from sklearn.metrics import confusion_matrix
+from nilearn.plotting import plot_matrix
 
 svc_ovo.fit(X[session < 10], y[session < 10])
 y_pred_ovo = svc_ovo.predict(X[session >= 10])
 
-plt.matshow(confusion_matrix(y_pred_ovo, y[session >= 10]))
-plt.title('Confusion matrix: One vs One')
-plt.xticks(np.arange(len(unique_conditions)), unique_conditions)
-plt.yticks(np.arange(len(unique_conditions)), unique_conditions)
+plot_matrix(confusion_matrix(y_pred_ovo, y[session >= 10]),
+            labels=unique_conditions,
+            title='Confusion matrix: One vs One', cmap='hot_r')
 
 svc_ova.fit(X[session < 10], y[session < 10])
 y_pred_ova = svc_ova.predict(X[session >= 10])
 
-plt.matshow(confusion_matrix(y_pred_ova, y[session >= 10]))
-plt.title('Confusion matrix: One vs All')
-plt.xticks(np.arange(len(unique_conditions)), unique_conditions)
-plt.yticks(np.arange(len(unique_conditions)), unique_conditions)
+plot_matrix(confusion_matrix(y_pred_ova, y[session >= 10]),
+            labels=unique_conditions,
+            title='Confusion matrix: One vs All', cmap='hot_r')
 
 plt.show()

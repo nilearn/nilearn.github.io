@@ -31,16 +31,17 @@ We start by loading the data and applying simple transformations to it
 
     # load labels
     import numpy as np
-    labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+    import pandas as pd
+    labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
     stimuli = labels['labels']
     # identify resting state labels in order to be able to remove them
-    resting_state = stimuli == b'rest'
+    task_mask = (stimuli != 'rest')
 
     # find names of remaining active labels
-    categories = np.unique(stimuli[np.logical_not(resting_state)])
+    categories = stimuli[task_mask].unique()
 
     # extract tags indicating to which acquisition run a tag belongs
-    session_labels = labels["chunks"][np.logical_not(resting_state)]
+    session_labels = labels['chunks'][task_mask]
 
     # Load the fMRI data
     from nilearn.input_data import NiftiMasker
@@ -50,7 +51,7 @@ We start by loading the data and applying simple transformations to it
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
     func_filename = haxby_dataset.func[0]
     masked_timecourses = masker.fit_transform(
-        func_filename)[np.logical_not(resting_state)]
+        func_filename)[task_mask]
 
 
 
@@ -61,8 +62,8 @@ We start by loading the data and applying simple transformations to it
 
  Out::
 
-    First subject anatomical nifti image (3D) located is at: /home/kamalakar/nilearn_data/haxby2001/subj2/anat.nii.gz
-    First subject functional nifti image (4D) is located at: /home/kamalakar/nilearn_data/haxby2001/subj2/bold.nii.gz
+    First subject anatomical nifti image (3D) located is at: /home/varoquau/nilearn_data/haxby2001/subj2/anat.nii.gz
+    First subject functional nifti image (4D) is located at: /home/varoquau/nilearn_data/haxby2001/subj2/bold.nii.gz
 
 
 Then we define the various classifiers that we use
@@ -145,8 +146,7 @@ Run time for all these classifiers
         print(70 * '_')
 
         for category in categories:
-            task_mask = np.logical_not(resting_state)
-            classification_target = (stimuli[task_mask] == category)
+            classification_target = stimuli[task_mask].isin([category])
             t0 = time.time()
             classifiers_scores[classifier_name][category] = cross_val_score(
                 classifier,
@@ -170,86 +170,86 @@ Run time for all these classifiers
  Out::
 
     ______________________________________________________________________
-           SVC:         bottle -- scores: 0.53 +- 0.21, time 1.22s
-           SVC:            cat -- scores: 0.60 +- 0.25, time 1.01s
-           SVC:          chair -- scores: 0.42 +- 0.25, time 1.07s
-           SVC:           face -- scores: 0.58 +- 0.24, time 0.82s
-           SVC:          house -- scores: 0.81 +- 0.28, time 0.62s
-           SVC:       scissors -- scores: 0.41 +- 0.31, time 1.07s
-           SVC:   scrambledpix -- scores: 0.79 +- 0.17, time 0.78s
-           SVC:           shoe -- scores: 0.56 +- 0.23, time 1.08s
+           SVC:       scissors -- scores: 0.41 +- 0.31, time 1.40s
+           SVC:           face -- scores: 0.58 +- 0.24, time 1.06s
+           SVC:            cat -- scores: 0.60 +- 0.25, time 1.32s
+           SVC:           shoe -- scores: 0.56 +- 0.23, time 1.37s
+           SVC:          house -- scores: 0.81 +- 0.28, time 0.79s
+           SVC:   scrambledpix -- scores: 0.79 +- 0.17, time 1.00s
+           SVC:         bottle -- scores: 0.53 +- 0.21, time 1.52s
+           SVC:          chair -- scores: 0.42 +- 0.25, time 1.37s
     ______________________________________________________________________
-        SVC cv:         bottle -- scores: 0.53 +- 0.21, time 17.47s
-        SVC cv:            cat -- scores: 0.60 +- 0.25, time 15.39s
-        SVC cv:          chair -- scores: 0.42 +- 0.25, time 16.06s
-        SVC cv:           face -- scores: 0.58 +- 0.24, time 12.95s
-        SVC cv:          house -- scores: 0.81 +- 0.28, time 10.04s
-        SVC cv:       scissors -- scores: 0.41 +- 0.31, time 16.14s
-        SVC cv:   scrambledpix -- scores: 0.79 +- 0.17, time 12.21s
-        SVC cv:           shoe -- scores: 0.56 +- 0.23, time 15.64s
+        SVC cv:       scissors -- scores: 0.41 +- 0.31, time 20.33s
+        SVC cv:           face -- scores: 0.58 +- 0.24, time 16.32s
+        SVC cv:            cat -- scores: 0.60 +- 0.25, time 19.36s
+        SVC cv:           shoe -- scores: 0.56 +- 0.23, time 19.70s
+        SVC cv:          house -- scores: 0.81 +- 0.28, time 12.58s
+        SVC cv:   scrambledpix -- scores: 0.79 +- 0.17, time 15.38s
+        SVC cv:         bottle -- scores: 0.53 +- 0.21, time 21.43s
+        SVC cv:          chair -- scores: 0.42 +- 0.25, time 20.30s
     ______________________________________________________________________
-        log l1:         bottle -- scores: 0.47 +- 0.15, time 1.47s
-        log l1:            cat -- scores: 0.63 +- 0.23, time 1.24s
-        log l1:          chair -- scores: 0.44 +- 0.14, time 1.35s
-        log l1:           face -- scores: 0.74 +- 0.13, time 0.89s
-        log l1:          house -- scores: 0.89 +- 0.13, time 0.64s
-        log l1:       scissors -- scores: 0.43 +- 0.28, time 1.39s
-        log l1:   scrambledpix -- scores: 0.69 +- 0.18, time 0.81s
-        log l1:           shoe -- scores: 0.49 +- 0.19, time 1.32s
+        log l1:       scissors -- scores: 0.43 +- 0.28, time 1.26s
+        log l1:           face -- scores: 0.74 +- 0.13, time 0.73s
+        log l1:            cat -- scores: 0.63 +- 0.23, time 1.07s
+        log l1:           shoe -- scores: 0.49 +- 0.19, time 1.22s
+        log l1:          house -- scores: 0.89 +- 0.13, time 0.54s
+        log l1:   scrambledpix -- scores: 0.69 +- 0.18, time 0.66s
+        log l1:         bottle -- scores: 0.47 +- 0.15, time 1.41s
+        log l1:          chair -- scores: 0.44 +- 0.14, time 1.20s
     ______________________________________________________________________
-     log l1 50:         bottle -- scores: 0.49 +- 0.17, time 2.03s
-     log l1 50:            cat -- scores: 0.63 +- 0.17, time 1.77s
-     log l1 50:          chair -- scores: 0.46 +- 0.11, time 1.72s
-     log l1 50:           face -- scores: 0.68 +- 0.11, time 1.24s
-     log l1 50:          house -- scores: 0.89 +- 0.11, time 0.98s
-     log l1 50:       scissors -- scores: 0.42 +- 0.25, time 1.83s
-     log l1 50:   scrambledpix -- scores: 0.74 +- 0.21, time 0.91s
-     log l1 50:           shoe -- scores: 0.48 +- 0.19, time 1.72s
+     log l1 50:       scissors -- scores: 0.42 +- 0.25, time 1.58s
+     log l1 50:           face -- scores: 0.68 +- 0.14, time 0.93s
+     log l1 50:            cat -- scores: 0.65 +- 0.19, time 1.46s
+     log l1 50:           shoe -- scores: 0.48 +- 0.19, time 1.67s
+     log l1 50:          house -- scores: 0.87 +- 0.11, time 0.74s
+     log l1 50:   scrambledpix -- scores: 0.75 +- 0.20, time 0.69s
+     log l1 50:         bottle -- scores: 0.49 +- 0.17, time 1.87s
+     log l1 50:          chair -- scores: 0.43 +- 0.12, time 1.53s
     ______________________________________________________________________
-     log l1 cv:         bottle -- scores: 0.37 +- 0.18, time 19.13s
-     log l1 cv:            cat -- scores: 0.61 +- 0.23, time 17.38s
-     log l1 cv:          chair -- scores: 0.41 +- 0.14, time 18.04s
-     log l1 cv:           face -- scores: 0.69 +- 0.20, time 12.67s
-     log l1 cv:          house -- scores: 0.85 +- 0.19, time 10.39s
-     log l1 cv:       scissors -- scores: 0.38 +- 0.28, time 18.25s
-     log l1 cv:   scrambledpix -- scores: 0.69 +- 0.18, time 11.59s
-     log l1 cv:           shoe -- scores: 0.48 +- 0.19, time 19.03s
+     log l1 cv:       scissors -- scores: 0.38 +- 0.28, time 15.03s
+     log l1 cv:           face -- scores: 0.70 +- 0.19, time 10.46s
+     log l1 cv:            cat -- scores: 0.57 +- 0.28, time 14.08s
+     log l1 cv:           shoe -- scores: 0.50 +- 0.19, time 16.20s
+     log l1 cv:          house -- scores: 0.85 +- 0.19, time 8.28s
+     log l1 cv:   scrambledpix -- scores: 0.68 +- 0.19, time 8.82s
+     log l1 cv:         bottle -- scores: 0.40 +- 0.17, time 15.88s
+     log l1 cv:          chair -- scores: 0.42 +- 0.13, time 14.94s
     ______________________________________________________________________
-        log l2:         bottle -- scores: 0.43 +- 0.20, time 1.97s
-        log l2:            cat -- scores: 0.54 +- 0.20, time 1.94s
-        log l2:          chair -- scores: 0.54 +- 0.17, time 1.79s
-        log l2:           face -- scores: 0.55 +- 0.19, time 1.70s
-        log l2:          house -- scores: 0.63 +- 0.22, time 1.65s
-        log l2:       scissors -- scores: 0.51 +- 0.15, time 1.89s
-        log l2:   scrambledpix -- scores: 0.78 +- 0.18, time 1.65s
-        log l2:           shoe -- scores: 0.51 +- 0.17, time 1.80s
+        log l2:       scissors -- scores: 0.51 +- 0.15, time 1.75s
+        log l2:           face -- scores: 0.55 +- 0.19, time 1.56s
+        log l2:            cat -- scores: 0.54 +- 0.20, time 1.70s
+        log l2:           shoe -- scores: 0.51 +- 0.17, time 1.66s
+        log l2:          house -- scores: 0.63 +- 0.22, time 1.54s
+        log l2:   scrambledpix -- scores: 0.78 +- 0.18, time 1.50s
+        log l2:         bottle -- scores: 0.43 +- 0.20, time 1.66s
+        log l2:          chair -- scores: 0.54 +- 0.17, time 1.64s
     ______________________________________________________________________
-     log l2 cv:         bottle -- scores: 0.44 +- 0.21, time 26.61s
-     log l2 cv:            cat -- scores: 0.55 +- 0.20, time 26.55s
-     log l2 cv:          chair -- scores: 0.53 +- 0.17, time 25.43s
-     log l2 cv:           face -- scores: 0.56 +- 0.20, time 25.31s
-     log l2 cv:          house -- scores: 0.64 +- 0.22, time 23.21s
-     log l2 cv:       scissors -- scores: 0.49 +- 0.15, time 29.73s
-     log l2 cv:   scrambledpix -- scores: 0.77 +- 0.18, time 23.75s
-     log l2 cv:           shoe -- scores: 0.51 +- 0.17, time 26.19s
+     log l2 cv:       scissors -- scores: 0.49 +- 0.15, time 23.06s
+     log l2 cv:           face -- scores: 0.56 +- 0.20, time 21.50s
+     log l2 cv:            cat -- scores: 0.55 +- 0.20, time 21.97s
+     log l2 cv:           shoe -- scores: 0.51 +- 0.17, time 22.30s
+     log l2 cv:          house -- scores: 0.64 +- 0.22, time 20.53s
+     log l2 cv:   scrambledpix -- scores: 0.77 +- 0.18, time 20.30s
+     log l2 cv:         bottle -- scores: 0.44 +- 0.21, time 22.88s
+     log l2 cv:          chair -- scores: 0.53 +- 0.17, time 22.56s
     ______________________________________________________________________
-         ridge:         bottle -- scores: 0.41 +- 0.19, time 0.33s
-         ridge:            cat -- scores: 0.43 +- 0.18, time 0.31s
-         ridge:          chair -- scores: 0.50 +- 0.21, time 0.22s
-         ridge:           face -- scores: 0.62 +- 0.18, time 0.22s
-         ridge:          house -- scores: 0.90 +- 0.09, time 0.22s
-         ridge:       scissors -- scores: 0.52 +- 0.22, time 0.22s
-         ridge:   scrambledpix -- scores: 0.79 +- 0.17, time 0.34s
-         ridge:           shoe -- scores: 0.48 +- 0.21, time 0.27s
+         ridge:       scissors -- scores: 0.52 +- 0.22, time 0.41s
+         ridge:           face -- scores: 0.62 +- 0.18, time 0.41s
+         ridge:            cat -- scores: 0.43 +- 0.18, time 0.41s
+         ridge:           shoe -- scores: 0.48 +- 0.21, time 0.44s
+         ridge:          house -- scores: 0.90 +- 0.09, time 0.42s
+         ridge:   scrambledpix -- scores: 0.79 +- 0.17, time 0.42s
+         ridge:         bottle -- scores: 0.41 +- 0.19, time 0.40s
+         ridge:          chair -- scores: 0.50 +- 0.21, time 0.43s
     ______________________________________________________________________
-      ridge cv:         bottle -- scores: 0.46 +- 0.24, time 2.38s
-      ridge cv:            cat -- scores: 0.54 +- 0.22, time 3.12s
-      ridge cv:          chair -- scores: 0.51 +- 0.21, time 2.30s
-      ridge cv:           face -- scores: 0.70 +- 0.13, time 1.98s
-      ridge cv:          house -- scores: 0.90 +- 0.13, time 1.83s
-      ridge cv:       scissors -- scores: 0.56 +- 0.26, time 2.08s
-      ridge cv:   scrambledpix -- scores: 0.85 +- 0.11, time 2.08s
-      ridge cv:           shoe -- scores: 0.49 +- 0.18, time 2.08s
+      ridge cv:       scissors -- scores: 0.56 +- 0.26, time 6.99s
+      ridge cv:           face -- scores: 0.70 +- 0.13, time 6.95s
+      ridge cv:            cat -- scores: 0.54 +- 0.22, time 7.73s
+      ridge cv:           shoe -- scores: 0.49 +- 0.18, time 6.98s
+      ridge cv:          house -- scores: 0.90 +- 0.13, time 6.99s
+      ridge cv:   scrambledpix -- scores: 0.85 +- 0.11, time 6.97s
+      ridge cv:         bottle -- scores: 0.46 +- 0.24, time 7.00s
+      ridge cv:          chair -- scores: 0.51 +- 0.21, time 7.00s
 
 
 Then we make a rudimentary diagram
@@ -302,12 +302,12 @@ Finally, w plot the face vs house map for the different classifiers
     mean_epi_img = image.mean_img(func_filename)
 
     # Restrict the decoding to face vs house
-    condition_mask = np.logical_or(stimuli == b'face', stimuli == b'house')
+    condition_mask = stimuli.isin(['face', 'house'])
     masked_timecourses = masked_timecourses[
-        condition_mask[np.logical_not(resting_state)]]
-    stimuli = stimuli[condition_mask]
+        condition_mask[task_mask]]
+    stimuli = (stimuli[condition_mask] == 'face')
     # Transform the stimuli to binary values
-    stimuli = (stimuli == b'face').astype(np.int)
+    stimuli.astype(np.int)
 
     from nilearn.plotting import plot_stat_map, show
 
@@ -383,7 +383,7 @@ Finally, w plot the face vs house map for the different classifiers
 
 
 
-**Total running time of the script:** ( 8 minutes  48.715 seconds)
+**Total running time of the script:** ( 9 minutes  5.876 seconds)
 
 
 
@@ -402,4 +402,4 @@ Finally, w plot the face vs house map for the different classifiers
 
 .. rst-class:: sphx-glr-signature
 
-    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_
+    `Generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_

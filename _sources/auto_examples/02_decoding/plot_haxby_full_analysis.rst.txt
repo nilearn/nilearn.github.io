@@ -40,18 +40,17 @@ Fetch data using nilearn dataset fetcher
     from nilearn.input_data import NiftiMasker
 
     # load labels
-    import numpy as np
-    labels = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+    import pandas as pd
+    labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
     stimuli = labels['labels']
-
     # identify resting state labels in order to be able to remove them
-    resting_state = stimuli == b"rest"
+    task_mask = (stimuli != 'rest')
 
     # find names of remaining active labels
-    categories = np.unique(stimuli[np.logical_not(resting_state)])
+    categories = stimuli[task_mask].unique()
 
     # extract tags indicating to which acquisition run a tag belongs
-    session_labels = labels["chunks"][np.logical_not(resting_state)]
+    session_labels = labels["chunks"][task_mask]
 
 
 
@@ -62,8 +61,8 @@ Fetch data using nilearn dataset fetcher
 
  Out::
 
-    First subject anatomical nifti image (3D) located is at: /home/kamalakar/nilearn_data/haxby2001/subj2/anat.nii.gz
-    First subject functional nifti image (4D) is located at: /home/kamalakar/nilearn_data/haxby2001/subj2/bold.nii.gz
+    First subject anatomical nifti image (3D) located is at: /home/varoquau/nilearn_data/haxby2001/subj2/anat.nii.gz
+    First subject functional nifti image (4D) is located at: /home/varoquau/nilearn_data/haxby2001/subj2/bold.nii.gz
 
 
 Then we use scikit-learn for decoding on the different masks
@@ -96,14 +95,13 @@ The classifier: a support vector classifier
         mask_filename = haxby_dataset[mask_name][0]
         masker = NiftiMasker(mask_img=mask_filename, standardize=True)
         masked_timecourses = masker.fit_transform(
-            func_filename)[np.logical_not(resting_state)]
+            func_filename)[task_mask]
 
         mask_scores[mask_name] = {}
         mask_chance_scores[mask_name] = {}
 
         for category in categories:
             print("Processing %s %s" % (mask_name, category))
-            task_mask = np.logical_not(resting_state)
             classification_target = (stimuli[task_mask] == category)
             mask_scores[mask_name][category] = cross_val_score(
                 classifier,
@@ -131,56 +129,56 @@ The classifier: a support vector classifier
  Out::
 
     Working on mask mask_vt
-    Processing mask_vt bottle
-    Scores: 0.90 +- 0.07
-    Processing mask_vt cat
-    Scores: 0.96 +- 0.03
-    Processing mask_vt chair
-    Scores: 0.94 +- 0.03
-    Processing mask_vt face
-    Scores: 0.97 +- 0.03
-    Processing mask_vt house
-    Scores: 1.00 +- 0.00
     Processing mask_vt scissors
     Scores: 0.90 +- 0.08
-    Processing mask_vt scrambledpix
-    Scores: 1.00 +- 0.00
+    Processing mask_vt face
+    Scores: 0.97 +- 0.03
+    Processing mask_vt cat
+    Scores: 0.96 +- 0.03
     Processing mask_vt shoe
     Scores: 0.94 +- 0.07
+    Processing mask_vt house
+    Scores: 1.00 +- 0.00
+    Processing mask_vt scrambledpix
+    Scores: 1.00 +- 0.00
+    Processing mask_vt bottle
+    Scores: 0.90 +- 0.07
+    Processing mask_vt chair
+    Scores: 0.94 +- 0.03
     Working on mask mask_face
-    Processing mask_face bottle
-    Scores: 0.45 +- 0.19
-    Processing mask_face cat
-    Scores: 0.68 +- 0.14
-    Processing mask_face chair
-    Scores: 0.53 +- 0.16
-    Processing mask_face face
-    Scores: 0.88 +- 0.07
-    Processing mask_face house
-    Scores: 0.71 +- 0.14
     Processing mask_face scissors
     Scores: 0.67 +- 0.15
-    Processing mask_face scrambledpix
-    Scores: 0.86 +- 0.12
+    Processing mask_face face
+    Scores: 0.88 +- 0.07
+    Processing mask_face cat
+    Scores: 0.68 +- 0.14
     Processing mask_face shoe
     Scores: 0.64 +- 0.14
+    Processing mask_face house
+    Scores: 0.71 +- 0.14
+    Processing mask_face scrambledpix
+    Scores: 0.86 +- 0.12
+    Processing mask_face bottle
+    Scores: 0.45 +- 0.19
+    Processing mask_face chair
+    Scores: 0.53 +- 0.16
     Working on mask mask_house
-    Processing mask_house bottle
-    Scores: 0.82 +- 0.13
-    Processing mask_house cat
-    Scores: 0.80 +- 0.10
-    Processing mask_house chair
-    Scores: 0.88 +- 0.09
-    Processing mask_house face
-    Scores: 0.84 +- 0.09
-    Processing mask_house house
-    Scores: 0.99 +- 0.02
     Processing mask_house scissors
     Scores: 0.82 +- 0.10
-    Processing mask_house scrambledpix
-    Scores: 0.91 +- 0.11
+    Processing mask_house face
+    Scores: 0.84 +- 0.09
+    Processing mask_house cat
+    Scores: 0.80 +- 0.10
     Processing mask_house shoe
     Scores: 0.81 +- 0.13
+    Processing mask_house house
+    Scores: 0.99 +- 0.02
+    Processing mask_house scrambledpix
+    Scores: 0.91 +- 0.11
+    Processing mask_house bottle
+    Scores: 0.82 +- 0.13
+    Processing mask_house chair
+    Scores: 0.88 +- 0.09
 
 
 We make a simple bar plot to summarize the results
@@ -190,6 +188,7 @@ We make a simple bar plot to summarize the results
 
 .. code-block:: python
 
+    import numpy as np
     import matplotlib.pyplot as plt
     plt.figure()
 
@@ -227,7 +226,7 @@ We make a simple bar plot to summarize the results
 
 
 
-**Total running time of the script:** ( 0 minutes  38.978 seconds)
+**Total running time of the script:** ( 0 minutes  49.166 seconds)
 
 
 
@@ -246,4 +245,4 @@ We make a simple bar plot to summarize the results
 
 .. rst-class:: sphx-glr-signature
 
-    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_
+    `Generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_

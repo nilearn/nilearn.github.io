@@ -55,7 +55,7 @@ It can take a while to download about 310 Mo of data from the Internet.
 
  Out::
 
-    First subject functional nifti images (4D) are at: /home/kamalakar/nilearn_data/haxby2001/subj2/bold.nii.gz
+    First subject functional nifti images (4D) are at: /home/varoquau/nilearn_data/haxby2001/subj2/bold.nii.gz
 
 
 Convert the fMRI volume's to a data matrix
@@ -167,15 +167,15 @@ Load the behavioral labels
 
 The behavioral labels are stored in a CSV file, separated by spaces.
 
-We use numpy to load them in an array.
+We use pandas to load them in an array.
 
 
 
 .. code-block:: python
 
-    import numpy as np
+    import pandas as pd
     # Load behavioral information
-    behavioral = np.recfromcsv(haxby_dataset.session_target[0], delimiter=" ")
+    behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
     print(behavioral)
 
 
@@ -186,8 +186,70 @@ We use numpy to load them in an array.
 
  Out::
 
-    [('rest',  0) ('rest',  0) ('rest',  0) ..., ('rest', 11) ('rest', 11)
-     ('rest', 11)]
+    labels  chunks
+    0         rest       0
+    1         rest       0
+    2         rest       0
+    3         rest       0
+    4         rest       0
+    5         rest       0
+    6     scissors       0
+    7     scissors       0
+    8     scissors       0
+    9     scissors       0
+    10    scissors       0
+    11    scissors       0
+    12    scissors       0
+    13    scissors       0
+    14    scissors       0
+    15        rest       0
+    16        rest       0
+    17        rest       0
+    18        rest       0
+    19        rest       0
+    20        rest       0
+    21        face       0
+    22        face       0
+    23        face       0
+    24        face       0
+    25        face       0
+    26        face       0
+    27        face       0
+    28        face       0
+    29        face       0
+    ...        ...     ...
+    1422      rest      11
+    1423       cat      11
+    1424       cat      11
+    1425       cat      11
+    1426       cat      11
+    1427       cat      11
+    1428       cat      11
+    1429       cat      11
+    1430       cat      11
+    1431       cat      11
+    1432      rest      11
+    1433      rest      11
+    1434      rest      11
+    1435      rest      11
+    1436      rest      11
+    1437  scissors      11
+    1438  scissors      11
+    1439  scissors      11
+    1440  scissors      11
+    1441  scissors      11
+    1442  scissors      11
+    1443  scissors      11
+    1444  scissors      11
+    1445  scissors      11
+    1446      rest      11
+    1447      rest      11
+    1448      rest      11
+    1449      rest      11
+    1450      rest      11
+    1451      rest      11
+
+    [1452 rows x 2 columns]
 
 
 Retrieve the experimental conditions, that we are going to use as
@@ -208,7 +270,68 @@ prediction targets in the decoding
 
  Out::
 
-    ['rest' 'rest' 'rest' ..., 'rest' 'rest' 'rest']
+    0           rest
+    1           rest
+    2           rest
+    3           rest
+    4           rest
+    5           rest
+    6       scissors
+    7       scissors
+    8       scissors
+    9       scissors
+    10      scissors
+    11      scissors
+    12      scissors
+    13      scissors
+    14      scissors
+    15          rest
+    16          rest
+    17          rest
+    18          rest
+    19          rest
+    20          rest
+    21          face
+    22          face
+    23          face
+    24          face
+    25          face
+    26          face
+    27          face
+    28          face
+    29          face
+              ...   
+    1422        rest
+    1423         cat
+    1424         cat
+    1425         cat
+    1426         cat
+    1427         cat
+    1428         cat
+    1429         cat
+    1430         cat
+    1431         cat
+    1432        rest
+    1433        rest
+    1434        rest
+    1435        rest
+    1436        rest
+    1437    scissors
+    1438    scissors
+    1439    scissors
+    1440    scissors
+    1441    scissors
+    1442    scissors
+    1443    scissors
+    1444    scissors
+    1445    scissors
+    1446        rest
+    1447        rest
+    1448        rest
+    1449        rest
+    1450        rest
+    1451        rest
+    Name: labels, Length: 1452, dtype: object
 
 
 Restrict the analysis to cats and faces
@@ -224,7 +347,7 @@ mask of the samples belonging to the condition.
 
 .. code-block:: python
 
-    condition_mask = np.logical_or(conditions == b'face', conditions == b'cat')
+    condition_mask = conditions.isin(['face', 'cat'])
 
     # We apply this mask in the sampe direction to restrict the
     # classification to the face vs cat discrimination
@@ -304,7 +427,7 @@ We first create it:
  Out::
 
     SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
-      decision_function_shape=None, degree=3, gamma='auto', kernel='linear',
+      decision_function_shape='ovr', degree=3, gamma='auto', kernel='linear',
       max_iter=-1, probability=False, random_state=None, shrinking=True,
       tol=0.001, verbose=False)
 
@@ -435,9 +558,11 @@ strategy:
     cv = KFold(n=len(fmri_masked), n_folds=5)
 
     for train, test in cv:
-        svc.fit(fmri_masked[train], conditions[train])
+        conditions_masked = conditions.values[train]
+        svc.fit(fmri_masked[train], conditions_masked)
         prediction = svc.predict(fmri_masked[test])
-        print((prediction == conditions[test]).sum() / float(len(conditions[test])))
+        print((prediction == conditions.values[test]).sum()
+               / float(len(conditions.values[test])))
 
 
 
@@ -825,7 +950,7 @@ Further reading
 ______________
 
 
-**Total running time of the script:** ( 0 minutes  8.611 seconds)
+**Total running time of the script:** ( 0 minutes  14.303 seconds)
 
 
 
@@ -844,4 +969,4 @@ ______________
 
 .. rst-class:: sphx-glr-signature
 
-    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_
+    `Generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
