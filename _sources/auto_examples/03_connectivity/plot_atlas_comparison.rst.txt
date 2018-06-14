@@ -1,0 +1,167 @@
+
+
+.. _sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py:
+
+
+Extracting resting-state signals from different atlases for comparison
+======================================================================
+
+In this example :class:`nilearn.input_data.NiftiLabelsMasker` is used to
+extract time series from nifti objects using different parcellation atlases.
+
+The time series of all subjects of the ADHD Dataset are concatenated to create
+parcel-wise correlation matrices for each atlas.
+
+# author: Amadeus Kanaan
+
+
+
+
+.. code-block:: python
+
+    import numpy as np
+    from nilearn import datasets
+    from nilearn.input_data import NiftiLabelsMasker
+    from nilearn import plotting
+
+
+
+
+
+
+
+Load atlases
+-------------
+
+
+
+.. code-block:: python
+
+    destrieux = datasets.fetch_atlas_destrieux_2009()
+    yeo = datasets.fetch_atlas_yeo_2011()
+    harvard_oxford = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+
+    print('Destrieux atlas nifti image (3D) is located at: %s' % destrieux['maps'])
+    print('Yeo atlas nifti image (3D) with 17 parcels and liberal mask is located '
+          'at: %s' % yeo['thick_17'])
+    print('Harvard Oxford atlas nifti image (3D) thresholded at .25 is located '
+          'at: %s' % harvard_oxford['maps'])
+
+    atlases_and_thresholds = {'Destrieux Atlas (struct)': [destrieux['maps'], '97%'],
+                              'Yeo Atlas 17 thick (func)': [yeo['thick_17'], '70%'],
+                              'Harvard Oxford > 25% (struct)': [harvard_oxford['maps'], '90%']}
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    Destrieux atlas nifti image (3D) is located at: /home/kamalakar/nilearn_data/destrieux_2009/destrieux2009_rois_lateralized.nii.gz
+    Yeo atlas nifti image (3D) with 17 parcels and liberal mask is located at: /home/kamalakar/nilearn_data/yeo_2011/Yeo_JNeurophysiol11_MNI152/Yeo2011_17Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz
+    Harvard Oxford atlas nifti image (3D) thresholded at .25 is located at: /home/kamalakar/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+
+
+Load functional data
+--------------------
+
+
+
+.. code-block:: python
+
+    data = datasets.fetch_adhd(n_subjects=10)
+
+    print('Functional nifti images (4D, one per subject) are located at : %r'
+          % data['func'])
+    print('Counfound csv files (one per subject) are located at : %r'
+          % data['confounds'])
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    Functional nifti images (4D, one per subject) are located at : ['/home/kamalakar/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0023008/0023008_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0023012/0023012_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0027011/0027011_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0027018/0027018_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0027034/0027034_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0027037/0027037_rest_tshift_RPI_voreg_mni.nii.gz']
+    Counfound csv files (one per subject) are located at : ['/home/kamalakar/nilearn_data/adhd/data/0010042/0010042_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0010064/0010064_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0010128/0010128_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0021019/0021019_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0023008/0023008_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0023012/0023012_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0027011/0027011_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0027018/0027018_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0027034/0027034_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0027037/0027037_regressors.csv']
+
+
+Iterate over fetched atlases to extract coordinates
+---------------------------------------------------
+
+
+
+.. code-block:: python
+
+    for name, (atlas, threshold) in sorted(atlases_and_thresholds.items()):
+        # create masker to extract functional data within atlas parcels
+        masker = NiftiLabelsMasker(labels_img=atlas,
+                                   standardize=True,
+                                   memory='nilearn_cache')
+
+        # extract time series from all subjects and concatenate them
+        time_series = []
+        for func, confounds in zip(data.func, data.confounds):
+            time_series.append(masker.fit_transform(func, confounds=confounds))
+
+        time_series = np.concatenate(time_series)
+
+        # calculate correlation matrix and display
+        correlation_matrix = np.corrcoef(time_series.T)
+
+        # grab center coordinates for atlas labels
+        coordinates = plotting.find_parcellation_cut_coords(atlas)
+
+        # plot connectome
+        plotting.plot_connectome(correlation_matrix, coordinates,
+                                 edge_threshold=threshold, title=name)
+
+    plotting.show()
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_001.png
+            :scale: 47
+
+    *
+
+      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_002.png
+            :scale: 47
+
+    *
+
+      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_003.png
+            :scale: 47
+
+
+
+
+**Total running time of the script:** ( 2 minutes  9.243 seconds)
+
+
+
+.. container:: sphx-glr-footer
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: plot_atlas_comparison.py <plot_atlas_comparison.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: plot_atlas_comparison.ipynb <plot_atlas_comparison.ipynb>`
+
+.. rst-class:: sphx-glr-signature
+
+    `Generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
