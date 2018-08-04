@@ -80,7 +80,7 @@ We use probabilistic regions of interest (ROIs) from the MSDL atlas.
  Out::
 
     MSDL has 39 ROIs, part of the following networks :
-    ['Aud', 'Aud', 'Striate', 'DMN', 'DMN', 'DMN', 'DMN', 'Occ post', 'Motor', 'R V Att', 'R V Att', 'R V Att', 'R V Att', 'Basal', 'L V Att', 'L V Att', 'L V Att', 'D Att', 'D Att', 'Vis Sec', 'Vis Sec', 'Vis Sec', 'Salience', 'Salience', 'Salience', 'Temporal', 'Temporal', 'Language', 'Language', 'Language', 'Language', 'Language', 'Cereb', 'Dors PCC', 'Cing-Ins', 'Cing-Ins', 'Cing-Ins', 'Ant IPS', 'Ant IPS'].
+    [b'Aud', b'Aud', b'Striate', b'DMN', b'DMN', b'DMN', b'DMN', b'Occ post', b'Motor', b'R V Att', b'R V Att', b'R V Att', b'R V Att', b'Basal', b'L V Att', b'L V Att', b'L V Att', b'D Att', b'D Att', b'Vis Sec', b'Vis Sec', b'Vis Sec', b'Salience', b'Salience', b'Salience', b'Temporal', b'Temporal', b'Language', b'Language', b'Language', b'Language', b'Language', b'Cereb', b'Dors PCC', b'Cing-Ins', b'Cing-Ins', b'Cing-Ins', b'Ant IPS', b'Ant IPS'].
 
 
 Region signals extraction
@@ -415,12 +415,11 @@ proportion of each class as in the whole cohort
 
 .. code-block:: python
 
-    from sklearn.cross_validation import StratifiedKFold
+    from sklearn.model_selection import StratifiedKFold
 
     classes = ['{0}{1}'.format(site_name, adhd_label)
                for site_name, adhd_label in zip(site_names, adhd_labels)]
-    cv = StratifiedKFold(classes, n_folds=3)
-
+    cv = StratifiedKFold(n_splits=3)
 
 
 
@@ -433,14 +432,24 @@ and use the connectivity coefficients to classify ADHD patients vs controls.
 
 .. code-block:: python
 
+
+    # Note that in cv.split(X, y),
+    # providing y is sufficient to generate the splits and
+    # hence np.zeros(n_samples) may be used as a placeholder for X
+    # instead of actual training data.
     from sklearn.svm import LinearSVC
-    from sklearn.cross_validation import cross_val_score
+    from sklearn.model_selection import cross_val_score
 
     mean_scores = []
     for kind in kinds:
         svc = LinearSVC(random_state=0)
-        cv_scores = cross_val_score(svc, connectivity_biomarkers[kind],
-                                    y=adhd_labels, cv=cv, scoring='accuracy')
+        cv_scores = cross_val_score(svc,
+                                    connectivity_biomarkers[kind],
+                                    y=adhd_labels,
+                                    cv=cv,
+                                    groups=adhd_labels,
+                                    scoring='accuracy',
+                                    )
         mean_scores.append(cv_scores.mean())
 
 
@@ -474,7 +483,7 @@ Finally, we can display the classification scores.
 
 
 
-**Total running time of the script:** ( 0 minutes  43.633 seconds)
+**Total running time of the script:** ( 1 minutes  16.254 seconds)
 
 
 

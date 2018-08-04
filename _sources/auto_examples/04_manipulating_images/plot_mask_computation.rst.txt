@@ -8,27 +8,47 @@ Understanding NiftiMasker and mask computation
 
 In this example, the Nifti masker is used to automatically compute a mask.
 
-For data that has already been masked, the default strategy works out of
-the box.
+* The default strategy is based on the background.
 
-However, for raw EPI, as in resting-state time series, we need to use the
-'epi' strategy of the NiftiMasker.
+* Another option is to use a template.
+
+* For raw EPI, as in resting-state time series, we need to use the
+  'epi' strategy of the NiftiMasker.
 
 In addition, we show here how to tweak the different parameters of the
-underlying mask extraction routine
+underlying routine that extract masks from EPI
 :func:`nilearn.masking.compute_epi_mask`.
 
-
-
-From already masked data
 
 
 
 .. code-block:: python
 
+
+
     from nilearn.input_data import NiftiMasker
     import nilearn.image as image
-    from nilearn.plotting import plot_roi, show
+    from nilearn.plotting import plot_roi, plot_epi, show
+
+
+
+
+
+
+
+Computing a mask from the background
+##############################################################################
+
+ The default strategy to compute a mask, eg in NiftiMasker is to try to
+ detect the background.
+
+ With data that has already been masked, this will work well, as it lies
+ on a homogeneous background
+
+
+
+.. code-block:: python
+
 
     # Load Miyawaki dataset
     from nilearn import datasets
@@ -40,18 +60,7 @@ From already masked data
 
     miyawaki_filename = miyawaki_dataset.func[0]
     miyawaki_mean_img = image.mean_img(miyawaki_filename)
-
-    # This time, we can use the NiftiMasker without changing the default mask
-    # strategy, as the data has already been masked, and thus lies on a
-    # homogeneous background
-
-    masker = NiftiMasker()
-    masker.fit(miyawaki_filename)
-
-    plot_roi(masker.mask_img_, miyawaki_mean_img,
-             title="Mask from already masked data")
-
-
+    plot_epi(miyawaki_mean_img, title='Mean EPI image')
 
 
 
@@ -63,10 +72,37 @@ From already masked data
 
  Out::
 
-    First functional nifti image (4D) is located at: /home/kamalakar/nilearn_data/miyawaki2008/func/data_figure_run01.nii.gz
+    First functional nifti image (4D) is located at: /home/varoquau/nilearn_data/miyawaki2008/func/data_figure_run01.nii.gz
 
 
-From raw EPI data
+A NiftiMasker with the default strategy
+
+
+
+.. code-block:: python
+
+    masker = NiftiMasker()
+    masker.fit(miyawaki_filename)
+
+    # Plot the generated mask
+    plot_roi(masker.mask_img_, miyawaki_mean_img,
+             title="Mask from already masked data")
+
+
+
+
+
+.. image:: /auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_002.png
+    :align: center
+
+
+
+
+Computing a mask from raw EPI data
+##############################################################################
+
+ From raw EPI data, there is no uniform background, and a different
+ strategy is necessary
 
 
 
@@ -83,20 +119,78 @@ From raw EPI data
 
     # To display the background
     mean_img = image.mean_img(epi_img)
+    plot_epi(mean_img, title='Mean EPI image')
 
 
-    # Simple mask extraction from EPI images
-    # We need to specify an 'epi' mask_strategy, as this is raw EPI data
+
+
+.. image:: /auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_003.png
+    :align: center
+
+
+
+
+Simple mask extraction from EPI images
+We need to specify an 'epi' mask_strategy, as this is raw EPI data
+
+
+
+.. code-block:: python
+
     masker = NiftiMasker(mask_strategy='epi')
     masker.fit(epi_img)
     plot_roi(masker.mask_img_, mean_img, title='EPI automatic mask')
 
-    # Generate mask with strong opening
+
+
+
+.. image:: /auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_004.png
+    :align: center
+
+
+
+
+Generate mask with strong opening
+
+We can fine-tune the outline of the mask by increasing the number of
+opening steps (`opening=10`) using the `mask_args` argument of the
+NiftiMasker. This effectively performs erosion and dilation
+operations on the outer voxel layers of the mask, which can for example
+remove remaining
+skull parts in the image.
+
+
+
+.. code-block:: python
+
     masker = NiftiMasker(mask_strategy='epi', mask_args=dict(opening=10))
     masker.fit(epi_img)
     plot_roi(masker.mask_img_, mean_img, title='EPI Mask with strong opening')
 
-    # Generate mask with a high lower cutoff
+
+
+
+.. image:: /auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_005.png
+    :align: center
+
+
+
+
+Generate mask with a high lower cutoff
+
+The NiftiMasker calls the nilearn.masking.compute_epi_mask function to
+compute the mask from the EPI. It has two important parameters:
+lower_cutoff and upper_cutoff. These set the grey-value bounds in which
+the masking algorithm will search for its threshold (0 being the
+minimum of the image and 1 the maximum). We will here increase the
+lower cutoff to enforce selection of those voxels that appear as bright
+in the EPI image.
+
+
+
+.. code-block:: python
+
+
     masker = NiftiMasker(mask_strategy='epi',
                          mask_args=dict(upper_cutoff=.9, lower_cutoff=.8,
                                         opening=False))
@@ -107,28 +201,42 @@ From raw EPI data
 
 
 
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image:: /auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_002.png
-            :scale: 47
-
-    *
-
-      .. image:: /auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_003.png
-            :scale: 47
-
-    *
-
-      .. image:: /auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_004.png
-            :scale: 47
+.. image:: /auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_006.png
+    :align: center
 
 
 
 
-Extract time series
+Computing the mask from the MNI template
+##############################################################################
+
+ A mask can also be computed from the MNI gray matter template. In this
+ case, it is resampled to the target image
+
+
+
+.. code-block:: python
+
+
+    masker = NiftiMasker(mask_strategy='template')
+    masker.fit(epi_img)
+    plot_roi(masker.mask_img_, mean_img,
+             title='Mask from template')
+
+
+
+
+
+.. image:: /auto_examples/04_manipulating_images/images/sphx_glr_plot_mask_computation_007.png
+    :align: center
+
+
+
+
+After mask computation: extracting time series
+##############################################################################
+
+ Extract time series
 
 
 
@@ -162,7 +270,7 @@ Extract time series
     Detrended: mean 0.00, std 139.16
 
 
-**Total running time of the script:** ( 0 minutes  5.193 seconds)
+**Total running time of the script:** ( 0 minutes  7.394 seconds)
 
 
 

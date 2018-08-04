@@ -1,72 +1,115 @@
 """
-Extracting resting-state signals from different atlases for comparison
-======================================================================
+Comparing connectomes on different reference atlases
+====================================================
 
-In this example :class:`nilearn.input_data.NiftiLabelsMasker` is used to
-extract time series from nifti objects using different parcellation atlases.
+This examples shows how to turn a parcellation into connectome for
+visualization. This requires choosing centers for each parcel
+or network, via :func:`nilearn.plotting.find_parcellation_cut_coords` for
+parcellation based on labels and
+:func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
+parcellation based on probabilistic values.
 
-The time series of all subjects of the ADHD Dataset are concatenated to create
-parcel-wise correlation matrices for each atlas.
+In the intermediary steps, we make use of
+:class:`nilearn.input_data.NiftiLabelsMasker` and
+:class:`nilearn.input_data.NiftiMapsMasker` to extract time series from nifti
+objects using different parcellation atlases.
+The time series of all subjects of the ADHD Dataset are concatenated and
+given directly to :class:`nilearn.connectome.ConnectivityMeasure` for
+computing parcel-wise correlation matrices for each atlas across all subjects.
+
+Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
 # author: Amadeus Kanaan
 
 """
-import numpy as np
-from nilearn import datasets
-from nilearn.input_data import NiftiLabelsMasker
-from nilearn import plotting
 
 ####################################################################
 # Load atlases
 # -------------
-destrieux = datasets.fetch_atlas_destrieux_2009()
-yeo = datasets.fetch_atlas_yeo_2011()
-harvard_oxford = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+from nilearn import datasets
 
-print('Destrieux atlas nifti image (3D) is located at: %s' % destrieux['maps'])
+yeo = datasets.fetch_atlas_yeo_2011()
 print('Yeo atlas nifti image (3D) with 17 parcels and liberal mask is located '
       'at: %s' % yeo['thick_17'])
-print('Harvard Oxford atlas nifti image (3D) thresholded at .25 is located '
-      'at: %s' % harvard_oxford['maps'])
-
-atlases_and_thresholds = {'Destrieux Atlas (struct)': [destrieux['maps'], '97%'],
-                          'Yeo Atlas 17 thick (func)': [yeo['thick_17'], '70%'],
-                          'Harvard Oxford > 25% (struct)': [harvard_oxford['maps'], '90%']}
 
 #########################################################################
 # Load functional data
 # --------------------
 data = datasets.fetch_adhd(n_subjects=10)
 
-print('Functional nifti images (4D, one per subject) are located at : %r'
-      % data['func'])
-print('Counfound csv files (one per subject) are located at : %r'
-      % data['confounds'])
+print('Functional nifti images (4D, e.g., one subject) are located at : %r'
+      % data['func'][0])
+print('Counfound csv files (of same subject) are located at : %r'
+      % data['confounds'][0])
 
 ##########################################################################
-# Iterate over fetched atlases to extract coordinates
-# ---------------------------------------------------
-for name, (atlas, threshold) in sorted(atlases_and_thresholds.items()):
-    # create masker to extract functional data within atlas parcels
-    masker = NiftiLabelsMasker(labels_img=atlas,
-                               standardize=True,
-                               memory='nilearn_cache')
+# Extract coordinates on Yeo atlas - parcellations
+# ------------------------------------------------
+from nilearn.input_data import NiftiLabelsMasker
+from nilearn.connectome import ConnectivityMeasure
 
-    # extract time series from all subjects and concatenate them
-    time_series = []
-    for func, confounds in zip(data.func, data.confounds):
-        time_series.append(masker.fit_transform(func, confounds=confounds))
+# ConenctivityMeasure from Nilearn uses simple 'correlation' to compute
+# connectivity matrices for all subjects in a list
+connectome_measure = ConnectivityMeasure(kind='correlation')
 
-    time_series = np.concatenate(time_series)
+# useful for plotting connectivity interactions on glass brain
+from nilearn import plotting
 
-    # calculate correlation matrix and display
-    correlation_matrix = np.corrcoef(time_series.T)
+# create masker to extract functional data within atlas parcels
+masker = NiftiLabelsMasker(labels_img=yeo['thick_17'], standardize=True,
+                           memory='nilearn_cache')
 
-    # grab center coordinates for atlas labels
-    coordinates = plotting.find_parcellation_cut_coords(atlas)
+# extract time series from all subjects and concatenate them
+time_series = []
+for func, confounds in zip(data.func, data.confounds):
+    time_series.append(masker.fit_transform(func, confounds=confounds))
 
-    # plot connectome
-    plotting.plot_connectome(correlation_matrix, coordinates,
-                             edge_threshold=threshold, title=name)
+# calculate correlation matrices across subjects and display
+correlation_matrices = connectome_measure.fit_transform(time_series)
 
+# Mean correlation matrix across 10 subjects can be grabbed like this,
+# using connectome measure object
+mean_correlation_matrix = connectome_measure.mean_
+
+# grab center coordinates for atlas labels
+coordinates = plotting.find_parcellation_cut_coords(labels_img=yeo['thick_17'])
+
+# plot connectome with 80% edge strength in the connectivity
+plotting.plot_connectome(mean_correlation_matrix, coordinates,
+                         edge_threshold="80%",
+                         title='Yeo Atlas 17 thick (func)')
+
+##########################################################################
+# Load probabilistic atlases - extracting coordinates on brain maps
+# -----------------------------------------------------------------
+
+msdl = datasets.fetch_atlas_msdl()
+
+##########################################################################
+# Iterate over fetched atlases to extract coordinates - probabilistic
+# -------------------------------------------------------------------
+from nilearn.input_data import NiftiMapsMasker
+
+# create masker to extract functional data within atlas parcels
+masker = NiftiMapsMasker(maps_img=msdl['maps'], standardize=True,
+                         memory='nilearn_cache')
+
+# extract time series from all subjects and concatenate them
+time_series = []
+for func, confounds in zip(data.func, data.confounds):
+    time_series.append(masker.fit_transform(func, confounds=confounds))
+
+# calculate correlation matrices across subjects and display
+correlation_matrices = connectome_measure.fit_transform(time_series)
+
+# Mean correlation matrix across 10 subjects can be grabbed like this,
+# using connectome measure object
+mean_correlation_matrix = connectome_measure.mean_
+
+# grab center coordinates for probabilistic atlas
+coordinates = plotting.find_probabilistic_atlas_cut_coords(maps_img=msdl['maps'])
+
+# plot connectome with 80% edge strength in the connectivity
+plotting.plot_connectome(mean_correlation_matrix, coordinates,
+                         edge_threshold="80%", title='MSDL (probabilistic)')
 plotting.show()

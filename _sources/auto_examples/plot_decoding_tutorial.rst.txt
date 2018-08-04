@@ -55,12 +55,7 @@ It can take a while to download about 310 Mo of data from the Internet.
 
  Out::
 
-    Dataset created in /home/kamalakar/nilearn_data/haxby2001
-
-    Downloading data from https://www.nitrc.org/frs/download.php/7868/mask.nii.gz ...
-    Downloading data from http://data.pymvpa.org/datasets/haxby2001/MD5SUMS ...
-    Downloading data from http://data.pymvpa.org/datasets/haxby2001/subj2-2010.01.14.tar.gz ...
-    First subject functional nifti images (4D) are at: /home/kamalakar/nilearn_data/haxby2001/subj2/bold.nii.gz
+    First subject functional nifti images (4D) are at: /home/varoquau/nilearn_data/haxby2001/subj2/bold.nii.gz
 
 
 Convert the fMRI volume's to a data matrix
@@ -432,9 +427,9 @@ We first create it:
  Out::
 
     SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
-      decision_function_shape='ovr', degree=3, gamma='auto', kernel='linear',
-      max_iter=-1, probability=False, random_state=None, shrinking=True,
-      tol=0.001, verbose=False)
+      decision_function_shape='ovr', degree=3, gamma='auto_deprecated',
+      kernel='linear', max_iter=-1, probability=False, random_state=None,
+      shrinking=True, tol=0.001, verbose=False)
 
 
 The svc object is an object that can be fit (or trained) on data with
@@ -558,11 +553,13 @@ strategy:
 
 .. code-block:: python
 
-    from sklearn.cross_validation import KFold
+    from sklearn.model_selection import KFold
 
-    cv = KFold(n=len(fmri_masked), n_folds=5)
+    cv = KFold(n_splits=5)
 
-    for train, test in cv:
+    # The "cv" object's split method can now accept data and create a
+    # generator which can yield the splits.
+    for train, test in cv.split(X=fmri_masked):
         conditions_masked = conditions.values[train]
         svc.fit(fmri_masked[train], conditions_masked)
         prediction = svc.predict(fmri_masked[test])
@@ -593,7 +590,7 @@ Scikit-learn has tools to perform cross-validation easier:
 
 .. code-block:: python
 
-    from sklearn.cross_validation import cross_val_score
+    from sklearn.model_selection import cross_val_score
     cv_score = cross_val_score(svc, fmri_masked, conditions)
     print(cv_score)
 
@@ -611,15 +608,37 @@ Scikit-learn has tools to perform cross-validation easier:
 Note that we can speed things up to use all the CPUs of our computer
 with the n_jobs parameter.
 
-By default, cross_val_score uses a 3-fold KFold. We can control this by
-passing the "cv" object, here a 5-fold:
+
+The best way to do cross-validation is to respect the structure of
+the experiment, for instance by leaving out full sessions of
+acquisition.
+
+The number of the session is stored in the CSV file giving the
+behavioral data. We have to apply our session mask, to select only cats
+and faces.
 
 
 
 .. code-block:: python
 
+    session_label = behavioral['chunks'][condition_mask]
+
+    # By default, cross_val_score uses a 3-fold KFold. We can control this by
+    # passing the "cv" object, here a 5-fold:
     cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv)
     print(cv_score)
+
+    # To leave a session out, pass it to the groups parameter of cross_val_score.
+    from sklearn.model_selection import LeaveOneGroupOut
+    cv = LeaveOneGroupOut()
+    cv_score = cross_val_score(svc,
+                               fmri_masked,
+                               conditions,
+                               cv=cv,
+                               groups=session_label,
+                               )
+    print(cv_score)
+
 
 
 
@@ -630,37 +649,6 @@ passing the "cv" object, here a 5-fold:
  Out::
 
     [0.97727273 0.76744186 0.79069767 0.53488372 0.74418605]
-
-
-The best way to do cross-validation is to respect the structure of
-the experiment, for instance by leaving out full sessions of
-acquisition.
-
-The number of the session is stored in the CSV file giving the
-behavioral data. We have to apply our session mask, to select only cats
-and faces. To leave a session out, we pass it to a
-LeaveOneLabelOut object:
-
-
-
-.. code-block:: python
-
-    session_label = behavioral['chunks'][condition_mask]
-
-    from sklearn.cross_validation import LeaveOneLabelOut
-    cv = LeaveOneLabelOut(session_label)
-    cv_score = cross_val_score(svc, fmri_masked, conditions, cv=cv)
-    print(cv_score)
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
     [0.55555556 1.         0.66666667 0.66666667 0.77777778 0.72222222
      0.88888889 0.38888889 0.66666667 0.5        0.77777778 0.66666667]
 
@@ -857,11 +845,11 @@ For this, we can call inverse_transform on the NiftiMasker:
     metadata:
     <class 'nibabel.nifti1.Nifti1Header'> object, endian='<'
     sizeof_hdr      : 348
-    data_type       : 
-    db_name         : 
+    data_type       : b''
+    db_name         : b''
     extents         : 0
     session_error   : 0
-    regular         : 
+    regular         : b''
     dim_info        : 0
     dim             : [ 4 40 64 64  1  1  1  1]
     intent_p1       : 0.0
@@ -884,8 +872,8 @@ For this, we can call inverse_transform on the NiftiMasker:
     toffset         : 0.0
     glmax           : 0
     glmin           : 0
-    descrip         : 
-    aux_file        : 
+    descrip         : b''
+    aux_file        : b''
     qform_code      : unknown
     sform_code      : aligned
     quatern_b       : 0.0
@@ -897,8 +885,8 @@ For this, we can call inverse_transform on the NiftiMasker:
     srow_x          : [-3.5   0.    0.   68.25]
     srow_y          : [   0.       3.75     0.    -118.125]
     srow_z          : [   0.       0.       3.75  -118.125]
-    intent_name     : 
-    magic           : n+1
+    intent_name     : b''
+    magic           : b'n+1'
 
 
 coef_img is now a NiftiImage.
@@ -955,7 +943,7 @@ Further reading
 ______________
 
 
-**Total running time of the script:** ( 8 minutes  56.785 seconds)
+**Total running time of the script:** ( 0 minutes  17.201 seconds)
 
 
 

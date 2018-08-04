@@ -3,30 +3,27 @@
 .. _sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py:
 
 
-Extracting resting-state signals from different atlases for comparison
-======================================================================
+Comparing connectomes on different reference atlases
+====================================================
 
-In this example :class:`nilearn.input_data.NiftiLabelsMasker` is used to
-extract time series from nifti objects using different parcellation atlases.
+This examples shows how to turn a parcellation into connectome for
+visualization. This requires choosing centers for each parcel
+or network, via :func:`nilearn.plotting.find_parcellation_cut_coords` for
+parcellation based on labels and
+:func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
+parcellation based on probabilistic values.
 
-The time series of all subjects of the ADHD Dataset are concatenated to create
-parcel-wise correlation matrices for each atlas.
+In the intermediary steps, we make use of
+:class:`nilearn.input_data.NiftiLabelsMasker` and
+:class:`nilearn.input_data.NiftiMapsMasker` to extract time series from nifti
+objects using different parcellation atlases.
+The time series of all subjects of the ADHD Dataset are concatenated and
+given directly to :class:`nilearn.connectome.ConnectivityMeasure` for
+computing parcel-wise correlation matrices for each atlas across all subjects.
+
+Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
 # author: Amadeus Kanaan
-
-
-
-
-.. code-block:: python
-
-    import numpy as np
-    from nilearn import datasets
-    from nilearn.input_data import NiftiLabelsMasker
-    from nilearn import plotting
-
-
-
-
 
 
 
@@ -37,19 +34,11 @@ Load atlases
 
 .. code-block:: python
 
-    destrieux = datasets.fetch_atlas_destrieux_2009()
-    yeo = datasets.fetch_atlas_yeo_2011()
-    harvard_oxford = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+    from nilearn import datasets
 
-    print('Destrieux atlas nifti image (3D) is located at: %s' % destrieux['maps'])
+    yeo = datasets.fetch_atlas_yeo_2011()
     print('Yeo atlas nifti image (3D) with 17 parcels and liberal mask is located '
           'at: %s' % yeo['thick_17'])
-    print('Harvard Oxford atlas nifti image (3D) thresholded at .25 is located '
-          'at: %s' % harvard_oxford['maps'])
-
-    atlases_and_thresholds = {'Destrieux Atlas (struct)': [destrieux['maps'], '97%'],
-                              'Yeo Atlas 17 thick (func)': [yeo['thick_17'], '70%'],
-                              'Harvard Oxford > 25% (struct)': [harvard_oxford['maps'], '90%']}
 
 
 
@@ -59,9 +48,7 @@ Load atlases
 
  Out::
 
-    Destrieux atlas nifti image (3D) is located at: /home/kamalakar/nilearn_data/destrieux_2009/destrieux2009_rois_lateralized.nii.gz
-    Yeo atlas nifti image (3D) with 17 parcels and liberal mask is located at: /home/kamalakar/nilearn_data/yeo_2011/Yeo_JNeurophysiol11_MNI152/Yeo2011_17Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz
-    Harvard Oxford atlas nifti image (3D) thresholded at .25 is located at: /home/kamalakar/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+    Yeo atlas nifti image (3D) with 17 parcels and liberal mask is located at: /home/varoquau/nilearn_data/yeo_2011/Yeo_JNeurophysiol11_MNI152/Yeo2011_17Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz
 
 
 Load functional data
@@ -73,10 +60,10 @@ Load functional data
 
     data = datasets.fetch_adhd(n_subjects=10)
 
-    print('Functional nifti images (4D, one per subject) are located at : %r'
-          % data['func'])
-    print('Counfound csv files (one per subject) are located at : %r'
-          % data['confounds'])
+    print('Functional nifti images (4D, e.g., one subject) are located at : %r'
+          % data['func'][0])
+    print('Counfound csv files (of same subject) are located at : %r'
+          % data['confounds'][0])
 
 
 
@@ -86,66 +73,118 @@ Load functional data
 
  Out::
 
-    Functional nifti images (4D, one per subject) are located at : ['/home/kamalakar/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0010064/0010064_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0010128/0010128_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0021019/0021019_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0023008/0023008_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0023012/0023012_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0027011/0027011_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0027018/0027018_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0027034/0027034_rest_tshift_RPI_voreg_mni.nii.gz', '/home/kamalakar/nilearn_data/adhd/data/0027037/0027037_rest_tshift_RPI_voreg_mni.nii.gz']
-    Counfound csv files (one per subject) are located at : ['/home/kamalakar/nilearn_data/adhd/data/0010042/0010042_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0010064/0010064_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0010128/0010128_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0021019/0021019_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0023008/0023008_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0023012/0023012_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0027011/0027011_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0027018/0027018_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0027034/0027034_regressors.csv', '/home/kamalakar/nilearn_data/adhd/data/0027037/0027037_regressors.csv']
+    Functional nifti images (4D, e.g., one subject) are located at : '/home/varoquau/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz'
+    Counfound csv files (of same subject) are located at : '/home/varoquau/nilearn_data/adhd/data/0010042/0010042_regressors.csv'
 
 
-Iterate over fetched atlases to extract coordinates
----------------------------------------------------
+Extract coordinates on Yeo atlas - parcellations
+------------------------------------------------
 
 
 
 .. code-block:: python
 
-    for name, (atlas, threshold) in sorted(atlases_and_thresholds.items()):
-        # create masker to extract functional data within atlas parcels
-        masker = NiftiLabelsMasker(labels_img=atlas,
-                                   standardize=True,
-                                   memory='nilearn_cache')
+    from nilearn.input_data import NiftiLabelsMasker
+    from nilearn.connectome import ConnectivityMeasure
 
-        # extract time series from all subjects and concatenate them
-        time_series = []
-        for func, confounds in zip(data.func, data.confounds):
-            time_series.append(masker.fit_transform(func, confounds=confounds))
+    # ConenctivityMeasure from Nilearn uses simple 'correlation' to compute
+    # connectivity matrices for all subjects in a list
+    connectome_measure = ConnectivityMeasure(kind='correlation')
 
-        time_series = np.concatenate(time_series)
+    # useful for plotting connectivity interactions on glass brain
+    from nilearn import plotting
 
-        # calculate correlation matrix and display
-        correlation_matrix = np.corrcoef(time_series.T)
+    # create masker to extract functional data within atlas parcels
+    masker = NiftiLabelsMasker(labels_img=yeo['thick_17'], standardize=True,
+                               memory='nilearn_cache')
 
-        # grab center coordinates for atlas labels
-        coordinates = plotting.find_parcellation_cut_coords(atlas)
+    # extract time series from all subjects and concatenate them
+    time_series = []
+    for func, confounds in zip(data.func, data.confounds):
+        time_series.append(masker.fit_transform(func, confounds=confounds))
 
-        # plot connectome
-        plotting.plot_connectome(correlation_matrix, coordinates,
-                                 edge_threshold=threshold, title=name)
+    # calculate correlation matrices across subjects and display
+    correlation_matrices = connectome_measure.fit_transform(time_series)
 
+    # Mean correlation matrix across 10 subjects can be grabbed like this,
+    # using connectome measure object
+    mean_correlation_matrix = connectome_measure.mean_
+
+    # grab center coordinates for atlas labels
+    coordinates = plotting.find_parcellation_cut_coords(labels_img=yeo['thick_17'])
+
+    # plot connectome with 80% edge strength in the connectivity
+    plotting.plot_connectome(mean_correlation_matrix, coordinates,
+                             edge_threshold="80%",
+                             title='Yeo Atlas 17 thick (func)')
+
+
+
+
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_001.png
+    :align: center
+
+
+
+
+Load probabilistic atlases - extracting coordinates on brain maps
+-----------------------------------------------------------------
+
+
+
+.. code-block:: python
+
+
+    msdl = datasets.fetch_atlas_msdl()
+
+
+
+
+
+
+
+Iterate over fetched atlases to extract coordinates - probabilistic
+-------------------------------------------------------------------
+
+
+
+.. code-block:: python
+
+    from nilearn.input_data import NiftiMapsMasker
+
+    # create masker to extract functional data within atlas parcels
+    masker = NiftiMapsMasker(maps_img=msdl['maps'], standardize=True,
+                             memory='nilearn_cache')
+
+    # extract time series from all subjects and concatenate them
+    time_series = []
+    for func, confounds in zip(data.func, data.confounds):
+        time_series.append(masker.fit_transform(func, confounds=confounds))
+
+    # calculate correlation matrices across subjects and display
+    correlation_matrices = connectome_measure.fit_transform(time_series)
+
+    # Mean correlation matrix across 10 subjects can be grabbed like this,
+    # using connectome measure object
+    mean_correlation_matrix = connectome_measure.mean_
+
+    # grab center coordinates for probabilistic atlas
+    coordinates = plotting.find_probabilistic_atlas_cut_coords(maps_img=msdl['maps'])
+
+    # plot connectome with 80% edge strength in the connectivity
+    plotting.plot_connectome(mean_correlation_matrix, coordinates,
+                             edge_threshold="80%", title='MSDL (probabilistic)')
     plotting.show()
 
 
 
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_001.png
-            :scale: 47
-
-    *
-
-      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_002.png
-            :scale: 47
-
-    *
-
-      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_003.png
-            :scale: 47
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_002.png
+    :align: center
 
 
 
 
-**Total running time of the script:** ( 2 minutes  9.243 seconds)
+**Total running time of the script:** ( 3 minutes  0.711 seconds)
 
 
 

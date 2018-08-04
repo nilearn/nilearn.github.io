@@ -3,20 +3,28 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Nilearn: Machine learning for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
     <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
-    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.5.0a',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="8.3.8. ROI-based decoding analysis in Haxby et al. dataset" href="plot_haxby_full_analysis.html" />
+    <link rel="next" title="8.3.8. Decoding with ANOVA + SVM: face vs house in the Haxby dataset" href="plot_haxby_anova_svm.html" />
     <link rel="prev" title="8.3.6. Searchlight analysis of face vs house recognition" href="plot_haxby_searchlight.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -54,10 +62,10 @@ $(function () {
         for(i in sections){
             if(sections[i] > pos){
 		break;
-            };
-	    if($('a.internal[href$="' + i + '"]').is(':visible')){
+            }
+            if($('a.internal[href$="' + i + '"]').is(':visible')){
 		current_section = i;
-	    };
+        }
         }
 	$('a.internal[href$="' + current_section + '"]').addClass('active');
     });
@@ -79,7 +87,8 @@ $(function () {
         })();
     </script>
 
-  </head><body>
+  </head>
+  <body>
 <div id="logo-banner">
   <div class="logo">
     <a href="../../index.html">
@@ -141,7 +150,7 @@ $(function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a></li>
         <li class="right" >
-          <a href="plot_haxby_full_analysis.html" title="8.3.8. ROI-based decoding analysis in Haxby et al. dataset"
+          <a href="plot_haxby_anova_svm.html" title="8.3.8. Decoding with ANOVA + SVM: face vs house in the Haxby dataset"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="plot_haxby_searchlight.html" title="8.3.6. Searchlight analysis of face vs house recognition"
@@ -183,20 +192,16 @@ $(function () {
   <p class="topless"><a href="plot_haxby_searchlight.html"
                         title="previous chapter">8.3.6. Searchlight analysis of face vs house recognition</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="plot_haxby_full_analysis.html"
-                        title="next chapter">8.3.8. ROI-based decoding analysis in Haxby et al. dataset</a></p>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+  <p class="topless"><a href="plot_haxby_anova_svm.html"
+                        title="next chapter">8.3.8. Decoding with ANOVA + SVM: face vs house in the Haxby dataset</a></p>
+
+<div class="navbar">
+</div> <!-- end navbar -->
+
+<script type="text/javascript">$('#searchbox-ml').show(0);</script>
+<script type="text/javascript">$('#searchbox-site').show(0);</script>
+
+
         </div>
       </div>
 
@@ -232,7 +237,7 @@ step in the pipeline, followed by the name of the parameter, with ‘__’ as
 a separator.</p>
 <div class="section" id="load-the-haxby-dataset">
 <h2>8.3.7.1. Load the Haxby dataset<a class="headerlink" href="#load-the-haxby-dataset" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
 <span class="c1"># by default 2nd subject data will be fetched on which we run our analysis</span>
@@ -253,12 +258,12 @@ a separator.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Mask</span> <span class="n">nifti</span> <span class="n">image</span> <span class="p">(</span><span class="mi">3</span><span class="n">D</span><span class="p">)</span> <span class="ow">is</span> <span class="n">located</span> <span class="n">at</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">kamalakar</span><span class="o">/</span><span class="n">nilearn_data</span><span class="o">/</span><span class="n">haxby2001</span><span class="o">/</span><span class="n">mask</span><span class="o">.</span><span class="n">nii</span><span class="o">.</span><span class="n">gz</span>
-<span class="n">Functional</span> <span class="n">nifti</span> <span class="n">image</span> <span class="p">(</span><span class="mi">4</span><span class="n">D</span><span class="p">)</span> <span class="n">are</span> <span class="n">located</span> <span class="n">at</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">kamalakar</span><span class="o">/</span><span class="n">nilearn_data</span><span class="o">/</span><span class="n">haxby2001</span><span class="o">/</span><span class="n">subj2</span><span class="o">/</span><span class="n">bold</span><span class="o">.</span><span class="n">nii</span><span class="o">.</span><span class="n">gz</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Mask</span> <span class="n">nifti</span> <span class="n">image</span> <span class="p">(</span><span class="mi">3</span><span class="n">D</span><span class="p">)</span> <span class="ow">is</span> <span class="n">located</span> <span class="n">at</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">varoquau</span><span class="o">/</span><span class="n">nilearn_data</span><span class="o">/</span><span class="n">haxby2001</span><span class="o">/</span><span class="n">mask</span><span class="o">.</span><span class="n">nii</span><span class="o">.</span><span class="n">gz</span>
+<span class="n">Functional</span> <span class="n">nifti</span> <span class="n">image</span> <span class="p">(</span><span class="mi">4</span><span class="n">D</span><span class="p">)</span> <span class="n">are</span> <span class="n">located</span> <span class="n">at</span><span class="p">:</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">varoquau</span><span class="o">/</span><span class="n">nilearn_data</span><span class="o">/</span><span class="n">haxby2001</span><span class="o">/</span><span class="n">subj2</span><span class="o">/</span><span class="n">bold</span><span class="o">.</span><span class="n">nii</span><span class="o">.</span><span class="n">gz</span>
 </pre></div>
 </div>
 <p>Prepare the data with the NiftiMasker</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
 
 <span class="n">mask_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask</span>
 <span class="c1"># For decoding, standardizing is often very important</span>
@@ -277,31 +282,30 @@ a separator.</p>
 <h2>8.3.7.2. Build the decoder that we will use<a class="headerlink" href="#build-the-decoder-that-we-will-use" title="Permalink to this headline">¶</a></h2>
 <p>Define the prediction function to be used.
 Here we use a Support Vector Classification, with a linear kernel</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a>
-<span class="n">svc</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a>
+<span class="n">svc</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
 
 
 <span class="c1"># Define the dimension reduction to be used.</span>
 <span class="c1"># Here we use a classical univariate feature selection based on F-test,</span>
 <span class="c1"># namely Anova. We set the number of features to be selected to 500</span>
-<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" title="View documentation for sklearn.feature_selection.SelectKBest"><span class="n">SelectKBest</span></a><span class="p">,</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" title="View documentation for sklearn.feature_selection.f_classif"><span class="n">f_classif</span></a>
-<span class="n">feature_selection</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" title="View documentation for sklearn.feature_selection.SelectKBest"><span class="n">SelectKBest</span></a><span class="p">(</span><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" title="View documentation for sklearn.feature_selection.f_classif"><span class="n">f_classif</span></a><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" title="View documentation for sklearn.feature_selection.SelectKBest"><span class="n">SelectKBest</span></a><span class="p">,</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" title="View documentation for sklearn.feature_selection.f_classif"><span class="n">f_classif</span></a>
+<span class="n">feature_selection</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" title="View documentation for sklearn.feature_selection.SelectKBest"><span class="n">SelectKBest</span></a><span class="p">(</span><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" title="View documentation for sklearn.feature_selection.f_classif"><span class="n">f_classif</span></a><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 
 <span class="c1"># We have our classifier (SVC), our feature selection (SelectKBest), and now,</span>
 <span class="c1"># we can plug them together in a *pipeline* that performs the two operations</span>
 <span class="c1"># successively:</span>
-<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="View documentation for sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a>
-<span class="n">anova_svc</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="View documentation for sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a><span class="p">([(</span><span class="s1">&#39;anova&#39;</span><span class="p">,</span> <span class="n">feature_selection</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="n">svc</span><span class="p">)])</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="View documentation for sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a>
+<span class="n">anova_svc</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="View documentation for sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a><span class="p">([(</span><span class="s1">&#39;anova&#39;</span><span class="p">,</span> <span class="n">feature_selection</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;svc&#39;</span><span class="p">,</span> <span class="n">svc</span><span class="p">)])</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="compute-prediction-scores-using-cross-validation">
 <h2>8.3.7.3. Compute prediction scores using cross-validation<a class="headerlink" href="#compute-prediction-scores-using-cross-validation" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">anova_svc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">anova_svc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="n">y_pred</span> <span class="o">=</span> <span class="n">anova_svc</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.cross_validation.LeaveOneLabelOut.html#sklearn.cross_validation.LeaveOneLabelOut" title="View documentation for sklearn.cross_validation.LeaveOneLabelOut"><span class="n">LeaveOneLabelOut</span></a><span class="p">,</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score" title="View documentation for sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a>
-<span class="n">cv</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.cross_validation.LeaveOneLabelOut.html#sklearn.cross_validation.LeaveOneLabelOut" title="View documentation for sklearn.cross_validation.LeaveOneLabelOut"><span class="n">LeaveOneLabelOut</span></a><span class="p">(</span><span class="n">session</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">])</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.cross_val_score.html#sklearn.model_selection.cross_val_score" title="View documentation for sklearn.model_selection.cross_val_score"><span class="n">cross_val_score</span></a>
 
 <span class="n">k_range</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">1500</span><span class="p">,</span> <span class="mi">3000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">]</span>
 <span class="n">cv_scores</span> <span class="o">=</span> <span class="p">[]</span>
@@ -309,75 +313,75 @@ Here we use a Support Vector Classification, with a linear kernel</p>
 
 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">k_range</span><span class="p">:</span>
     <span class="n">feature_selection</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k</span>
-    <span class="n">cv_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span>
-        <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score" title="View documentation for sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span><span class="n">anova_svc</span><span class="p">,</span> <span class="n">X</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">])))</span>
+    <span class="n">cv_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span>
+        <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.cross_val_score.html#sklearn.model_selection.cross_val_score" title="View documentation for sklearn.model_selection.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span><span class="n">anova_svc</span><span class="p">,</span> <span class="n">X</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">])))</span>
     <span class="k">print</span><span class="p">(</span><span class="s2">&quot;CV score: </span><span class="si">%.4f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cv_scores</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
     <span class="n">anova_svc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">])</span>
     <span class="n">y_pred</span> <span class="o">=</span> <span class="n">anova_svc</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">session</span> <span class="o">==</span> <span class="mi">10</span><span class="p">])</span>
-    <span class="n">scores_validation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="n">y</span><span class="p">[</span><span class="n">session</span> <span class="o">==</span> <span class="mi">10</span><span class="p">]))</span>
+    <span class="n">scores_validation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="n">y</span><span class="p">[</span><span class="n">session</span> <span class="o">==</span> <span class="mi">10</span><span class="p">]))</span>
     <span class="k">print</span><span class="p">(</span><span class="s2">&quot;score validation: </span><span class="si">%.4f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">scores_validation</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.7667</span>
-<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.6111</span>
-<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.7444</span>
-<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.6111</span>
-<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.7056</span>
-<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.5000</span>
-<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6444</span>
-<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.6111</span>
-<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6333</span>
-<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.5000</span>
-<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6444</span>
-<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.5000</span>
-<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6444</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6444</span>
 <span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.4444</span>
-<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6611</span>
+<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6500</span>
 <span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.5000</span>
-<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6611</span>
+<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.5611</span>
+<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.4444</span>
+<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6111</span>
+<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.6111</span>
+<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.5833</span>
+<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.5000</span>
+<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.5889</span>
 <span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.5556</span>
-<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6722</span>
-<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.5000</span>
-<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6722</span>
-<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.2778</span>
+<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6500</span>
+<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.3889</span>
+<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6389</span>
+<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.4444</span>
+<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6667</span>
+<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.4444</span>
+<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6556</span>
+<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.3889</span>
+<span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6556</span>
+<span class="n">score</span> <span class="n">validation</span><span class="p">:</span> <span class="mf">0.3333</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="nested-cross-validation">
 <h2>8.3.7.4. Nested cross-validation<a class="headerlink" href="#nested-cross-validation" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.grid_search</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.grid_search.GridSearchCV.html#sklearn.grid_search.GridSearchCV" title="View documentation for sklearn.grid_search.GridSearchCV"><span class="n">GridSearchCV</span></a>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a>
 <span class="c1"># We are going to tune the parameter &#39;k&#39; of the step called &#39;anova&#39; in</span>
 <span class="c1"># the pipeline. Thus we need to address it as &#39;anova__k&#39;.</span>
 
 <span class="c1"># Note that GridSearchCV takes an n_jobs argument that can make it go</span>
 <span class="c1"># much faster</span>
-<span class="n">grid</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.grid_search.GridSearchCV.html#sklearn.grid_search.GridSearchCV" title="View documentation for sklearn.grid_search.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span><span class="n">anova_svc</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;anova__k&#39;</span><span class="p">:</span> <span class="n">k_range</span><span class="p">},</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">nested_cv_scores</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.17/modules/generated/sklearn.cross_validation.cross_val_score.html#sklearn.cross_validation.cross_val_score" title="View documentation for sklearn.cross_validation.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span><span class="n">anova_svc</span><span class="p">,</span> <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;anova__k&#39;</span><span class="p">:</span> <span class="n">k_range</span><span class="p">},</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">nested_cv_scores</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.cross_val_score.html#sklearn.model_selection.cross_val_score" title="View documentation for sklearn.model_selection.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Nested CV score: </span><span class="si">%.4f</span><span class="s2">&quot;</span> <span class="o">%</span> <a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">nested_cv_scores</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Nested CV score: </span><span class="si">%.4f</span><span class="s2">&quot;</span> <span class="o">%</span> <a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">nested_cv_scores</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Fitting</span> <span class="mi">3</span> <span class="n">folds</span> <span class="k">for</span> <span class="n">each</span> <span class="n">of</span> <span class="mi">11</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">totalling</span> <span class="mi">33</span> <span class="n">fits</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Fitting</span> <span class="mi">3</span> <span class="n">folds</span> <span class="k">for</span> <span class="n">each</span> <span class="n">of</span> <span class="mi">11</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">totalling</span> <span class="mi">33</span> <span class="n">fits</span>
 <span class="n">Fitting</span> <span class="mi">3</span> <span class="n">folds</span> <span class="k">for</span> <span class="n">each</span> <span class="n">of</span> <span class="mi">11</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">totalling</span> <span class="mi">33</span> <span class="n">fits</span>
 <span class="n">Fitting</span> <span class="mi">3</span> <span class="n">folds</span> <span class="k">for</span> <span class="n">each</span> <span class="n">of</span> <span class="mi">11</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">totalling</span> <span class="mi">33</span> <span class="n">fits</span>
-<span class="n">Nested</span> <span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.6481</span>
+<span class="n">Nested</span> <span class="n">CV</span> <span class="n">score</span><span class="p">:</span> <span class="mf">0.5741</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="plot-the-prediction-scores-using-matplotlib">
 <h2>8.3.7.5. Plot the prediction scores using matplotlib<a class="headerlink" href="#plot-the-prediction-scores-using-matplotlib" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <a href="http://matplotlib.org/api/_as_gen/matplotlib.figure.SubplotParams.html#matplotlib.figure" title="View documentation for matplotlib.pyplot.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 <a href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="View documentation for matplotlib.pyplot.plot"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><span class="n">cv_scores</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Cross validation scores&#39;</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="View documentation for matplotlib.pyplot.plot"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><span class="n">scores_validation</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Left-out validation data scores&#39;</span><span class="p">)</span>
-<a href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.xticks.html#matplotlib.pyplot.xticks" title="View documentation for matplotlib.pyplot.xticks"><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.arange.html#numpy.arange" title="View documentation for numpy.arange"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">k_range</span><span class="p">)),</span> <span class="n">k_range</span><span class="p">)</span>
+<a href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.xticks.html#matplotlib.pyplot.xticks" title="View documentation for matplotlib.pyplot.xticks"><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.arange.html#numpy.arange" title="View documentation for numpy.arange"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">k_range</span><span class="p">)),</span> <span class="n">k_range</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/axis_api.html#matplotlib.axis" title="View documentation for matplotlib.pyplot.axis"><span class="n">plt</span><span class="o">.</span><span class="n">axis</span></a><span class="p">(</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
 <a href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.xlabel.html#matplotlib.pyplot.xlabel" title="View documentation for matplotlib.pyplot.xlabel"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
 
-<a href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.axhline.html#matplotlib.pyplot.axhline" title="View documentation for matplotlib.pyplot.axhline"><span class="n">plt</span><span class="o">.</span><span class="n">axhline</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.6.0/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">nested_cv_scores</span><span class="p">),</span>
+<a href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.axhline.html#matplotlib.pyplot.axhline" title="View documentation for matplotlib.pyplot.axhline"><span class="n">plt</span><span class="o">.</span><span class="n">axhline</span></a><span class="p">(</span><a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">nested_cv_scores</span><span class="p">),</span>
             <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Nested cross-validation&#39;</span><span class="p">,</span>
             <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
 
@@ -386,12 +390,12 @@ Here we use a Support Vector Classification, with a linear kernel</p>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_haxby_grid_search_001.png" class="align-center" src="../../_images/sphx_glr_plot_haxby_grid_search_001.png" />
-<p><strong>Total running time of the script:</strong> ( 0 minutes  16.207 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  35.990 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../../_downloads/plot_haxby_grid_search.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_haxby_grid_search.py</span></code></a></div>
+<a class="reference download internal" href="../../_downloads/plot_haxby_grid_search.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_haxby_grid_search.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../../_downloads/plot_haxby_grid_search.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_haxby_grid_search.ipynb</span></code></a></div>
+<a class="reference download internal" href="../../_downloads/plot_haxby_grid_search.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_haxby_grid_search.ipynb</span></code></a></div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Generated by Sphinx-Gallery</a></p>
 </div>
@@ -410,7 +414,7 @@ Here we use a Support Vector Classification, with a linear kernel</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a></li>
         <li class="right" >
-          <a href="plot_haxby_full_analysis.html" title="8.3.8. ROI-based decoding analysis in Haxby et al. dataset"
+          <a href="plot_haxby_anova_svm.html" title="8.3.8. Decoding with ANOVA + SVM: face vs house in the Haxby dataset"
              >next</a> |</li>
         <li class="right" >
           <a href="plot_haxby_searchlight.html" title="8.3.6. Searchlight analysis of face vs house recognition"
@@ -428,7 +432,7 @@ Here we use a Support Vector Classification, with a linear kernel</p>
     </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
-          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.7.0.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.
         <span style="padding-left: 5ex;">
           <a href="../../_sources/auto_examples/02_decoding/plot_haxby_grid_search.rst.txt"
         	 rel="nofollow">Show this page source</a>
