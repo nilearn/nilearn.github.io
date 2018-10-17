@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,47 +29,103 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -164,6 +222,8 @@ $(function () {
  
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -174,143 +234,154 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">0.5.0 alpha</a><ul>
+<li><a class="reference internal" href="#">0.5.0 beta</a><ul>
 <li><a class="reference internal" href="#highlights">Highlights</a></li>
-<li><a class="reference internal" href="#enhancements">Enhancements</a></li>
+<li><a class="reference internal" href="#improvements">Improvements</a></li>
+<li><a class="reference internal" href="#fixes">Fixes</a></li>
 <li><a class="reference internal" href="#changes">Changes</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id1">0.4.2</a><ul>
-<li><a class="reference internal" href="#id2">Changes</a></li>
-<li><a class="reference internal" href="#bug-fixes">Bug fixes</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id3">0.4.1</a><ul>
-<li><a class="reference internal" href="#id4">Enhancements</a></li>
-<li><a class="reference internal" href="#id5">Changes</a></li>
-<li><a class="reference internal" href="#id6">Bug fixes</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id7">0.4.0</a><ul>
-<li><a class="reference internal" href="#id8">Enhancements</a></li>
-<li><a class="reference internal" href="#id9">Bug fixes</a></li>
-<li><a class="reference internal" href="#id10">Changes</a></li>
 <li><a class="reference internal" href="#contributors">Contributors</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id11">0.3.1</a><ul>
-<li><a class="reference internal" href="#id12">Highlights</a></li>
-<li><a class="reference internal" href="#changelog">Changelog</a></li>
-<li><a class="reference internal" href="#bug-fix">Bug fix</a></li>
-<li><a class="reference internal" href="#id13">Enhancements</a></li>
+<li><a class="reference internal" href="#alpha">0.5.0 alpha</a><ul>
+<li><a class="reference internal" href="#id1">Highlights</a></li>
+<li><a class="reference internal" href="#enhancements">Enhancements</a></li>
+<li><a class="reference internal" href="#id2">Changes</a></li>
+<li><a class="reference internal" href="#id3">Contributors</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id14">0.3.0</a><ul>
-<li><a class="reference internal" href="#id15">Changelog</a></li>
-<li><a class="reference internal" href="#id16">Bug fix</a></li>
+<li><a class="reference internal" href="#id4">0.4.2</a><ul>
+<li><a class="reference internal" href="#id5">Changes</a></li>
+<li><a class="reference internal" href="#bug-fixes">Bug fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id6">0.4.1</a><ul>
+<li><a class="reference internal" href="#id7">Enhancements</a></li>
+<li><a class="reference internal" href="#id8">Changes</a></li>
+<li><a class="reference internal" href="#id9">Bug fixes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id10">0.4.0</a><ul>
+<li><a class="reference internal" href="#id11">Enhancements</a></li>
+<li><a class="reference internal" href="#id12">Bug fixes</a></li>
+<li><a class="reference internal" href="#id13">Changes</a></li>
+<li><a class="reference internal" href="#id14">Contributors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id15">0.3.1</a><ul>
+<li><a class="reference internal" href="#id16">Highlights</a></li>
+<li><a class="reference internal" href="#changelog">Changelog</a></li>
+<li><a class="reference internal" href="#bug-fix">Bug fix</a></li>
 <li><a class="reference internal" href="#id17">Enhancements</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#beta">0.3.0 beta</a><ul>
-<li><a class="reference internal" href="#id18">Highlights</a></li>
+<li><a class="reference internal" href="#id18">0.3.0</a><ul>
 <li><a class="reference internal" href="#id19">Changelog</a></li>
-<li><a class="reference internal" href="#id20">Bug fix</a><ul>
+<li><a class="reference internal" href="#id20">Bug fix</a></li>
 <li><a class="reference internal" href="#id21">Enhancements</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#id22">0.3.0 beta</a><ul>
+<li><a class="reference internal" href="#id23">Highlights</a></li>
+<li><a class="reference internal" href="#id24">Changelog</a></li>
+<li><a class="reference internal" href="#id25">Bug fix</a><ul>
+<li><a class="reference internal" href="#id26">Enhancements</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id22">0.2.6</a><ul>
-<li><a class="reference internal" href="#id23">Changelog</a><ul>
-<li><a class="reference internal" href="#id24">Bug fix</a></li>
-<li><a class="reference internal" href="#id25">Enhancements</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id27">0.2.6</a><ul>
+<li><a class="reference internal" href="#id28">Changelog</a><ul>
+<li><a class="reference internal" href="#id29">Bug fix</a></li>
+<li><a class="reference internal" href="#id30">Enhancements</a></li>
 <li><a class="reference internal" href="#api-changes-summary">API changes summary</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id26">0.2.5.1</a><ul>
-<li><a class="reference internal" href="#id27">Changelog</a><ul>
-<li><a class="reference internal" href="#id28">API changes summary</a></li>
+<li><a class="reference internal" href="#id31">0.2.5.1</a><ul>
+<li><a class="reference internal" href="#id32">Changelog</a><ul>
+<li><a class="reference internal" href="#id33">API changes summary</a></li>
 <li><a class="reference internal" href="#new-features">New features</a></li>
-<li><a class="reference internal" href="#id29">Bug fix</a></li>
+<li><a class="reference internal" href="#id34">Bug fix</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id30">0.2.5</a><ul>
-<li><a class="reference internal" href="#id31">Changelog</a><ul>
-<li><a class="reference internal" href="#id32">New features</a></li>
+<li><a class="reference internal" href="#id35">0.2.5</a><ul>
+<li><a class="reference internal" href="#id36">Changelog</a><ul>
+<li><a class="reference internal" href="#id37">New features</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id33">Contributors</a></li>
+<li><a class="reference internal" href="#id38">Contributors</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id34">0.2.4</a><ul>
-<li><a class="reference internal" href="#id35">Changelog</a><ul>
-<li><a class="reference internal" href="#id36">New features</a></li>
-<li><a class="reference internal" href="#id37">API changes summary</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id38">0.2.3</a><ul>
-<li><a class="reference internal" href="#id39">Changelog</a><ul>
-<li><a class="reference internal" href="#id40">New features</a></li>
-<li><a class="reference internal" href="#id41">Bug fixes</a></li>
+<li><a class="reference internal" href="#id39">0.2.4</a><ul>
+<li><a class="reference internal" href="#id40">Changelog</a><ul>
+<li><a class="reference internal" href="#id41">New features</a></li>
+<li><a class="reference internal" href="#id42">API changes summary</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id42">0.2.2</a><ul>
-<li><a class="reference internal" href="#id43">Changelog</a><ul>
-<li><a class="reference internal" href="#id44">New features</a></li>
-<li><a class="reference internal" href="#id45">Enhancements</a></li>
+<li><a class="reference internal" href="#id43">0.2.3</a><ul>
+<li><a class="reference internal" href="#id44">Changelog</a><ul>
+<li><a class="reference internal" href="#id45">New features</a></li>
 <li><a class="reference internal" href="#id46">Bug fixes</a></li>
-<li><a class="reference internal" href="#id47">API changes summary</a></li>
-<li><a class="reference internal" href="#id48">Contributors</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id49">0.2.1</a><ul>
-<li><a class="reference internal" href="#id50">Changelog</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id51">0.2</a><ul>
-<li><a class="reference internal" href="#id52">Changelog</a><ul>
-<li><a class="reference internal" href="#id53">New features</a></li>
-<li><a class="reference internal" href="#id54">Enhancements</a></li>
-<li><a class="reference internal" href="#id55">Bug fixes</a></li>
-<li><a class="reference internal" href="#id56">API changes summary</a></li>
-<li><a class="reference internal" href="#id57">Contributors</a></li>
+<li><a class="reference internal" href="#id47">0.2.2</a><ul>
+<li><a class="reference internal" href="#id48">Changelog</a><ul>
+<li><a class="reference internal" href="#id49">New features</a></li>
+<li><a class="reference internal" href="#id50">Enhancements</a></li>
+<li><a class="reference internal" href="#id51">Bug fixes</a></li>
+<li><a class="reference internal" href="#id52">API changes summary</a></li>
+<li><a class="reference internal" href="#id53">Contributors</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id58">0.1.4</a><ul>
-<li><a class="reference internal" href="#id59">Changelog</a></li>
+<li><a class="reference internal" href="#id54">0.2.1</a><ul>
+<li><a class="reference internal" href="#id55">Changelog</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id60">0.1.3</a><ul>
-<li><a class="reference internal" href="#id61">Changelog</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id62">0.1.2</a><ul>
-<li><a class="reference internal" href="#id63">Changelog</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id64">0.1.1</a><ul>
-<li><a class="reference internal" href="#id65">Changelog</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id66">0.1</a><ul>
-<li><a class="reference internal" href="#id67">Changelog</a></li>
+<li><a class="reference internal" href="#id56">0.2</a><ul>
+<li><a class="reference internal" href="#id57">Changelog</a><ul>
+<li><a class="reference internal" href="#id58">New features</a></li>
+<li><a class="reference internal" href="#id59">Enhancements</a></li>
+<li><a class="reference internal" href="#id60">Bug fixes</a></li>
+<li><a class="reference internal" href="#id61">API changes summary</a></li>
+<li><a class="reference internal" href="#id62">Contributors</a></li>
 </ul>
 </li>
 </ul>
+</li>
+<li><a class="reference internal" href="#id63">0.1.4</a><ul>
+<li><a class="reference internal" href="#id64">Changelog</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id65">0.1.3</a><ul>
+<li><a class="reference internal" href="#id66">Changelog</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id67">0.1.2</a><ul>
+<li><a class="reference internal" href="#id68">Changelog</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id69">0.1.1</a><ul>
+<li><a class="reference internal" href="#id70">Changelog</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id71">0.1</a><ul>
+<li><a class="reference internal" href="#id72">Changelog</a></li>
+</ul>
+</li>
+</ul>
+</div>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="auto_examples/05_advanced/plot_haxby_mass_univariate.html"
@@ -318,9 +389,6 @@ $(function () {
   <h4>Next topic</h4>
   <p class="topless"><a href="contributing.html"
                         title="next chapter">Contributing</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -334,15 +402,103 @@ $(function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="alpha">
+  <div class="section" id="beta">
+<h1>0.5.0 beta<a class="headerlink" href="#beta" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="highlights">
+<h2>Highlights<a class="headerlink" href="#highlights" title="Permalink to this headline">¶</a></h2>
+<p><strong>Nilearn Python2 support is being removed in the near future.
+Users with a Python2 environment will be warned at their first Nilearn import.</strong></p>
+</div>
+<div class="section" id="improvements">
+<h2>Improvements<a class="headerlink" href="#improvements" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>Displays created by plotting functions can now add a scale bar</dt>
+<dd>to indicate the size in mm or cm (see <a class="reference internal" href="plotting/index.html#plotting"><span class="std std-ref">Plotting brain images</span></a>),
+contributed by Oscar Esteban</dd>
+<dt>Colorbars in plotting functions now have a middle gray background</dt>
+<dd>suitable for use with custom colormaps with a non-unity alpha channel.
+Contributed by Eric Larson (larsoner)</dd>
+</dl>
+<p>Loads of fixes and quality of life improvements</p>
+<ul class="simple">
+<li>A cleaner layout and improved navigation for the website, with a better introduction.</li>
+<li>Less warnings and verbosity while using certain functions and during dataset downloads.</li>
+<li>Improved backend for the dataset fetchers means more reliable dataset downloads.</li>
+<li>Some datasets, such as the ICBM, are now compressed to take up less disk space.</li>
+</ul>
+</div>
+<div class="section" id="fixes">
+<h2>Fixes<a class="headerlink" href="#fixes" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Searchlight().fit() now accepts 4D niimgs. Contributed by Dan Gale (danjgale).</li>
+<li>plotting.view_markers.open_in_browser() in js plotting utils fixed</li>
+<li>Brainomics dataset has been replaced in several examples.</li>
+<li>Lots of other fixes in documentation and examples.</li>
+</ul>
+</div>
+<div class="section" id="changes">
+<h2>Changes<a class="headerlink" href="#changes" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>In nilearn.regions.img_to_signals_labels, the See Also section in documentation now also points to NiftiLabelsMasker and NiftiMapsMasker</li>
+<li>Scipy is listed as a dependency for Nilearn installation.</li>
+<li>Anaconda link in the installation documentation updated.</li>
+</ul>
+</div>
+<div class="section" id="contributors">
+<h2>Contributors<a class="headerlink" href="#contributors" title="Permalink to this headline">¶</a></h2>
+<p>The following people contributed to this release:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">58</span>  <span class="n">Gael</span> <span class="n">Varoquaux</span>
+<span class="mi">115</span>  <span class="n">kchawla</span><span class="o">-</span><span class="n">pi</span>
+<span class="mi">15</span>  <span class="n">Jerome</span> <span class="n">Dockes</span>
+<span class="mi">14</span>  <span class="n">oesteban</span>
+<span class="mi">10</span>  <span class="n">Eric</span> <span class="n">Larson</span>
+<span class="mi">6</span>  <span class="n">Kamalakar</span> <span class="n">Daddy</span>
+<span class="mi">3</span>  <span class="n">Bertrand</span> <span class="n">Thirion</span>
+<span class="mi">5</span>  <span class="n">Alexandre</span> <span class="n">Abadie</span>
+<span class="mi">4</span>  <span class="n">Sourav</span> <span class="n">Singh</span>
+<span class="mi">3</span>  <span class="n">Alex</span> <span class="n">Rothberg</span>
+<span class="mi">3</span>  <span class="n">AnaLu</span>
+<span class="mi">3</span>  <span class="n">Demian</span> <span class="n">Wassermann</span>
+<span class="mi">3</span>  <span class="n">Horea</span> <span class="n">Christian</span>
+<span class="mi">3</span>  <span class="n">Jason</span> <span class="n">Gors</span>
+<span class="mi">3</span>  <span class="n">Jean</span> <span class="n">Remi</span> <span class="n">King</span>
+<span class="mi">3</span>  <span class="n">MADHYASTHA</span> <span class="n">Meghana</span>
+<span class="mi">3</span>  <span class="n">SRSteinkamp</span>
+<span class="mi">3</span>  <span class="n">Simon</span> <span class="n">Steinkamp</span>
+<span class="mi">3</span>  <span class="n">jerome</span><span class="o">-</span><span class="n">alexis_chevalier</span>
+<span class="mi">3</span>  <span class="n">salma</span>
+<span class="mi">3</span>  <span class="n">sfvnMAC</span>
+<span class="mi">2</span>  <span class="n">Akshay</span>
+<span class="mi">2</span>  <span class="n">Daniel</span> <span class="n">Gomez</span>
+<span class="mi">2</span>  <span class="n">Guillaume</span> <span class="n">Lemaitre</span>
+<span class="mi">2</span>  <span class="n">Pierre</span> <span class="n">Bellec</span>
+<span class="mi">2</span>  <span class="n">arokem</span>
+<span class="mi">2</span>  <span class="n">erramuzpe</span>
+<span class="mi">2</span>  <span class="n">foucault</span>
+<span class="mi">2</span>  <span class="n">jehane</span>
+<span class="mi">1</span>  <span class="n">Sylvain</span> <span class="n">LANNUZEL</span>
+<span class="mi">1</span>  <span class="n">Aki</span> <span class="n">Nikolaidis</span>
+<span class="mi">1</span>  <span class="n">Christophe</span> <span class="n">Bedetti</span>
+<span class="mi">1</span>  <span class="n">Dan</span> <span class="n">Gale</span>
+<span class="mi">1</span>  <span class="n">Dillon</span> <span class="n">Plunkett</span>
+<span class="mi">1</span>  <span class="n">Dimitri</span> <span class="n">Papadopoulos</span> <span class="n">Orfanos</span>
+<span class="mi">1</span>  <span class="n">Greg</span> <span class="n">Operto</span>
+<span class="mi">1</span>  <span class="n">Ivan</span> <span class="n">Gonzalez</span>
+<span class="mi">1</span>  <span class="n">Yaroslav</span> <span class="n">Halchenko</span>
+<span class="mi">1</span>  <span class="n">dtyulman</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="alpha">
 <h1>0.5.0 alpha<a class="headerlink" href="#alpha" title="Permalink to this headline">¶</a></h1>
 <p>This is an alpha release: to download it, you need to explicitly ask for
 the version number:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">nilearn</span><span class="o">==</span><span class="mf">0.5</span><span class="o">.</span><span class="mi">0</span><span class="n">a0</span>
 </pre></div>
 </div>
-<div class="section" id="highlights">
-<h2>Highlights<a class="headerlink" href="#highlights" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h2>Highlights<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><dl class="first docutils">
@@ -368,6 +524,9 @@ eg for use in a notebook.</li>
 <div><ul class="simple">
 <li>All NiftiMaskers now have a <cite>dtype</cite> argument. For now the default behaviour
 is to keep the same data type as the input data.</li>
+<li>Displays created by plotting functions can now add a scale bar to
+indicate the size in mm or cm (see <a class="reference internal" href="plotting/index.html#plotting"><span class="std std-ref">Plotting brain images</span></a>), contributed by
+Oscar Esteban</li>
 <li>New functions <a class="reference internal" href="modules/generated/nilearn.plotting.view_surf.html#nilearn.plotting.view_surf" title="nilearn.plotting.view_surf"><code class="xref py py-func docutils literal"><span class="pre">nilearn.plotting.view_surf</span></code></a> and
 <a class="reference internal" href="modules/generated/nilearn.plotting.view_surf.html#nilearn.plotting.view_surf" title="nilearn.plotting.view_surf"><code class="xref py py-func docutils literal"><span class="pre">nilearn.plotting.view_surf</span></code></a> and
 <a class="reference internal" href="modules/generated/nilearn.plotting.view_img_on_surf.html#nilearn.plotting.view_img_on_surf" title="nilearn.plotting.view_img_on_surf"><code class="xref py py-func docutils literal"><span class="pre">nilearn.plotting.view_img_on_surf</span></code></a> for interactive visualization of
@@ -390,8 +549,8 @@ and <a class="reference internal" href="modules/generated/nilearn.datasets.fetch
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="changes">
-<h2>Changes<a class="headerlink" href="#changes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id2">
+<h2>Changes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><cite>nilearn.datasets.fetch_surf_fsaverage5</cite> is deprecated and will be
@@ -401,15 +560,34 @@ with the parameter mesh=”fsaverage5” (the default) instead.</li>
 Look to issue #1705 for discussion.</li>
 <li><cite>sklearn.cross_validation</cite> and <cite>sklearn.grid_search</cite> have been
 replaced by <cite>sklearn.model_selection</cite> in all the examples.</li>
+<li>Colorbars in plotting functions now have a middle gray background
+suitable for use with custom colormaps with a non-unity alpha channel.</li>
 </ul>
 </div></blockquote>
 </div>
+<div class="section" id="id3">
+<h2>Contributors<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>The following people contributed to this release:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">49</span>  <span class="n">Gael</span> <span class="n">Varoquaux</span>
+<span class="mi">180</span>  <span class="n">Jerome</span> <span class="n">Dockes</span>
+<span class="mi">57</span>  <span class="n">kchawla</span><span class="o">-</span><span class="n">pi</span>
+<span class="mi">38</span>  <span class="n">SylvainLan</span>
+<span class="mi">36</span>  <span class="n">Kamalakar</span> <span class="n">Daddy</span>
+<span class="mi">10</span>  <span class="n">Gilles</span> <span class="n">de</span> <span class="n">Hollander</span>
+<span class="mi">4</span>  <span class="n">Bertrand</span> <span class="n">Thirion</span>
+<span class="mi">4</span>  <span class="n">MENUET</span> <span class="n">Romuald</span>
+<span class="mi">3</span>  <span class="n">Moritz</span> <span class="n">Boos</span>
+<span class="mi">1</span>  <span class="n">Peer</span> <span class="n">Herholz</span>
+<span class="mi">1</span>  <span class="n">Pierre</span> <span class="n">Bellec</span>
+</pre></div>
 </div>
-<div class="section" id="id1">
-<h1>0.4.2<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+</div>
+</div>
+<div class="section" id="id4">
+<h1>0.4.2<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h1>
 <p>Few important bugs fix release for OHBM conference.</p>
-<div class="section" id="id2">
-<h2>Changes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h2>Changes<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>Default colormaps for surface plotting functions have changed to be more
@@ -438,11 +616,11 @@ fetching utilities. By Jerome Dockes.</li>
 </div></blockquote>
 </div>
 </div>
-<div class="section" id="id3">
-<h1>0.4.1<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id6">
+<h1>0.4.1<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h1>
 <p>This bug fix release is focussed on few bug fixes and minor developments.</p>
-<div class="section" id="id4">
-<h2>Enhancements<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id7">
+<h2>Enhancements<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul>
 <li><p class="first"><a class="reference internal" href="modules/generated/nilearn.decomposition.CanICA.html#nilearn.decomposition.CanICA" title="nilearn.decomposition.CanICA"><code class="xref py py-class docutils literal"><span class="pre">nilearn.decomposition.CanICA</span></code></a> and
@@ -464,8 +642,8 @@ with <a class="reference internal" href="modules/generated/nilearn.plotting.plot
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id5">
-<h2>Changes<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id8">
+<h2>Changes<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>Using output attribute <cite>components_</cite> which is an extracted components
@@ -475,8 +653,8 @@ be removed in next two releases. Use <cite>components_img_</cite> instead.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id6">
-<h2>Bug fixes<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id9">
+<h2>Bug fixes<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>Fix issues using <a class="reference internal" href="modules/generated/nilearn.plotting.plot_connectome.html#nilearn.plotting.plot_connectome" title="nilearn.plotting.plot_connectome"><code class="xref py py-func docutils literal"><span class="pre">nilearn.plotting.plot_connectome</span></code></a> when string is
@@ -494,8 +672,8 @@ given in glob patterns.</li>
 </div></blockquote>
 </div>
 </div>
-<div class="section" id="id7">
-<h1>0.4.0<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id10">
+<h1>0.4.0<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h1>
 <p><strong>Highlights</strong>:</p>
 <blockquote>
 <div><ul class="simple">
@@ -504,8 +682,8 @@ surface.</li>
 <li><a class="reference internal" href="modules/generated/nilearn.plotting.plot_matrix.html#nilearn.plotting.plot_matrix" title="nilearn.plotting.plot_matrix"><code class="xref py py-func docutils literal"><span class="pre">nilearn.plotting.plot_matrix</span></code></a> to display matrices, eg connectomes</li>
 </ul>
 </div></blockquote>
-<div class="section" id="id8">
-<h2>Enhancements<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id11">
+<h2>Enhancements<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>New function <a class="reference internal" href="modules/generated/nilearn.surface.vol_to_surf.html#nilearn.surface.vol_to_surf" title="nilearn.surface.vol_to_surf"><code class="xref py py-func docutils literal"><span class="pre">nilearn.surface.vol_to_surf</span></code></a> to project a 3d or
@@ -533,8 +711,8 @@ plotting functions to have user control for faster visualizations.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id9">
-<h2>Bug fixes<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id12">
+<h2>Bug fixes<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>Dimming factor applied to background image in plotting
@@ -545,8 +723,8 @@ string (‘-1’). An error will be raised.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id10">
-<h2>Changes<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id13">
+<h2>Changes<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><strong>Backward incompatible change</strong>: <a class="reference internal" href="modules/generated/nilearn.plotting.find_xyz_cut_coords.html#nilearn.plotting.find_xyz_cut_coords" title="nilearn.plotting.find_xyz_cut_coords"><code class="xref py py-func docutils literal"><span class="pre">nilearn.plotting.find_xyz_cut_coords</span></code></a>
@@ -568,8 +746,8 @@ cautiously set.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="contributors">
-<h2>Contributors<a class="headerlink" href="#contributors" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id14">
+<h2>Contributors<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h2>
 <p>The following people contributed to this release:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">127</span>  <span class="n">Jerome</span> <span class="n">Dockes</span>
  <span class="mi">62</span>  <span class="n">Gael</span> <span class="n">Varoquaux</span>
@@ -600,11 +778,11 @@ cautiously set.</li>
 </div>
 </div>
 </div>
-<div class="section" id="id11">
-<h1>0.3.1<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id15">
+<h1>0.3.1<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h1>
 <p>This is a minor release for BrainHack.</p>
-<div class="section" id="id12">
-<h2>Highlights<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id16">
+<h2>Highlights<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><strong>Dropped support for scikit-learn older than 0.14.1</strong> Minimum supported version
 is now 0.15.</li>
@@ -635,8 +813,8 @@ to resampling the image.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id13">
-<h2>Enhancements<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id17">
+<h2>Enhancements<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>New data fetcher functions <a class="reference internal" href="modules/generated/nilearn.datasets.fetch_neurovault.html#nilearn.datasets.fetch_neurovault" title="nilearn.datasets.fetch_neurovault"><code class="xref py py-func docutils literal"><span class="pre">nilearn.datasets.fetch_neurovault</span></code></a> and
@@ -661,13 +839,13 @@ directly extract the largest connected component from Nifti images.</li>
 </div></blockquote>
 </div>
 </div>
-<div class="section" id="id14">
-<h1>0.3.0<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id18">
+<h1>0.3.0<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h1>
 <p>In addition, more details of this release are listed below. Please checkout
 in <strong>0.3.0 beta</strong> release section for minimum version support of dependencies,
 latest updates, highlights, changelog and enhancements.</p>
-<div class="section" id="id15">
-<h2>Changelog<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id19">
+<h2>Changelog<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>Function <a class="reference internal" href="modules/generated/nilearn.plotting.find_cut_slices.html#nilearn.plotting.find_cut_slices" title="nilearn.plotting.find_cut_slices"><code class="xref py py-func docutils literal"><span class="pre">nilearn.plotting.find_cut_slices</span></code></a> now supports to accept
@@ -678,8 +856,8 @@ common with Decoder object.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id16">
-<h2>Bug fix<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id20">
+<h2>Bug fix<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>Fix bug uncompressing tar files with datasets fetcher.</li>
@@ -691,8 +869,8 @@ unmask, in masking module.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id17">
-<h2>Enhancements<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id21">
+<h2>Enhancements<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>ANOVA SVM example on Haxby datasets <cite>plot_haxby_anova_svm</cite> in Decoding section
@@ -704,14 +882,14 @@ of scikit-learn).</li>
 </div></blockquote>
 </div>
 </div>
-<div class="section" id="beta">
-<h1>0.3.0 beta<a class="headerlink" href="#beta" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id22">
+<h1>0.3.0 beta<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h1>
 <p>To install the beta version, use:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="o">--</span><span class="n">pre</span> <span class="n">nilearn</span>
 </pre></div>
 </div>
-<div class="section" id="id18">
-<h2>Highlights<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id23">
+<h2>Highlights<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>Simple surface plotting</li>
 <li>A function to break a parcellation into its connected components</li>
@@ -722,8 +900,8 @@ is now 0.14.1.</li>
 data with freesurfer.</li>
 </ul>
 </div>
-<div class="section" id="id19">
-<h2>Changelog<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id24">
+<h2>Changelog<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>A helper function _safe_get_data as a nilearn utility now safely
@@ -733,8 +911,8 @@ removes NAN values in the images with argument ensure_finite=True.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id20">
-<h2>Bug fix<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id25">
+<h2>Bug fix<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><ul class="simple">
 <li>Fix colormap issue with colorbar=True when using qualitative colormaps
@@ -744,8 +922,8 @@ Fixed in according with changes of matplotlib 2.0 fixes.</li>
 <li>Fix bug in nilearn clean_img</li>
 </ul>
 </div></blockquote>
-<div class="section" id="id21">
-<h3>Enhancements<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id26">
+<h3>Enhancements<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>A new function <a class="reference internal" href="modules/generated/nilearn.regions.connected_label_regions.html#nilearn.regions.connected_label_regions" title="nilearn.regions.connected_label_regions"><code class="xref py py-func docutils literal"><span class="pre">nilearn.regions.connected_label_regions</span></code></a> to
@@ -792,18 +970,18 @@ on glass brain.</li>
 </div>
 </div>
 </div>
-<div class="section" id="id22">
-<h1>0.2.6<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id23">
-<h2>Changelog<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id27">
+<h1>0.2.6<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id28">
+<h2>Changelog<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h2>
 <p>This release enhances usage of several functions by fine tuning their
 parameters. It allows to select which Haxby subject to fetch. It also refactors
 documentation to make it easier to understand.
 Sphinx-gallery has been updated and nilearn is ready for new nibabel 2.1 version.
 Several bugs related to masks in Searchlight and ABIDE fetching have been
 resolved.</p>
-<div class="section" id="id24">
-<h3>Bug fix<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id29">
+<h3>Bug fix<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Change default dtype in <a class="reference internal" href="modules/generated/nilearn.image.concat_imgs.html#nilearn.image.concat_imgs" title="nilearn.image.concat_imgs"><code class="xref py py-func docutils literal"><span class="pre">nilearn.image.concat_imgs</span></code></a> to be the
@@ -815,8 +993,8 @@ mask.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id25">
-<h3>Enhancements<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id30">
+<h3>Enhancements<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Sphinx-gallery updated to version 0.1.3.</li>
@@ -841,14 +1019,14 @@ data accepting input given in ‘subjects’ as a list than integer.</li>
 </div>
 </div>
 </div>
-<div class="section" id="id26">
-<h1>0.2.5.1<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id27">
-<h2>Changelog<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id31">
+<h1>0.2.5.1<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id32">
+<h2>Changelog<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h2>
 <p>This is a bugfix release.
 The new minimum required version of scikit-learn is 0.14.1</p>
-<div class="section" id="id28">
-<h3>API changes summary<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id33">
+<h3>API changes summary<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>default option for <cite>dim</cite> argument in plotting functions which uses MNI
@@ -872,8 +1050,8 @@ instead of multiplying the off-diagonal elements.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id29">
-<h3>Bug fix<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id34">
+<h3>Bug fix<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Scipy 0.18 introduces a bug in a corner-case of resampling. Nilearn
@@ -885,15 +1063,15 @@ instead of multiplying the off-diagonal elements.</li>
 </div>
 </div>
 </div>
-<div class="section" id="id30">
-<h1>0.2.5<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id31">
-<h2>Changelog<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id35">
+<h1>0.2.5<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id36">
+<h2>Changelog<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h2>
 <p>The 0.2.5 release includes plotting for connectomes and glass brain with
 hemisphere-specific projection, as well as more didactic examples and
 improved documentation.</p>
-<div class="section" id="id32">
-<h3>New features<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id37">
+<h3>New features<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>New display_mode options in <a class="reference internal" href="modules/generated/nilearn.plotting.plot_glass_brain.html#nilearn.plotting.plot_glass_brain" title="nilearn.plotting.plot_glass_brain"><code class="xref py py-func docutils literal"><span class="pre">nilearn.plotting.plot_glass_brain</span></code></a>
@@ -919,8 +1097,8 @@ nilearn downloads data.</li>
 </div></blockquote>
 </div>
 </div>
-<div class="section" id="id33">
-<h2>Contributors<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id38">
+<h2>Contributors<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h2>
 <p>Contributors (from <code class="docutils literal"><span class="pre">git</span> <span class="pre">shortlog</span> <span class="pre">-ns</span> <span class="pre">0.2.4..0.2.5</span></code>):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">55</span>  <span class="n">Gael</span> <span class="n">Varoquaux</span>
 <span class="mi">39</span>  <span class="n">Alexandre</span> <span class="n">Abraham</span>
@@ -940,13 +1118,13 @@ nilearn downloads data.</li>
 </div>
 </div>
 </div>
-<div class="section" id="id34">
-<h1>0.2.4<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id35">
-<h2>Changelog<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id39">
+<h1>0.2.4<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id40">
+<h2>Changelog<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h2>
 <p>The 0.2.4 is a small release focused on documentation for teaching.</p>
-<div class="section" id="id36">
-<h3>New features<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id41">
+<h3>New features<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>The path given to the “memory” argument of object now have their
@@ -961,8 +1139,8 @@ coregistration)</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id37">
-<h3>API changes summary<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id42">
+<h3>API changes summary<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Atlas fetcher <a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_msdl.html#nilearn.datasets.fetch_atlas_msdl" title="nilearn.datasets.fetch_atlas_msdl"><code class="xref py py-func docutils literal"><span class="pre">nilearn.datasets.fetch_atlas_msdl</span></code></a> now returns directly
@@ -977,13 +1155,13 @@ index values in variable ‘indices’.</li>
 </div>
 </div>
 </div>
-<div class="section" id="id38">
-<h1>0.2.3<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id39">
-<h2>Changelog<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id43">
+<h1>0.2.3<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id44">
+<h2>Changelog<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h2>
 <p>The 0.2.3 is a small feature release for BrainHack 2016.</p>
-<div class="section" id="id40">
-<h3>New features<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id45">
+<h3>New features<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Mathematical formulas based on numpy functions can be applied on an
@@ -997,8 +1175,8 @@ image or a list of images using <a class="reference internal" href="modules/gene
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id41">
-<h3>Bug fixes<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id46">
+<h3>Bug fixes<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Better dimming on white background for plotting</li>
@@ -1007,22 +1185,22 @@ image or a list of images using <a class="reference internal" href="modules/gene
 </div>
 </div>
 </div>
-<div class="section" id="id42">
-<h1>0.2.2<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id43">
-<h2>Changelog<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id47">
+<h1>0.2.2<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id48">
+<h2>Changelog<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h2>
 <p>The 0.2.2 is a bugfix + dependency update release (for sphinx gallery). It
 aims at preparing a renewal of the tutorials.</p>
-<div class="section" id="id44">
-<h3>New features<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id49">
+<h3>New features<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Fetcher for Megatrawl Netmats dataset.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id45">
-<h3>Enhancements<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id50">
+<h3>Enhancements<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Flake8 is now run on pull requests.</li>
@@ -1033,8 +1211,8 @@ changed to n_subjects=30.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id46">
-<h3>Bug fixes<a class="headerlink" href="#id46" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id51">
+<h3>Bug fixes<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Fix <cite>symmetric_split</cite> behavior in
@@ -1059,8 +1237,8 @@ valid CSV files as invalid.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id47">
-<h3>API changes summary<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id52">
+<h3>API changes summary<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Deprecated dataset downloading function have been removed.</li>
@@ -1069,8 +1247,8 @@ CircleCI logs.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id48">
-<h3>Contributors<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id53">
+<h3>Contributors<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
 <p>Contributors (from <code class="docutils literal"><span class="pre">git</span> <span class="pre">shortlog</span> <span class="pre">-ns</span> <span class="pre">0.2.1..0.2.2</span></code>):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">39</span>  <span class="n">Kamalakar</span> <span class="n">Daddy</span>
 <span class="mi">22</span>  <span class="n">Alexandre</span> <span class="n">Abraham</span>
@@ -1088,21 +1266,21 @@ CircleCI logs.</li>
 </div>
 </div>
 </div>
-<div class="section" id="id49">
-<h1>0.2.1<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id50">
-<h2>Changelog<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id54">
+<h1>0.2.1<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id55">
+<h2>Changelog<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h2>
 <p>Small bugfix for more flexible input types (targetter in particular at
 making code easier in nistats).</p>
 </div>
 </div>
-<div class="section" id="id51">
-<h1>0.2<a class="headerlink" href="#id51" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id52">
-<h2>Changelog<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id56">
+<h1>0.2<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id57">
+<h2>Changelog<a class="headerlink" href="#id57" title="Permalink to this headline">¶</a></h2>
 <p>The new minimum required version of scikit-learn is 0.13</p>
-<div class="section" id="id53">
-<h3>New features<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id58">
+<h3>New features<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>The new module <a class="reference internal" href="modules/reference.html#module-nilearn.connectome" title="nilearn.connectome"><code class="xref py py-mod docutils literal"><span class="pre">nilearn.connectome</span></code></a> now has class
@@ -1129,8 +1307,8 @@ is implemented to use it for thresholding statistical maps.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id54">
-<h3>Enhancements<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id59">
+<h3>Enhancements<a class="headerlink" href="#id59" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Making website a bit elaborated &amp; modernise by using sphinx-gallery.</li>
@@ -1140,8 +1318,8 @@ examples.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id55">
-<h3>Bug fixes<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id60">
+<h3>Bug fixes<a class="headerlink" href="#id60" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>Fixed bug to control the behaviour when cut_coords=0. in function
@@ -1153,8 +1331,8 @@ the Nifti images. See issue # 793.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id56">
-<h3>API changes summary<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id61">
+<h3>API changes summary<a class="headerlink" href="#id61" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><ul class="simple">
 <li>The utilities in function group_sparse_covariance has been moved
@@ -1165,8 +1343,8 @@ been changed from 12 to 7 i.e. n_cuts=7.</li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="id57">
-<h3>Contributors<a class="headerlink" href="#id57" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id62">
+<h3>Contributors<a class="headerlink" href="#id62" title="Permalink to this headline">¶</a></h3>
 <p>Contributors (from <code class="docutils literal"><span class="pre">git</span> <span class="pre">shortlog</span> <span class="pre">-ns</span> <span class="pre">0.1.4..0.2.0</span></code>):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">822</span>  <span class="n">Elvis</span> <span class="n">Dohmatob</span>
 <span class="mi">142</span>  <span class="n">Gael</span> <span class="n">Varoquaux</span>
@@ -1195,10 +1373,10 @@ been changed from 12 to 7 i.e. n_cuts=7.</li>
 </div>
 </div>
 </div>
-<div class="section" id="id58">
-<h1>0.1.4<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id59">
-<h2>Changelog<a class="headerlink" href="#id59" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id63">
+<h1>0.1.4<a class="headerlink" href="#id63" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id64">
+<h2>Changelog<a class="headerlink" href="#id64" title="Permalink to this headline">¶</a></h2>
 <p>Highlights:</p>
 <ul class="simple">
 <li>NiftiSpheresMasker: extract signals from balls specified by their
@@ -1219,10 +1397,10 @@ coordinates</li>
 </div>
 </div>
 </div>
-<div class="section" id="id60">
-<h1>0.1.3<a class="headerlink" href="#id60" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id61">
-<h2>Changelog<a class="headerlink" href="#id61" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id65">
+<h1>0.1.3<a class="headerlink" href="#id65" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id66">
+<h2>Changelog<a class="headerlink" href="#id66" title="Permalink to this headline">¶</a></h2>
 <p>The 0.1.3 release is a bugfix release that fixes a lot of minor bugs. It
 also includes a full rewamp of the documentation, and support for Python
 3.</p>
@@ -1261,18 +1439,18 @@ also includes a full rewamp of the documentation, and support for Python
 </div>
 </div>
 </div>
-<div class="section" id="id62">
-<h1>0.1.2<a class="headerlink" href="#id62" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id63">
-<h2>Changelog<a class="headerlink" href="#id63" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id67">
+<h1>0.1.2<a class="headerlink" href="#id67" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id68">
+<h2>Changelog<a class="headerlink" href="#id68" title="Permalink to this headline">¶</a></h2>
 <p>The 0.1.2 release is a bugfix release, specifically to fix the
 NiftiMapsMasker.</p>
 </div>
 </div>
-<div class="section" id="id64">
-<h1>0.1.1<a class="headerlink" href="#id64" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id65">
-<h2>Changelog<a class="headerlink" href="#id65" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id69">
+<h1>0.1.1<a class="headerlink" href="#id69" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id70">
+<h2>Changelog<a class="headerlink" href="#id70" title="Permalink to this headline">¶</a></h2>
 <p>The main change compared to 0.1 is the addition of connectome plotting
 via the nilearn.plotting.plot_connectome function. See the
 <a class="reference external" href="building_blocks/plotting.html">plotting documentation</a>
@@ -1287,10 +1465,10 @@ for more details.</p>
 </div>
 </div>
 </div>
-<div class="section" id="id66">
-<h1>0.1<a class="headerlink" href="#id66" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="id67">
-<h2>Changelog<a class="headerlink" href="#id67" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id71">
+<h1>0.1<a class="headerlink" href="#id71" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id72">
+<h2>Changelog<a class="headerlink" href="#id72" title="Permalink to this headline">¶</a></h2>
 <p>First release of nilearn.</p>
 <p>Contributors (from <code class="docutils literal"><span class="pre">git</span> <span class="pre">shortlog</span> <span class="pre">-ns</span> <span class="pre">0.1</span></code>):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">600</span>  <span class="n">Gaël</span> <span class="n">Varoquaux</span>
@@ -1331,27 +1509,7 @@ for more details.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="contributing.html" title="Contributing"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="auto_examples/05_advanced/plot_haxby_mass_univariate.html" title="8.6.6. Massively univariate analysis of face vs house recognition"
-             >previous</a> |</li>
-<li><a href="index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="auto_examples/index.html">Examples</a> |&nbsp;</li>
-<li><a href="modules/reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
- 
-      </ul>
-    </div>
+
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

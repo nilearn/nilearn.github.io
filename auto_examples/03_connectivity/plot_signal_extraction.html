@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,47 +29,103 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -166,6 +224,8 @@ $(function () {
           <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">8. Nilearn usage examples</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -176,6 +236,7 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">8.4.4. Extracting signals from a brain parcellation</a><ul>
@@ -186,6 +247,7 @@ $(function () {
 </ul>
 </li>
 </ul>
+</div>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="plot_inverse_covariance_connectome.html"
@@ -193,9 +255,6 @@ $(function () {
   <h4>Next topic</h4>
   <p class="topless"><a href="plot_adhd_spheres.html"
                         title="next chapter">8.4.5. Extracting brain signal from spheres</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -267,9 +326,10 @@ documentation</span></a> for more.</p>
 <span class="n">________________________________________________________________________________</span>
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">base_masker</span><span class="o">.</span><span class="n">filter_and_extract</span><span class="o">...</span>
 <span class="n">filter_and_extract</span><span class="p">(</span><span class="s1">&#39;/home/varoquau/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz&#39;</span><span class="p">,</span>
-<span class="o">&lt;</span><span class="n">nilearn</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">nifti_labels_masker</span><span class="o">.</span><span class="n">_ExtractionFunctor</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f203a8ada90</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="o">&lt;</span><span class="n">nilearn</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">nifti_labels_masker</span><span class="o">.</span><span class="n">_ExtractionFunctor</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f6fdb0a1a90</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="p">{</span> <span class="s1">&#39;background_label&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
   <span class="s1">&#39;detrend&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+  <span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
   <span class="s1">&#39;high_pass&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
   <span class="s1">&#39;labels_img&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/varoquau/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz&#39;</span><span class="p">,</span>
   <span class="s1">&#39;low_pass&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -278,11 +338,11 @@ documentation</span></a> for more.</p>
   <span class="s1">&#39;standardize&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
   <span class="s1">&#39;t_r&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
   <span class="s1">&#39;target_affine&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-  <span class="s1">&#39;target_shape&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span> <span class="n">confounds</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;/home/varoquau/nilearn_data/adhd/data/0010042/0010042_regressors.csv&#39;</span><span class="p">],</span> <span class="n">memory</span><span class="o">=</span><span class="n">Memory</span><span class="p">(</span><span class="n">cachedir</span><span class="o">=</span><span class="s1">&#39;nilearn_cache/joblib&#39;</span><span class="p">),</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+  <span class="s1">&#39;target_shape&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="n">Memory</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="n">nilearn_cache</span><span class="o">/</span><span class="n">joblib</span><span class="p">),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">confounds</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;/home/varoquau/nilearn_data/adhd/data/0010042/0010042_regressors.csv&#39;</span><span class="p">])</span>
 <span class="p">[</span><a href="../../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="View documentation for nilearn.input_data.NiftiLabelsMasker"><span class="n">NiftiLabelsMasker</span></a><span class="o">.</span><span class="n">transform_single_imgs</span><span class="p">]</span> <span class="n">Loading</span> <span class="n">data</span> <span class="kn">from</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">varoquau</span><span class="o">/</span><span class="n">nilearn_data</span><span class="o">/</span><span class="n">adhd</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="mi">0010042</span><span class="o">/</span><span class="mi">0010042</span><span class="n">_rest_tshift_RPI_voreg_mni</span><span class="o">.</span><span class="n">nii</span><span class="o">.</span><span class="n">gz</span>
 <span class="p">[</span><a href="../../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="View documentation for nilearn.input_data.NiftiLabelsMasker"><span class="n">NiftiLabelsMasker</span></a><span class="o">.</span><span class="n">transform_single_imgs</span><span class="p">]</span> <span class="n">Extracting</span> <span class="n">region</span> <span class="n">signals</span>
 <span class="p">[</span><a href="../../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="View documentation for nilearn.input_data.NiftiLabelsMasker"><span class="n">NiftiLabelsMasker</span></a><span class="o">.</span><span class="n">transform_single_imgs</span><span class="p">]</span> <span class="n">Cleaning</span> <span class="n">extracted</span> <span class="n">signals</span>
-<span class="n">_______________________________________________filter_and_extract</span> <span class="o">-</span> <span class="mf">1.5</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
+<span class="n">_______________________________________________filter_and_extract</span> <span class="o">-</span> <span class="mf">1.9</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
 </pre></div>
 </div>
 </div>
@@ -329,9 +389,10 @@ documentation</span></a> for more.</p>
 <span class="n">________________________________________________________________________________</span>
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">base_masker</span><span class="o">.</span><span class="n">filter_and_extract</span><span class="o">...</span>
 <span class="n">filter_and_extract</span><span class="p">(</span><span class="s1">&#39;/home/varoquau/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz&#39;</span><span class="p">,</span>
-<span class="o">&lt;</span><span class="n">nilearn</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">nifti_labels_masker</span><span class="o">.</span><span class="n">_ExtractionFunctor</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f20409bb320</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="o">&lt;</span><span class="n">nilearn</span><span class="o">.</span><span class="n">input_data</span><span class="o">.</span><span class="n">nifti_labels_masker</span><span class="o">.</span><span class="n">_ExtractionFunctor</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f6fdb882990</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="p">{</span> <span class="s1">&#39;background_label&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
   <span class="s1">&#39;detrend&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+  <span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
   <span class="s1">&#39;high_pass&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
   <span class="s1">&#39;labels_img&#39;</span><span class="p">:</span> <span class="s1">&#39;/home/varoquau/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz&#39;</span><span class="p">,</span>
   <span class="s1">&#39;low_pass&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -340,14 +401,14 @@ documentation</span></a> for more.</p>
   <span class="s1">&#39;standardize&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
   <span class="s1">&#39;t_r&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
   <span class="s1">&#39;target_affine&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-  <span class="s1">&#39;target_shape&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span> <span class="n">confounds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="n">Memory</span><span class="p">(</span><span class="n">cachedir</span><span class="o">=</span><span class="s1">&#39;nilearn_cache/joblib&#39;</span><span class="p">),</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+  <span class="s1">&#39;target_shape&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="n">Memory</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="n">nilearn_cache</span><span class="o">/</span><span class="n">joblib</span><span class="p">),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">confounds</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="p">[</span><a href="../../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="View documentation for nilearn.input_data.NiftiLabelsMasker"><span class="n">NiftiLabelsMasker</span></a><span class="o">.</span><span class="n">transform_single_imgs</span><span class="p">]</span> <span class="n">Loading</span> <span class="n">data</span> <span class="kn">from</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">varoquau</span><span class="o">/</span><span class="n">nilearn_data</span><span class="o">/</span><span class="n">adhd</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="mi">0010042</span><span class="o">/</span><span class="mi">0010042</span><span class="n">_rest_tshift_RPI_voreg_mni</span><span class="o">.</span><span class="n">nii</span><span class="o">.</span><span class="n">gz</span>
 <span class="p">[</span><a href="../../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="View documentation for nilearn.input_data.NiftiLabelsMasker"><span class="n">NiftiLabelsMasker</span></a><span class="o">.</span><span class="n">transform_single_imgs</span><span class="p">]</span> <span class="n">Extracting</span> <span class="n">region</span> <span class="n">signals</span>
 <span class="p">[</span><a href="../../modules/generated/nilearn.input_data.NiftiLabelsMasker.html#nilearn.input_data.NiftiLabelsMasker" title="View documentation for nilearn.input_data.NiftiLabelsMasker"><span class="n">NiftiLabelsMasker</span></a><span class="o">.</span><span class="n">transform_single_imgs</span><span class="p">]</span> <span class="n">Cleaning</span> <span class="n">extracted</span> <span class="n">signals</span>
-<span class="n">_______________________________________________filter_and_extract</span> <span class="o">-</span> <span class="mf">1.5</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
+<span class="n">_______________________________________________filter_and_extract</span> <span class="o">-</span> <span class="mf">1.8</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  5.129 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  6.092 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/plot_signal_extraction.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_signal_extraction.py</span></code></a></div>
@@ -364,29 +425,7 @@ documentation</span></a> for more.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="plot_adhd_spheres.html" title="8.4.5. Extracting brain signal from spheres"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="plot_inverse_covariance_connectome.html" title="8.4.3. Computing a connectome with sparse inverse covariance"
-             >previous</a> |</li>
-<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="../index.html">Examples</a> |&nbsp;</li>
-<li><a href="../../modules/reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >8. Nilearn usage examples</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,47 +29,103 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -166,6 +224,8 @@ $(function () {
           <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">8. Nilearn usage examples</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -176,6 +236,7 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">8.3.13. Different classifiers in decoding the Haxby dataset</a><ul>
@@ -185,6 +246,7 @@ $(function () {
 </ul>
 </li>
 </ul>
+</div>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="plot_miyawaki_encoding.html"
@@ -192,9 +254,6 @@ $(function () {
   <h4>Next topic</h4>
   <p class="topless"><a href="plot_miyawaki_reconstruction.html"
                         title="next chapter">8.3.14. Reconstruction of visual stimuli from Miyawaki et al. 2008</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -267,9 +326,9 @@ decoding task.</p>
                                   <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.RidgeClassifier.html#sklearn.linear_model.RidgeClassifier" title="View documentation for sklearn.linear_model.RidgeClassifier"><span class="n">RidgeClassifier</span></a><span class="p">,</span>
                                   <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">RidgeClassifierCV</span></a><span class="p">,</span>
                                   <span class="p">)</span>
-<span class="n">logistic</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">)</span>
-<span class="n">logistic_50</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">50.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">)</span>
-<span class="n">logistic_l2</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l2&quot;</span><span class="p">)</span>
+<span class="n">logistic</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">)</span>
+<span class="n">logistic_50</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">50.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">)</span>
+<span class="n">logistic_l2</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l2&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">)</span>
 
 <span class="c1"># Cross-validated versions of these classifiers</span>
 <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a>
@@ -277,17 +336,21 @@ decoding task.</p>
 <span class="c1"># can significantly speed up the fitting process on computers with</span>
 <span class="c1"># multiple cores</span>
 <span class="n">svm_cv</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">),</span>
-                      <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">50.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">]},</span>
-                      <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                      <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">]},</span>
+                      <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iid</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
-<span class="n">logistic_cv</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">),</span>
-                           <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">50.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">]},</span>
-                           <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">)</span>
-<span class="n">logistic_l2_cv</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l2&quot;</span><span class="p">),</span>
-                              <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span>
-                                  <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">50.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">]</span>
-                              <span class="p">},</span>
-                              <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">)</span>
+<span class="n">logistic_cv</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span>
+        <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">),</span>
+        <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">]},</span>
+        <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iid</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="p">)</span>
+<span class="n">logistic_l2_cv</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span>
+        <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l2&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">),</span>
+        <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">]</span>
+            <span class="p">},</span>
+        <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iid</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="p">)</span>
 
 <span class="c1"># The ridge classifier has a specific &#39;CV&#39; object that can set it&#39;s</span>
 <span class="c1"># parameters faster than using a GridSearchCV</span>
@@ -349,86 +412,86 @@ decoding task.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">______________________________________________________________________</span>
-       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.41</span> <span class="o">+-</span> <span class="mf">0.31</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.41</span><span class="n">s</span>
-       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.58</span> <span class="o">+-</span> <span class="mf">0.24</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.05</span><span class="n">s</span>
-       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.60</span> <span class="o">+-</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.43</span><span class="n">s</span>
-       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.56</span> <span class="o">+-</span> <span class="mf">0.23</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.44</span><span class="n">s</span>
-       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.81</span> <span class="o">+-</span> <span class="mf">0.28</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.83</span><span class="n">s</span>
-       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.79</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.13</span><span class="n">s</span>
-       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.53</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.54</span><span class="n">s</span>
-       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.42</span> <span class="o">+-</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.40</span><span class="n">s</span>
+       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.41</span> <span class="o">+-</span> <span class="mf">0.31</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.61</span><span class="n">s</span>
+       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.58</span> <span class="o">+-</span> <span class="mf">0.24</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.12</span><span class="n">s</span>
+       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.60</span> <span class="o">+-</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.69</span><span class="n">s</span>
+       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.56</span> <span class="o">+-</span> <span class="mf">0.23</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.53</span><span class="n">s</span>
+       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.81</span> <span class="o">+-</span> <span class="mf">0.28</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.95</span><span class="n">s</span>
+       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.79</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.00</span><span class="n">s</span>
+       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.53</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.81</span><span class="n">s</span>
+       <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.42</span> <span class="o">+-</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.39</span><span class="n">s</span>
 <span class="n">______________________________________________________________________</span>
-    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.41</span> <span class="o">+-</span> <span class="mf">0.31</span><span class="p">,</span> <span class="n">time</span> <span class="mf">32.32</span><span class="n">s</span>
-    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.58</span> <span class="o">+-</span> <span class="mf">0.24</span><span class="p">,</span> <span class="n">time</span> <span class="mf">28.31</span><span class="n">s</span>
-    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.60</span> <span class="o">+-</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">time</span> <span class="mf">30.25</span><span class="n">s</span>
-    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.56</span> <span class="o">+-</span> <span class="mf">0.23</span><span class="p">,</span> <span class="n">time</span> <span class="mf">30.62</span><span class="n">s</span>
-    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.81</span> <span class="o">+-</span> <span class="mf">0.28</span><span class="p">,</span> <span class="n">time</span> <span class="mf">21.55</span><span class="n">s</span>
-    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.79</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">24.38</span><span class="n">s</span>
-    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.53</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">33.24</span><span class="n">s</span>
-    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.42</span> <span class="o">+-</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">time</span> <span class="mf">31.46</span><span class="n">s</span>
+    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.41</span> <span class="o">+-</span> <span class="mf">0.31</span><span class="p">,</span> <span class="n">time</span> <span class="mf">12.35</span><span class="n">s</span>
+    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.58</span> <span class="o">+-</span> <span class="mf">0.24</span><span class="p">,</span> <span class="n">time</span> <span class="mf">10.45</span><span class="n">s</span>
+    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.60</span> <span class="o">+-</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">time</span> <span class="mf">12.53</span><span class="n">s</span>
+    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.56</span> <span class="o">+-</span> <span class="mf">0.23</span><span class="p">,</span> <span class="n">time</span> <span class="mf">13.22</span><span class="n">s</span>
+    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.81</span> <span class="o">+-</span> <span class="mf">0.28</span><span class="p">,</span> <span class="n">time</span> <span class="mf">8.54</span><span class="n">s</span>
+    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.79</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">10.79</span><span class="n">s</span>
+    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.53</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">15.16</span><span class="n">s</span>
+    <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a> <span class="n">cv</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.42</span> <span class="o">+-</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">time</span> <span class="mf">14.61</span><span class="n">s</span>
 <span class="n">______________________________________________________________________</span>
-    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.43</span> <span class="o">+-</span> <span class="mf">0.28</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.19</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.74</span> <span class="o">+-</span> <span class="mf">0.13</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.68</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.63</span> <span class="o">+-</span> <span class="mf">0.23</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.05</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.49</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.17</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.89</span> <span class="o">+-</span> <span class="mf">0.13</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.53</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.70</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.61</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.47</span> <span class="o">+-</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.32</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.44</span> <span class="o">+-</span> <span class="mf">0.14</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.20</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.43</span> <span class="o">+-</span> <span class="mf">0.28</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.95</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.74</span> <span class="o">+-</span> <span class="mf">0.13</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.53</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.63</span> <span class="o">+-</span> <span class="mf">0.23</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.89</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.49</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.89</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.89</span> <span class="o">+-</span> <span class="mf">0.13</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.43</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.70</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.49</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.47</span> <span class="o">+-</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.08</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l1</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.44</span> <span class="o">+-</span> <span class="mf">0.14</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.03</span><span class="n">s</span>
 <span class="n">______________________________________________________________________</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.44</span> <span class="o">+-</span> <span class="mf">0.24</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.70</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.67</span> <span class="o">+-</span> <span class="mf">0.13</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.93</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.66</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.44</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.50</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.61</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.86</span> <span class="o">+-</span> <span class="mf">0.11</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.68</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.74</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.65</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.48</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.90</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.43</span> <span class="o">+-</span> <span class="mf">0.11</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.86</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.43</span> <span class="o">+-</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.45</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.67</span> <span class="o">+-</span> <span class="mf">0.13</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.70</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.64</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.32</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.47</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.27</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.88</span> <span class="o">+-</span> <span class="mf">0.11</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.55</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.74</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.52</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.49</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.72</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="mi">50</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.45</span> <span class="o">+-</span> <span class="mf">0.12</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.26</span><span class="n">s</span>
 <span class="n">______________________________________________________________________</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.39</span> <span class="o">+-</span> <span class="mf">0.27</span><span class="p">,</span> <span class="n">time</span> <span class="mf">15.48</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.69</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">10.71</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.53</span> <span class="o">+-</span> <span class="mf">0.30</span><span class="p">,</span> <span class="n">time</span> <span class="mf">15.17</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.50</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">15.34</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.85</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">9.19</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.67</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">8.85</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.38</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">16.90</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.42</span> <span class="o">+-</span> <span class="mf">0.13</span><span class="p">,</span> <span class="n">time</span> <span class="mf">16.55</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.37</span> <span class="o">+-</span> <span class="mf">0.27</span><span class="p">,</span> <span class="n">time</span> <span class="mf">6.00</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.70</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">4.17</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.51</span> <span class="o">+-</span> <span class="mf">0.28</span><span class="p">,</span> <span class="n">time</span> <span class="mf">5.29</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.49</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">5.83</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.84</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">3.20</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.70</span> <span class="o">+-</span> <span class="mf">0.14</span><span class="p">,</span> <span class="n">time</span> <span class="mf">3.29</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.41</span> <span class="o">+-</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">time</span> <span class="mf">5.94</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l1</span> <span class="n">cv</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.44</span> <span class="o">+-</span> <span class="mf">0.14</span><span class="p">,</span> <span class="n">time</span> <span class="mf">5.73</span><span class="n">s</span>
 <span class="n">______________________________________________________________________</span>
-    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.51</span> <span class="o">+-</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.66</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.55</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.52</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.54</span> <span class="o">+-</span> <span class="mf">0.20</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.61</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.51</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.57</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.63</span> <span class="o">+-</span> <span class="mf">0.22</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.42</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.78</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.57</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.43</span> <span class="o">+-</span> <span class="mf">0.20</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.61</span><span class="n">s</span>
-    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.54</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.84</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.51</span> <span class="o">+-</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.43</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.55</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.21</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.54</span> <span class="o">+-</span> <span class="mf">0.20</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.38</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.51</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.33</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.63</span> <span class="o">+-</span> <span class="mf">0.22</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.20</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.78</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.25</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.43</span> <span class="o">+-</span> <span class="mf">0.20</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.35</span><span class="n">s</span>
+    <span class="n">log</span> <span class="n">l2</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.54</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">1.30</span><span class="n">s</span>
 <span class="n">______________________________________________________________________</span>
- <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.49</span> <span class="o">+-</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">time</span> <span class="mf">26.17</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.56</span> <span class="o">+-</span> <span class="mf">0.20</span><span class="p">,</span> <span class="n">time</span> <span class="mf">20.50</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.55</span> <span class="o">+-</span> <span class="mf">0.20</span><span class="p">,</span> <span class="n">time</span> <span class="mf">21.07</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.51</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">21.04</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.64</span> <span class="o">+-</span> <span class="mf">0.22</span><span class="p">,</span> <span class="n">time</span> <span class="mf">19.30</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.77</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">19.34</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.44</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">21.87</span><span class="n">s</span>
- <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.53</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">21.79</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.50</span> <span class="o">+-</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">time</span> <span class="mf">10.59</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.56</span> <span class="o">+-</span> <span class="mf">0.20</span><span class="p">,</span> <span class="n">time</span> <span class="mf">9.97</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.55</span> <span class="o">+-</span> <span class="mf">0.20</span><span class="p">,</span> <span class="n">time</span> <span class="mf">10.35</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.51</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">10.58</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.64</span> <span class="o">+-</span> <span class="mf">0.22</span><span class="p">,</span> <span class="n">time</span> <span class="mf">9.37</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.76</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">9.40</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.44</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">11.08</span><span class="n">s</span>
+ <span class="n">log</span> <span class="n">l2</span> <span class="n">cv</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.53</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">10.92</span><span class="n">s</span>
 <span class="n">______________________________________________________________________</span>
-     <span class="n">ridge</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.52</span> <span class="o">+-</span> <span class="mf">0.22</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.41</span><span class="n">s</span>
-     <span class="n">ridge</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.62</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.40</span><span class="n">s</span>
-     <span class="n">ridge</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.43</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.42</span><span class="n">s</span>
-     <span class="n">ridge</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.48</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.41</span><span class="n">s</span>
-     <span class="n">ridge</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.90</span> <span class="o">+-</span> <span class="mf">0.09</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.42</span><span class="n">s</span>
-     <span class="n">ridge</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.79</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.53</span><span class="n">s</span>
-     <span class="n">ridge</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.41</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.41</span><span class="n">s</span>
-     <span class="n">ridge</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.50</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.47</span><span class="n">s</span>
+     <span class="n">ridge</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.52</span> <span class="o">+-</span> <span class="mf">0.22</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.85</span><span class="n">s</span>
+     <span class="n">ridge</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.62</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.83</span><span class="n">s</span>
+     <span class="n">ridge</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.43</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.82</span><span class="n">s</span>
+     <span class="n">ridge</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.48</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.84</span><span class="n">s</span>
+     <span class="n">ridge</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.90</span> <span class="o">+-</span> <span class="mf">0.09</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.84</span><span class="n">s</span>
+     <span class="n">ridge</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.79</span> <span class="o">+-</span> <span class="mf">0.17</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.84</span><span class="n">s</span>
+     <span class="n">ridge</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.41</span> <span class="o">+-</span> <span class="mf">0.19</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.85</span><span class="n">s</span>
+     <span class="n">ridge</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.50</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">0.87</span><span class="n">s</span>
 <span class="n">______________________________________________________________________</span>
-  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.56</span> <span class="o">+-</span> <span class="mf">0.26</span><span class="p">,</span> <span class="n">time</span> <span class="mf">8.19</span><span class="n">s</span>
-  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.70</span> <span class="o">+-</span> <span class="mf">0.13</span><span class="p">,</span> <span class="n">time</span> <span class="mf">7.25</span><span class="n">s</span>
-  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.54</span> <span class="o">+-</span> <span class="mf">0.22</span><span class="p">,</span> <span class="n">time</span> <span class="mf">7.71</span><span class="n">s</span>
-  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.49</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">10.06</span><span class="n">s</span>
-  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.90</span> <span class="o">+-</span> <span class="mf">0.13</span><span class="p">,</span> <span class="n">time</span> <span class="mf">11.83</span><span class="n">s</span>
-  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.85</span> <span class="o">+-</span> <span class="mf">0.11</span><span class="p">,</span> <span class="n">time</span> <span class="mf">9.12</span><span class="n">s</span>
-  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.46</span> <span class="o">+-</span> <span class="mf">0.24</span><span class="p">,</span> <span class="n">time</span> <span class="mf">7.29</span><span class="n">s</span>
-  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.51</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">7.23</span><span class="n">s</span>
+  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>       <span class="n">scissors</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.56</span> <span class="o">+-</span> <span class="mf">0.26</span><span class="p">,</span> <span class="n">time</span> <span class="mf">7.10</span><span class="n">s</span>
+  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>           <span class="n">face</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.70</span> <span class="o">+-</span> <span class="mf">0.13</span><span class="p">,</span> <span class="n">time</span> <span class="mf">6.82</span><span class="n">s</span>
+  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>            <span class="n">cat</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.54</span> <span class="o">+-</span> <span class="mf">0.22</span><span class="p">,</span> <span class="n">time</span> <span class="mf">6.84</span><span class="n">s</span>
+  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>           <span class="n">shoe</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.49</span> <span class="o">+-</span> <span class="mf">0.18</span><span class="p">,</span> <span class="n">time</span> <span class="mf">6.82</span><span class="n">s</span>
+  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>          <span class="n">house</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.90</span> <span class="o">+-</span> <span class="mf">0.13</span><span class="p">,</span> <span class="n">time</span> <span class="mf">6.91</span><span class="n">s</span>
+  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>   <span class="n">scrambledpix</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.85</span> <span class="o">+-</span> <span class="mf">0.11</span><span class="p">,</span> <span class="n">time</span> <span class="mf">6.87</span><span class="n">s</span>
+  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>         <span class="n">bottle</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.46</span> <span class="o">+-</span> <span class="mf">0.24</span><span class="p">,</span> <span class="n">time</span> <span class="mf">7.01</span><span class="n">s</span>
+  <span class="n">ridge</span> <span class="n">cv</span><span class="p">:</span>          <span class="n">chair</span> <span class="o">--</span> <span class="n">scores</span><span class="p">:</span> <span class="mf">0.51</span> <span class="o">+-</span> <span class="mf">0.21</span><span class="p">,</span> <span class="n">time</span> <span class="mf">6.83</span><span class="n">s</span>
 </pre></div>
 </div>
 <p>Then we make a rudimentary diagram</p>
@@ -512,7 +575,7 @@ decoding task.</p>
 <li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_haxby_different_estimators_010.png"><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_010.png" src="../../_images/sphx_glr_plot_haxby_different_estimators_010.png" style="width: 136.3px; height: 107.63px;" /></a>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 10 minutes  47.360 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 5 minutes  40.340 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/plot_haxby_different_estimators.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_haxby_different_estimators.py</span></code></a></div>
@@ -529,29 +592,7 @@ decoding task.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="plot_miyawaki_reconstruction.html" title="8.3.14. Reconstruction of visual stimuli from Miyawaki et al. 2008"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="plot_miyawaki_encoding.html" title="8.3.12. Encoding models for visual stimuli from Miyawaki et al. 2008"
-             >previous</a> |</li>
-<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="../index.html">Examples</a> |&nbsp;</li>
-<li><a href="../../modules/reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >8. Nilearn usage examples</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

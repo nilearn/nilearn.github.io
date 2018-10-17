@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -24,52 +24,108 @@
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="8.2.5. Visualizing multiscale functional brain parcellations" href="plot_multiscale_parcellations.html" />
-    <link rel="prev" title="8.2.3. Visualizing Megatrawls Network Matrices from Human Connectome Project" href="plot_visualize_megatrawls_netmats.html" />
+    <link rel="next" title="8.2.6. Matplotlib colormaps in Nilearn" href="plot_colormaps.html" />
+    <link rel="prev" title="8.2.4. Visualizing multiscale functional brain parcellations" href="plot_multiscale_parcellations.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -150,10 +208,10 @@ $(function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a></li>
         <li class="right" >
-          <a href="plot_multiscale_parcellations.html" title="8.2.5. Visualizing multiscale functional brain parcellations"
+          <a href="plot_colormaps.html" title="8.2.6. Matplotlib colormaps in Nilearn"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="plot_visualize_megatrawls_netmats.html" title="8.2.3. Visualizing Megatrawls Network Matrices from Human Connectome Project"
+          <a href="plot_multiscale_parcellations.html" title="8.2.4. Visualizing multiscale functional brain parcellations"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
@@ -166,6 +224,8 @@ $(function () {
           <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">8. Nilearn usage examples</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -176,25 +236,24 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">8.2.4. Technical point: Illustration of the volume to surface sampling schemes</a><ul>
-<li><a class="reference internal" href="#build-a-mesh-of-a-cylinder">8.2.4.1. Build a mesh (of a cylinder)</a></li>
-<li><a class="reference internal" href="#get-the-locations-from-which-vol-to-surf-would-draw-its-samples">8.2.4.2. Get the locations from which vol_to_surf would draw its samples</a></li>
-<li><a class="reference internal" href="#plot-the-mesh-and-the-sample-locations">8.2.4.3. Plot the mesh and the sample locations</a></li>
+<li><a class="reference internal" href="#">8.2.5. Technical point: Illustration of the volume to surface sampling schemes</a><ul>
+<li><a class="reference internal" href="#build-a-mesh-of-a-cylinder">8.2.5.1. Build a mesh (of a cylinder)</a></li>
+<li><a class="reference internal" href="#get-the-locations-from-which-vol-to-surf-would-draw-its-samples">8.2.5.2. Get the locations from which vol_to_surf would draw its samples</a></li>
+<li><a class="reference internal" href="#plot-the-mesh-and-the-sample-locations">8.2.5.3. Plot the mesh and the sample locations</a></li>
 </ul>
 </li>
 </ul>
+</div>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="plot_visualize_megatrawls_netmats.html"
-                        title="previous chapter">8.2.3. Visualizing Megatrawls Network Matrices from Human Connectome Project</a></p>
-  <h4>Next topic</h4>
   <p class="topless"><a href="plot_multiscale_parcellations.html"
-                        title="next chapter">8.2.5. Visualizing multiscale functional brain parcellations</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
+                        title="previous chapter">8.2.4. Visualizing multiscale functional brain parcellations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plot_colormaps.html"
+                        title="next chapter">8.2.6. Matplotlib colormaps in Nilearn</a></p>
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -209,7 +268,7 @@ $(function () {
           <div class="body" role="main">
             
   <div class="section" id="technical-point-illustration-of-the-volume-to-surface-sampling-schemes">
-<span id="sphx-glr-auto-examples-01-plotting-plot-surface-projection-strategies-py"></span><h1>8.2.4. Technical point: Illustration of the volume to surface sampling schemes<a class="headerlink" href="#technical-point-illustration-of-the-volume-to-surface-sampling-schemes" title="Permalink to this headline">¶</a></h1>
+<span id="sphx-glr-auto-examples-01-plotting-plot-surface-projection-strategies-py"></span><h1>8.2.5. Technical point: Illustration of the volume to surface sampling schemes<a class="headerlink" href="#technical-point-illustration-of-the-volume-to-surface-sampling-schemes" title="Permalink to this headline">¶</a></h1>
 <p>In nilearn, <a class="reference internal" href="../../modules/generated/nilearn.surface.vol_to_surf.html#nilearn.surface.vol_to_surf" title="nilearn.surface.vol_to_surf"><code class="xref py py-func docutils literal"><span class="pre">nilearn.surface.vol_to_surf</span></code></a> allows us to measure values of
 a 3d volume at the nodes of a cortical mesh, transforming it into surface data.
 This data can then be plotted with <a class="reference internal" href="../../modules/generated/nilearn.plotting.plot_surf_stat_map.html#nilearn.plotting.plot_surf_stat_map" title="nilearn.plotting.plot_surf_stat_map"><code class="xref py py-func docutils literal"><span class="pre">nilearn.plotting.plot_surf_stat_map</span></code></a>
@@ -228,10 +287,11 @@ and give almost identical results for most images.</p>
 <span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
 
 <span class="kn">from</span> <span class="nn">nilearn.surface</span> <span class="kn">import</span> <span class="n">surface</span>
+<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="View documentation for nilearn.plotting.show"><span class="n">show</span></a>
 </pre></div>
 </div>
 <div class="section" id="build-a-mesh-of-a-cylinder">
-<h2>8.2.4.1. Build a mesh (of a cylinder)<a class="headerlink" href="#build-a-mesh-of-a-cylinder" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.5.1. Build a mesh (of a cylinder)<a class="headerlink" href="#build-a-mesh-of-a-cylinder" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">N_Z</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="n">N_T</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.mgrid.html#numpy.mgrid" title="View documentation for numpy.mgrid"><span class="n">np</span><span class="o">.</span><span class="n">mgrid</span></a><span class="p">[:</span><span class="n">N_T</span><span class="p">,</span> <span class="p">:</span><span class="n">N_Z</span><span class="p">]</span>
@@ -245,7 +305,7 @@ and give almost identical results for most images.</p>
 </div>
 </div>
 <div class="section" id="get-the-locations-from-which-vol-to-surf-would-draw-its-samples">
-<h2>8.2.4.2. Get the locations from which vol_to_surf would draw its samples<a class="headerlink" href="#get-the-locations-from-which-vol-to-surf-would-draw-its-samples" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.5.2. Get the locations from which vol_to_surf would draw its samples<a class="headerlink" href="#get-the-locations-from-which-vol-to-surf-would-draw-its-samples" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">line_sample_points</span> <span class="o">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">_line_sample_locations</span><span class="p">(</span>
     <span class="n">mesh</span><span class="p">,</span> <a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.eye.html#numpy.eye" title="View documentation for numpy.eye"><span class="n">np</span><span class="o">.</span><span class="n">eye</span></a><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">segment_half_width</span><span class="o">=.</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_points</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 
@@ -255,7 +315,7 @@ and give almost identical results for most images.</p>
 </div>
 </div>
 <div class="section" id="plot-the-mesh-and-the-sample-locations">
-<h2>8.2.4.3. Plot the mesh and the sample locations<a class="headerlink" href="#plot-the-mesh-and-the-sample-locations" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.5.3. Plot the mesh and the sample locations<a class="headerlink" href="#plot-the-mesh-and-the-sample-locations" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">sample_points</span> <span class="ow">in</span> <span class="p">[</span><span class="n">line_sample_points</span><span class="p">,</span> <span class="n">ball_sample_points</span><span class="p">]:</span>
     <span class="n">fig</span> <span class="o">=</span> <a href="http://matplotlib.org/api/_as_gen/matplotlib.figure.SubplotParams.html#matplotlib.figure" title="View documentation for matplotlib.pyplot.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
     <span class="n">ax</span> <span class="o">=</span> <a href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplot.html#matplotlib.pyplot.subplot" title="View documentation for matplotlib.pyplot.subplot"><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span></a><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
@@ -265,7 +325,7 @@ and give almost identical results for most images.</p>
 
     <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="o">*</span><span class="n">sample_points</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
 
-<a href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="View documentation for matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="View documentation for nilearn.plotting.show"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
@@ -274,7 +334,7 @@ and give almost identical results for most images.</p>
 <li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_surface_projection_strategies_002.png"><img alt="../../_images/sphx_glr_plot_surface_projection_strategies_002.png" src="../../_images/sphx_glr_plot_surface_projection_strategies_002.png" style="width: 300.8px; height: 225.6px;" /></a>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.087 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.068 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/plot_surface_projection_strategies.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_surface_projection_strategies.py</span></code></a></div>
@@ -291,29 +351,7 @@ and give almost identical results for most images.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="plot_multiscale_parcellations.html" title="8.2.5. Visualizing multiscale functional brain parcellations"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="plot_visualize_megatrawls_netmats.html" title="8.2.3. Visualizing Megatrawls Network Matrices from Human Connectome Project"
-             >previous</a> |</li>
-<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="../index.html">Examples</a> |&nbsp;</li>
-<li><a href="../../modules/reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >8. Nilearn usage examples</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

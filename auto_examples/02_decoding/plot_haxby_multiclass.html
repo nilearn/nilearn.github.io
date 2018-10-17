@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,47 +29,103 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -166,6 +224,8 @@ $(function () {
           <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">8. Nilearn usage examples</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -176,6 +236,7 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">8.3.5. The haxby dataset: different multi-class strategies</a><ul>
@@ -188,6 +249,7 @@ $(function () {
 </ul>
 </li>
 </ul>
+</div>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="plot_oasis_vbm_space_net.html"
@@ -195,9 +257,6 @@ $(function () {
   <h4>Next topic</h4>
   <p class="topless"><a href="plot_haxby_searchlight.html"
                         title="next chapter">8.3.6. Searchlight analysis of face vs house recognition</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -300,8 +359,8 @@ and a simple feature selection step</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">OvO</span><span class="p">:</span> <span class="mf">0.5421536796536797</span>
-<span class="n">OvA</span><span class="p">:</span> <span class="mf">0.60487012987013</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">OvO</span><span class="p">:</span> <span class="mf">0.542153679654</span>
+<span class="n">OvA</span><span class="p">:</span> <span class="mf">0.60487012987</span>
 </pre></div>
 </div>
 </div>
@@ -321,7 +380,7 @@ and a simple feature selection step</p>
 <p>We fit on the the first 10 sessions and plot a confusion matrix on the
 last 2 sessions</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.metrics.confusion_matrix.html#sklearn.metrics.confusion_matrix" title="View documentation for sklearn.metrics.confusion_matrix"><span class="n">confusion_matrix</span></a>
-<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_matrix.html#nilearn.plotting.plot_matrix" title="View documentation for nilearn.plotting.plot_matrix"><span class="n">plot_matrix</span></a>
+<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_matrix.html#nilearn.plotting.plot_matrix" title="View documentation for nilearn.plotting.plot_matrix"><span class="n">plot_matrix</span></a><span class="p">,</span> <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="View documentation for nilearn.plotting.show"><span class="n">show</span></a>
 
 <span class="n">svc_ovo</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">session</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">])</span>
 <span class="n">y_pred_ovo</span> <span class="o">=</span> <span class="n">svc_ovo</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">session</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">])</span>
@@ -337,7 +396,7 @@ last 2 sessions</p>
             <span class="n">labels</span><span class="o">=</span><span class="n">unique_conditions</span><span class="p">,</span>
             <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Confusion matrix: One vs All&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;hot_r&#39;</span><span class="p">)</span>
 
-<a href="http://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="View documentation for matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="View documentation for nilearn.plotting.show"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
@@ -346,7 +405,7 @@ last 2 sessions</p>
 <li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_haxby_multiclass_003.png"><img alt="../../_images/sphx_glr_plot_haxby_multiclass_003.png" src="../../_images/sphx_glr_plot_haxby_multiclass_003.png" style="width: 329.0px; height: 235.0px;" /></a>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  38.426 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  34.743 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/plot_haxby_multiclass.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_haxby_multiclass.py</span></code></a></div>
@@ -363,29 +422,7 @@ last 2 sessions</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="plot_haxby_searchlight.html" title="8.3.6. Searchlight analysis of face vs house recognition"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="plot_oasis_vbm_space_net.html" title="8.3.4. Voxel-Based Morphometry on Oasis dataset with Space-Net prior"
-             >previous</a> |</li>
-<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="../index.html">Examples</a> |&nbsp;</li>
-<li><a href="../../modules/reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >8. Nilearn usage examples</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

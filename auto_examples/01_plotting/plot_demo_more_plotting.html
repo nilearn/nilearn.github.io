@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -24,52 +24,108 @@
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="8.2.18. Glass brain plotting in nilearn (all options)" href="plot_demo_glass_brain_extensive.html" />
-    <link rel="prev" title="8.2.16. Seed-based connectivity on the surface" href="plot_surf_stat_map.html" />
+    <link rel="next" title="8.3.1. Show stimuli of Haxby et al. dataset" href="../02_decoding/plot_haxby_stimuli.html" />
+    <link rel="prev" title="8.2.17. Glass brain plotting in nilearn (all options)" href="plot_demo_glass_brain_extensive.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -150,10 +208,10 @@ $(function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a></li>
         <li class="right" >
-          <a href="plot_demo_glass_brain_extensive.html" title="8.2.18. Glass brain plotting in nilearn (all options)"
+          <a href="../02_decoding/plot_haxby_stimuli.html" title="8.3.1. Show stimuli of Haxby et al. dataset"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="plot_surf_stat_map.html" title="8.2.16. Seed-based connectivity on the surface"
+          <a href="plot_demo_glass_brain_extensive.html" title="8.2.17. Glass brain plotting in nilearn (all options)"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
@@ -166,6 +224,8 @@ $(function () {
           <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">8. Nilearn usage examples</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -176,35 +236,36 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">8.2.17. More plotting tools from nilearn</a><ul>
-<li><a class="reference internal" href="#first-we-retrieve-data-from-nilearn-provided-general-purpose-datasets">8.2.17.1. First, we retrieve data from nilearn provided (general-purpose) datasets</a></li>
-<li><a class="reference internal" href="#visualizing-in-sagittal-coronal-and-axial-with-given-coordinates">8.2.17.2. Visualizing in - ‘sagittal’, ‘coronal’ and ‘axial’ with given coordinates</a></li>
-<li><a class="reference internal" href="#visualizing-in-single-view-axial-with-number-of-cuts-5">8.2.17.3. Visualizing in - single view ‘axial’ with number of cuts=5</a></li>
-<li><a class="reference internal" href="#visualizing-in-single-view-sagittal-with-only-two-slices">8.2.17.4. Visualizing in - single view ‘sagittal’ with only two slices</a></li>
-<li><a class="reference internal" href="#visualizing-in-coronal-view-with-single-cut">8.2.17.5. Visualizing in - ‘coronal’ view with single cut</a></li>
-<li><a class="reference internal" href="#visualizing-without-a-colorbar-on-the-right-side">8.2.17.6. Visualizing without a colorbar on the right side</a></li>
-<li><a class="reference internal" href="#visualize-in-two-views-sagittal-and-axial-with-given-coordinates">8.2.17.7. Visualize in - two views ‘sagittal’ and ‘axial’ with given coordinates</a></li>
-<li><a class="reference internal" href="#changing-the-views-to-coronal-sagittal-views-with-coordinates">8.2.17.8. Changing the views to ‘coronal’, ‘sagittal’ views with coordinates</a></li>
-<li><a class="reference internal" href="#now-views-are-changed-to-coronal-and-axial-views-with-coordinates">8.2.17.9. Now, views are changed to ‘coronal’ and ‘axial’ views with coordinates</a></li>
-<li><a class="reference internal" href="#demonstrating-various-display-features">8.2.17.10. Demonstrating various display features</a></li>
-<li><a class="reference internal" href="#showing-how-to-use-add-edges">8.2.17.11. Showing how to use <cite>add_edges</cite></a></li>
-<li><a class="reference internal" href="#how-to-use-add-contours">8.2.17.12. How to use <cite>add_contours</cite></a></li>
-<li><a class="reference internal" href="#plotting-seeds-using-add-markers">8.2.17.13. Plotting seeds using <cite>add_markers</cite></a></li>
+<li><a class="reference internal" href="#">8.2.18. More plotting tools from nilearn</a><ul>
+<li><a class="reference internal" href="#first-we-retrieve-data-from-nilearn-provided-general-purpose-datasets">8.2.18.1. First, we retrieve data from nilearn provided (general-purpose) datasets</a></li>
+<li><a class="reference internal" href="#visualizing-in-sagittal-coronal-and-axial-with-given-coordinates">8.2.18.2. Visualizing in - ‘sagittal’, ‘coronal’ and ‘axial’ with given coordinates</a></li>
+<li><a class="reference internal" href="#visualizing-in-single-view-axial-with-number-of-cuts-5">8.2.18.3. Visualizing in - single view ‘axial’ with number of cuts=5</a></li>
+<li><a class="reference internal" href="#visualizing-in-single-view-sagittal-with-only-two-slices">8.2.18.4. Visualizing in - single view ‘sagittal’ with only two slices</a></li>
+<li><a class="reference internal" href="#visualizing-in-coronal-view-with-single-cut">8.2.18.5. Visualizing in - ‘coronal’ view with single cut</a></li>
+<li><a class="reference internal" href="#visualizing-without-a-colorbar-on-the-right-side">8.2.18.6. Visualizing without a colorbar on the right side</a></li>
+<li><a class="reference internal" href="#visualize-in-two-views-sagittal-and-axial-with-given-coordinates">8.2.18.7. Visualize in - two views ‘sagittal’ and ‘axial’ with given coordinates</a></li>
+<li><a class="reference internal" href="#changing-the-views-to-coronal-sagittal-views-with-coordinates">8.2.18.8. Changing the views to ‘coronal’, ‘sagittal’ views with coordinates</a></li>
+<li><a class="reference internal" href="#now-views-are-changed-to-coronal-and-axial-views-with-coordinates">8.2.18.9. Now, views are changed to ‘coronal’ and ‘axial’ views with coordinates</a></li>
+<li><a class="reference internal" href="#demonstrating-various-display-features">8.2.18.10. Demonstrating various display features</a></li>
+<li><a class="reference internal" href="#showing-how-to-use-add-edges">8.2.18.11. Showing how to use <cite>add_edges</cite></a></li>
+<li><a class="reference internal" href="#how-to-use-add-contours">8.2.18.12. How to use <cite>add_contours</cite></a></li>
+<li><a class="reference internal" href="#plotting-seeds-using-add-markers">8.2.18.13. Plotting seeds using <cite>add_markers</cite></a></li>
+<li><a class="reference internal" href="#annotating-plots">8.2.18.14. Annotating plots</a></li>
+<li><a class="reference internal" href="#saving-plots-to-file">8.2.18.15. Saving plots to file</a></li>
 </ul>
 </li>
 </ul>
+</div>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="plot_surf_stat_map.html"
-                        title="previous chapter">8.2.16. Seed-based connectivity on the surface</a></p>
-  <h4>Next topic</h4>
   <p class="topless"><a href="plot_demo_glass_brain_extensive.html"
-                        title="next chapter">8.2.18. Glass brain plotting in nilearn (all options)</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
+                        title="previous chapter">8.2.17. Glass brain plotting in nilearn (all options)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../02_decoding/plot_haxby_stimuli.html"
+                        title="next chapter">8.3.1. Show stimuli of Haxby et al. dataset</a></p>
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -219,7 +280,7 @@ $(function () {
           <div class="body" role="main">
             
   <div class="section" id="more-plotting-tools-from-nilearn">
-<span id="sphx-glr-auto-examples-01-plotting-plot-demo-more-plotting-py"></span><h1>8.2.17. More plotting tools from nilearn<a class="headerlink" href="#more-plotting-tools-from-nilearn" title="Permalink to this headline">¶</a></h1>
+<span id="sphx-glr-auto-examples-01-plotting-plot-demo-more-plotting-py"></span><h1>8.2.18. More plotting tools from nilearn<a class="headerlink" href="#more-plotting-tools-from-nilearn" title="Permalink to this headline">¶</a></h1>
 <p>In this example, we demonstrate how to use plotting options from
 nilearn essential in visualizing brain image analysis results.</p>
 <p>We emphasize the use of parameters such as <cite>display_mode</cite> and <cite>cut_coords</cite>
@@ -239,7 +300,7 @@ coordinates in MNI space accordingly with particular slice direction.
 This helps us point to the activation specific location of the brain slices.</p>
 <p>See <a class="reference internal" href="../../plotting/index.html#plotting"><span class="std std-ref">Plotting brain images</span></a> for more details.</p>
 <div class="section" id="first-we-retrieve-data-from-nilearn-provided-general-purpose-datasets">
-<h2>8.2.17.1. First, we retrieve data from nilearn provided (general-purpose) datasets<a class="headerlink" href="#first-we-retrieve-data-from-nilearn-provided-general-purpose-datasets" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.1. First, we retrieve data from nilearn provided (general-purpose) datasets<a class="headerlink" href="#first-we-retrieve-data-from-nilearn-provided-general-purpose-datasets" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
 
 <span class="c1"># haxby dataset to have anatomical image, EPI images and masks</span>
@@ -249,7 +310,7 @@ This helps us point to the activation specific location of the brain slices.</p>
 <span class="n">haxby_func_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
 <span class="c1"># localizer dataset to have contrast maps</span>
-<span class="n">motor_images</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_neurovault_motor_task</span><span class="p">()</span>
+<span class="n">motor_images</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_neurovault_motor_task.html#nilearn.datasets.fetch_neurovault_motor_task" title="View documentation for nilearn.datasets.fetch_neurovault_motor_task"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_neurovault_motor_task</span></a><span class="p">()</span>
 <span class="n">stat_img</span> <span class="o">=</span> <span class="n">motor_images</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -260,7 +321,7 @@ tools from nilearn.</p>
 </div>
 </div>
 <div class="section" id="visualizing-in-sagittal-coronal-and-axial-with-given-coordinates">
-<h2>8.2.17.2. Visualizing in - ‘sagittal’, ‘coronal’ and ‘axial’ with given coordinates<a class="headerlink" href="#visualizing-in-sagittal-coronal-and-axial-with-given-coordinates" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.2. Visualizing in - ‘sagittal’, ‘coronal’ and ‘axial’ with given coordinates<a class="headerlink" href="#visualizing-in-sagittal-coronal-and-axial-with-given-coordinates" title="Permalink to this headline">¶</a></h2>
 <p>The first argument is a path to the filename of a constrast map,
 optional argument <cite>display_mode</cite> is given as string ‘ortho’ to visualize
 the map in three specific directions xyz and the optional <cite>cut_coords</cite>
@@ -275,7 +336,7 @@ in plot_stat_map.</p>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_001.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_001.png" />
 </div>
 <div class="section" id="visualizing-in-single-view-axial-with-number-of-cuts-5">
-<h2>8.2.17.3. Visualizing in - single view ‘axial’ with number of cuts=5<a class="headerlink" href="#visualizing-in-single-view-axial-with-number-of-cuts-5" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.3. Visualizing in - single view ‘axial’ with number of cuts=5<a class="headerlink" href="#visualizing-in-single-view-axial-with-number-of-cuts-5" title="Permalink to this headline">¶</a></h2>
 <p>In this type of visualization, the <cite>display_mode</cite> argument is given as
 string ‘z’ for axial direction and <cite>cut_coords</cite> as integer 5 without a
 list implies that number of cuts in the slices should be maximum of 5.
@@ -287,7 +348,7 @@ The coordinates to cut the slices are selected automatically</p>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_002.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_002.png" />
 </div>
 <div class="section" id="visualizing-in-single-view-sagittal-with-only-two-slices">
-<h2>8.2.17.4. Visualizing in - single view ‘sagittal’ with only two slices<a class="headerlink" href="#visualizing-in-single-view-sagittal-with-only-two-slices" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.4. Visualizing in - single view ‘sagittal’ with only two slices<a class="headerlink" href="#visualizing-in-single-view-sagittal-with-only-two-slices" title="Permalink to this headline">¶</a></h2>
 <p>In this type, <cite>display_mode</cite> should be given as string ‘x’ for sagittal
 view and coordinates should be given as integers in a list</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="View documentation for nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">stat_img</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span>
@@ -298,7 +359,7 @@ view and coordinates should be given as integers in a list</p>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_003.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_003.png" />
 </div>
 <div class="section" id="visualizing-in-coronal-view-with-single-cut">
-<h2>8.2.17.5. Visualizing in - ‘coronal’ view with single cut<a class="headerlink" href="#visualizing-in-coronal-view-with-single-cut" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.5. Visualizing in - ‘coronal’ view with single cut<a class="headerlink" href="#visualizing-in-coronal-view-with-single-cut" title="Permalink to this headline">¶</a></h2>
 <p>For coronal view, <cite>display_mode</cite> is given as string ‘y’ and <cite>cut_coords</cite>
 as integer 1 not as a list for single cut. The coordinates are selected
 automatically</p>
@@ -309,7 +370,7 @@ automatically</p>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_004.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_004.png" />
 </div>
 <div class="section" id="visualizing-without-a-colorbar-on-the-right-side">
-<h2>8.2.17.6. Visualizing without a colorbar on the right side<a class="headerlink" href="#visualizing-without-a-colorbar-on-the-right-side" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.6. Visualizing without a colorbar on the right side<a class="headerlink" href="#visualizing-without-a-colorbar-on-the-right-side" title="Permalink to this headline">¶</a></h2>
 <p>The argument <cite>colorbar</cite> should be given as False to show plots without
 a colorbar on the right side.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="View documentation for nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">stat_img</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span>
@@ -320,7 +381,7 @@ a colorbar on the right side.</p>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_005.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_005.png" />
 </div>
 <div class="section" id="visualize-in-two-views-sagittal-and-axial-with-given-coordinates">
-<h2>8.2.17.7. Visualize in - two views ‘sagittal’ and ‘axial’ with given coordinates<a class="headerlink" href="#visualize-in-two-views-sagittal-and-axial-with-given-coordinates" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.7. Visualize in - two views ‘sagittal’ and ‘axial’ with given coordinates<a class="headerlink" href="#visualize-in-two-views-sagittal-and-axial-with-given-coordinates" title="Permalink to this headline">¶</a></h2>
 <p>argument display_mode=’xz’ where ‘x’ for sagittal and ‘z’ for axial view.
 argument <cite>cut_coords</cite> should match with input number of views therefore two
 integers should be given in a list to select the slices to be displayed</p>
@@ -332,7 +393,7 @@ integers should be given in a list to select the slices to be displayed</p>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_006.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_006.png" />
 </div>
 <div class="section" id="changing-the-views-to-coronal-sagittal-views-with-coordinates">
-<h2>8.2.17.8. Changing the views to ‘coronal’, ‘sagittal’ views with coordinates<a class="headerlink" href="#changing-the-views-to-coronal-sagittal-views-with-coordinates" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.8. Changing the views to ‘coronal’, ‘sagittal’ views with coordinates<a class="headerlink" href="#changing-the-views-to-coronal-sagittal-views-with-coordinates" title="Permalink to this headline">¶</a></h2>
 <p>display_mode=’yx’ for coronal and saggital view and coordinates will be
 assigned in the order of direction as [x, y, z]</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="View documentation for nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">stat_img</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;yx&#39;</span><span class="p">,</span>
@@ -343,7 +404,7 @@ assigned in the order of direction as [x, y, z]</p>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_007.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_007.png" />
 </div>
 <div class="section" id="now-views-are-changed-to-coronal-and-axial-views-with-coordinates">
-<h2>8.2.17.9. Now, views are changed to ‘coronal’ and ‘axial’ views with coordinates<a class="headerlink" href="#now-views-are-changed-to-coronal-and-axial-views-with-coordinates" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.9. Now, views are changed to ‘coronal’ and ‘axial’ views with coordinates<a class="headerlink" href="#now-views-are-changed-to-coronal-and-axial-views-with-coordinates" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python"><div class="highlight"><pre><span></span><a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="View documentation for nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">stat_img</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;yz&#39;</span><span class="p">,</span>
                        <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">27</span><span class="p">,</span> <span class="mi">60</span><span class="p">],</span>
                        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;display_mode=&#39;yz&#39;, cut_coords=[-27, 60]&quot;</span><span class="p">)</span>
@@ -352,7 +413,7 @@ assigned in the order of direction as [x, y, z]</p>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_008.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_008.png" />
 </div>
 <div class="section" id="demonstrating-various-display-features">
-<h2>8.2.17.10. Demonstrating various display features<a class="headerlink" href="#demonstrating-various-display-features" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.10. Demonstrating various display features<a class="headerlink" href="#demonstrating-various-display-features" title="Permalink to this headline">¶</a></h2>
 <p>In second part, we switch to demonstrating various features add_* from
 nilearn where each specific feature will be helpful in projecting brain
 imaging results for further interpretation.</p>
@@ -366,7 +427,7 @@ imaging results for further interpretation.</p>
 </div>
 </div>
 <div class="section" id="showing-how-to-use-add-edges">
-<h2>8.2.17.11. Showing how to use <cite>add_edges</cite><a class="headerlink" href="#showing-how-to-use-add-edges" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.11. Showing how to use <cite>add_edges</cite><a class="headerlink" href="#showing-how-to-use-add-edges" title="Permalink to this headline">¶</a></h2>
 <p>Now let us see how to use <cite>add_edges</cite>, method useful for checking
 coregistration by overlaying anatomical image as edges (red) on top of
 mean functional image (background), both being of same subject.</p>
@@ -384,7 +445,7 @@ mean functional image (background), both being of same subject.</p>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_009.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_009.png" />
 </div>
 <div class="section" id="how-to-use-add-contours">
-<h2>8.2.17.12. How to use <cite>add_contours</cite><a class="headerlink" href="#how-to-use-add-contours" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.12. How to use <cite>add_contours</cite><a class="headerlink" href="#how-to-use-add-contours" title="Permalink to this headline">¶</a></h2>
 <p>Plotting outline of the mask (red) on top of the mean EPI image with
 <cite>add_contours</cite>. This method is useful for region specific interpretation
 of brain images</p>
@@ -421,7 +482,7 @@ of brain images</p>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_011.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_011.png" />
 </div>
 <div class="section" id="plotting-seeds-using-add-markers">
-<h2>8.2.17.13. Plotting seeds using <cite>add_markers</cite><a class="headerlink" href="#plotting-seeds-using-add-markers" title="Permalink to this headline">¶</a></h2>
+<h2>8.2.18.13. Plotting seeds using <cite>add_markers</cite><a class="headerlink" href="#plotting-seeds-using-add-markers" title="Permalink to this headline">¶</a></h2>
 <p>Plotting seed regions of interest as spheres using new feature <cite>add_markers</cite>
 with MNI coordinates of interest.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat" title="View documentation for nilearn.plotting.plot_anat"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_anat</span></a><span class="p">(</span><span class="n">mean_haxby_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;add_markers&quot;</span><span class="p">,</span>
@@ -435,6 +496,31 @@ with MNI coordinates of interest.</p>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_plot_demo_more_plotting_012.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_012.png" />
+</div>
+<div class="section" id="annotating-plots">
+<h2>8.2.18.14. Annotating plots<a class="headerlink" href="#annotating-plots" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to alter the default annotations of plots, using the
+<code class="docutils literal"><span class="pre">annotate</span></code> member function of display objects.
+For example, we can add a scale bar at the bottom right of each view:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat" title="View documentation for nilearn.plotting.plot_anat"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_anat</span></a><span class="p">(</span><span class="n">mean_haxby_img</span><span class="p">,</span>
+                             <span class="n">title</span><span class="o">=</span><span class="s2">&quot;adding a scale bar&quot;</span><span class="p">,</span>
+                             <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">34</span><span class="p">,</span> <span class="o">-</span><span class="mi">39</span><span class="p">,</span> <span class="o">-</span><span class="mi">9</span><span class="p">])</span>
+<span class="n">display</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">scalebar</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../../_images/sphx_glr_plot_demo_more_plotting_013.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_013.png" />
+<p>Further configuration can be achieved by setting <code class="docutils literal"><span class="pre">scale_*</span></code> keyword args.
+For instance, changing <code class="docutils literal"><span class="pre">units</span></code> to <cite>mm</cite> or a different scale bar size.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat" title="View documentation for nilearn.plotting.plot_anat"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_anat</span></a><span class="p">(</span><span class="n">mean_haxby_img</span><span class="p">,</span>
+                             <span class="n">title</span><span class="o">=</span><span class="s2">&quot;adding a scale bar&quot;</span><span class="p">,</span>
+                             <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">34</span><span class="p">,</span> <span class="o">-</span><span class="mi">39</span><span class="p">,</span> <span class="o">-</span><span class="mi">9</span><span class="p">])</span>
+<span class="n">display</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">scalebar</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">scale_size</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">scale_units</span><span class="o">=</span><span class="s1">&#39;mm&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../../_images/sphx_glr_plot_demo_more_plotting_014.png" class="align-center" src="../../_images/sphx_glr_plot_demo_more_plotting_014.png" />
+</div>
+<div class="section" id="saving-plots-to-file">
+<h2>8.2.18.15. Saving plots to file<a class="headerlink" href="#saving-plots-to-file" title="Permalink to this headline">¶</a></h2>
 <p>Finally, saving the plots to file with two different ways</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Contrast maps plotted with function `plot_stat_map` can be saved using an</span>
 <span class="c1"># inbuilt parameter output_file as filename + .extension as string. Valid</span>
@@ -454,7 +540,7 @@ with MNI coordinates of interest.</p>
 <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="View documentation for nilearn.plotting.show"><span class="n">plotting</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  12.700 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  13.448 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/plot_demo_more_plotting.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_demo_more_plotting.py</span></code></a></div>
@@ -471,29 +557,7 @@ with MNI coordinates of interest.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="plot_demo_glass_brain_extensive.html" title="8.2.18. Glass brain plotting in nilearn (all options)"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="plot_surf_stat_map.html" title="8.2.16. Seed-based connectivity on the surface"
-             >previous</a> |</li>
-<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="../index.html">Examples</a> |&nbsp;</li>
-<li><a href="../../modules/reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >8. Nilearn usage examples</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

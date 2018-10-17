@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,47 +29,103 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -166,6 +224,8 @@ $(function () {
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">5. Manipulation brain volumes with nilearn</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -176,6 +236,7 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">5.3. From neuroimaging volumes to data matrices: the masker objects</a><ul>
@@ -207,6 +268,7 @@ $(function () {
 </ul>
 </li>
 </ul>
+</div>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="manipulating_images.html"
@@ -214,9 +276,6 @@ $(function () {
   <h4>Next topic</h4>
   <p class="topless"><a href="../building_blocks/index.html"
                         title="next chapter">6. Advanced usage: manual pipelines and scaling up</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -374,13 +433,18 @@ functions documentation, or <a class="reference internal" href="../auto_examples
 preparation:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nilearn</span> <span class="k">import</span> <span class="n">input_data</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">masker</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">NiftiMasker</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">masker</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">masker</span> 
 <span class="go">NiftiMasker(detrend=False, dtype=None, high_pass=None, low_pass=None,</span>
 <span class="go">      mask_args=None, mask_img=None, mask_strategy=&#39;background&#39;,</span>
-<span class="go">      memory=Memory(cachedir=None), memory_level=1, sample_mask=None,</span>
+<span class="go">      memory=Memory(...), memory_level=1, sample_mask=None,</span>
 <span class="go">      sessions=None, smoothing_fwhm=None, standardize=False, t_r=None,</span>
 <span class="go">      target_affine=None, target_shape=None, verbose=0)</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">From scikit-learn 0.20, the argument <cite>cachedir</cite> is deprecated in
+favour of <cite>location</cite>. Hence <cite>cachedir</cite> might not be seen as here.</p>
 </div>
 <p>The meaning of each parameter is described in the documentation of
 <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><code class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></code></a> (click on the name <a class="reference internal" href="../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><code class="xref py py-class docutils literal"><span class="pre">NiftiMasker</span></code></a>), here we
@@ -479,7 +543,7 @@ is explained in details in <a class="reference internal" href="manipulating_imag
 <p>Once voxel signals have been processed, the result can be visualized as
 images after unmasking (masked-reduced data transformed back into
 the original whole-brain space). This step is present in many
-<a class="reference external" href="https://matplotlib.org/gallery/index.html#examples-index" title="(in Matplotlib v2.2.2)"><span class="xref std std-ref">examples</span></a> provided in nilearn. Below you will find
+<a class="reference external" href="https://matplotlib.org/gallery/index.html#examples-index" title="(in Matplotlib v3.0.0)"><span class="xref std std-ref">examples</span></a> provided in nilearn. Below you will find
 an excerpt of <a class="reference internal" href="../auto_examples/02_decoding/plot_haxby_anova_svm.html#sphx-glr-auto-examples-02-decoding-plot-haxby-anova-svm-py"><span class="std std-ref">the example performing Anova-SVM on the Haxby data</span></a>):</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">coef</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">coef_</span>
 <span class="c1"># reverse feature selection</span>
@@ -615,29 +679,7 @@ seed position is used.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="../building_blocks/index.html" title="6. Advanced usage: manual pipelines and scaling up"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="manipulating_images.html" title="5.2. Manipulating images: resampling, smoothing, masking, ROIs…"
-             >previous</a> |</li>
-<li><a href="../index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="../auto_examples/index.html">Examples</a> |&nbsp;</li>
-<li><a href="../modules/reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="../authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >5. Manipulation brain volumes with nilearn</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

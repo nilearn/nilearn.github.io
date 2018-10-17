@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,47 +29,103 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -166,6 +224,8 @@ $(function () {
           <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">8. Nilearn usage examples</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -176,6 +236,7 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">8.4.1. Group analysis of resting-state fMRI with ICA: CanICA</a><ul>
@@ -186,6 +247,7 @@ $(function () {
 </ul>
 </li>
 </ul>
+</div>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="../02_decoding/plot_miyawaki_reconstruction.html"
@@ -193,9 +255,6 @@ $(function () {
   <h4>Next topic</h4>
   <p class="topless"><a href="plot_probabilistic_atlas_extraction.html"
                         title="next chapter">8.4.2. Extracting signals of a probabilistic atlas of rest functional regions</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -402,68 +461,68 @@ See the <a class="reference internal" href="../../manipulating_images/masker_obj
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">extmath</span><span class="o">.</span><span class="n">randomized_svd</span><span class="o">...</span>
 <span class="n">randomized_svd</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002997</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.00205</span> <span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.002863</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.002574</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span> <span class="n">n_components</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">transpose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">___________________________________________________randomized_svd</span> <span class="o">-</span> <span class="mf">1.4</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
+       <span class="p">[</span> <span class="mf">0.002863</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.002574</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">transpose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_components</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">__________________________________________________randomized_svd</span> <span class="o">-</span> <span class="mf">43.3</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.7</span><span class="nb">min</span>
 <span class="n">________________________________________________________________________________</span>
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
 <span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">209652396</span><span class="p">)</span>
-<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">2.6</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
-<span class="n">________________________________________________________________________________</span>
-<span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
-<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
-       <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">398764591</span><span class="p">)</span>
-<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">3.0</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
-<span class="n">________________________________________________________________________________</span>
-<span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
-<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
-       <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">924231285</span><span class="p">)</span>
-<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">2.4</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
-<span class="n">________________________________________________________________________________</span>
-<span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
-<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
-       <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1478610112</span><span class="p">)</span>
-<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">4.0</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
-<span class="n">________________________________________________________________________________</span>
-<span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
-<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
-       <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">441365315</span><span class="p">)</span>
-<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">2.1</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
-<span class="n">________________________________________________________________________________</span>
-<span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
-<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
-       <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1537364731</span><span class="p">)</span>
-<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">2.4</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
-<span class="n">________________________________________________________________________________</span>
-<span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
-<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
-       <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">192771779</span><span class="p">)</span>
+       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">209652396</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">6.2</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
 <span class="n">________________________________________________________________________________</span>
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
 <span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1491434855</span><span class="p">)</span>
-<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">1.9</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
+       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">398764591</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">3.6</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
 <span class="n">________________________________________________________________________________</span>
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
 <span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1819583497</span><span class="p">)</span>
-<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">2.5</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
+       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">924231285</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">2.3</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
 <span class="n">________________________________________________________________________________</span>
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
 <span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">530702035</span><span class="p">)</span>
-<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">2.1</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
+       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1478610112</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">6.9</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
+<span class="n">________________________________________________________________________________</span>
+<span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
+<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
+       <span class="o">...</span><span class="p">,</span>
+       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">441365315</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">3.5</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
+<span class="n">________________________________________________________________________________</span>
+<span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
+<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
+       <span class="o">...</span><span class="p">,</span>
+       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1537364731</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">9.0</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
+<span class="n">________________________________________________________________________________</span>
+<span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
+<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
+       <span class="o">...</span><span class="p">,</span>
+       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">192771779</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">4.1</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
+<span class="n">________________________________________________________________________________</span>
+<span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
+<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
+       <span class="o">...</span><span class="p">,</span>
+       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1491434855</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">6.4</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
+<span class="n">________________________________________________________________________________</span>
+<span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
+<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
+       <span class="o">...</span><span class="p">,</span>
+       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1819583497</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">6.4</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
+<span class="n">________________________________________________________________________________</span>
+<span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
+<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002965</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.004766</span><span class="p">],</span>
+       <span class="o">...</span><span class="p">,</span>
+       <span class="p">[</span> <span class="mf">0.003539</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004918</span><span class="p">]]),</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">530702035</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">__________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">4.8</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
 </pre></div>
 </div>
 </div>
@@ -531,7 +590,7 @@ See the <a class="reference internal" href="../../manipulating_images/masker_obj
 <li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_canica_resting_state_021.png"><img alt="../../_images/sphx_glr_plot_canica_resting_state_021.png" src="../../_images/sphx_glr_plot_canica_resting_state_021.png" style="width: 103.4px; height: 107.63px;" /></a>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 3 minutes  36.702 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 6 minutes  56.907 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/plot_canica_resting_state.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_canica_resting_state.py</span></code></a></div>
@@ -548,29 +607,7 @@ See the <a class="reference internal" href="../../manipulating_images/masker_obj
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="plot_probabilistic_atlas_extraction.html" title="8.4.2. Extracting signals of a probabilistic atlas of rest functional regions"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="../02_decoding/plot_miyawaki_reconstruction.html" title="8.3.14. Reconstruction of visual stimuli from Miyawaki et al. 2008"
-             >previous</a> |</li>
-<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="../index.html">Examples</a> |&nbsp;</li>
-<li><a href="../../modules/reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >8. Nilearn usage examples</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,47 +29,103 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -166,6 +224,8 @@ $(function () {
           <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">8. Nilearn usage examples</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -176,6 +236,7 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">8.4.7. Dictionary Learning and ICA for doing group analysis of resting-state fMRI</a><ul>
@@ -188,6 +249,7 @@ $(function () {
 </ul>
 </li>
 </ul>
+</div>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="plot_simulated_connectome.html"
@@ -195,9 +257,6 @@ $(function () {
   <h4>Next topic</h4>
   <p class="topless"><a href="plot_sphere_based_connectome.html"
                         title="next chapter">8.4.8. Extract signals on spheres from an atlas and plot a connectome</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -430,36 +489,36 @@ need to be in MNI template space</p>
 <span class="p">[</span><a href="../../modules/generated/nilearn.decomposition.DictLearning.html#nilearn.decomposition.DictLearning" title="View documentation for nilearn.decomposition.DictLearning"><span class="n">DictLearning</span></a><span class="p">]</span> <span class="n">Learning</span> <span class="n">initial</span> <span class="n">components</span>
 <span class="n">________________________________________________________________________________</span>
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">extmath</span><span class="o">.</span><span class="n">randomized_svd</span><span class="o">...</span>
-<span class="n">randomized_svd</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.00269</span> <span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.002776</span><span class="p">],</span>
+<span class="n">randomized_svd</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.00269</span> <span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.002756</span><span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.000773</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004086</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span> <span class="n">n_components</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">transpose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">___________________________________________________randomized_svd</span> <span class="o">-</span> <span class="mf">3.1</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
+       <span class="p">[</span> <span class="mf">0.000773</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.004086</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">transpose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_components</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+<span class="n">_________________________________________________randomized_svd</span> <span class="o">-</span> <span class="mf">179.6</span><span class="n">s</span><span class="p">,</span> <span class="mf">3.0</span><span class="nb">min</span>
 <span class="n">________________________________________________________________________________</span>
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
-<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.003996</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.001185</span><span class="p">],</span>
+<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.003996</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.001182</span><span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.002408</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.002918</span><span class="p">]]),</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">209652396</span><span class="p">)</span>
-<span class="n">_________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">16.0</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.3</span><span class="nb">min</span>
+       <span class="p">[</span> <span class="mf">0.002408</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.002918</span><span class="p">]]),</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">209652396</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">_________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">14.2</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.2</span><span class="nb">min</span>
 <span class="p">[</span><a href="../../modules/generated/nilearn.decomposition.DictLearning.html#nilearn.decomposition.DictLearning" title="View documentation for nilearn.decomposition.DictLearning"><span class="n">DictLearning</span></a><span class="p">]</span> <span class="n">Computing</span> <span class="n">initial</span> <span class="n">loadings</span>
 <span class="n">________________________________________________________________________________</span>
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">nilearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">dict_learning</span><span class="o">.</span><span class="n">_compute_loadings</span><span class="o">...</span>
-<span class="n">_compute_loadings</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.002861</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.001986</span><span class="p">],</span>
+<span class="n">_compute_loadings</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.000223</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.001278</span><span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.004506</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.003239</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
-<span class="n">array</span><span class="p">([[</span> <span class="mf">2.613222</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.750737</span><span class="p">],</span>
+       <span class="p">[</span><span class="o">-</span><span class="mf">0.000297</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.000957</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
+<span class="n">array</span><span class="p">([[</span> <span class="mf">2.613313</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.750739</span><span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span><span class="o">-</span><span class="mf">0.445348</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.655415</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">))</span>
-<span class="n">_________________________________________________compute_loadings</span> <span class="o">-</span> <span class="mf">0.8</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
+       <span class="p">[</span><span class="o">-</span><span class="mf">0.442094</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.655428</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">))</span>
+<span class="n">_________________________________________________compute_loadings</span> <span class="o">-</span> <span class="mf">2.2</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="nb">min</span>
 <span class="p">[</span><a href="../../modules/generated/nilearn.decomposition.DictLearning.html#nilearn.decomposition.DictLearning" title="View documentation for nilearn.decomposition.DictLearning"><span class="n">DictLearning</span></a><span class="p">]</span> <span class="n">Learning</span> <span class="n">dictionary</span>
 <span class="n">________________________________________________________________________________</span>
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">dict_learning</span><span class="o">.</span><span class="n">dict_learning_online</span><span class="o">...</span>
-<span class="n">dict_learning_online</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">2.613222</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.445348</span><span class="p">],</span>
+<span class="n">dict_learning_online</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">2.613313</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.442094</span><span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.750737</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.655415</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
-<span class="mi">40</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">3413</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;cd&#39;</span><span class="p">,</span> <span class="n">dict_init</span><span class="o">=</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.368686</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.097189</span><span class="p">],</span>
+       <span class="p">[</span> <span class="mf">0.750739</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.655428</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span>
+<span class="mi">40</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">3413</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">return_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">dict_init</span><span class="o">=</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mf">0.147692</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.059753</span><span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.118109</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.194525</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">return_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">____________________________________________dict_learning_online</span> <span class="o">-</span> <span class="mf">63.1</span><span class="n">s</span><span class="p">,</span> <span class="mf">1.1</span><span class="nb">min</span>
+       <span class="p">[</span> <span class="mf">0.228943</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.272759</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;cd&#39;</span><span class="p">)</span>
+<span class="n">____________________________________________dict_learning_online</span> <span class="o">-</span> <span class="mf">39.1</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.7</span><span class="nb">min</span>
 <span class="p">[</span><span class="n">Example</span><span class="p">]</span> <span class="n">Saving</span> <span class="n">results</span>
 <span class="p">[</span><span class="n">Example</span><span class="p">]</span> <span class="n">Learning</span> <span class="n">maps</span> <span class="n">using</span> <a href="../../modules/generated/nilearn.decomposition.CanICA.html#nilearn.decomposition.CanICA" title="View documentation for nilearn.decomposition.CanICA"><span class="n">CanICA</span></a> <span class="n">model</span>
 <span class="p">[</span><span class="n">MultiNiftiMasker</span><span class="o">.</span><span class="n">fit</span><span class="p">]</span> <span class="n">Loading</span> <span class="n">data</span> <span class="kn">from</span> <span class="p">[</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">varoquau</span><span class="o">/</span><span class="n">nilearn_data</span><span class="o">/</span><span class="n">adhd</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="mi">0010042</span><span class="o">/</span><span class="mi">0010042</span><span class="n">_rest_tshift_RPI_voreg_mni</span><span class="o">.</span><span class="n">nii</span><span class="o">.</span><span class="n">gz</span><span class="p">,</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">varoquau</span><span class="o">/</span><span class="n">nilearn_data</span><span class="o">/</span><span class="n">adhd</span><span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="mi">0010064</span><span class="o">/</span><span class="mi">0010064</span><span class="n">_rest_tshift_RPI_voreg_mni</span><span class="o">.</span><span class="n">nii</span><span class="o">.</span><span class="n">gz</span><span class="p">,</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">varoquau</span><span class="o">/</span><span class="n">nilearn_</span>
@@ -588,16 +647,16 @@ need to be in MNI template space</p>
 <span class="p">[</span><span class="n">MultiNiftiMasker</span><span class="o">.</span><span class="n">transform_single_imgs</span><span class="p">]</span> <span class="n">Cleaning</span> <span class="n">extracted</span> <span class="n">signals</span>
 <span class="n">________________________________________________________________________________</span>
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">extmath</span><span class="o">.</span><span class="n">randomized_svd</span><span class="o">...</span>
-<span class="n">randomized_svd</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.003302</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.000577</span><span class="p">],</span>
+<span class="n">randomized_svd</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.003302</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.001189</span><span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.000977</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.001238</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span> <span class="n">n_components</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">transpose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">___________________________________________________randomized_svd</span> <span class="o">-</span> <span class="mf">4.0</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.1</span><span class="nb">min</span>
+       <span class="p">[</span> <span class="mf">0.000977</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.000347</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">float32</span><span class="p">),</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">transpose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_components</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+<span class="n">_________________________________________________randomized_svd</span> <span class="o">-</span> <span class="mf">183.6</span><span class="n">s</span><span class="p">,</span> <span class="mf">3.1</span><span class="nb">min</span>
 <span class="n">________________________________________________________________________________</span>
 <span class="p">[</span><span class="n">Memory</span><span class="p">]</span> <span class="n">Calling</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">fastica_</span><span class="o">.</span><span class="n">fastica</span><span class="o">...</span>
-<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.003839</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.000928</span><span class="p">],</span>
+<span class="n">fastica</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span> <span class="mf">0.003849</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.001048</span><span class="p">],</span>
        <span class="o">...</span><span class="p">,</span>
-       <span class="p">[</span> <span class="mf">0.002483</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.00466</span> <span class="p">]]),</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">2002093242</span><span class="p">)</span>
-<span class="n">_________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">13.5</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.2</span><span class="nb">min</span>
+       <span class="p">[</span> <span class="mf">0.002437</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.002662</span><span class="p">]]),</span> <span class="n">fun</span><span class="o">=</span><span class="s1">&#39;cube&#39;</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">645488649</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">_________________________________________________________fastica</span> <span class="o">-</span> <span class="mf">25.4</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.4</span><span class="nb">min</span>
 <span class="p">[</span><span class="n">Example</span><span class="p">]</span> <span class="n">Saving</span> <span class="n">results</span>
 </pre></div>
 </div>
@@ -635,7 +694,7 @@ need to be in MNI template space</p>
 <li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_compare_resting_state_decomposition_004.png"><img alt="../../_images/sphx_glr_plot_compare_resting_state_decomposition_004.png" src="../../_images/sphx_glr_plot_compare_resting_state_decomposition_004.png" style="width: 310.2px; height: 122.2px;" /></a>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 7 minutes  51.444 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 19 minutes  53.797 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/plot_compare_resting_state_decomposition.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_compare_resting_state_decomposition.py</span></code></a></div>
@@ -652,29 +711,7 @@ need to be in MNI template space</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="plot_sphere_based_connectome.html" title="8.4.8. Extract signals on spheres from an atlas and plot a connectome"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="plot_simulated_connectome.html" title="8.4.6. Connectivity structure estimation on simulated data"
-             >previous</a> |</li>
-<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="../index.html">Examples</a> |&nbsp;</li>
-<li><a href="../../modules/reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" >8. Nilearn usage examples</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

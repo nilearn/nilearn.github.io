@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,47 +29,103 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -166,6 +224,8 @@ $(function () {
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">8. Nilearn usage examples</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -176,6 +236,7 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">8.1.4. A introduction tutorial to fMRI decoding</a><ul>
@@ -202,6 +263,7 @@ $(function () {
 </ul>
 </li>
 </ul>
+</div>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="plot_3d_and_4d_niimg.html"
@@ -209,9 +271,6 @@ $(function () {
   <h4>Next topic</h4>
   <p class="topless"><a href="01_plotting/plot_atlas.html"
                         title="next chapter">8.2.1. Basic Atlas plotting</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -300,19 +359,19 @@ for decoding</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span> <span class="mf">7.6757914e-01</span>  <span class="mf">2.3108709e+00</span> <span class="o">-</span><span class="mf">2.0519446e-01</span> <span class="o">...</span> <span class="o">-</span><span class="mf">1.0261141e+00</span>
-   <span class="mf">8.7993503e-02</span>  <span class="mf">2.0720530e+00</span><span class="p">]</span>
- <span class="p">[</span> <span class="mf">5.5640829e-01</span>  <span class="mf">1.6833442e+00</span> <span class="o">-</span><span class="mf">2.4644940e-01</span> <span class="o">...</span> <span class="o">-</span><span class="mf">7.0238096e-01</span>
-  <span class="o">-</span><span class="mf">3.4570050e-01</span>  <span class="mf">2.0341012e+00</span><span class="p">]</span>
- <span class="p">[</span> <span class="mf">7.6757914e-01</span>  <span class="mf">1.9186667e+00</span>  <span class="mf">1.0802227e-03</span> <span class="o">...</span> <span class="o">-</span><span class="mf">9.9374086e-01</span>
-  <span class="o">-</span><span class="mf">2.7630946e-01</span>  <span class="mf">2.1479564e+00</span><span class="p">]</span>
- <span class="o">...</span>
- <span class="p">[</span><span class="o">-</span><span class="mf">4.2905572e-01</span> <span class="o">-</span><span class="mf">1.6896113e+00</span> <span class="o">-</span><span class="mf">7.4150860e-01</span> <span class="o">...</span> <span class="o">-</span><span class="mf">1.5440873e+00</span>
-   <span class="mf">1.8054218e+00</span> <span class="o">-</span><span class="mf">1.6709729e-01</span><span class="p">]</span>
- <span class="p">[</span><span class="o">-</span><span class="mf">1.4749458e-01</span> <span class="o">-</span><span class="mf">1.8072726e+00</span> <span class="o">-</span><span class="mf">2.4644940e-01</span> <span class="o">...</span> <span class="o">-</span><span class="mf">1.7707006e+00</span>
-   <span class="mf">1.5452055e+00</span>  <span class="mf">7.8169519e-01</span><span class="p">]</span>
- <span class="p">[</span><span class="o">-</span><span class="mf">2.1788488e-01</span> <span class="o">-</span><span class="mf">1.4542887e+00</span>  <span class="mf">1.0802227e-03</span> <span class="o">...</span> <span class="o">-</span><span class="mf">1.6412073e+00</span>
-   <span class="mf">1.2676412e+00</span>  <span class="mf">8.9555031e-01</span><span class="p">]]</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span>  <span class="mf">7.67579138e-01</span>   <span class="mf">2.31087089e+00</span>  <span class="o">-</span><span class="mf">2.05194458e-01</span> <span class="o">...</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.02611411e+00</span>
+    <span class="mf">8.79935026e-02</span>   <span class="mf">2.07205296e+00</span><span class="p">]</span>
+ <span class="p">[</span>  <span class="mf">5.56408286e-01</span>   <span class="mf">1.68334424e+00</span>  <span class="o">-</span><span class="mf">2.46449396e-01</span> <span class="o">...</span><span class="p">,</span>  <span class="o">-</span><span class="mf">7.02380955e-01</span>
+   <span class="o">-</span><span class="mf">3.45700502e-01</span>   <span class="mf">2.03410125e+00</span><span class="p">]</span>
+ <span class="p">[</span>  <span class="mf">7.67579138e-01</span>   <span class="mf">1.91866672e+00</span>   <span class="mf">1.08022266e-03</span> <span class="o">...</span><span class="p">,</span>  <span class="o">-</span><span class="mf">9.93740857e-01</span>
+   <span class="o">-</span><span class="mf">2.76309460e-01</span>   <span class="mf">2.14795637e+00</span><span class="p">]</span>
+ <span class="o">...</span><span class="p">,</span>
+ <span class="p">[</span> <span class="o">-</span><span class="mf">4.29055721e-01</span>  <span class="o">-</span><span class="mf">1.68961132e+00</span>  <span class="o">-</span><span class="mf">7.41508603e-01</span> <span class="o">...</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.54408729e+00</span>
+    <span class="mf">1.80542183e+00</span>  <span class="o">-</span><span class="mf">1.67097285e-01</span><span class="p">]</span>
+ <span class="p">[</span> <span class="o">-</span><span class="mf">1.47494584e-01</span>  <span class="o">-</span><span class="mf">1.80727255e+00</span>  <span class="o">-</span><span class="mf">2.46449396e-01</span> <span class="o">...</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.77070057e+00</span>
+    <span class="mf">1.54520547e+00</span>   <span class="mf">7.81695187e-01</span><span class="p">]</span>
+ <span class="p">[</span> <span class="o">-</span><span class="mf">2.17884883e-01</span>  <span class="o">-</span><span class="mf">1.45428872e+00</span>   <span class="mf">1.08022266e-03</span> <span class="o">...</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.64120734e+00</span>
+    <span class="mf">1.26764119e+00</span>   <span class="mf">8.95550311e-01</span><span class="p">]]</span>
 </pre></div>
 </div>
 <p>Its shape corresponds to the number of time-points times the number of
@@ -537,26 +596,26 @@ labels, and then predict labels on data without.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span>
- <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
- <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
- <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
- <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
- <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
+ <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
+ <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
+ <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
+ <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
+ <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
  <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
+ <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
+ <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span>
+ <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
+ <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
+ <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
+ <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
+ <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
+ <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
  <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
  <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
  <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
  <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
- <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
- <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
- <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
- <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span>
- <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
- <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span>
- <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
- <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span> <span class="s1">&#39;face&#39;</span>
- <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span><span class="p">]</span>
+ <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span> <span class="s1">&#39;cat&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Let’s measure the error rate:</p>
@@ -584,7 +643,7 @@ prediction on these 30 last points:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="mf">0.6666666666666666</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="mf">0.666666666667</span>
 </pre></div>
 </div>
 </div>
@@ -607,11 +666,11 @@ strategy:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="mf">0.9772727272727273</span>
-<span class="mf">0.7674418604651163</span>
-<span class="mf">0.7906976744186046</span>
-<span class="mf">0.5348837209302325</span>
-<span class="mf">0.7441860465116279</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="mf">0.977272727273</span>
+<span class="mf">0.767441860465</span>
+<span class="mf">0.790697674419</span>
+<span class="mf">0.53488372093</span>
+<span class="mf">0.744186046512</span>
 </pre></div>
 </div>
 </div>
@@ -624,7 +683,7 @@ strategy:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mf">0.59722222</span> <span class="mf">0.80555556</span> <span class="mf">0.55555556</span><span class="p">]</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span> <span class="mf">0.59722222</span>  <span class="mf">0.80555556</span>  <span class="mf">0.55555556</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Note that we can speed things up to use all the CPUs of our computer
@@ -655,9 +714,9 @@ and faces.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mf">0.97727273</span> <span class="mf">0.76744186</span> <span class="mf">0.79069767</span> <span class="mf">0.53488372</span> <span class="mf">0.74418605</span><span class="p">]</span>
-<span class="p">[</span><span class="mf">0.55555556</span> <span class="mf">1.</span>         <span class="mf">0.66666667</span> <span class="mf">0.66666667</span> <span class="mf">0.77777778</span> <span class="mf">0.72222222</span>
- <span class="mf">0.88888889</span> <span class="mf">0.38888889</span> <span class="mf">0.66666667</span> <span class="mf">0.5</span>        <span class="mf">0.77777778</span> <span class="mf">0.66666667</span><span class="p">]</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span> <span class="mf">0.97727273</span>  <span class="mf">0.76744186</span>  <span class="mf">0.79069767</span>  <span class="mf">0.53488372</span>  <span class="mf">0.74418605</span><span class="p">]</span>
+<span class="p">[</span> <span class="mf">0.55555556</span>  <span class="mf">1.</span>          <span class="mf">0.66666667</span>  <span class="mf">0.66666667</span>  <span class="mf">0.77777778</span>  <span class="mf">0.72222222</span>
+  <span class="mf">0.88888889</span>  <span class="mf">0.38888889</span>  <span class="mf">0.66666667</span>  <span class="mf">0.5</span>         <span class="mf">0.77777778</span>  <span class="mf">0.66666667</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -673,122 +732,122 @@ and faces.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span><span class="o">-</span><span class="mf">4.10591439e-02</span> <span class="o">-</span><span class="mf">8.38913669e-04</span> <span class="o">-</span><span class="mf">2.34992127e-02</span> <span class="o">-</span><span class="mf">3.47431514e-02</span>
-   <span class="mf">3.44100694e-02</span>  <span class="mf">2.59043472e-02</span>  <span class="mf">2.39052353e-02</span> <span class="o">-</span><span class="mf">4.95012599e-02</span>
-  <span class="o">-</span><span class="mf">3.19443415e-02</span> <span class="o">-</span><span class="mf">1.65893786e-02</span>  <span class="mf">1.87552899e-02</span> <span class="o">-</span><span class="mf">7.78939157e-03</span>
-   <span class="mf">1.02022966e-02</span> <span class="o">-</span><span class="mf">3.23066175e-02</span>  <span class="mf">4.77513388e-03</span>  <span class="mf">2.20187375e-02</span>
-   <span class="mf">1.50985089e-02</span>  <span class="mf">1.77166050e-03</span>  <span class="mf">2.41532650e-02</span> <span class="o">-</span><span class="mf">3.24624084e-02</span>
-   <span class="mf">1.30955876e-02</span> <span class="o">-</span><span class="mf">9.66231411e-02</span> <span class="o">-</span><span class="mf">7.07582442e-02</span>  <span class="mf">1.92832959e-02</span>
-   <span class="mf">3.57739471e-02</span> <span class="o">-</span><span class="mf">1.44028906e-02</span> <span class="o">-</span><span class="mf">9.17654420e-03</span> <span class="o">-</span><span class="mf">3.23610315e-02</span>
-   <span class="mf">2.34853293e-02</span>  <span class="mf">1.01923043e-01</span>  <span class="mf">1.61348815e-02</span> <span class="o">-</span><span class="mf">7.79778695e-02</span>
-   <span class="mf">2.49681620e-03</span> <span class="o">-</span><span class="mf">3.13738572e-02</span> <span class="o">-</span><span class="mf">2.80103975e-02</span> <span class="o">-</span><span class="mf">5.16189181e-02</span>
-  <span class="o">-</span><span class="mf">6.94717904e-03</span> <span class="o">-</span><span class="mf">1.00566568e-02</span> <span class="o">-</span><span class="mf">2.96087048e-02</span> <span class="o">-</span><span class="mf">2.25467990e-02</span>
-  <span class="o">-</span><span class="mf">3.00431368e-02</span> <span class="o">-</span><span class="mf">3.28028599e-02</span>  <span class="mf">2.65750951e-02</span>  <span class="mf">1.66043690e-02</span>
-  <span class="o">-</span><span class="mf">1.63196266e-02</span>  <span class="mf">3.33049535e-02</span>  <span class="mf">4.58224672e-04</span>  <span class="mf">7.30845484e-03</span>
-   <span class="mf">2.85276988e-02</span>  <span class="mf">1.98812475e-02</span>  <span class="mf">2.65800328e-02</span>  <span class="mf">1.87685655e-02</span>
-  <span class="o">-</span><span class="mf">2.05262911e-02</span> <span class="o">-</span><span class="mf">9.08269461e-03</span> <span class="o">-</span><span class="mf">4.53160560e-02</span>  <span class="mf">1.59140903e-02</span>
-  <span class="o">-</span><span class="mf">1.75433965e-02</span> <span class="o">-</span><span class="mf">6.90762579e-02</span>  <span class="mf">3.89501904e-02</span> <span class="o">-</span><span class="mf">1.28822089e-01</span>
-  <span class="o">-</span><span class="mf">3.50391659e-02</span>  <span class="mf">6.48267437e-03</span>  <span class="mf">5.01267951e-02</span> <span class="o">-</span><span class="mf">7.63127896e-02</span>
-  <span class="o">-</span><span class="mf">1.70264978e-02</span>  <span class="mf">5.40262082e-03</span>  <span class="mf">5.61464364e-02</span> <span class="o">-</span><span class="mf">1.73917761e-02</span>
-   <span class="mf">7.37187399e-02</span>  <span class="mf">1.29712224e-02</span>  <span class="mf">3.31590258e-02</span>  <span class="mf">6.15625548e-03</span>
-   <span class="mf">4.10859945e-02</span> <span class="o">-</span><span class="mf">6.77459982e-03</span>  <span class="mf">7.23131333e-03</span>  <span class="mf">2.18362878e-02</span>
-   <span class="mf">3.84148397e-02</span>  <span class="mf">2.63664841e-02</span>  <span class="mf">1.74112933e-02</span>  <span class="mf">1.61460386e-02</span>
-   <span class="mf">2.82263367e-02</span> <span class="o">-</span><span class="mf">5.51453962e-03</span> <span class="o">-</span><span class="mf">1.24329869e-02</span> <span class="o">-</span><span class="mf">1.65007919e-02</span>
-   <span class="mf">1.53495049e-03</span> <span class="o">-</span><span class="mf">3.58689292e-02</span> <span class="o">-</span><span class="mf">2.45351639e-02</span> <span class="o">-</span><span class="mf">4.79747313e-03</span>
-  <span class="o">-</span><span class="mf">5.32036709e-02</span>  <span class="mf">3.68274125e-02</span> <span class="o">-</span><span class="mf">1.69981985e-02</span>  <span class="mf">1.08511387e-02</span>
-  <span class="o">-</span><span class="mf">4.80508461e-02</span> <span class="o">-</span><span class="mf">3.69829093e-02</span> <span class="o">-</span><span class="mf">4.36149708e-02</span> <span class="o">-</span><span class="mf">2.27505354e-02</span>
-  <span class="o">-</span><span class="mf">1.82647161e-02</span> <span class="o">-</span><span class="mf">1.29988416e-02</span>  <span class="mf">3.45534849e-02</span>  <span class="mf">7.32459494e-03</span>
-  <span class="o">-</span><span class="mf">5.96338242e-03</span>  <span class="mf">5.11828907e-02</span>  <span class="mf">1.78048855e-02</span> <span class="o">-</span><span class="mf">4.10786820e-02</span>
-   <span class="mf">3.44218340e-02</span>  <span class="mf">1.02061855e-02</span>  <span class="mf">3.24182697e-02</span>  <span class="mf">3.40190648e-02</span>
-  <span class="o">-</span><span class="mf">9.72497936e-03</span>  <span class="mf">2.21466123e-02</span>  <span class="mf">1.51944122e-02</span> <span class="o">-</span><span class="mf">5.13909282e-02</span>
-  <span class="o">-</span><span class="mf">2.25212663e-02</span> <span class="o">-</span><span class="mf">5.36059085e-02</span>  <span class="mf">1.74461316e-02</span> <span class="o">-</span><span class="mf">1.73912821e-02</span>
-  <span class="o">-</span><span class="mf">5.30948812e-02</span>  <span class="mf">4.28375575e-02</span> <span class="o">-</span><span class="mf">1.75974389e-02</span>  <span class="mf">2.65186313e-03</span>
-  <span class="o">-</span><span class="mf">2.93060690e-02</span> <span class="o">-</span><span class="mf">2.90011563e-02</span>  <span class="mf">1.88280315e-02</span> <span class="o">-</span><span class="mf">3.77559429e-02</span>
-   <span class="mf">2.82039100e-03</span>  <span class="mf">4.76274597e-02</span>  <span class="mf">3.82002135e-02</span>  <span class="mf">7.30823353e-03</span>
-  <span class="o">-</span><span class="mf">5.78025756e-02</span>  <span class="mf">4.88796086e-03</span>  <span class="mf">2.08386543e-02</span>  <span class="mf">3.10799309e-06</span>
-   <span class="mf">7.64731722e-05</span> <span class="o">-</span><span class="mf">5.30726179e-03</span>  <span class="mf">8.32036061e-04</span>  <span class="mf">6.96334682e-03</span>
-  <span class="o">-</span><span class="mf">2.52437504e-02</span> <span class="o">-</span><span class="mf">1.01739725e-02</span> <span class="o">-</span><span class="mf">1.62671356e-02</span>  <span class="mf">3.42707627e-02</span>
-   <span class="mf">1.00432285e-02</span> <span class="o">-</span><span class="mf">2.50394237e-02</span> <span class="o">-</span><span class="mf">6.19833205e-03</span> <span class="o">-</span><span class="mf">2.77334894e-02</span>
-  <span class="o">-</span><span class="mf">1.03254429e-02</span> <span class="o">-</span><span class="mf">1.42163226e-02</span>  <span class="mf">3.39557786e-03</span>  <span class="mf">5.27978096e-02</span>
-  <span class="o">-</span><span class="mf">2.05438140e-02</span> <span class="o">-</span><span class="mf">5.70770065e-02</span>  <span class="mf">1.02214240e-02</span> <span class="o">-</span><span class="mf">5.51708996e-02</span>
-  <span class="o">-</span><span class="mf">1.29624200e-02</span>  <span class="mf">3.77777072e-03</span>  <span class="mf">7.88352021e-03</span>  <span class="mf">1.51368300e-02</span>
-   <span class="mf">5.94512230e-02</span>  <span class="mf">3.75684469e-02</span>  <span class="mf">4.61933687e-02</span> <span class="o">-</span><span class="mf">6.28617029e-03</span>
-  <span class="o">-</span><span class="mf">2.31685868e-03</span>  <span class="mf">4.39664384e-02</span>  <span class="mf">6.82138779e-02</span>  <span class="mf">1.58698406e-02</span>
-   <span class="mf">5.48997068e-02</span>  <span class="mf">8.31410463e-02</span> <span class="o">-</span><span class="mf">8.97988526e-03</span>  <span class="mf">7.83481005e-03</span>
-   <span class="mf">2.26074506e-02</span> <span class="o">-</span><span class="mf">2.60458600e-02</span>  <span class="mf">4.45277489e-02</span> <span class="o">-</span><span class="mf">2.86097190e-02</span>
-  <span class="o">-</span><span class="mf">4.99059962e-02</span>  <span class="mf">1.71997729e-03</span>  <span class="mf">3.65673224e-02</span>  <span class="mf">8.15741229e-04</span>
-   <span class="mf">1.83704939e-02</span>  <span class="mf">5.17197092e-02</span>  <span class="mf">6.35578528e-03</span>  <span class="mf">7.05183282e-04</span>
-   <span class="mf">1.64023420e-02</span>  <span class="mf">4.50576924e-03</span>  <span class="mf">3.11797770e-02</span> <span class="o">-</span><span class="mf">3.37322280e-03</span>
-  <span class="o">-</span><span class="mf">1.27150811e-02</span> <span class="o">-</span><span class="mf">2.60359954e-02</span>  <span class="mf">1.47512619e-02</span>  <span class="mf">6.84497712e-02</span>
-   <span class="mf">1.07656559e-02</span>  <span class="mf">1.99667580e-02</span>  <span class="mf">7.49694140e-03</span> <span class="o">-</span><span class="mf">3.16838856e-02</span>
-   <span class="mf">3.10212576e-02</span> <span class="o">-</span><span class="mf">1.52473819e-04</span> <span class="o">-</span><span class="mf">3.06834455e-02</span> <span class="o">-</span><span class="mf">1.12419283e-02</span>
-  <span class="o">-</span><span class="mf">2.01262203e-02</span>  <span class="mf">1.44459697e-02</span>  <span class="mf">1.89684619e-02</span>  <span class="mf">1.71060489e-02</span>
-  <span class="o">-</span><span class="mf">6.42078682e-02</span>  <span class="mf">2.56285714e-03</span> <span class="o">-</span><span class="mf">6.97908819e-02</span>  <span class="mf">4.37415790e-02</span>
-  <span class="o">-</span><span class="mf">2.19265925e-02</span>  <span class="mf">2.75412496e-02</span>  <span class="mf">2.26371659e-02</span>  <span class="mf">6.08747457e-03</span>
-   <span class="mf">7.00948041e-02</span> <span class="o">-</span><span class="mf">5.47876565e-02</span>  <span class="mf">5.00929706e-03</span> <span class="o">-</span><span class="mf">1.32239805e-02</span>
-  <span class="o">-</span><span class="mf">1.67932274e-02</span> <span class="o">-</span><span class="mf">2.90672109e-02</span> <span class="o">-</span><span class="mf">4.34679793e-02</span> <span class="o">-</span><span class="mf">2.32697607e-02</span>
-  <span class="o">-</span><span class="mf">1.14648197e-01</span>  <span class="mf">1.08002999e-03</span> <span class="o">-</span><span class="mf">1.34715639e-02</span> <span class="o">-</span><span class="mf">2.42857355e-02</span>
-   <span class="mf">4.32411447e-03</span> <span class="o">-</span><span class="mf">7.01753153e-03</span> <span class="o">-</span><span class="mf">5.78315906e-02</span> <span class="o">-</span><span class="mf">1.63359362e-02</span>
-  <span class="o">-</span><span class="mf">7.83189241e-02</span> <span class="o">-</span><span class="mf">6.56549588e-02</span>  <span class="mf">1.59472704e-02</span> <span class="o">-</span><span class="mf">3.93885430e-02</span>
-   <span class="mf">3.70071579e-02</span> <span class="o">-</span><span class="mf">8.53304624e-02</span> <span class="o">-</span><span class="mf">1.46804768e-02</span> <span class="o">-</span><span class="mf">3.66368426e-02</span>
-   <span class="mf">6.33237317e-04</span>  <span class="mf">3.15900362e-02</span> <span class="o">-</span><span class="mf">3.74878316e-02</span> <span class="o">-</span><span class="mf">2.36906438e-02</span>
-  <span class="o">-</span><span class="mf">3.48493077e-02</span> <span class="o">-</span><span class="mf">1.29455374e-02</span>  <span class="mf">3.04677148e-02</span> <span class="o">-</span><span class="mf">5.92433891e-03</span>
-  <span class="o">-</span><span class="mf">2.96713551e-02</span> <span class="o">-</span><span class="mf">1.06306524e-02</span> <span class="o">-</span><span class="mf">4.51622456e-02</span> <span class="o">-</span><span class="mf">1.39410348e-02</span>
-  <span class="o">-</span><span class="mf">3.72100330e-02</span>  <span class="mf">7.48408861e-03</span> <span class="o">-</span><span class="mf">5.96724188e-02</span>  <span class="mf">6.34547444e-02</span>
-   <span class="mf">3.87715096e-02</span>  <span class="mf">3.48643739e-03</span> <span class="o">-</span><span class="mf">3.29345516e-02</span> <span class="o">-</span><span class="mf">2.05291736e-02</span>
-   <span class="mf">3.74104677e-02</span> <span class="o">-</span><span class="mf">5.28466371e-02</span> <span class="o">-</span><span class="mf">5.24368180e-02</span> <span class="o">-</span><span class="mf">1.08615834e-01</span>
-  <span class="o">-</span><span class="mf">3.93677233e-02</span>  <span class="mf">2.73577934e-02</span> <span class="o">-</span><span class="mf">1.15112257e-02</span> <span class="o">-</span><span class="mf">3.11615139e-02</span>
-   <span class="mf">2.96191093e-02</span> <span class="o">-</span><span class="mf">1.56250888e-02</span>  <span class="mf">8.23424923e-03</span> <span class="o">-</span><span class="mf">2.21058103e-02</span>
-   <span class="mf">1.46964377e-02</span>  <span class="mf">2.33201228e-02</span>  <span class="mf">2.13609673e-02</span> <span class="o">-</span><span class="mf">8.54915916e-04</span>
-   <span class="mf">9.25025018e-02</span>  <span class="mf">8.45063327e-03</span>  <span class="mf">4.39500980e-02</span> <span class="o">-</span><span class="mf">7.08333209e-02</span>
-  <span class="o">-</span><span class="mf">2.79867591e-02</span>  <span class="mf">1.02058740e-02</span> <span class="o">-</span><span class="mf">6.08684855e-02</span>  <span class="mf">6.20570031e-03</span>
-   <span class="mf">3.75086657e-02</span>  <span class="mf">9.68286171e-02</span>  <span class="mf">4.41023193e-02</span>  <span class="mf">4.73388356e-02</span>
-   <span class="mf">3.91426944e-02</span> <span class="o">-</span><span class="mf">1.99352505e-02</span>  <span class="mf">7.03359502e-03</span> <span class="o">-</span><span class="mf">2.44020595e-02</span>
-  <span class="o">-</span><span class="mf">2.99892130e-02</span> <span class="o">-</span><span class="mf">3.25777097e-02</span>  <span class="mf">2.72322372e-03</span>  <span class="mf">7.77638452e-03</span>
-   <span class="mf">5.01101070e-02</span>  <span class="mf">9.72297020e-03</span>  <span class="mf">8.82609430e-03</span>  <span class="mf">1.97665762e-02</span>
-   <span class="mf">1.24510717e-03</span> <span class="o">-</span><span class="mf">2.57096538e-03</span>  <span class="mf">3.11640278e-03</span>  <span class="mf">2.92457840e-02</span>
-   <span class="mf">6.42228310e-03</span> <span class="o">-</span><span class="mf">9.54802550e-03</span> <span class="o">-</span><span class="mf">4.14943422e-02</span> <span class="o">-</span><span class="mf">2.03235930e-02</span>
-  <span class="o">-</span><span class="mf">4.09358168e-02</span>  <span class="mf">6.34522456e-03</span>  <span class="mf">3.81027536e-02</span> <span class="o">-</span><span class="mf">1.24257807e-03</span>
-  <span class="o">-</span><span class="mf">1.35866182e-02</span>  <span class="mf">3.19962258e-03</span>  <span class="mf">4.15927262e-03</span>  <span class="mf">2.61804263e-02</span>
-   <span class="mf">6.27312985e-02</span> <span class="o">-</span><span class="mf">9.58309235e-03</span> <span class="o">-</span><span class="mf">3.81101069e-02</span> <span class="o">-</span><span class="mf">8.98117138e-03</span>
-  <span class="o">-</span><span class="mf">4.78051891e-03</span> <span class="o">-</span><span class="mf">5.94786274e-02</span>  <span class="mf">3.94663899e-02</span>  <span class="mf">6.07790784e-02</span>
-  <span class="o">-</span><span class="mf">8.31262780e-03</span> <span class="o">-</span><span class="mf">6.94258109e-03</span>  <span class="mf">4.99962896e-02</span>  <span class="mf">2.73733671e-02</span>
-  <span class="o">-</span><span class="mf">5.71262633e-03</span> <span class="o">-</span><span class="mf">1.84389576e-03</span>  <span class="mf">1.76737707e-01</span>  <span class="mf">1.14519296e-02</span>
-  <span class="o">-</span><span class="mf">3.12318244e-02</span>  <span class="mf">3.35009779e-02</span>  <span class="mf">5.39812542e-03</span> <span class="o">-</span><span class="mf">1.24046393e-02</span>
-  <span class="o">-</span><span class="mf">3.01223574e-02</span> <span class="o">-</span><span class="mf">2.34884768e-02</span> <span class="o">-</span><span class="mf">4.04753625e-02</span> <span class="o">-</span><span class="mf">3.31808379e-02</span>
-  <span class="o">-</span><span class="mf">3.44700460e-02</span>  <span class="mf">4.34950149e-03</span> <span class="o">-</span><span class="mf">1.12128351e-02</span>  <span class="mf">2.66120489e-02</span>
-  <span class="o">-</span><span class="mf">2.08353307e-02</span> <span class="o">-</span><span class="mf">5.55524566e-02</span>  <span class="mf">9.02084978e-02</span> <span class="o">-</span><span class="mf">5.42311876e-03</span>
-   <span class="mf">4.40591115e-02</span> <span class="o">-</span><span class="mf">3.83539141e-02</span> <span class="o">-</span><span class="mf">1.54222839e-03</span> <span class="o">-</span><span class="mf">2.17430721e-02</span>
-   <span class="mf">2.45192255e-02</span> <span class="o">-</span><span class="mf">1.80792703e-02</span>  <span class="mf">4.16507360e-02</span>  <span class="mf">3.39222577e-03</span>
-   <span class="mf">1.35898003e-02</span>  <span class="mf">5.62169808e-02</span>  <span class="mf">2.05511201e-02</span>  <span class="mf">5.22713085e-02</span>
-   <span class="mf">5.72247210e-02</span> <span class="o">-</span><span class="mf">8.37975269e-03</span>  <span class="mf">4.06737553e-02</span>  <span class="mf">5.04869536e-03</span>
-   <span class="mf">8.32129801e-02</span> <span class="o">-</span><span class="mf">3.55796178e-02</span>  <span class="mf">5.42543214e-03</span>  <span class="mf">3.00522892e-02</span>
-  <span class="o">-</span><span class="mf">2.63670321e-02</span> <span class="o">-</span><span class="mf">2.92756811e-02</span> <span class="o">-</span><span class="mf">8.30947903e-02</span> <span class="o">-</span><span class="mf">1.35585937e-02</span>
-  <span class="o">-</span><span class="mf">2.90020763e-02</span>  <span class="mf">1.64358003e-02</span> <span class="o">-</span><span class="mf">2.01398046e-02</span> <span class="o">-</span><span class="mf">1.03980476e-02</span>
-  <span class="o">-</span><span class="mf">2.06189132e-03</span>  <span class="mf">7.90399394e-02</span> <span class="o">-</span><span class="mf">3.72163735e-02</span> <span class="o">-</span><span class="mf">1.83636584e-02</span>
-  <span class="o">-</span><span class="mf">2.12257025e-02</span>  <span class="mf">2.37873219e-02</span>  <span class="mf">7.58760375e-02</span>  <span class="mf">3.17983915e-02</span>
-   <span class="mf">2.44485483e-02</span> <span class="o">-</span><span class="mf">2.00030934e-03</span> <span class="o">-</span><span class="mf">6.50080563e-03</span> <span class="o">-</span><span class="mf">3.43038946e-03</span>
-  <span class="o">-</span><span class="mf">9.17293632e-03</span>  <span class="mf">2.16091063e-02</span> <span class="o">-</span><span class="mf">1.86680470e-03</span> <span class="o">-</span><span class="mf">8.67444519e-02</span>
-  <span class="o">-</span><span class="mf">3.76717846e-02</span>  <span class="mf">1.93650951e-02</span>  <span class="mf">3.42706125e-02</span> <span class="o">-</span><span class="mf">1.84720711e-02</span>
-  <span class="o">-</span><span class="mf">5.55555972e-02</span> <span class="o">-</span><span class="mf">2.37116507e-02</span>  <span class="mf">5.81776873e-02</span> <span class="o">-</span><span class="mf">8.53892872e-03</span>
-  <span class="o">-</span><span class="mf">2.07530777e-02</span> <span class="o">-</span><span class="mf">8.53067546e-04</span>  <span class="mf">2.72667521e-02</span> <span class="o">-</span><span class="mf">3.51271213e-03</span>
-   <span class="mf">2.06427064e-02</span> <span class="o">-</span><span class="mf">8.93358005e-03</span> <span class="o">-</span><span class="mf">6.59351511e-04</span> <span class="o">-</span><span class="mf">1.36124161e-02</span>
-   <span class="mf">3.95871060e-02</span>  <span class="mf">2.60889355e-02</span> <span class="o">-</span><span class="mf">4.33492580e-03</span> <span class="o">-</span><span class="mf">1.18201950e-02</span>
-  <span class="o">-</span><span class="mf">1.91292290e-02</span> <span class="o">-</span><span class="mf">2.46696785e-02</span>  <span class="mf">2.43858751e-02</span>  <span class="mf">5.70631381e-03</span>
-  <span class="o">-</span><span class="mf">2.25983571e-02</span>  <span class="mf">3.35543974e-02</span>  <span class="mf">2.40025148e-03</span>  <span class="mf">9.97905075e-03</span>
-   <span class="mf">2.38300137e-02</span>  <span class="mf">4.01035787e-02</span>  <span class="mf">4.73236294e-02</span> <span class="o">-</span><span class="mf">3.05304529e-02</span>
-  <span class="o">-</span><span class="mf">3.46325886e-02</span>  <span class="mf">8.39215710e-04</span> <span class="o">-</span><span class="mf">4.89761870e-02</span>  <span class="mf">6.89462038e-03</span>
-  <span class="o">-</span><span class="mf">6.43273366e-02</span> <span class="o">-</span><span class="mf">6.98259848e-02</span>  <span class="mf">5.46324448e-02</span> <span class="o">-</span><span class="mf">3.85178692e-02</span>
-  <span class="o">-</span><span class="mf">1.88327596e-02</span>  <span class="mf">2.04875750e-02</span>  <span class="mf">2.30507846e-02</span>  <span class="mf">2.90462605e-02</span>
-  <span class="o">-</span><span class="mf">5.97637507e-03</span>  <span class="mf">4.81619008e-02</span>  <span class="mf">2.38865302e-02</span>  <span class="mf">3.72272632e-03</span>
-   <span class="mf">4.98869102e-02</span> <span class="o">-</span><span class="mf">4.44756682e-02</span>  <span class="mf">7.97887018e-03</span> <span class="o">-</span><span class="mf">2.10699182e-02</span>
-   <span class="mf">5.06694017e-02</span> <span class="o">-</span><span class="mf">7.28995658e-02</span> <span class="o">-</span><span class="mf">2.29531446e-02</span>  <span class="mf">2.04757321e-02</span>
-  <span class="o">-</span><span class="mf">4.30773655e-02</span> <span class="o">-</span><span class="mf">4.20149354e-02</span>  <span class="mf">1.34561591e-02</span>  <span class="mf">2.11104965e-02</span>
-   <span class="mf">1.25247353e-02</span> <span class="o">-</span><span class="mf">3.91501850e-02</span> <span class="o">-</span><span class="mf">2.81964084e-02</span>  <span class="mf">5.69533437e-03</span>
-  <span class="o">-</span><span class="mf">5.09280045e-02</span>  <span class="mf">3.13800843e-02</span> <span class="o">-</span><span class="mf">6.28572542e-03</span> <span class="o">-</span><span class="mf">5.08252999e-02</span>
-   <span class="mf">1.54894409e-02</span>  <span class="mf">2.86118800e-02</span>  <span class="mf">4.85921862e-02</span> <span class="o">-</span><span class="mf">3.17075185e-03</span>
-   <span class="mf">2.22448348e-02</span>  <span class="mf">1.68500752e-02</span>  <span class="mf">2.89099486e-02</span> <span class="o">-</span><span class="mf">2.41337610e-02</span>
-  <span class="o">-</span><span class="mf">1.78519517e-02</span>  <span class="mf">6.16670437e-03</span> <span class="o">-</span><span class="mf">3.18354357e-02</span>  <span class="mf">1.94965342e-02</span><span class="p">]]</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[[</span> <span class="o">-</span><span class="mf">4.10591439e-02</span>  <span class="o">-</span><span class="mf">8.38913669e-04</span>  <span class="o">-</span><span class="mf">2.34992127e-02</span>  <span class="o">-</span><span class="mf">3.47431514e-02</span>
+    <span class="mf">3.44100694e-02</span>   <span class="mf">2.59043472e-02</span>   <span class="mf">2.39052353e-02</span>  <span class="o">-</span><span class="mf">4.95012599e-02</span>
+   <span class="o">-</span><span class="mf">3.19443415e-02</span>  <span class="o">-</span><span class="mf">1.65893786e-02</span>   <span class="mf">1.87552899e-02</span>  <span class="o">-</span><span class="mf">7.78939157e-03</span>
+    <span class="mf">1.02022966e-02</span>  <span class="o">-</span><span class="mf">3.23066175e-02</span>   <span class="mf">4.77513388e-03</span>   <span class="mf">2.20187375e-02</span>
+    <span class="mf">1.50985089e-02</span>   <span class="mf">1.77166050e-03</span>   <span class="mf">2.41532650e-02</span>  <span class="o">-</span><span class="mf">3.24624084e-02</span>
+    <span class="mf">1.30955876e-02</span>  <span class="o">-</span><span class="mf">9.66231411e-02</span>  <span class="o">-</span><span class="mf">7.07582442e-02</span>   <span class="mf">1.92832959e-02</span>
+    <span class="mf">3.57739471e-02</span>  <span class="o">-</span><span class="mf">1.44028906e-02</span>  <span class="o">-</span><span class="mf">9.17654420e-03</span>  <span class="o">-</span><span class="mf">3.23610315e-02</span>
+    <span class="mf">2.34853293e-02</span>   <span class="mf">1.01923043e-01</span>   <span class="mf">1.61348815e-02</span>  <span class="o">-</span><span class="mf">7.79778695e-02</span>
+    <span class="mf">2.49681620e-03</span>  <span class="o">-</span><span class="mf">3.13738572e-02</span>  <span class="o">-</span><span class="mf">2.80103975e-02</span>  <span class="o">-</span><span class="mf">5.16189181e-02</span>
+   <span class="o">-</span><span class="mf">6.94717904e-03</span>  <span class="o">-</span><span class="mf">1.00566568e-02</span>  <span class="o">-</span><span class="mf">2.96087048e-02</span>  <span class="o">-</span><span class="mf">2.25467990e-02</span>
+   <span class="o">-</span><span class="mf">3.00431368e-02</span>  <span class="o">-</span><span class="mf">3.28028599e-02</span>   <span class="mf">2.65750951e-02</span>   <span class="mf">1.66043690e-02</span>
+   <span class="o">-</span><span class="mf">1.63196266e-02</span>   <span class="mf">3.33049535e-02</span>   <span class="mf">4.58224672e-04</span>   <span class="mf">7.30845484e-03</span>
+    <span class="mf">2.85276988e-02</span>   <span class="mf">1.98812475e-02</span>   <span class="mf">2.65800328e-02</span>   <span class="mf">1.87685655e-02</span>
+   <span class="o">-</span><span class="mf">2.05262911e-02</span>  <span class="o">-</span><span class="mf">9.08269461e-03</span>  <span class="o">-</span><span class="mf">4.53160560e-02</span>   <span class="mf">1.59140903e-02</span>
+   <span class="o">-</span><span class="mf">1.75433965e-02</span>  <span class="o">-</span><span class="mf">6.90762579e-02</span>   <span class="mf">3.89501904e-02</span>  <span class="o">-</span><span class="mf">1.28822089e-01</span>
+   <span class="o">-</span><span class="mf">3.50391659e-02</span>   <span class="mf">6.48267437e-03</span>   <span class="mf">5.01267951e-02</span>  <span class="o">-</span><span class="mf">7.63127896e-02</span>
+   <span class="o">-</span><span class="mf">1.70264978e-02</span>   <span class="mf">5.40262082e-03</span>   <span class="mf">5.61464364e-02</span>  <span class="o">-</span><span class="mf">1.73917761e-02</span>
+    <span class="mf">7.37187399e-02</span>   <span class="mf">1.29712224e-02</span>   <span class="mf">3.31590258e-02</span>   <span class="mf">6.15625548e-03</span>
+    <span class="mf">4.10859945e-02</span>  <span class="o">-</span><span class="mf">6.77459982e-03</span>   <span class="mf">7.23131333e-03</span>   <span class="mf">2.18362878e-02</span>
+    <span class="mf">3.84148397e-02</span>   <span class="mf">2.63664841e-02</span>   <span class="mf">1.74112933e-02</span>   <span class="mf">1.61460386e-02</span>
+    <span class="mf">2.82263367e-02</span>  <span class="o">-</span><span class="mf">5.51453962e-03</span>  <span class="o">-</span><span class="mf">1.24329869e-02</span>  <span class="o">-</span><span class="mf">1.65007919e-02</span>
+    <span class="mf">1.53495049e-03</span>  <span class="o">-</span><span class="mf">3.58689292e-02</span>  <span class="o">-</span><span class="mf">2.45351639e-02</span>  <span class="o">-</span><span class="mf">4.79747313e-03</span>
+   <span class="o">-</span><span class="mf">5.32036709e-02</span>   <span class="mf">3.68274125e-02</span>  <span class="o">-</span><span class="mf">1.69981985e-02</span>   <span class="mf">1.08511387e-02</span>
+   <span class="o">-</span><span class="mf">4.80508461e-02</span>  <span class="o">-</span><span class="mf">3.69829093e-02</span>  <span class="o">-</span><span class="mf">4.36149708e-02</span>  <span class="o">-</span><span class="mf">2.27505354e-02</span>
+   <span class="o">-</span><span class="mf">1.82647161e-02</span>  <span class="o">-</span><span class="mf">1.29988416e-02</span>   <span class="mf">3.45534849e-02</span>   <span class="mf">7.32459494e-03</span>
+   <span class="o">-</span><span class="mf">5.96338242e-03</span>   <span class="mf">5.11828907e-02</span>   <span class="mf">1.78048855e-02</span>  <span class="o">-</span><span class="mf">4.10786820e-02</span>
+    <span class="mf">3.44218340e-02</span>   <span class="mf">1.02061855e-02</span>   <span class="mf">3.24182697e-02</span>   <span class="mf">3.40190648e-02</span>
+   <span class="o">-</span><span class="mf">9.72497936e-03</span>   <span class="mf">2.21466123e-02</span>   <span class="mf">1.51944122e-02</span>  <span class="o">-</span><span class="mf">5.13909282e-02</span>
+   <span class="o">-</span><span class="mf">2.25212663e-02</span>  <span class="o">-</span><span class="mf">5.36059085e-02</span>   <span class="mf">1.74461316e-02</span>  <span class="o">-</span><span class="mf">1.73912821e-02</span>
+   <span class="o">-</span><span class="mf">5.30948812e-02</span>   <span class="mf">4.28375575e-02</span>  <span class="o">-</span><span class="mf">1.75974389e-02</span>   <span class="mf">2.65186313e-03</span>
+   <span class="o">-</span><span class="mf">2.93060690e-02</span>  <span class="o">-</span><span class="mf">2.90011563e-02</span>   <span class="mf">1.88280315e-02</span>  <span class="o">-</span><span class="mf">3.77559429e-02</span>
+    <span class="mf">2.82039100e-03</span>   <span class="mf">4.76274597e-02</span>   <span class="mf">3.82002135e-02</span>   <span class="mf">7.30823353e-03</span>
+   <span class="o">-</span><span class="mf">5.78025756e-02</span>   <span class="mf">4.88796086e-03</span>   <span class="mf">2.08386543e-02</span>   <span class="mf">3.10799309e-06</span>
+    <span class="mf">7.64731722e-05</span>  <span class="o">-</span><span class="mf">5.30726179e-03</span>   <span class="mf">8.32036061e-04</span>   <span class="mf">6.96334682e-03</span>
+   <span class="o">-</span><span class="mf">2.52437504e-02</span>  <span class="o">-</span><span class="mf">1.01739725e-02</span>  <span class="o">-</span><span class="mf">1.62671356e-02</span>   <span class="mf">3.42707627e-02</span>
+    <span class="mf">1.00432285e-02</span>  <span class="o">-</span><span class="mf">2.50394237e-02</span>  <span class="o">-</span><span class="mf">6.19833205e-03</span>  <span class="o">-</span><span class="mf">2.77334894e-02</span>
+   <span class="o">-</span><span class="mf">1.03254429e-02</span>  <span class="o">-</span><span class="mf">1.42163226e-02</span>   <span class="mf">3.39557786e-03</span>   <span class="mf">5.27978096e-02</span>
+   <span class="o">-</span><span class="mf">2.05438140e-02</span>  <span class="o">-</span><span class="mf">5.70770065e-02</span>   <span class="mf">1.02214240e-02</span>  <span class="o">-</span><span class="mf">5.51708996e-02</span>
+   <span class="o">-</span><span class="mf">1.29624200e-02</span>   <span class="mf">3.77777072e-03</span>   <span class="mf">7.88352021e-03</span>   <span class="mf">1.51368300e-02</span>
+    <span class="mf">5.94512230e-02</span>   <span class="mf">3.75684469e-02</span>   <span class="mf">4.61933687e-02</span>  <span class="o">-</span><span class="mf">6.28617029e-03</span>
+   <span class="o">-</span><span class="mf">2.31685868e-03</span>   <span class="mf">4.39664384e-02</span>   <span class="mf">6.82138779e-02</span>   <span class="mf">1.58698406e-02</span>
+    <span class="mf">5.48997068e-02</span>   <span class="mf">8.31410463e-02</span>  <span class="o">-</span><span class="mf">8.97988526e-03</span>   <span class="mf">7.83481005e-03</span>
+    <span class="mf">2.26074506e-02</span>  <span class="o">-</span><span class="mf">2.60458600e-02</span>   <span class="mf">4.45277489e-02</span>  <span class="o">-</span><span class="mf">2.86097190e-02</span>
+   <span class="o">-</span><span class="mf">4.99059962e-02</span>   <span class="mf">1.71997729e-03</span>   <span class="mf">3.65673224e-02</span>   <span class="mf">8.15741229e-04</span>
+    <span class="mf">1.83704939e-02</span>   <span class="mf">5.17197092e-02</span>   <span class="mf">6.35578528e-03</span>   <span class="mf">7.05183282e-04</span>
+    <span class="mf">1.64023420e-02</span>   <span class="mf">4.50576924e-03</span>   <span class="mf">3.11797770e-02</span>  <span class="o">-</span><span class="mf">3.37322280e-03</span>
+   <span class="o">-</span><span class="mf">1.27150811e-02</span>  <span class="o">-</span><span class="mf">2.60359954e-02</span>   <span class="mf">1.47512619e-02</span>   <span class="mf">6.84497712e-02</span>
+    <span class="mf">1.07656559e-02</span>   <span class="mf">1.99667580e-02</span>   <span class="mf">7.49694140e-03</span>  <span class="o">-</span><span class="mf">3.16838856e-02</span>
+    <span class="mf">3.10212576e-02</span>  <span class="o">-</span><span class="mf">1.52473819e-04</span>  <span class="o">-</span><span class="mf">3.06834455e-02</span>  <span class="o">-</span><span class="mf">1.12419283e-02</span>
+   <span class="o">-</span><span class="mf">2.01262203e-02</span>   <span class="mf">1.44459697e-02</span>   <span class="mf">1.89684619e-02</span>   <span class="mf">1.71060489e-02</span>
+   <span class="o">-</span><span class="mf">6.42078682e-02</span>   <span class="mf">2.56285714e-03</span>  <span class="o">-</span><span class="mf">6.97908819e-02</span>   <span class="mf">4.37415790e-02</span>
+   <span class="o">-</span><span class="mf">2.19265925e-02</span>   <span class="mf">2.75412496e-02</span>   <span class="mf">2.26371659e-02</span>   <span class="mf">6.08747457e-03</span>
+    <span class="mf">7.00948041e-02</span>  <span class="o">-</span><span class="mf">5.47876565e-02</span>   <span class="mf">5.00929706e-03</span>  <span class="o">-</span><span class="mf">1.32239805e-02</span>
+   <span class="o">-</span><span class="mf">1.67932274e-02</span>  <span class="o">-</span><span class="mf">2.90672109e-02</span>  <span class="o">-</span><span class="mf">4.34679793e-02</span>  <span class="o">-</span><span class="mf">2.32697607e-02</span>
+   <span class="o">-</span><span class="mf">1.14648197e-01</span>   <span class="mf">1.08002999e-03</span>  <span class="o">-</span><span class="mf">1.34715639e-02</span>  <span class="o">-</span><span class="mf">2.42857355e-02</span>
+    <span class="mf">4.32411447e-03</span>  <span class="o">-</span><span class="mf">7.01753153e-03</span>  <span class="o">-</span><span class="mf">5.78315906e-02</span>  <span class="o">-</span><span class="mf">1.63359362e-02</span>
+   <span class="o">-</span><span class="mf">7.83189241e-02</span>  <span class="o">-</span><span class="mf">6.56549588e-02</span>   <span class="mf">1.59472704e-02</span>  <span class="o">-</span><span class="mf">3.93885430e-02</span>
+    <span class="mf">3.70071579e-02</span>  <span class="o">-</span><span class="mf">8.53304624e-02</span>  <span class="o">-</span><span class="mf">1.46804768e-02</span>  <span class="o">-</span><span class="mf">3.66368426e-02</span>
+    <span class="mf">6.33237317e-04</span>   <span class="mf">3.15900362e-02</span>  <span class="o">-</span><span class="mf">3.74878316e-02</span>  <span class="o">-</span><span class="mf">2.36906438e-02</span>
+   <span class="o">-</span><span class="mf">3.48493077e-02</span>  <span class="o">-</span><span class="mf">1.29455374e-02</span>   <span class="mf">3.04677148e-02</span>  <span class="o">-</span><span class="mf">5.92433891e-03</span>
+   <span class="o">-</span><span class="mf">2.96713551e-02</span>  <span class="o">-</span><span class="mf">1.06306524e-02</span>  <span class="o">-</span><span class="mf">4.51622456e-02</span>  <span class="o">-</span><span class="mf">1.39410348e-02</span>
+   <span class="o">-</span><span class="mf">3.72100330e-02</span>   <span class="mf">7.48408861e-03</span>  <span class="o">-</span><span class="mf">5.96724188e-02</span>   <span class="mf">6.34547444e-02</span>
+    <span class="mf">3.87715096e-02</span>   <span class="mf">3.48643739e-03</span>  <span class="o">-</span><span class="mf">3.29345516e-02</span>  <span class="o">-</span><span class="mf">2.05291736e-02</span>
+    <span class="mf">3.74104677e-02</span>  <span class="o">-</span><span class="mf">5.28466371e-02</span>  <span class="o">-</span><span class="mf">5.24368180e-02</span>  <span class="o">-</span><span class="mf">1.08615834e-01</span>
+   <span class="o">-</span><span class="mf">3.93677233e-02</span>   <span class="mf">2.73577934e-02</span>  <span class="o">-</span><span class="mf">1.15112257e-02</span>  <span class="o">-</span><span class="mf">3.11615139e-02</span>
+    <span class="mf">2.96191093e-02</span>  <span class="o">-</span><span class="mf">1.56250888e-02</span>   <span class="mf">8.23424923e-03</span>  <span class="o">-</span><span class="mf">2.21058103e-02</span>
+    <span class="mf">1.46964377e-02</span>   <span class="mf">2.33201228e-02</span>   <span class="mf">2.13609673e-02</span>  <span class="o">-</span><span class="mf">8.54915916e-04</span>
+    <span class="mf">9.25025018e-02</span>   <span class="mf">8.45063327e-03</span>   <span class="mf">4.39500980e-02</span>  <span class="o">-</span><span class="mf">7.08333209e-02</span>
+   <span class="o">-</span><span class="mf">2.79867591e-02</span>   <span class="mf">1.02058740e-02</span>  <span class="o">-</span><span class="mf">6.08684855e-02</span>   <span class="mf">6.20570031e-03</span>
+    <span class="mf">3.75086657e-02</span>   <span class="mf">9.68286171e-02</span>   <span class="mf">4.41023193e-02</span>   <span class="mf">4.73388356e-02</span>
+    <span class="mf">3.91426944e-02</span>  <span class="o">-</span><span class="mf">1.99352505e-02</span>   <span class="mf">7.03359502e-03</span>  <span class="o">-</span><span class="mf">2.44020595e-02</span>
+   <span class="o">-</span><span class="mf">2.99892130e-02</span>  <span class="o">-</span><span class="mf">3.25777097e-02</span>   <span class="mf">2.72322372e-03</span>   <span class="mf">7.77638452e-03</span>
+    <span class="mf">5.01101070e-02</span>   <span class="mf">9.72297020e-03</span>   <span class="mf">8.82609430e-03</span>   <span class="mf">1.97665762e-02</span>
+    <span class="mf">1.24510717e-03</span>  <span class="o">-</span><span class="mf">2.57096538e-03</span>   <span class="mf">3.11640278e-03</span>   <span class="mf">2.92457840e-02</span>
+    <span class="mf">6.42228310e-03</span>  <span class="o">-</span><span class="mf">9.54802550e-03</span>  <span class="o">-</span><span class="mf">4.14943422e-02</span>  <span class="o">-</span><span class="mf">2.03235930e-02</span>
+   <span class="o">-</span><span class="mf">4.09358168e-02</span>   <span class="mf">6.34522456e-03</span>   <span class="mf">3.81027536e-02</span>  <span class="o">-</span><span class="mf">1.24257807e-03</span>
+   <span class="o">-</span><span class="mf">1.35866182e-02</span>   <span class="mf">3.19962258e-03</span>   <span class="mf">4.15927262e-03</span>   <span class="mf">2.61804263e-02</span>
+    <span class="mf">6.27312985e-02</span>  <span class="o">-</span><span class="mf">9.58309235e-03</span>  <span class="o">-</span><span class="mf">3.81101069e-02</span>  <span class="o">-</span><span class="mf">8.98117138e-03</span>
+   <span class="o">-</span><span class="mf">4.78051891e-03</span>  <span class="o">-</span><span class="mf">5.94786274e-02</span>   <span class="mf">3.94663899e-02</span>   <span class="mf">6.07790784e-02</span>
+   <span class="o">-</span><span class="mf">8.31262780e-03</span>  <span class="o">-</span><span class="mf">6.94258109e-03</span>   <span class="mf">4.99962896e-02</span>   <span class="mf">2.73733671e-02</span>
+   <span class="o">-</span><span class="mf">5.71262633e-03</span>  <span class="o">-</span><span class="mf">1.84389576e-03</span>   <span class="mf">1.76737707e-01</span>   <span class="mf">1.14519296e-02</span>
+   <span class="o">-</span><span class="mf">3.12318244e-02</span>   <span class="mf">3.35009779e-02</span>   <span class="mf">5.39812542e-03</span>  <span class="o">-</span><span class="mf">1.24046393e-02</span>
+   <span class="o">-</span><span class="mf">3.01223574e-02</span>  <span class="o">-</span><span class="mf">2.34884768e-02</span>  <span class="o">-</span><span class="mf">4.04753625e-02</span>  <span class="o">-</span><span class="mf">3.31808379e-02</span>
+   <span class="o">-</span><span class="mf">3.44700460e-02</span>   <span class="mf">4.34950149e-03</span>  <span class="o">-</span><span class="mf">1.12128351e-02</span>   <span class="mf">2.66120489e-02</span>
+   <span class="o">-</span><span class="mf">2.08353307e-02</span>  <span class="o">-</span><span class="mf">5.55524566e-02</span>   <span class="mf">9.02084978e-02</span>  <span class="o">-</span><span class="mf">5.42311876e-03</span>
+    <span class="mf">4.40591115e-02</span>  <span class="o">-</span><span class="mf">3.83539141e-02</span>  <span class="o">-</span><span class="mf">1.54222839e-03</span>  <span class="o">-</span><span class="mf">2.17430721e-02</span>
+    <span class="mf">2.45192255e-02</span>  <span class="o">-</span><span class="mf">1.80792703e-02</span>   <span class="mf">4.16507360e-02</span>   <span class="mf">3.39222577e-03</span>
+    <span class="mf">1.35898003e-02</span>   <span class="mf">5.62169808e-02</span>   <span class="mf">2.05511201e-02</span>   <span class="mf">5.22713085e-02</span>
+    <span class="mf">5.72247210e-02</span>  <span class="o">-</span><span class="mf">8.37975269e-03</span>   <span class="mf">4.06737553e-02</span>   <span class="mf">5.04869536e-03</span>
+    <span class="mf">8.32129801e-02</span>  <span class="o">-</span><span class="mf">3.55796178e-02</span>   <span class="mf">5.42543214e-03</span>   <span class="mf">3.00522892e-02</span>
+   <span class="o">-</span><span class="mf">2.63670321e-02</span>  <span class="o">-</span><span class="mf">2.92756811e-02</span>  <span class="o">-</span><span class="mf">8.30947903e-02</span>  <span class="o">-</span><span class="mf">1.35585937e-02</span>
+   <span class="o">-</span><span class="mf">2.90020763e-02</span>   <span class="mf">1.64358003e-02</span>  <span class="o">-</span><span class="mf">2.01398046e-02</span>  <span class="o">-</span><span class="mf">1.03980476e-02</span>
+   <span class="o">-</span><span class="mf">2.06189132e-03</span>   <span class="mf">7.90399394e-02</span>  <span class="o">-</span><span class="mf">3.72163735e-02</span>  <span class="o">-</span><span class="mf">1.83636584e-02</span>
+   <span class="o">-</span><span class="mf">2.12257025e-02</span>   <span class="mf">2.37873219e-02</span>   <span class="mf">7.58760375e-02</span>   <span class="mf">3.17983915e-02</span>
+    <span class="mf">2.44485483e-02</span>  <span class="o">-</span><span class="mf">2.00030934e-03</span>  <span class="o">-</span><span class="mf">6.50080563e-03</span>  <span class="o">-</span><span class="mf">3.43038946e-03</span>
+   <span class="o">-</span><span class="mf">9.17293632e-03</span>   <span class="mf">2.16091063e-02</span>  <span class="o">-</span><span class="mf">1.86680470e-03</span>  <span class="o">-</span><span class="mf">8.67444519e-02</span>
+   <span class="o">-</span><span class="mf">3.76717846e-02</span>   <span class="mf">1.93650951e-02</span>   <span class="mf">3.42706125e-02</span>  <span class="o">-</span><span class="mf">1.84720711e-02</span>
+   <span class="o">-</span><span class="mf">5.55555972e-02</span>  <span class="o">-</span><span class="mf">2.37116507e-02</span>   <span class="mf">5.81776873e-02</span>  <span class="o">-</span><span class="mf">8.53892872e-03</span>
+   <span class="o">-</span><span class="mf">2.07530777e-02</span>  <span class="o">-</span><span class="mf">8.53067546e-04</span>   <span class="mf">2.72667521e-02</span>  <span class="o">-</span><span class="mf">3.51271213e-03</span>
+    <span class="mf">2.06427064e-02</span>  <span class="o">-</span><span class="mf">8.93358005e-03</span>  <span class="o">-</span><span class="mf">6.59351511e-04</span>  <span class="o">-</span><span class="mf">1.36124161e-02</span>
+    <span class="mf">3.95871060e-02</span>   <span class="mf">2.60889355e-02</span>  <span class="o">-</span><span class="mf">4.33492580e-03</span>  <span class="o">-</span><span class="mf">1.18201950e-02</span>
+   <span class="o">-</span><span class="mf">1.91292290e-02</span>  <span class="o">-</span><span class="mf">2.46696785e-02</span>   <span class="mf">2.43858751e-02</span>   <span class="mf">5.70631381e-03</span>
+   <span class="o">-</span><span class="mf">2.25983571e-02</span>   <span class="mf">3.35543974e-02</span>   <span class="mf">2.40025148e-03</span>   <span class="mf">9.97905075e-03</span>
+    <span class="mf">2.38300137e-02</span>   <span class="mf">4.01035787e-02</span>   <span class="mf">4.73236294e-02</span>  <span class="o">-</span><span class="mf">3.05304529e-02</span>
+   <span class="o">-</span><span class="mf">3.46325886e-02</span>   <span class="mf">8.39215710e-04</span>  <span class="o">-</span><span class="mf">4.89761870e-02</span>   <span class="mf">6.89462038e-03</span>
+   <span class="o">-</span><span class="mf">6.43273366e-02</span>  <span class="o">-</span><span class="mf">6.98259848e-02</span>   <span class="mf">5.46324448e-02</span>  <span class="o">-</span><span class="mf">3.85178692e-02</span>
+   <span class="o">-</span><span class="mf">1.88327596e-02</span>   <span class="mf">2.04875750e-02</span>   <span class="mf">2.30507846e-02</span>   <span class="mf">2.90462605e-02</span>
+   <span class="o">-</span><span class="mf">5.97637507e-03</span>   <span class="mf">4.81619008e-02</span>   <span class="mf">2.38865302e-02</span>   <span class="mf">3.72272632e-03</span>
+    <span class="mf">4.98869102e-02</span>  <span class="o">-</span><span class="mf">4.44756682e-02</span>   <span class="mf">7.97887018e-03</span>  <span class="o">-</span><span class="mf">2.10699182e-02</span>
+    <span class="mf">5.06694017e-02</span>  <span class="o">-</span><span class="mf">7.28995658e-02</span>  <span class="o">-</span><span class="mf">2.29531446e-02</span>   <span class="mf">2.04757321e-02</span>
+   <span class="o">-</span><span class="mf">4.30773655e-02</span>  <span class="o">-</span><span class="mf">4.20149354e-02</span>   <span class="mf">1.34561591e-02</span>   <span class="mf">2.11104965e-02</span>
+    <span class="mf">1.25247353e-02</span>  <span class="o">-</span><span class="mf">3.91501850e-02</span>  <span class="o">-</span><span class="mf">2.81964084e-02</span>   <span class="mf">5.69533437e-03</span>
+   <span class="o">-</span><span class="mf">5.09280045e-02</span>   <span class="mf">3.13800843e-02</span>  <span class="o">-</span><span class="mf">6.28572542e-03</span>  <span class="o">-</span><span class="mf">5.08252999e-02</span>
+    <span class="mf">1.54894409e-02</span>   <span class="mf">2.86118800e-02</span>   <span class="mf">4.85921862e-02</span>  <span class="o">-</span><span class="mf">3.17075185e-03</span>
+    <span class="mf">2.22448348e-02</span>   <span class="mf">1.68500752e-02</span>   <span class="mf">2.89099486e-02</span>  <span class="o">-</span><span class="mf">2.41337610e-02</span>
+   <span class="o">-</span><span class="mf">1.78519517e-02</span>   <span class="mf">6.16670437e-03</span>  <span class="o">-</span><span class="mf">3.18354357e-02</span>   <span class="mf">1.94965342e-02</span><span class="p">]]</span>
 </pre></div>
 </div>
 <p>It’s a numpy array</p>
@@ -817,11 +876,11 @@ affine:
 metadata:
 &lt;class &#39;nibabel.nifti1.Nifti1Header&#39;&gt; object, endian=&#39;&lt;&#39;
 sizeof_hdr      : 348
-data_type       : b&#39;&#39;
-db_name         : b&#39;&#39;
+data_type       :
+db_name         :
 extents         : 0
 session_error   : 0
-regular         : b&#39;&#39;
+regular         :
 dim_info        : 0
 dim             : [ 4 40 64 64  1  1  1  1]
 intent_p1       : 0.0
@@ -844,8 +903,8 @@ slice_duration  : 0.0
 toffset         : 0.0
 glmax           : 0
 glmin           : 0
-descrip         : b&#39;&#39;
-aux_file        : b&#39;&#39;
+descrip         :
+aux_file        :
 qform_code      : unknown
 sform_code      : aligned
 quatern_b       : 0.0
@@ -854,11 +913,11 @@ quatern_d       : 0.0
 qoffset_x       : 68.25
 qoffset_y       : -118.125
 qoffset_z       : -118.125
-srow_x          : [-3.5   0.    0.   68.25]
+srow_x          : [ -3.5    0.     0.    68.25]
 srow_y          : [   0.       3.75     0.    -118.125]
 srow_z          : [   0.       0.       3.75  -118.125]
-intent_name     : b&#39;&#39;
-magic           : b&#39;n+1&#39;
+intent_name     :
+magic           : n+1
 </pre></div>
 </div>
 <p>coef_img is now a NiftiImage.</p>
@@ -890,7 +949,7 @@ For decoding without a precomputed mask</li>
 <li><a class="reference internal" href="../decoding/space_net.html#space-net"><span class="std std-ref">SpaceNet: decoding with spatial structure for better maps</span></a></li>
 </ul>
 <hr class="docutils" />
-<p><strong>Total running time of the script:</strong> ( 0 minutes  17.201 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  15.621 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/plot_decoding_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_decoding_tutorial.py</span></code></a></div>
@@ -907,29 +966,7 @@ For decoding without a precomputed mask</li>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="01_plotting/plot_atlas.html" title="8.2.1. Basic Atlas plotting"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="plot_3d_and_4d_niimg.html" title="8.1.3. 3D and 4D niimgs: handling and visualizing"
-             >previous</a> |</li>
-<li><a href="../index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="index.html">Examples</a> |&nbsp;</li>
-<li><a href="../modules/reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="../authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >8. Nilearn usage examples</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

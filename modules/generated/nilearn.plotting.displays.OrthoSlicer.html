@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,47 +29,103 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -166,6 +224,8 @@ $(function () {
           <li class="nav-item nav-item-2"><a href="../reference.html" accesskey="U">7. Reference documentation: all nilearn functions</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -176,15 +236,14 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc"></div>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="nilearn.plotting.show.html"
                         title="previous chapter">7.10.22. nilearn.plotting.show</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="nilearn.signal.clean.html"
                         title="next chapter">7.11.1. nilearn.signal.clean</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -208,7 +267,7 @@ signature, and not how to use it. Please refer to the
 <h1>7.10.23. nilearn.plotting.displays.OrthoSlicer<a class="headerlink" href="#nilearn-plotting-displays-orthoslicer" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="nilearn.plotting.displays.OrthoSlicer">
-<em class="property">class </em><code class="descclassname">nilearn.plotting.displays.</code><code class="descname">OrthoSlicer</code><span class="sig-paren">(</span><em>cut_coords</em>, <em>axes=None</em>, <em>black_bg=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.plotting.displays.OrthoSlicer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">nilearn.plotting.displays.</code><code class="descname">OrthoSlicer</code><span class="sig-paren">(</span><em>cut_coords</em>, <em>axes=None</em>, <em>black_bg=False</em>, <em>brain_color=(0.5</em>, <em>0.5</em>, <em>0.5)</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.plotting.displays.OrthoSlicer" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class to create 3 linked axes for plotting orthogonal
 cuts of 3D maps.</p>
 <p class="rubric">Notes</p>
@@ -231,7 +290,7 @@ best in the viewing area.</p>
 </table>
 <dl class="method">
 <dt id="nilearn.plotting.displays.OrthoSlicer.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>cut_coords</em>, <em>axes=None</em>, <em>black_bg=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.plotting.displays.OrthoSlicer.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>cut_coords</em>, <em>axes=None</em>, <em>black_bg=False</em>, <em>brain_color=(0.5</em>, <em>0.5</em>, <em>0.5)</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.plotting.displays.OrthoSlicer.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create 3 linked axes for plotting orthogonal cuts.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -246,11 +305,16 @@ best in the viewing area.</p>
 <div><p>The axes that will be subdivided in 3.</p>
 </div></blockquote>
 <p><strong>black_bg: boolean, optional</strong></p>
-<blockquote class="last">
+<blockquote>
 <div><p>If True, the background of the figure will be put to
 black. If you wish to save figures with a black background,
 you will need to pass “facecolor=’k’, edgecolor=’k’”
 to matplotlib.pyplot.savefig.</p>
+</div></blockquote>
+<p><strong>brain_color</strong> : tuple</p>
+<blockquote class="last">
+<div><p>The brain color to use as the background color (e.g., for
+transparent colorbars).</p>
 </div></blockquote>
 </td>
 </tr>
@@ -391,7 +455,7 @@ plotted as transparent.</p>
 
 <dl class="method">
 <dt id="nilearn.plotting.displays.OrthoSlicer.annotate">
-<code class="descname">annotate</code><span class="sig-paren">(</span><em>left_right=True</em>, <em>positions=True</em>, <em>size=12</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.plotting.displays.OrthoSlicer.annotate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">annotate</code><span class="sig-paren">(</span><em>left_right=True</em>, <em>positions=True</em>, <em>scalebar=False</em>, <em>size=12</em>, <em>scale_size=5.0</em>, <em>scale_units='cm'</em>, <em>scale_loc=4</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.plotting.displays.OrthoSlicer.annotate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add annotations to the plot.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -407,9 +471,41 @@ is left and which side is right are drawn.</p>
 <div><p>If positions is True, annotations indicating the
 positions of the cuts are drawn.</p>
 </div></blockquote>
+<p><strong>scalebar: boolean, optional</strong></p>
+<blockquote>
+<div><p>If <code class="docutils literal"><span class="pre">True</span></code>, cuts are annotated with a reference scale bar.
+For finer control of the scale bar, please check out
+the draw_scale_bar method on the axes in “axes” attribute of
+this object.</p>
+</div></blockquote>
 <p><strong>size: integer, optional</strong></p>
 <blockquote>
 <div><p>The size of the text used.</p>
+</div></blockquote>
+<p><strong>scale_size: number, optional</strong></p>
+<blockquote>
+<div><p>The length of the scalebar, in units of scale_units</p>
+</div></blockquote>
+<p><strong>scale_units: {‘mm’, ‘cm’}</strong></p>
+<blockquote>
+<div><p>The units for the scalebar</p>
+</div></blockquote>
+<p><strong>scale_loc: integer</strong></p>
+<blockquote>
+<div><dl class="docutils">
+<dt>The positioning for the scalebar, valid location codes are::</dt>
+<dd><p class="first last">‘upper right’  : 1,
+‘upper left’   : 2,
+‘lower left’   : 3,
+‘lower right’  : 4,
+‘right’        : 5,
+‘center left’  : 6,
+‘center right’ : 7,
+‘lower center’ : 8,
+‘upper center’ : 9,
+‘center’       : 10</p>
+</dd>
+</dl>
 </div></blockquote>
 <p><strong>kwargs:</strong></p>
 <blockquote class="last">
@@ -460,7 +556,7 @@ ortho_slicer’s cut coordinates are used.</p>
 
 <dl class="method">
 <dt id="nilearn.plotting.displays.OrthoSlicer.init_with_figure">
-<code class="descname">init_with_figure</code><span class="sig-paren">(</span><em>img</em>, <em>threshold=None</em>, <em>cut_coords=None</em>, <em>figure=None</em>, <em>axes=None</em>, <em>black_bg=False</em>, <em>leave_space=False</em>, <em>colorbar=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.plotting.displays.OrthoSlicer.init_with_figure" title="Permalink to this definition">¶</a></dt>
+<code class="descname">init_with_figure</code><span class="sig-paren">(</span><em>img</em>, <em>threshold=None</em>, <em>cut_coords=None</em>, <em>figure=None</em>, <em>axes=None</em>, <em>black_bg=False</em>, <em>leave_space=False</em>, <em>colorbar=False</em>, <em>brain_color=(0.5</em>, <em>0.5</em>, <em>0.5)</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.plotting.displays.OrthoSlicer.init_with_figure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the slicer with an image</p>
 </dd></dl>
 
@@ -546,29 +642,7 @@ function.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="nilearn.signal.clean.html" title="7.11.1. nilearn.signal.clean"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="nilearn.plotting.show.html" title="7.10.22. nilearn.plotting.show"
-             >previous</a> |</li>
-<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="../../auto_examples/index.html">Examples</a> |&nbsp;</li>
-<li><a href="../reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../reference.html" >7. Reference documentation: all nilearn functions</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

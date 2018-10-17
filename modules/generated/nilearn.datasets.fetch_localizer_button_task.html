@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,47 +29,103 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -166,6 +224,8 @@ $(function () {
           <li class="nav-item nav-item-2"><a href="../reference.html" accesskey="U">7. Reference documentation: all nilearn functions</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -176,6 +236,7 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">7.2.18. nilearn.datasets.fetch_localizer_button_task</a><ul>
@@ -183,6 +244,7 @@ $(function () {
 </ul>
 </li>
 </ul>
+</div>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="nilearn.datasets.fetch_icbm152_brain_gm_mask.html"
@@ -190,9 +252,6 @@ $(function () {
   <h4>Next topic</h4>
   <p class="topless"><a href="nilearn.datasets.fetch_localizer_contrasts.html"
                         title="next chapter">7.2.19. nilearn.datasets.fetch_localizer_contrasts</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -216,18 +275,15 @@ function signature, and not how to use it. Please refer to the
 <h1>7.2.18. nilearn.datasets.fetch_localizer_button_task<a class="headerlink" href="#nilearn-datasets-fetch-localizer-button-task" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="nilearn.datasets.fetch_localizer_button_task">
-<code class="descclassname">nilearn.datasets.</code><code class="descname">fetch_localizer_button_task</code><span class="sig-paren">(</span><em>n_subjects=[2], data_dir=None, url=None, get_anats=False, verbose=1</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.datasets.fetch_localizer_button_task" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">nilearn.datasets.</code><code class="descname">fetch_localizer_button_task</code><span class="sig-paren">(</span><em>data_dir=None</em>, <em>url=None</em>, <em>verbose=1</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.datasets.fetch_localizer_button_task" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch left vs right button press contrast maps from the localizer.</p>
+<p>This function ships only 2nd subject (S02) specific tmap and
+its normalized T1 image.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n_subjects: int or list, optional</strong></p>
-<blockquote>
-<div><p>The number or list of subjects to load. If None is given,
-all 94 subjects are used.</p>
-</div></blockquote>
-<p><strong>data_dir: string, optional</strong></p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data_dir: string, optional</strong></p>
 <blockquote>
 <div><p>Path of the data directory. Used to force data storage in a specified
 location.</p>
@@ -236,10 +292,6 @@ location.</p>
 <blockquote>
 <div><p>Override download URL. Used for test only (or if you setup a mirror of
 the data).</p>
-</div></blockquote>
-<p><strong>get_anats: boolean</strong></p>
-<blockquote>
-<div><p>Whether individual structural images should be fetched or not.</p>
 </div></blockquote>
 <p><strong>verbose: int, optional</strong></p>
 <blockquote>
@@ -250,7 +302,8 @@ the data).</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">data: Bunch</p>
 <blockquote class="last">
 <div><p>Dictionary-like object, the interest attributes are :
-‘cmaps’: string list, giving paths to nifti contrast maps</p>
+‘tmap’: string, giving paths to nifti contrast maps
+‘anat’: string, giving paths to normalized anatomical image</p>
 </div></blockquote>
 </td>
 </tr>
@@ -268,11 +321,7 @@ The ‘left vs right button press’ contrast is used.</p>
 
 <div class="section" id="examples-using-nilearn-datasets-fetch-localizer-button-task">
 <h2>7.2.18.1. Examples using <code class="docutils literal"><span class="pre">nilearn.datasets.fetch_localizer_button_task</span></code><a class="headerlink" href="#examples-using-nilearn-datasets-fetch-localizer-button-task" title="Permalink to this headline">¶</a></h2>
-<div class="sphx-glr-thumbcontainer" tooltip="Here we discover how to work with 3D and 4D niimgs. "><div class="figure" id="id1">
-<img alt="../../_images/sphx_glr_plot_3d_and_4d_niimg_thumb.png" src="../../_images/sphx_glr_plot_3d_and_4d_niimg_thumb.png" />
-<p class="caption"><span class="caption-text"><a class="reference internal" href="../../auto_examples/plot_3d_and_4d_niimg.html#sphx-glr-auto-examples-plot-3d-and-4d-niimg-py"><span class="std std-ref">3D and 4D niimgs: handling and visualizing</span></a></span></p>
-</div>
-</div><div class="sphx-glr-thumbcontainer" tooltip="The `dim` argument controls the contrast of the background."><div class="figure" id="id2">
+<div class="sphx-glr-thumbcontainer" tooltip="The `dim` argument controls the contrast of the background."><div class="figure" id="id1">
 <img alt="../../_images/sphx_glr_plot_dim_plotting_thumb.png" src="../../_images/sphx_glr_plot_dim_plotting_thumb.png" />
 <p class="caption"><span class="caption-text"><a class="reference internal" href="../../auto_examples/01_plotting/plot_dim_plotting.html#sphx-glr-auto-examples-01-plotting-plot-dim-plotting-py"><span class="std std-ref">Controling the contrast of the background when plotting</span></a></span></p>
 </div>
@@ -285,29 +334,7 @@ The ‘left vs right button press’ contrast is used.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="nilearn.datasets.fetch_localizer_contrasts.html" title="7.2.19. nilearn.datasets.fetch_localizer_contrasts"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="nilearn.datasets.fetch_icbm152_brain_gm_mask.html" title="7.2.17. nilearn.datasets.fetch_icbm152_brain_gm_mask"
-             >previous</a> |</li>
-<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="../../auto_examples/index.html">Examples</a> |&nbsp;</li>
-<li><a href="../reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../reference.html" >7. Reference documentation: all nilearn functions</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,47 +29,103 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -165,6 +223,8 @@ $(function () {
           <li class="nav-item nav-item-1"><a href="user_guide.html" accesskey="U">User guide: table of contents</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -175,6 +235,7 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">1. Introduction: nilearn in a nutshell</a><ul>
@@ -197,6 +258,7 @@ $(function () {
 </ul>
 </li>
 </ul>
+</div>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="user_guide.html"
@@ -204,9 +266,6 @@ $(function () {
   <h4>Next topic</h4>
   <p class="topless"><a href="decoding/index.html"
                         title="next chapter">2. Decoding and MVPA: predicting from brain images</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -396,14 +455,14 @@ $(document).ready(function(){
       <p>We recommend that you <strong>install a complete 
       <span style="color:red">64 bit</span> scientific Python
        distribution like <a class="reference external" href="
-       https://store.continuum.io/cshop/anaconda/" target="_blank">Anaconda</a>
+       https://www.anaconda.com/download/" target="_blank">Anaconda</a>
        </strong>. Since it meets all the requirements of nilearn, it will save
        you time and trouble. You could also check <a class="reference external"
        href="http://python-xy.github.io/" target="_blank">PythonXY</a>
        as an alternative.</p>
 
       <p>Nilearn requires a Python installation and the following
-      dependencies: ipython, scikit-learn, matplotlib and nibabel.</p>
+      dependencies: ipython, scipy, scikit-learn, matplotlib and nibabel.</p>
 
       <p class="emphasize">Second: open a Command Prompt</p>
       <p><strong>(Press "Win-R", type "cmd" and press "Enter". This will open
@@ -422,18 +481,18 @@ $(document).ready(function(){
 
     <li>
       <p class="emphasize">First: download and install 64 bit <a class="
-      reference external" href="https://store.continuum.io/cshop/anaconda/"
+      reference external" href="https://www.anaconda.com/download/"
       target="_blank">Anaconda</a></p>
 
       <p>We recommend that you <strong>install a complete
       <span style="color:red">64 bit</span> scientific 
       Python distribution like <a class="reference external"
-      href="https://store.continuum.io/cshop/anaconda/" target="_blank">
+      href="https://www.anaconda.com/download/" target="_blank">
       Anaconda</a></strong>. Since it meets all the requirements of nilearn,
       it will save you time and trouble.</p>
 
       <p>Nilearn requires a Python installation and the following
-      dependencies: ipython, scikit-learn, matplotlib and nibabel.</p>
+      dependencies: ipython, scipy, scikit-learn, matplotlib and nibabel.</p>
 
       <p class="emphasize">Second: open a Terminal</p>
       <p><strong>(Navigate to /Applications/Utilities and double-click on
@@ -463,7 +522,7 @@ $(document).ready(function(){
 
       <p>Install or ask your system administrator to install the following
       packages using the distribution package manager: <strong>ipython</strong>
-      , <strong>scikit-learn</strong> (sometimes called <cite>sklearn</cite>,
+      , <strong>scipy</strong>, <strong>scikit-learn</strong> (sometimes called <cite>sklearn</cite>,
       or <cite>python-sklearn</cite>), <strong>matplotlib</strong> (sometimes
       called <cite>python-matplotlib</cite>) and <strong>nibabel</strong>
       (sometimes called <cite>python-nibabel</cite>).</p>
@@ -472,7 +531,7 @@ $(document).ready(function(){
       that you install a complete <span style="color:red">64 bit</span>
       scientific Python distribution like 
       <a class="reference external"
-      href="https://store.continuum.io/cshop/anaconda/" target="_blank">
+      href="https://www.anaconda.com/download/" target="_blank">
       Anaconda</a></strong>. Since it meets all the requirements of nilearn,
       it will save you time and trouble.</p>
 
@@ -533,35 +592,44 @@ the basics to help you get started. For a very quick start into the programming
 language, you can <a class="reference external" href="http://www.learnpython.org/">learn it online</a>.
 For a full-blown introduction to
 using Python for science, see the <a class="reference external" href="http://scipy-lectures.github.io/">scipy lecture notes</a>.</p>
-<p>We will be using <a class="reference external" href="http://ipython.org">IPython</a>, which provides an
-interactive scientific environment that facilitates (e.g.,
-interactive debugging) and improves (e.g., printing of large matrices)
-many everyday data-manipulation steps. Start it by typing:</p>
+<p>We will be using <a class="reference external" href="http://jupyter.org">Jupyter</a> for notebooks, or
+<a class="reference external" href="http://ipython.org">IPython</a>, which provides an interactive scientific
+environment that facilitates many everyday data-manipulation steps (e.g.
+interactive debugging, easy visualization). You can choose notebooks or
+terminal:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Notebooks:</th><td class="field-body"><p class="first">Start the Jupter notebook either with the application menu, or by
+typing:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">jupyter</span> <span class="n">notebook</span>
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Terminal:</th><td class="field-body"><p class="first">Start ipython by typing:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ipython</span> <span class="o">--</span><span class="n">matplotlib</span>
 </pre></div>
 </div>
-<p>This will open an interactive prompt:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>IPython ?.?.? -- An enhanced Interactive Python.
-?         -&gt; Introduction and overview of IPython&#39;s features.
-%quickref -&gt; Quick reference.
-help      -&gt; Python&#39;s own help system.
-object?   -&gt; Details about &#39;object&#39;, use &#39;object??&#39; for extra details.
-
-In [1]: 1 + 2 * 3
-Out[1]: 7
-</pre></div>
-</div>
-<div class="admonition note">
+<div class="last admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The <code class="docutils literal"><span class="pre">--matplotlib</span></code> flag, which configures matplotlib for
-interactive use inside IPython, is available for IPython versions
-from 1.0 onwards. If you are using versions older than this,
-e.g. 0.13, you can use the <code class="docutils literal"><span class="pre">--pylab</span></code> flag instead.</p>
+interactive use inside IPython.</p>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<p>These will give you a <em>prompt</em> in which you can execute commands:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">3</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="mi">7</span>
+</pre></div>
 </div>
 <div class="topic">
 <p class="topic-title first"><cite>&gt;&gt;&gt;</cite> <strong>Prompt</strong></p>
 <p>Below we’ll be using <cite>&gt;&gt;&gt;</cite> to indicate input lines. If you wish to copy and
-paste these input lines directly into <em>IPython</em>, click on the <cite>&gt;&gt;&gt;</cite> located
+paste these input lines directly, click on the <cite>&gt;&gt;&gt;</cite> located
 at the top right of the code block to toggle these prompt signs</p>
 </div>
 <div class="section" id="your-first-steps-with-nilearn">
@@ -647,13 +715,14 @@ function to compute the mean of a 4D image</li>
 <div class="line"><br /></div>
 </div>
 <div class="topic">
-<p class="topic-title first"><strong>Warm up examples</strong></p>
-<p>The two following examples may be useful to get familiar with data
+<p class="topic-title first"><strong>Tutorials to learn the basics</strong></p>
+<p>The two following tutorials may be useful to get familiar with data
 representation in nilearn:</p>
 <ul class="simple">
 <li><a class="reference internal" href="auto_examples/plot_nilearn_101.html#sphx-glr-auto-examples-plot-nilearn-101-py"><span class="std std-ref">Basic nilearn example: manipulating and looking at data</span></a></li>
 <li><a class="reference internal" href="auto_examples/plot_3d_and_4d_niimg.html#sphx-glr-auto-examples-plot-3d-and-4d-niimg-py"><span class="std std-ref">3D and 4D niimgs: handling and visualizing</span></a></li>
 </ul>
+<p>More tutorials can be found <a class="reference internal" href="auto_examples/index.html#tutorial-examples"><span class="std std-ref">here</span></a></p>
 </div>
 <hr class="docutils" />
 <p>Now, if you want out-of-the-box methods to process neuroimaging data, jump
@@ -766,7 +835,7 @@ It is first created with the relevant parameters:</p>
 </pre></div>
 </div>
 <p>These parameters are detailed in the documentation of
-the object: in IPython you can do:</p>
+the object: in IPython or Jupter you can do:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>In [3]: SVC?
 ...
 Parameters
@@ -849,28 +918,7 @@ found on the scikit-learn mailing list:
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="decoding/index.html" title="2. Decoding and MVPA: predicting from brain images"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="user_guide.html" title="User guide: table of contents"
-             >previous</a> |</li>
-<li><a href="index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="auto_examples/index.html">Examples</a> |&nbsp;</li>
-<li><a href="modules/reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="user_guide.html" >User guide: table of contents</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.

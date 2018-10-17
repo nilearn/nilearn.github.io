@@ -11,7 +11,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.5.0a',
+        VERSION:     '0.5.0b',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -29,47 +29,103 @@
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
 <script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000)
+        $('.related-wrapper').css("position", "sticky")
+        $('.related-wrapper').css("top", 0)
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative")
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight()
+    var banner_width = $('#logo-banner').outerWidth()
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight())
+
+    updateTopMenuPosition(banner_height, width)
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth()
+        var menu_height = $('.related').outerHeight()
+        $('.related').css("width", banner_width)
+        $('.related-wrapper').css("height", menu_height)
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop()
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed")
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative")
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0
+    current_section = 0
+    $('a.internal').removeClass('active')
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        };
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        };
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active')
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
 $(function () {
     // Lock the table of content to a fixed position once we scroll enough
-    var top = 105 + $('.sphinxsidebarwrapper').offset().top - parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0)),
-        sections = {},
-        i        = 0,
-	url	 = document.URL.replace(/#.*$/, ""),
-	current_section = 0;
+    var tocOffset = $('.related-wrapper').outerHeight()
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0))
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop
+    sections = {}
+    url = document.URL.replace(/#.*$/, "")
 
     // Grab positions of our sections
     $('.headerlink').each(function(){
-        sections[this.href.replace(url, '')] = $(this).offset().top - 50;
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
     });
+
+    updateSideBarPosition(top, tocOffset, sections)
 
     $(window).scroll(function(event) {
-	var pos   = $(window).scrollTop();
-	// Lock the table of content to a fixed position once we scroll enough
-	if(pos > top){
-	    //begin to scroll
-	    $('.sphinxsidebarwrapper').css("position", "fixed");
-	    $('.sphinxsidebarwrapper').css("top", -105);
-	}
-	else{
-	    //lock it back into place
-	    $('.sphinxsidebarwrapper').css("position", "relative");
-	    $('.sphinxsidebarwrapper').css("top",0);
-	}
-
-	// Highlight the current section
-	$('a.internal').removeClass('active');
-        for(i in sections){
-            if(sections[i] > pos){
-		break;
-            }
-            if($('a.internal[href$="' + i + '"]').is(':visible')){
-		current_section = i;
-        }
-        }
-	$('a.internal[href$="' + current_section + '"]').addClass('active');
+        updateSideBarPosition(top, tocOffset, sections)
     });
 
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight()
+        updateSideBarPosition(top, tocOffset, sections)
+    });
 });
 </script>
 
@@ -143,6 +199,8 @@ $(function () {
 
 
 
+<div class=related-wrapper>
+    
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -166,6 +224,8 @@ $(function () {
           <li class="nav-item nav-item-2"><a href="../reference.html" accesskey="U">7. Reference documentation: all nilearn functions</a> &#187;</li> 
       </ul>
     </div>
+</div>
+
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -176,6 +236,7 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
+	   <div class="sidebartoc">
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">7.4.2. nilearn.decomposition.DictLearning</a><ul>
@@ -183,6 +244,7 @@ $(function () {
 </ul>
 </li>
 </ul>
+</div>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="nilearn.decomposition.CanICA.html"
@@ -190,9 +252,6 @@ $(function () {
   <h4>Next topic</h4>
   <p class="topless"><a href="nilearn.image.clean_img.html"
                         title="next chapter">7.5.1. nilearn.image.clean_img</a></p>
-
-<div class="navbar">
-</div> <!-- end navbar -->
 
 <script type="text/javascript">$('#searchbox-ml').show(0);</script>
 <script type="text/javascript">$('#searchbox-site').show(0);</script>
@@ -216,7 +275,7 @@ signature, and not how to use it. Please refer to the
 <h1>7.4.2. nilearn.decomposition.DictLearning<a class="headerlink" href="#nilearn-decomposition-dictlearning" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="nilearn.decomposition.DictLearning">
-<em class="property">class </em><code class="descclassname">nilearn.decomposition.</code><code class="descname">DictLearning</code><span class="sig-paren">(</span><em>n_components=20</em>, <em>n_epochs=1</em>, <em>alpha=10</em>, <em>reduction_ratio='auto'</em>, <em>dict_init=None</em>, <em>random_state=None</em>, <em>batch_size=20</em>, <em>method='cd'</em>, <em>mask=None</em>, <em>smoothing_fwhm=4</em>, <em>standardize=True</em>, <em>detrend=True</em>, <em>low_pass=None</em>, <em>high_pass=None</em>, <em>t_r=None</em>, <em>target_affine=None</em>, <em>target_shape=None</em>, <em>mask_strategy='epi'</em>, <em>mask_args=None</em>, <em>n_jobs=1</em>, <em>verbose=0</em>, <em>memory=Memory(cachedir=None)</em>, <em>memory_level=0</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.decomposition.DictLearning" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">nilearn.decomposition.</code><code class="descname">DictLearning</code><span class="sig-paren">(</span><em>n_components=20</em>, <em>n_epochs=1</em>, <em>alpha=10</em>, <em>reduction_ratio='auto'</em>, <em>dict_init=None</em>, <em>random_state=None</em>, <em>batch_size=20</em>, <em>method='cd'</em>, <em>mask=None</em>, <em>smoothing_fwhm=4</em>, <em>standardize=True</em>, <em>detrend=True</em>, <em>low_pass=None</em>, <em>high_pass=None</em>, <em>t_r=None</em>, <em>target_affine=None</em>, <em>target_shape=None</em>, <em>mask_strategy='epi'</em>, <em>mask_args=None</em>, <em>n_jobs=1</em>, <em>verbose=0</em>, <em>memory=Memory(location=None)</em>, <em>memory_level=0</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.decomposition.DictLearning" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform a map learning algorithm based on spatial component sparsity,
 over a CanICA initialization.  This yields more stable maps than CanICA.</p>
 <blockquote>
@@ -391,7 +450,7 @@ pp. 1282-1285</li>
 </table>
 <dl class="method">
 <dt id="nilearn.decomposition.DictLearning.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>n_components=20</em>, <em>n_epochs=1</em>, <em>alpha=10</em>, <em>reduction_ratio='auto'</em>, <em>dict_init=None</em>, <em>random_state=None</em>, <em>batch_size=20</em>, <em>method='cd'</em>, <em>mask=None</em>, <em>smoothing_fwhm=4</em>, <em>standardize=True</em>, <em>detrend=True</em>, <em>low_pass=None</em>, <em>high_pass=None</em>, <em>t_r=None</em>, <em>target_affine=None</em>, <em>target_shape=None</em>, <em>mask_strategy='epi'</em>, <em>mask_args=None</em>, <em>n_jobs=1</em>, <em>verbose=0</em>, <em>memory=Memory(cachedir=None)</em>, <em>memory_level=0</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.decomposition.DictLearning.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>n_components=20</em>, <em>n_epochs=1</em>, <em>alpha=10</em>, <em>reduction_ratio='auto'</em>, <em>dict_init=None</em>, <em>random_state=None</em>, <em>batch_size=20</em>, <em>method='cd'</em>, <em>mask=None</em>, <em>smoothing_fwhm=4</em>, <em>standardize=True</em>, <em>detrend=True</em>, <em>low_pass=None</em>, <em>high_pass=None</em>, <em>t_r=None</em>, <em>target_affine=None</em>, <em>target_shape=None</em>, <em>mask_strategy='epi'</em>, <em>mask_args=None</em>, <em>n_jobs=1</em>, <em>verbose=0</em>, <em>memory=Memory(location=None)</em>, <em>memory_level=0</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.decomposition.DictLearning.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -611,29 +670,7 @@ shape: number of subjects * (number of scans, number of regions)</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../../py-modindex.html" title="Python Module Index"
-             >modules</a></li>
-        <li class="right" >
-          <a href="nilearn.image.clean_img.html" title="7.5.1. nilearn.image.clean_img"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="nilearn.decomposition.CanICA.html" title="7.4.1. nilearn.decomposition.CanICA"
-             >previous</a> |</li>
-<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
-<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
-<li><a href="../../auto_examples/index.html">Examples</a> |&nbsp;</li>
-<li><a href="../reference.html">Reference</a> |&nbsp;</li>
-<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
-<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
-          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../reference.html" >7. Reference documentation: all nilearn functions</a> &#187;</li> 
-      </ul>
-    </div>
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
           Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.
