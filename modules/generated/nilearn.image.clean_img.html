@@ -3,21 +3,13 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Nilearn: Machine learning for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
     <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '0.5.0b',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -143,8 +135,7 @@ $(function () {
         })();
     </script>
 
-  </head>
-  <body>
+  </head><body>
 <div id="logo-banner">
   <div class="logo">
     <a href="../../index.html">
@@ -236,19 +227,24 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
-	   <div class="sidebartoc"></div>
-
   <h4>Previous topic</h4>
   <p class="topless"><a href="nilearn.decomposition.DictLearning.html"
                         title="previous chapter">7.4.2. nilearn.decomposition.DictLearning</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="nilearn.image.concat_imgs.html"
                         title="next chapter">7.5.2. nilearn.image.concat_imgs</a></p>
-
-<script type="text/javascript">$('#searchbox-ml').show(0);</script>
-<script type="text/javascript">$('#searchbox-site').show(0);</script>
-
-
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -267,20 +263,23 @@ function signature, and not how to use it. Please refer to the
 <h1>7.5.1. nilearn.image.clean_img<a class="headerlink" href="#nilearn-image-clean-img" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="nilearn.image.clean_img">
-<code class="descclassname">nilearn.image.</code><code class="descname">clean_img</code><span class="sig-paren">(</span><em>imgs</em>, <em>sessions=None</em>, <em>detrend=True</em>, <em>standardize=True</em>, <em>confounds=None</em>, <em>low_pass=None</em>, <em>high_pass=None</em>, <em>t_r=2.5</em>, <em>ensure_finite=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.image.clean_img" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">nilearn.image.</code><code class="descname">clean_img</code><span class="sig-paren">(</span><em>imgs</em>, <em>sessions=None</em>, <em>detrend=True</em>, <em>standardize=True</em>, <em>confounds=None</em>, <em>low_pass=None</em>, <em>high_pass=None</em>, <em>t_r=None</em>, <em>ensure_finite=False</em>, <em>mask_img=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.image.clean_img" title="Permalink to this definition">¶</a></dt>
 <dd><p>Improve SNR on masked fMRI signals.</p>
 <p>This function can do several things on the input signals, in
 the following order:</p>
 <ul class="simple">
 <li>detrend</li>
-<li>standardize</li>
-<li>remove confounds</li>
 <li>low- and high-pass filter</li>
+<li>remove confounds</li>
+<li>standardize</li>
 </ul>
 <p>Low-pass filtering improves specificity.</p>
 <p>High-pass filtering should be kept small, to keep some
 sensitivity.</p>
 <p>Filtering is only meaningful on evenly-sampled signals.</p>
+<p>According to Lindquist et al. (2018), removal of confounds will be done
+orthogonally to temporal filters (low- and/or high-pass filters), if both
+are specified.</p>
 <div class="versionadded">
 <p><span class="versionmodified">New in version 0.2.5.</span></p>
 </div>
@@ -324,12 +323,20 @@ signal, as if all were in the same array.</p>
 </div></blockquote>
 <p><strong>t_r: float, optional</strong></p>
 <blockquote>
-<div><p>Repetition time, in second (sampling period).</p>
+<div><p>Repetition time, in second (sampling period). Set to None if not
+specified. Mandatory if used together with low_pass or high_pass.</p>
 </div></blockquote>
 <p><strong>ensure_finite: bool, optional</strong></p>
 <blockquote>
 <div><p>If True, the non-finite values (NaNs and infs) found in the images
 will be replaced by zeros.</p>
+</div></blockquote>
+<p><strong>mask_img: Niimg-like object, optional</strong></p>
+<blockquote>
+<div><p>See <a class="reference external" href="http://nilearn.github.io/manipulating_images/input_output.html">http://nilearn.github.io/manipulating_images/input_output.html</a>
+If provided, signal is only cleaned from voxels inside the mask. If
+mask is provided, it should have same shape and affine as imgs.
+If not provided, all voxels are used.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -347,6 +354,10 @@ of the signal space. See <a class="reference external" href="http://dx.doi.org/1
 K. J. Worsley, J.-P. Poline, C. D. Frith, et R. S. J. Frackowiak.
 “Statistical Parametric Maps in Functional Imaging: A General
 Linear Approach”. Human Brain Mapping 2, no 4 (1994): 189-210.</a></p>
+<p>Orthogonalization between temporal filters and confound removal is based on
+suggestions in <a class="reference external" href="http://dx.doi.org/10.1101/407676">Lindquist, M., Geuter, S., Wager, T., &amp; Caffo, B. (2018).
+Modular preprocessing pipelines can reintroduce artifacts into fMRI data.
+bioRxiv, 407676.</a></p>
 </dd></dl>
 
 <div style='clear:both'></div></div>
@@ -360,7 +371,7 @@ Linear Approach”. Human Brain Mapping 2, no 4 (1994): 189-210.</a></p>
 
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
-          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.6.7.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.7.9.
         <span style="padding-left: 5ex;">
           <a href="../../_sources/modules/generated/nilearn.image.clean_img.rst.txt"
         	 rel="nofollow">Show this page source</a>
