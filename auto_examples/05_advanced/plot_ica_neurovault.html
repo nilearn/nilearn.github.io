@@ -8,7 +8,7 @@
     <title>Nilearn: Machine learning for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
     <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
@@ -227,7 +227,7 @@ $(function () {
                     papers</a>.</p></li>
   </ul>
 
-  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <h3><a href="../../index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">8.6.5. NeuroVault cross-study ICA maps.</a><ul>
 <li><a class="reference internal" href="#get-image-and-term-data">8.6.5.1. Get image and term data</a></li>
@@ -264,41 +264,45 @@ $(function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="neurovault-cross-study-ica-maps">
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-auto-examples-05-advanced-plot-ica-neurovault-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="neurovault-cross-study-ica-maps">
 <span id="sphx-glr-auto-examples-05-advanced-plot-ica-neurovault-py"></span><h1>8.6.5. NeuroVault cross-study ICA maps.<a class="headerlink" href="#neurovault-cross-study-ica-maps" title="Permalink to this headline">¶</a></h1>
 <p>This example shows how to download statistical maps from
 NeuroVault, label them with NeuroSynth terms,
 and compute ICA components across all the maps.</p>
 <p>See <a class="reference internal" href="../../modules/generated/nilearn.datasets.fetch_neurovault.html#nilearn.datasets.fetch_neurovault" title="nilearn.datasets.fetch_neurovault"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.datasets.fetch_neurovault</span></code></a>
 documentation for more details.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Author: Ben Cipollini</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Author: Ben Cipollini</span>
 <span class="c1"># License: BSD</span>
 <span class="c1"># Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux</span>
 <span class="c1"># https://github.com/NeuroVault/neurovault_analysis</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
-<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.decomposition.FastICA.html#sklearn.decomposition.FastICA" title="View documentation for sklearn.decomposition.FastICA"><span class="n">FastICA</span></a>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">stats</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="k">import</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.decomposition.FastICA.html#sklearn.decomposition.FastICA" title="View documentation for sklearn.decomposition.FastICA"><span class="n">FastICA</span></a>
 
-<span class="kn">from</span> <span class="nn">nilearn.datasets</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.datasets.fetch_neurovault.html#nilearn.datasets.fetch_neurovault" title="View documentation for nilearn.datasets.fetch_neurovault"><span class="n">fetch_neurovault</span></a>
-<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="View documentation for nilearn.image.smooth_img"><span class="n">smooth_img</span></a>
+<span class="kn">from</span> <span class="nn">nilearn.datasets</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.datasets.fetch_neurovault.html#nilearn.datasets.fetch_neurovault" title="View documentation for nilearn.datasets.fetch_neurovault"><span class="n">fetch_neurovault</span></a>
+<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="View documentation for nilearn.image.smooth_img"><span class="n">smooth_img</span></a>
 
-<span class="kn">from</span> <span class="nn">nilearn.datasets</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.datasets.load_mni152_brain_mask.html#nilearn.datasets.load_mni152_brain_mask" title="View documentation for nilearn.datasets.load_mni152_brain_mask"><span class="n">load_mni152_brain_mask</span></a>
-<span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
+<span class="kn">from</span> <span class="nn">nilearn.datasets</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.datasets.load_mni152_brain_mask.html#nilearn.datasets.load_mni152_brain_mask" title="View documentation for nilearn.datasets.load_mni152_brain_mask"><span class="n">load_mni152_brain_mask</span></a>
+<span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
 
-<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">plotting</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="k">import</span> <span class="n">plotting</span>
 </pre></div>
 </div>
 <div class="section" id="get-image-and-term-data">
 <h2>8.6.5.1. Get image and term data<a class="headerlink" href="#get-image-and-term-data" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download images</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download images</span>
 <span class="c1"># Here by default we only download 80 images to save time,</span>
 <span class="c1"># but for better results I recommend using at least 200.</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Fetching Neurovault images; &quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Fetching Neurovault images; &quot;</span>
       <span class="s2">&quot;if you haven&#39;t downloaded any Neurovault data before &quot;</span>
       <span class="s2">&quot;this will take several minutes.&quot;</span><span class="p">)</span>
-<span class="n">nv_data</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_neurovault.html#nilearn.datasets.fetch_neurovault" title="View documentation for nilearn.datasets.fetch_neurovault"><span class="n">fetch_neurovault</span></a><span class="p">(</span><span class="n">max_images</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">fetch_neurosynth_words</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">nv_data</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_neurovault.html#nilearn.datasets.fetch_neurovault" title="View documentation for nilearn.datasets.fetch_neurovault"><span class="n">fetch_neurovault</span></a><span class="p">(</span><span class="n">max_images</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">fetch_neurosynth_words</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">images</span> <span class="o">=</span> <span class="n">nv_data</span><span class="p">[</span><span class="s1">&#39;images&#39;</span><span class="p">]</span>
 <span class="n">term_weights</span> <span class="o">=</span> <span class="n">nv_data</span><span class="p">[</span><span class="s1">&#39;word_frequencies&#39;</span><span class="p">]</span>
@@ -306,16 +310,16 @@ documentation for more details.</p>
 
 <span class="c1"># Clean and report term scores</span>
 <span class="n">term_weights</span><span class="p">[</span><span class="n">term_weights</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">total_scores</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">term_weights</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">total_scores</span> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">term_weights</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Top 10 neurosynth terms from downloaded images:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Top 10 neurosynth terms from downloaded images:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">term_idx</span> <span class="ow">in</span> <a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.argsort.html#numpy.argsort" title="View documentation for numpy.argsort"><span class="n">np</span><span class="o">.</span><span class="n">argsort</span></a><span class="p">(</span><span class="n">total_scores</span><span class="p">)[</span><span class="o">-</span><span class="mi">10</span><span class="p">:][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">vocabulary</span><span class="p">[</span><span class="n">term_idx</span><span class="p">])</span>
+<span class="k">for</span> <span class="n">term_idx</span> <span class="ow">in</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.argsort" title="View documentation for numpy.argsort"><span class="n">np</span><span class="o">.</span><span class="n">argsort</span></a><span class="p">(</span><span class="n">total_scores</span><span class="p">)[</span><span class="o">-</span><span class="mi">10</span><span class="p">:][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">vocabulary</span><span class="p">[</span><span class="n">term_idx</span><span class="p">])</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span>Fetching Neurovault images; if you haven&#39;t downloaded any Neurovault data before this will take several minutes.
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Fetching Neurovault images; if you haven&#39;t downloaded any Neurovault data before this will take several minutes.
 Reading local neurovault data.
 Already fetched 1 image
 Already fetched 2 images
@@ -326,7 +330,13 @@ Already fetched 6 images
 Already fetched 7 images
 Already fetched 8 images
 Already fetched 9 images
+Downloading file: http://neurosynth.org/api/decode/?neurovault=40013
+Problem downloading file from http://neurosynth.org/api/decode/?neurovault=40013
+Could not fetch words for image 40013
 Already fetched 10 images
+Downloading file: http://neurosynth.org/api/decode/?neurovault=40012
+Problem downloading file from http://neurosynth.org/api/decode/?neurovault=40012
+Could not fetch words for image 40012
 Already fetched 11 images
 Already fetched 12 images
 Already fetched 13 images
@@ -340,13 +350,7 @@ Already fetched 20 images
 Already fetched 21 images
 Already fetched 22 images
 Already fetched 23 images
-Downloading file: http://neurosynth.org/api/decode/?neurovault=40012
-Problem downloading file from http://neurosynth.org/api/decode/?neurovault=40012
-Could not fetch words for image 40012
 Already fetched 24 images
-Downloading file: http://neurosynth.org/api/decode/?neurovault=40013
-Problem downloading file from http://neurosynth.org/api/decode/?neurovault=40013
-Could not fetch words for image 40013
 Already fetched 25 images
 Already fetched 26 images
 Already fetched 27 images
@@ -405,36 +409,36 @@ Already fetched 79 images
 Already fetched 80 images
 80 images found on local disk.
 Computing word features.
-Could not load words from file /home/kshitij/nilearn_data/neurovault/collection_2138/neurosynth_words_for_image_40012.json; error: Traceback (most recent call last):
-  File &quot;/home/kshitij/workspace/nilearn-org/nilearn-repo/master/nilearn/nilearn/datasets/neurovault.py&quot;, line 1251, in neurosynth_words_vectorized
-    with open(file_name, &#39;rb&#39;) as word_file:
-FileNotFoundError: [Errno 2] No such file or directory: &#39;/home/kshitij/nilearn_data/neurovault/collection_2138/neurosynth_words_for_image_40012.json&#39;
-
 Could not load words from file /home/kshitij/nilearn_data/neurovault/collection_2138/neurosynth_words_for_image_40013.json; error: Traceback (most recent call last):
-  File &quot;/home/kshitij/workspace/nilearn-org/nilearn-repo/master/nilearn/nilearn/datasets/neurovault.py&quot;, line 1251, in neurosynth_words_vectorized
+  File &quot;/home/kshitij/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/datasets/neurovault.py&quot;, line 1252, in neurosynth_words_vectorized
     with open(file_name, &#39;rb&#39;) as word_file:
 FileNotFoundError: [Errno 2] No such file or directory: &#39;/home/kshitij/nilearn_data/neurovault/collection_2138/neurosynth_words_for_image_40013.json&#39;
+
+Could not load words from file /home/kshitij/nilearn_data/neurovault/collection_2138/neurosynth_words_for_image_40012.json; error: Traceback (most recent call last):
+  File &quot;/home/kshitij/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/datasets/neurovault.py&quot;, line 1252, in neurosynth_words_vectorized
+    with open(file_name, &#39;rb&#39;) as word_file:
+FileNotFoundError: [Errno 2] No such file or directory: &#39;/home/kshitij/nilearn_data/neurovault/collection_2138/neurosynth_words_for_image_40012.json&#39;
 
 Computing word features done; vocabulary size: 2957
 
 Top 10 neurosynth terms from downloaded images:
 
-thalamus
-cingulate
-striatum
-basal ganglia
-ganglia
-basal
-precuneus
 anterior insula
+cingulate
+insula
+parietal
+anterior
+task
+striatum
+thalamus
+anterior cingulate
 reward
-nucleus
 </pre></div>
 </div>
 </div>
 <div class="section" id="reshape-and-mask-images">
 <h2>8.6.5.2. Reshape and mask images<a class="headerlink" href="#reshape-and-mask-images" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Reshaping and masking images.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Reshaping and masking images.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
@@ -448,56 +452,56 @@ nucleus
     <span class="c1"># Images may fail to be transformed, and are of different shapes,</span>
     <span class="c1"># so we need to transform one-by-one and keep track of failures.</span>
     <span class="n">X</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">is_usable</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.ones.html#numpy.ones" title="View documentation for numpy.ones"><span class="n">np</span><span class="o">.</span><span class="n">ones</span></a><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">is_usable</span> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ones.html#numpy.ones" title="View documentation for numpy.ones"><span class="n">np</span><span class="o">.</span><span class="n">ones</span></a><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">image_path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">images</span><span class="p">):</span>
         <span class="c1"># load image and remove nan and inf values.</span>
         <span class="c1"># applying smooth_img to an image with fwhm=None simply cleans up</span>
         <span class="c1"># non-finite values but otherwise doesn&#39;t modify the image.</span>
-        <span class="n">image</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="View documentation for nilearn.image.smooth_img"><span class="n">smooth_img</span></a><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">fwhm</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="View documentation for nilearn.image.smooth_img"><span class="n">smooth_img</span></a><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">fwhm</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">X</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">masker</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">image</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">meta</span> <span class="o">=</span> <span class="n">nv_data</span><span class="p">[</span><span class="s1">&#39;images_meta&#39;</span><span class="p">][</span><span class="n">index</span><span class="p">]</span>
-            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Failed to mask/reshape image: id: {0}; &quot;</span>
-                  <span class="s2">&quot;name: &#39;{1}&#39;; collection: {2}; error: {3}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to mask/reshape image: id: </span><span class="si">{0}</span><span class="s2">; &quot;</span>
+                  <span class="s2">&quot;name: &#39;</span><span class="si">{1}</span><span class="s2">&#39;; collection: </span><span class="si">{2}</span><span class="s2">; error: </span><span class="si">{3}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                       <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">),</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
                       <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;collection_id&#39;</span><span class="p">),</span> <span class="n">e</span><span class="p">))</span>
-            <span class="n">is_usable</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="n">is_usable</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="c1"># Now reshape list into 2D matrix, and remove failed images from terms</span>
-<span class="n">X</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.vstack.html#numpy.vstack" title="View documentation for numpy.vstack"><span class="n">np</span><span class="o">.</span><span class="n">vstack</span></a><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.vstack.html#numpy.vstack" title="View documentation for numpy.vstack"><span class="n">np</span><span class="o">.</span><span class="n">vstack</span></a><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 <span class="n">term_weights</span> <span class="o">=</span> <span class="n">term_weights</span><span class="p">[</span><span class="n">is_usable</span><span class="p">,</span> <span class="p">:]</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Reshaping</span> <span class="ow">and</span> <span class="n">masking</span> <span class="n">images</span><span class="o">.</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Reshaping and masking images.
 </pre></div>
 </div>
 </div>
 <div class="section" id="run-ica-and-map-components-to-terms">
 <h2>8.6.5.3. Run ICA and map components to terms<a class="headerlink" href="#run-ica-and-map-components-to-terms" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">&quot;Running ICA; may take time...&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running ICA; may take time...&quot;</span><span class="p">)</span>
 <span class="c1"># We use a very small number of components as we have downloaded only 80</span>
 <span class="c1"># images. For better results, increase the number of images downloaded</span>
 <span class="c1"># and the number of components</span>
 <span class="n">n_components</span> <span class="o">=</span> <span class="mi">16</span>
-<span class="n">fast_ica</span> <span class="o">=</span> <a href="http://scikit-learn.org/0.18/modules/generated/sklearn.decomposition.FastICA.html#sklearn.decomposition.FastICA" title="View documentation for sklearn.decomposition.FastICA"><span class="n">FastICA</span></a><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">fast_ica</span> <span class="o">=</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.decomposition.FastICA.html#sklearn.decomposition.FastICA" title="View documentation for sklearn.decomposition.FastICA"><span class="n">FastICA</span></a><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">ica_maps</span> <span class="o">=</span> <span class="n">fast_ica</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 
-<span class="n">term_weights_for_components</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.dot.html#numpy.dot" title="View documentation for numpy.dot"><span class="n">np</span><span class="o">.</span><span class="n">dot</span></a><span class="p">(</span><span class="n">fast_ica</span><span class="o">.</span><span class="n">components_</span><span class="p">,</span> <span class="n">term_weights</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Done, plotting results.&#39;</span><span class="p">)</span>
+<span class="n">term_weights_for_components</span> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.dot.html#numpy.dot" title="View documentation for numpy.dot"><span class="n">np</span><span class="o">.</span><span class="n">dot</span></a><span class="p">(</span><span class="n">fast_ica</span><span class="o">.</span><span class="n">components_</span><span class="p">,</span> <span class="n">term_weights</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Done, plotting results.&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Running</span> <span class="n">ICA</span><span class="p">;</span> <span class="n">may</span> <span class="n">take</span> <span class="n">time</span><span class="o">...</span>
-<span class="n">Done</span><span class="p">,</span> <span class="n">plotting</span> <span class="n">results</span><span class="o">.</span>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Running ICA; may take time...
+Done, plotting results.
 </pre></div>
 </div>
 </div>
 <div class="section" id="generate-figures">
 <h2>8.6.5.4. Generate figures<a class="headerlink" href="#generate-figures" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">ic_map</span><span class="p">,</span> <span class="n">ic_terms</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
@@ -507,65 +511,65 @@ nucleus
             <span class="n">ic_map</span> <span class="o">=</span> <span class="o">-</span> <span class="n">ic_map</span>
             <span class="n">ic_terms</span> <span class="o">=</span> <span class="o">-</span> <span class="n">ic_terms</span>
 
-        <span class="n">ic_threshold</span> <span class="o">=</span> <a href="http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.stats.scoreatpercentile.html#scipy.stats.scoreatpercentile" title="View documentation for scipy.stats.scoreatpercentile"><span class="n">stats</span><span class="o">.</span><span class="n">scoreatpercentile</span></a><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ic_map</span><span class="p">),</span> <span class="mi">90</span><span class="p">)</span>
+        <span class="n">ic_threshold</span> <span class="o">=</span> <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.scoreatpercentile.html#scipy.stats.scoreatpercentile" title="View documentation for scipy.stats.scoreatpercentile"><span class="n">stats</span><span class="o">.</span><span class="n">scoreatpercentile</span></a><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ic_map</span><span class="p">),</span> <span class="mi">90</span><span class="p">)</span>
         <span class="n">ic_img</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">ic_map</span><span class="p">)</span>
-        <span class="n">important_terms</span> <span class="o">=</span> <span class="n">vocabulary</span><span class="p">[</span><a href="http://docs.scipy.org/doc/numpy-1.11.0/reference/generated/numpy.argsort.html#numpy.argsort" title="View documentation for numpy.argsort"><span class="n">np</span><span class="o">.</span><span class="n">argsort</span></a><span class="p">(</span><span class="n">ic_terms</span><span class="p">)[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]]</span>
+        <span class="n">important_terms</span> <span class="o">=</span> <span class="n">vocabulary</span><span class="p">[</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.argsort.html#numpy.argsort" title="View documentation for numpy.argsort"><span class="n">np</span><span class="o">.</span><span class="n">argsort</span></a><span class="p">(</span><span class="n">ic_terms</span><span class="p">)[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]]</span>
         <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;IC</span><span class="si">%i</span><span class="s1">  </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">important_terms</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
 
         <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="View documentation for nilearn.plotting.plot_stat_map"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span>
-            <span class="n">ic_img</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">ic_threshold</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+            <span class="n">ic_img</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="n">ic_threshold</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_001.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_001.png" src="../../_images/sphx_glr_plot_ica_neurovault_001.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_001.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_001.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_002.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_002.png" src="../../_images/sphx_glr_plot_ica_neurovault_002.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_002.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_002.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_003.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_003.png" src="../../_images/sphx_glr_plot_ica_neurovault_003.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_003.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_003.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_004.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_004.png" src="../../_images/sphx_glr_plot_ica_neurovault_004.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_004.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_004.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_005.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_005.png" src="../../_images/sphx_glr_plot_ica_neurovault_005.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_005.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_005.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_006.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_006.png" src="../../_images/sphx_glr_plot_ica_neurovault_006.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_006.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_006.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_007.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_007.png" src="../../_images/sphx_glr_plot_ica_neurovault_007.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_007.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_007.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_008.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_008.png" src="../../_images/sphx_glr_plot_ica_neurovault_008.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_008.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_008.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_009.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_009.png" src="../../_images/sphx_glr_plot_ica_neurovault_009.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_009.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_009.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_010.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_010.png" src="../../_images/sphx_glr_plot_ica_neurovault_010.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_010.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_010.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_011.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_011.png" src="../../_images/sphx_glr_plot_ica_neurovault_011.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_011.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_011.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_012.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_012.png" src="../../_images/sphx_glr_plot_ica_neurovault_012.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_012.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_012.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_013.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_013.png" src="../../_images/sphx_glr_plot_ica_neurovault_013.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_013.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_013.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_014.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_014.png" src="../../_images/sphx_glr_plot_ica_neurovault_014.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_014.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_014.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_015.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_015.png" src="../../_images/sphx_glr_plot_ica_neurovault_015.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_015.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_015.png" />
 </li>
-<li><a class="first reference internal image-reference" href="../../_images/sphx_glr_plot_ica_neurovault_016.png"><img alt="../../_images/sphx_glr_plot_ica_neurovault_016.png" src="../../_images/sphx_glr_plot_ica_neurovault_016.png" style="width: 310.2px; height: 122.19999999999999px;" /></a>
+<li><img alt="../../_images/sphx_glr_plot_ica_neurovault_016.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_ica_neurovault_016.png" />
 </li>
 </ul>
 <p>As we can see, some of the components capture cognitive or neurological
 maps, while other capture noise in the database. More data, better
 filtering, and better cognitive labels would give better maps</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Done.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Done.</span>
 <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="View documentation for nilearn.plotting.show"><span class="n">plotting</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  34.419 seconds)</p>
-<div class="sphx-glr-footer docutils container">
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  31.723 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-05-advanced-plot-ica-neurovault-py">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../../_downloads/plot_ica_neurovault.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_ica_neurovault.py</span></code></a></div>
+<a class="reference download internal" download="" href="../../_downloads/9dfdc0909a2edc44c05bb3ecfc11d316/plot_ica_neurovault.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_ica_neurovault.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../../_downloads/plot_ica_neurovault.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_ica_neurovault.ipynb</span></code></a></div>
+<a class="reference download internal" download="" href="../../_downloads/c4b25403fe5df5046e1fa188982648e4/plot_ica_neurovault.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_ica_neurovault.ipynb</span></code></a></div>
 </div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Generated by Sphinx-Gallery</a></p>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
 </div>
 
@@ -578,7 +582,7 @@ filtering, and better cognitive labels would give better maps</p>
 
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
-          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.7.9.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.8.2.
         <span style="padding-left: 5ex;">
           <a href="../../_sources/auto_examples/05_advanced/plot_ica_neurovault.rst.txt"
         	 rel="nofollow">Show this page source</a>
