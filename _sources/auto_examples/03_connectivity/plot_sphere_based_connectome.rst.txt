@@ -1,4 +1,8 @@
+.. note::
+    :class: sphx-glr-download-link-note
 
+    Click :ref:`here <sphx_glr_download_auto_examples_03_connectivity_plot_sphere_based_connectome.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
 
 .. _sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py:
 
@@ -20,15 +24,13 @@ human brain." Neuron 72.4 (2011): 665-678.
 using fMRI.", 2010, Science 329, 1358-1361.
 
 
-
 Load fMRI data and Power atlas
 ------------------------------
 
 We are going to use a single subject from the ADHD dataset.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     from nilearn import datasets
 
@@ -43,8 +45,7 @@ We are going to use a single subject from the ADHD dataset.
 We store the paths to its functional image and the confounds file.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     fmri_filename = adhd.func[0]
     confounds_filename = adhd.confounds[0]
@@ -57,7 +58,9 @@ We store the paths to its functional image and the confounds file.
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     Functional image is /home/kshitij/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz,
     confounds are /home/kshitij/nilearn_data/adhd/data/0010042/0010042_regressors.csv.
@@ -66,8 +69,7 @@ We store the paths to its functional image and the confounds file.
 We fetch the coordinates of Power atlas.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     power = datasets.fetch_coords_power_2011()
     print('Power atlas comes with {0}.'.format(power.keys()))
@@ -78,9 +80,11 @@ We fetch the coordinates of Power atlas.
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
 
-    Power atlas comes with dict_keys(['description', 'rois']).
+ .. code-block:: none
+
+    Power atlas comes with dict_keys(['rois', 'description']).
 
 
 Compute within spheres averaged time-series
@@ -92,8 +96,7 @@ a sequence of (x, y, z) coordinates with the object
 So we collect the regions coordinates in a numpy array
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     import numpy as np
 
@@ -107,7 +110,9 @@ So we collect the regions coordinates in a numpy array
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     Stacked power coordinates in array of shape (264, 3).
 
@@ -115,8 +120,7 @@ So we collect the regions coordinates in a numpy array
 and define spheres masker, with small enough radius to avoid regions overlap.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     from nilearn import input_data
 
@@ -135,8 +139,7 @@ is then prepared by the masker object: Detrended, cleaned from counfounds,
 band-pass filtered and **standardized to 1 variance**.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     timeseries = spheres_masker.fit_transform(fmri_filename,
                                               confounds=confounds_filename)
@@ -154,8 +157,7 @@ All starts with the estimation of the signals **covariance** matrix. Here the
 number of ROIs exceeds the number of samples,
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     print('time series has {0} samples'.format(timeseries.shape[0]))
 
@@ -165,7 +167,9 @@ number of ROIs exceeds the number of samples,
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     time series has 176 samples
 
@@ -174,8 +178,7 @@ in which situation the graphical lasso **sparse inverse covariance**
 estimator captures well the covariance **structure**.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     from sklearn.covariance import GraphLassoCV
 
@@ -190,8 +193,7 @@ estimator captures well the covariance **structure**.
 We just fit our regions signals into the `GraphLassoCV` object
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     covariance_estimator.fit(timeseries)
 
@@ -201,19 +203,20 @@ We just fit our regions signals into the `GraphLassoCV` object
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     [GraphicalLassoCV] Done refinement  1 out of 4:   0s
     [GraphicalLassoCV] Done refinement  2 out of 4:   3s
-    [GraphicalLassoCV] Done refinement  3 out of 4:   7s
-    [GraphicalLassoCV] Done refinement  4 out of 4:  11s
+    [GraphicalLassoCV] Done refinement  3 out of 4:   6s
+    [GraphicalLassoCV] Done refinement  4 out of 4:  10s
 
 
 and get the ROI-to-ROI covariance matrix.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     matrix = covariance_estimator.covariance_
     print('Covariance matrix has shape {0}.'.format(matrix.shape))
@@ -224,7 +227,9 @@ and get the ROI-to-ROI covariance matrix.
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     Covariance matrix has shape (264, 264).
 
@@ -236,8 +241,7 @@ We use nilearn.plotting.plot_matrix to visualize our correlation matrix
 and display the graph of connections with `nilearn.plotting.plot_connectome`.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     from nilearn import plotting
 
@@ -257,12 +261,12 @@ and display the graph of connections with `nilearn.plotting.plot_connectome`.
     *
 
       .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_001.png
-            :scale: 47
+            :class: sphx-glr-multi-img
 
     *
 
       .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_002.png
-            :scale: 47
+            :class: sphx-glr-multi-img
 
 
 
@@ -271,15 +275,13 @@ Note the 1. on the matrix diagonal: These are the signals variances, set to
 1. by the `spheres_masker`. Hence the covariance of the signal is a
 correlation matrix
 
-
 Connectome extracted from Dosenbach's atlas
 -------------------------------------------
 
 We repeat the same steps for Dosenbach's atlas.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     dosenbach = datasets.fetch_coords_dosenbach_2010()
 
@@ -315,12 +317,12 @@ We repeat the same steps for Dosenbach's atlas.
     *
 
       .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_003.png
-            :scale: 47
+            :class: sphx-glr-multi-img
 
     *
 
       .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_sphere_based_connectome_004.png
-            :scale: 47
+            :class: sphx-glr-multi-img
 
 
 
@@ -328,8 +330,7 @@ We repeat the same steps for Dosenbach's atlas.
 We can easily identify the Dosenbach's networks from the matrix blocks.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     print('Dosenbach networks names are {0}'.format(np.unique(dosenbach.networks)))
 
@@ -340,17 +341,28 @@ We can easily identify the Dosenbach's networks from the matrix blocks.
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     Dosenbach networks names are [b'cerebellum' b'cingulo-opercular' b'default' b'fronto-parietal'
      b'occipital' b'sensorimotor']
 
 
-**Total running time of the script:** ( 0 minutes  36.371 seconds)
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  36.671 seconds)
 
 
+.. _sphx_glr_download_auto_examples_03_connectivity_plot_sphere_based_connectome.py:
 
-.. container:: sphx-glr-footer
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
 
 
   .. container:: sphx-glr-download
@@ -363,6 +375,9 @@ We can easily identify the Dosenbach's networks from the matrix blocks.
 
      :download:`Download Jupyter notebook: plot_sphere_based_connectome.ipynb <plot_sphere_based_connectome.ipynb>`
 
-.. rst-class:: sphx-glr-signature
 
-    `Generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_

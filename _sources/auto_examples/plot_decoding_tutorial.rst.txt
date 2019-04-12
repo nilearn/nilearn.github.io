@@ -1,4 +1,8 @@
+.. note::
+    :class: sphx-glr-download-link-note
 
+    Click :ref:`here <sphx_glr_download_auto_examples_plot_decoding_tutorial.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
 
 .. _sphx_glr_auto_examples_plot_decoding_tutorial.py:
 
@@ -22,7 +26,6 @@ meant to be copied to analyze new data: many of the steps are unecessary.
 
 
 
-
 Retrieve and load the fMRI data from the  Haxby study
 -----------------------------------------------------
 
@@ -34,8 +37,7 @@ Haxby dataset if not present on the disk, in the nilearn data directory.
 It can take a while to download about 310 Mo of data from the Internet.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     from nilearn import datasets
     # By default 2nd subject will be fetched
@@ -53,7 +55,9 @@ It can take a while to download about 310 Mo of data from the Internet.
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     First subject functional nifti images (4D) are at: /home/kshitij/nilearn_data/haxby2001/subj2/bold.nii.gz
 
@@ -68,8 +72,7 @@ The mask is a mask of the Ventral Temporal streaming coming from the
 Haxby study:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     mask_filename = haxby_dataset.mask_vt[0]
 
@@ -83,7 +86,7 @@ Haxby study:
 
 
 .. image:: /auto_examples/images/sphx_glr_plot_decoding_tutorial_001.png
-    :align: center
+    :class: sphx-glr-single-img
 
 
 
@@ -95,8 +98,7 @@ about. Here we use standardizing of the data, as it is often important
 for decoding
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     from nilearn.input_data import NiftiMasker
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
@@ -114,8 +116,7 @@ for decoding
 The variable "fmri_masked" is a numpy array:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     print(fmri_masked)
 
@@ -125,7 +126,9 @@ The variable "fmri_masked" is a numpy array:
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     [[ 7.6757914e-01  2.3108709e+00 -2.0519446e-01 ... -1.0261141e+00
        8.7993503e-02  2.0720530e+00]
@@ -146,8 +149,7 @@ Its shape corresponds to the number of time-points times the number of
 voxels in the mask
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     print(fmri_masked.shape)
 
@@ -157,7 +159,9 @@ voxels in the mask
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     (1452, 464)
 
@@ -170,8 +174,7 @@ The behavioral labels are stored in a CSV file, separated by spaces.
 We use pandas to load them in an array.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     import pandas as pd
     # Load behavioral information
@@ -184,7 +187,9 @@ We use pandas to load them in an array.
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     labels  chunks
     0         rest       0
@@ -256,8 +261,7 @@ Retrieve the experimental conditions, that we are going to use as
 prediction targets in the decoding
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     conditions = behavioral['labels']
     print(conditions)
@@ -268,7 +272,9 @@ prediction targets in the decoding
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     0           rest
     1           rest
@@ -344,8 +350,7 @@ To keep only data corresponding to faces or cats, we create a
 mask of the samples belonging to the condition.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     condition_mask = conditions.isin(['face', 'cat'])
 
@@ -362,8 +367,7 @@ mask of the samples belonging to the condition.
 We now have less samples
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     print(fmri_masked.shape)
 
@@ -373,7 +377,9 @@ We now have less samples
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     (216, 464)
 
@@ -381,8 +387,7 @@ We now have less samples
 We apply the same mask to the targets
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     conditions = conditions[condition_mask]
     print(conditions.shape)
@@ -394,7 +399,9 @@ We apply the same mask to the targets
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     (216,)
 
@@ -411,8 +418,7 @@ kernel.
 We first create it:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     from sklearn.svm import SVC
     svc = SVC(kernel='linear')
@@ -424,7 +430,9 @@ We first create it:
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
       decision_function_shape='ovr', degree=3, gamma='auto_deprecated',
@@ -438,8 +446,7 @@ labels, and then predict labels on data without.
 We first fit it on the data
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     svc.fit(fmri_masked, conditions)
 
@@ -452,8 +459,7 @@ We first fit it on the data
 We can then predict the labels from the data
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     prediction = svc.predict(fmri_masked)
     print(prediction)
@@ -464,7 +470,9 @@ We can then predict the labels from the data
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     ['face' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'face' 'cat'
      'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'cat' 'face' 'face' 'face'
@@ -491,8 +499,7 @@ We can then predict the labels from the data
 Let's measure the error rate:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     print((prediction == conditions).sum() / float(len(conditions)))
 
@@ -502,13 +509,14 @@ Let's measure the error rate:
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     1.0
 
 
 This error rate is meaningless. Why?
-
 
 Measuring prediction scores using cross-validation
 ---------------------------------------------------
@@ -523,8 +531,7 @@ Let's leave out the 30 last data points during training, and test the
 prediction on these 30 last points:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     svc.fit(fmri_masked[:-30], conditions[:-30])
 
@@ -538,7 +545,9 @@ prediction on these 30 last points:
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     0.6666666666666666
 
@@ -550,8 +559,7 @@ We can split the data in train and test set repetitively in a `KFold`
 strategy:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     from sklearn.model_selection import KFold
 
@@ -572,7 +580,9 @@ strategy:
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     0.9772727272727273
     0.7674418604651163
@@ -587,8 +597,7 @@ Cross-validation with scikit-learn
 Scikit-learn has tools to perform cross-validation easier:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     from sklearn.model_selection import cross_val_score
     cv_score = cross_val_score(svc, fmri_masked, conditions)
@@ -600,14 +609,15 @@ Scikit-learn has tools to perform cross-validation easier:
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     [0.59722222 0.80555556 0.55555556]
 
 
 Note that we can speed things up to use all the CPUs of our computer
 with the n_jobs parameter.
-
 
 The best way to do cross-validation is to respect the structure of
 the experiment, for instance by leaving out full sessions of
@@ -618,8 +628,7 @@ behavioral data. We have to apply our session mask, to select only cats
 and faces.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     session_label = behavioral['chunks'][condition_mask]
 
@@ -646,7 +655,9 @@ and faces.
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     [0.97727273 0.76744186 0.79069767 0.53488372 0.74418605]
     [0.55555556 1.         0.66666667 0.66666667 0.77777778 0.72222222
@@ -664,8 +675,7 @@ Turning the weights into a nifti image
 We retrieve the SVC discriminating weights
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     coef_ = svc.coef_
     print(coef_)
@@ -676,7 +686,9 @@ We retrieve the SVC discriminating weights
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     [[-4.10591439e-02 -8.38913669e-04 -2.34992127e-02 -3.47431514e-02
        3.44100694e-02  2.59043472e-02  2.39052353e-02 -4.95012599e-02
@@ -799,8 +811,7 @@ We retrieve the SVC discriminating weights
 It's a numpy array
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     print(coef_.shape)
 
@@ -810,7 +821,9 @@ It's a numpy array
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     (1, 464)
 
@@ -821,8 +834,7 @@ what the NiftiMasker has done.
 For this, we can call inverse_transform on the NiftiMasker:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     coef_img = masker.inverse_transform(coef_)
     print(coef_img)
@@ -833,7 +845,9 @@ For this, we can call inverse_transform on the NiftiMasker:
 
 .. rst-class:: sphx-glr-script-out
 
- Out::
+ Out:
+
+ .. code-block:: none
 
     <class 'nibabel.nifti1.Nifti1Image'>
     data shape (40, 64, 64, 1)
@@ -894,8 +908,7 @@ coef_img is now a NiftiImage.
 We can save the coefficients as a nii.gz file:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     coef_img.to_filename('haxby_svc_weights.nii.gz')
 
@@ -911,8 +924,7 @@ Plotting the SVM weights
 We can plot the weights, using the subject's anatomical as a background
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     from nilearn.plotting import plot_stat_map, show
 
@@ -925,7 +937,7 @@ We can plot the weights, using the subject's anatomical as a background
 
 
 .. image:: /auto_examples/images/sphx_glr_plot_decoding_tutorial_002.png
-    :align: center
+    :class: sphx-glr-single-img
 
 
 
@@ -943,11 +955,19 @@ Further reading
 ______________
 
 
-**Total running time of the script:** ( 0 minutes  13.422 seconds)
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  13.814 seconds)
 
 
+.. _sphx_glr_download_auto_examples_plot_decoding_tutorial.py:
 
-.. container:: sphx-glr-footer
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
 
 
   .. container:: sphx-glr-download
@@ -960,6 +980,9 @@ ______________
 
      :download:`Download Jupyter notebook: plot_decoding_tutorial.ipynb <plot_decoding_tutorial.ipynb>`
 
-.. rst-class:: sphx-glr-signature
 
-    `Generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
