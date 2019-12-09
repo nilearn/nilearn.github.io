@@ -3,8 +3,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Nilearn: Machine learning for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
     <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -13,6 +12,7 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="search" title="Search" href="../../search.html" />
@@ -244,13 +244,11 @@ $(function () {
   <p class="topless"><a href="plot_miyawaki_reconstruction.html"
                         title="next chapter">8.3.14. Reconstruction of visual stimuli from Miyawaki et al. 2008</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -264,8 +262,8 @@ $(function () {
           <div class="body" role="main">
             
   <div class="sphx-glr-download-link-note admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Click <a class="reference internal" href="#sphx-glr-download-auto-examples-02-decoding-plot-haxby-different-estimators-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-02-decoding-plot-haxby-different-estimators-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
 <div class="sphx-glr-example-title section" id="different-classifiers-in-decoding-the-haxby-dataset">
 <span id="sphx-glr-auto-examples-02-decoding-plot-haxby-different-estimators-py"></span><h1>8.3.13. Different classifiers in decoding the Haxby dataset<a class="headerlink" href="#different-classifiers-in-decoding-the-haxby-dataset" title="Permalink to this headline">¶</a></h1>
@@ -274,7 +272,8 @@ decoding task.</p>
 <div class="section" id="we-start-by-loading-the-data-and-applying-simple-transformations-to-it">
 <h2>8.3.13.1. We start by loading the data and applying simple transformations to it<a class="headerlink" href="#we-start-by-loading-the-data-and-applying-simple-transformations-to-it" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fetch data using nilearn dataset fetcher</span>
-<span class="kn">from</span> <span class="nn">nilearn</span> <span class="k">import</span> <span class="n">datasets</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="View documentation for nilearn.image.get_data"><span class="n">get_data</span></a>
 <span class="c1"># by default 2nd subject data will be fetched</span>
 <span class="n">haxby_dataset</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_haxby.html#nilearn.datasets.fetch_haxby" title="View documentation for nilearn.datasets.fetch_haxby"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span></a><span class="p">()</span>
 
@@ -293,80 +292,80 @@ decoding task.</p>
 <span class="n">task_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">stimuli</span> <span class="o">!=</span> <span class="s1">&#39;rest&#39;</span><span class="p">)</span>
 
 <span class="c1"># find names of remaining active labels</span>
-<span class="n">categories</span> <span class="o">=</span> <span class="n">stimuli</span><span class="p">[</span><span class="n">task_mask</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">categories</span></a> <span class="o">=</span> <span class="n">stimuli</span><span class="p">[</span><span class="n">task_mask</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
 
 <span class="c1"># extract tags indicating to which acquisition run a tag belongs</span>
 <span class="n">session_labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="s1">&#39;chunks&#39;</span><span class="p">][</span><span class="n">task_mask</span><span class="p">]</span>
 
 <span class="c1"># Load the fMRI data</span>
-<span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
+<span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
 
 <span class="c1"># For decoding, standardizing is often very important</span>
-<span class="n">mask_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">masker</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><span class="n">mask_filename</span><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">func_filename</span> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">masked_timecourses</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span>
-    <span class="n">func_filename</span><span class="p">)[</span><span class="n">task_mask</span><span class="p">]</span>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">mask_filename</span></a> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask_vt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">masker</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">mask_filename</span></a><span class="p">,</span> <span class="n">standardize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">func_filename</span></a> <span class="o">=</span> <span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">masked_timecourses</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">masker</span></a><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span>
+    <a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">func_filename</span></a><span class="p">)[</span><span class="n">task_mask</span><span class="p">]</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>First subject anatomical nifti image (3D) located is at: /home/kshitij/nilearn_data/haxby2001/subj2/anat.nii.gz
-First subject functional nifti image (4D) is located at: /home/kshitij/nilearn_data/haxby2001/subj2/bold.nii.gz
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>First subject anatomical nifti image (3D) located is at: /home/kc/nilearn_data/haxby2001/subj2/anat.nii.gz
+First subject functional nifti image (4D) is located at: /home/kc/nilearn_data/haxby2001/subj2/bold.nii.gz
 </pre></div>
 </div>
 </div>
 <div class="section" id="then-we-define-the-various-classifiers-that-we-use">
 <h2>8.3.13.2. Then we define the various classifiers that we use<a class="headerlink" href="#then-we-define-the-various-classifiers-that-we-use" title="Permalink to this headline">¶</a></h2>
 <p>A support vector classifier</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="k">import</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a>
-<span class="n">svm</span> <span class="o">=</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">svm</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">)</span>
 
 <span class="c1"># The logistic regression</span>
-<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="p">(</span><a href="https://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">,</span>
-                                  <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.RidgeClassifier.html#sklearn.linear_model.RidgeClassifier" title="View documentation for sklearn.linear_model.RidgeClassifier"><span class="n">RidgeClassifier</span></a><span class="p">,</span>
-                                  <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">RidgeClassifierCV</span></a><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="p">(</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">,</span>
+                                  <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifier.html#sklearn.linear_model.RidgeClassifier" title="View documentation for sklearn.linear_model.RidgeClassifier"><span class="n">RidgeClassifier</span></a><span class="p">,</span>
+                                  <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">RidgeClassifierCV</span></a><span class="p">,</span>
                                   <span class="p">)</span>
-<span class="n">logistic</span> <span class="o">=</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">)</span>
-<span class="n">logistic_50</span> <span class="o">=</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">50.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">)</span>
-<span class="n">logistic_l2</span> <span class="o">=</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l2&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">)</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">logistic</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">)</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">logistic_50</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">50.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">)</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">logistic_l2</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l2&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">)</span>
 
 <span class="c1"># Cross-validated versions of these classifiers</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a>
 <span class="c1"># GridSearchCV is slow, but note that it takes an &#39;n_jobs&#39; parameter that</span>
 <span class="c1"># can significantly speed up the fitting process on computers with</span>
 <span class="c1"># multiple cores</span>
-<span class="n">svm_cv</span> <span class="o">=</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span><a href="https://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">),</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">svm_cv</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">SVC</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">),</span>
                       <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">]},</span>
-                      <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iid</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                      <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="View documentation for sklearn.model_selection.LeaveOneGroupOut"><span class="n">cv</span></a><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iid</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-<span class="n">logistic_cv</span> <span class="o">=</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span>
-        <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">),</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">logistic_cv</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span>
+        <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l1&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">),</span>
         <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">]},</span>
-        <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="View documentation for sklearn.model_selection.LeaveOneGroupOut"><span class="n">cv</span></a><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
-<span class="n">logistic_l2_cv</span> <span class="o">=</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span>
-        <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l2&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">),</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">logistic_l2_cv</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">GridSearchCV</span></a><span class="p">(</span>
+        <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">LogisticRegression</span></a><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;l2&quot;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;liblinear&#39;</span><span class="p">),</span>
         <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span>
             <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">]</span>
             <span class="p">},</span>
-        <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="View documentation for sklearn.model_selection.LeaveOneGroupOut"><span class="n">cv</span></a><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">iid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
 
 <span class="c1"># The ridge classifier has a specific &#39;CV&#39; object that can set it&#39;s</span>
 <span class="c1"># parameters faster than using a GridSearchCV</span>
-<span class="n">ridge</span> <span class="o">=</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.RidgeClassifier.html#sklearn.linear_model.RidgeClassifier" title="View documentation for sklearn.linear_model.RidgeClassifier"><span class="n">RidgeClassifier</span></a><span class="p">()</span>
-<span class="n">ridge_cv</span> <span class="o">=</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">RidgeClassifierCV</span></a><span class="p">()</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifier.html#sklearn.linear_model.RidgeClassifier" title="View documentation for sklearn.linear_model.RidgeClassifier"><span class="n">ridge</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifier.html#sklearn.linear_model.RidgeClassifier" title="View documentation for sklearn.linear_model.RidgeClassifier"><span class="n">RidgeClassifier</span></a><span class="p">()</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">ridge_cv</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">RidgeClassifierCV</span></a><span class="p">()</span>
 
 <span class="c1"># A dictionary, to hold all our classifiers</span>
-<span class="n">classifiers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;SVC&#39;</span><span class="p">:</span> <span class="n">svm</span><span class="p">,</span>
-               <span class="s1">&#39;SVC cv&#39;</span><span class="p">:</span> <span class="n">svm_cv</span><span class="p">,</span>
-               <span class="s1">&#39;log l1&#39;</span><span class="p">:</span> <span class="n">logistic</span><span class="p">,</span>
-               <span class="s1">&#39;log l1 50&#39;</span><span class="p">:</span> <span class="n">logistic_50</span><span class="p">,</span>
-               <span class="s1">&#39;log l1 cv&#39;</span><span class="p">:</span> <span class="n">logistic_cv</span><span class="p">,</span>
-               <span class="s1">&#39;log l2&#39;</span><span class="p">:</span> <span class="n">logistic_l2</span><span class="p">,</span>
-               <span class="s1">&#39;log l2 cv&#39;</span><span class="p">:</span> <span class="n">logistic_l2_cv</span><span class="p">,</span>
-               <span class="s1">&#39;ridge&#39;</span><span class="p">:</span> <span class="n">ridge</span><span class="p">,</span>
-               <span class="s1">&#39;ridge cv&#39;</span><span class="p">:</span> <span class="n">ridge_cv</span>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="View documentation for builtins.dict"><span class="n">classifiers</span></a> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;SVC&#39;</span><span class="p">:</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html#sklearn.svm.SVC" title="View documentation for sklearn.svm.SVC"><span class="n">svm</span></a><span class="p">,</span>
+               <span class="s1">&#39;SVC cv&#39;</span><span class="p">:</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">svm_cv</span></a><span class="p">,</span>
+               <span class="s1">&#39;log l1&#39;</span><span class="p">:</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">logistic</span></a><span class="p">,</span>
+               <span class="s1">&#39;log l1 50&#39;</span><span class="p">:</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">logistic_50</span></a><span class="p">,</span>
+               <span class="s1">&#39;log l1 cv&#39;</span><span class="p">:</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">logistic_cv</span></a><span class="p">,</span>
+               <span class="s1">&#39;log l2&#39;</span><span class="p">:</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression" title="View documentation for sklearn.linear_model.LogisticRegression"><span class="n">logistic_l2</span></a><span class="p">,</span>
+               <span class="s1">&#39;log l2 cv&#39;</span><span class="p">:</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="View documentation for sklearn.model_selection.GridSearchCV"><span class="n">logistic_l2_cv</span></a><span class="p">,</span>
+               <span class="s1">&#39;ridge&#39;</span><span class="p">:</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifier.html#sklearn.linear_model.RidgeClassifier" title="View documentation for sklearn.linear_model.RidgeClassifier"><span class="n">ridge</span></a><span class="p">,</span>
+               <span class="s1">&#39;ridge cv&#39;</span><span class="p">:</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">ridge_cv</span></a>
                <span class="p">}</span>
 </pre></div>
 </div>
@@ -375,25 +374,25 @@ First subject functional nifti image (4D) is located at: /home/kshitij/nilearn_d
 <h2>8.3.13.3. Here we compute prediction scores<a class="headerlink" href="#here-we-compute-prediction-scores" title="Permalink to this headline">¶</a></h2>
 <p>Run time for all these classifiers</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make a data splitting object for cross validation</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="View documentation for sklearn.model_selection.LeaveOneGroupOut"><span class="n">LeaveOneGroupOut</span></a><span class="p">,</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.cross_val_score.html#sklearn.model_selection.cross_val_score" title="View documentation for sklearn.model_selection.cross_val_score"><span class="n">cross_val_score</span></a>
-<span class="n">cv</span> <span class="o">=</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="View documentation for sklearn.model_selection.LeaveOneGroupOut"><span class="n">LeaveOneGroupOut</span></a><span class="p">()</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="View documentation for sklearn.model_selection.LeaveOneGroupOut"><span class="n">LeaveOneGroupOut</span></a><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html#sklearn.model_selection.cross_val_score" title="View documentation for sklearn.model_selection.cross_val_score"><span class="n">cross_val_score</span></a>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="View documentation for sklearn.model_selection.LeaveOneGroupOut"><span class="n">cv</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="View documentation for sklearn.model_selection.LeaveOneGroupOut"><span class="n">LeaveOneGroupOut</span></a><span class="p">()</span>
 
 <span class="kn">import</span> <span class="nn">time</span>
 
-<span class="n">classifiers_scores</span> <span class="o">=</span> <span class="p">{}</span>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="View documentation for builtins.dict"><span class="n">classifiers_scores</span></a> <span class="o">=</span> <span class="p">{}</span>
 
-<span class="k">for</span> <span class="n">classifier_name</span><span class="p">,</span> <span class="n">classifier</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">classifiers</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
-    <span class="n">classifiers_scores</span><span class="p">[</span><span class="n">classifier_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">classifier_name</span></a><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">classifier</span></a> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#dict.items" title="View documentation for builtins.dict.items"><span class="n">classifiers</span><span class="o">.</span><span class="n">items</span></a><span class="p">()):</span>
+    <a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="View documentation for builtins.dict"><span class="n">classifiers_scores</span></a><span class="p">[</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">classifier_name</span></a><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="nb">print</span><span class="p">(</span><span class="mi">70</span> <span class="o">*</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">:</span>
-        <span class="n">classification_target</span> <span class="o">=</span> <span class="n">stimuli</span><span class="p">[</span><span class="n">task_mask</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="n">category</span><span class="p">])</span>
-        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="n">classifiers_scores</span><span class="p">[</span><span class="n">classifier_name</span><span class="p">][</span><span class="n">category</span><span class="p">]</span> <span class="o">=</span> <a href="https://scikit-learn.org/0.18/modules/generated/sklearn.model_selection.cross_val_score.html#sklearn.model_selection.cross_val_score" title="View documentation for sklearn.model_selection.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span>
-            <span class="n">classifier</span><span class="p">,</span>
-            <span class="n">masked_timecourses</span><span class="p">,</span>
+    <span class="k">for</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">category</span></a> <span class="ow">in</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">categories</span></a><span class="p">:</span>
+        <span class="n">classification_target</span> <span class="o">=</span> <span class="n">stimuli</span><span class="p">[</span><span class="n">task_mask</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">category</span></a><span class="p">])</span>
+        <a href="https://docs.python.org/3.6/library/functions.html#float" title="View documentation for builtins.float"><span class="n">t0</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.6/library/time.html#time.time" title="View documentation for time.time"><span class="n">time</span><span class="o">.</span><span class="n">time</span></a><span class="p">()</span>
+        <a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="View documentation for builtins.dict"><span class="n">classifiers_scores</span></a><span class="p">[</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">classifier_name</span></a><span class="p">][</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">category</span></a><span class="p">]</span> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html#sklearn.model_selection.cross_val_score" title="View documentation for sklearn.model_selection.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span>
+            <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">classifier</span></a><span class="p">,</span>
+            <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">masked_timecourses</span></a><span class="p">,</span>
             <span class="n">classification_target</span><span class="p">,</span>
-            <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span>
+            <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="View documentation for sklearn.model_selection.LeaveOneGroupOut"><span class="n">cv</span></a><span class="o">=</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="View documentation for sklearn.model_selection.LeaveOneGroupOut"><span class="n">cv</span></a><span class="p">,</span>
             <span class="n">groups</span><span class="o">=</span><span class="n">session_labels</span><span class="p">,</span>
             <span class="n">scoring</span><span class="o">=</span><span class="s2">&quot;f1&quot;</span><span class="p">,</span>
         <span class="p">)</span>
@@ -401,114 +400,170 @@ First subject functional nifti image (4D) is located at: /home/kshitij/nilearn_d
         <span class="nb">print</span><span class="p">(</span>
             <span class="s2">&quot;</span><span class="si">%10s</span><span class="s2">: </span><span class="si">%14s</span><span class="s2"> -- scores: </span><span class="si">%1.2f</span><span class="s2"> +- </span><span class="si">%1.2f</span><span class="s2">, time </span><span class="si">%.2f</span><span class="s2">s&quot;</span> <span class="o">%</span>
             <span class="p">(</span>
-                <span class="n">classifier_name</span><span class="p">,</span>
-                <span class="n">category</span><span class="p">,</span>
-                <span class="n">classifiers_scores</span><span class="p">[</span><span class="n">classifier_name</span><span class="p">][</span><span class="n">category</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
-                <span class="n">classifiers_scores</span><span class="p">[</span><span class="n">classifier_name</span><span class="p">][</span><span class="n">category</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">(),</span>
-                <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">,</span>
+                <a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">classifier_name</span></a><span class="p">,</span>
+                <a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">category</span></a><span class="p">,</span>
+                <a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="View documentation for builtins.dict"><span class="n">classifiers_scores</span></a><span class="p">[</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">classifier_name</span></a><span class="p">][</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">category</span></a><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+                <a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="View documentation for builtins.dict"><span class="n">classifiers_scores</span></a><span class="p">[</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">classifier_name</span></a><span class="p">][</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">category</span></a><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">(),</span>
+                <a href="https://docs.python.org/3.6/library/time.html#time.time" title="View documentation for time.time"><span class="n">time</span><span class="o">.</span><span class="n">time</span></a><span class="p">()</span> <span class="o">-</span> <a href="https://docs.python.org/3.6/library/functions.html#float" title="View documentation for builtins.float"><span class="n">t0</span></a><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>______________________________________________________________________
-       SVC:       scissors -- scores: 0.41 +- 0.31, time 1.23s
-       SVC:           face -- scores: 0.58 +- 0.24, time 0.92s
-       SVC:            cat -- scores: 0.60 +- 0.25, time 1.14s
-       SVC:           shoe -- scores: 0.56 +- 0.23, time 1.24s
-       SVC:          house -- scores: 0.81 +- 0.28, time 0.74s
-       SVC:   scrambledpix -- scores: 0.79 +- 0.17, time 0.86s
-       SVC:         bottle -- scores: 0.53 +- 0.21, time 1.33s
-       SVC:          chair -- scores: 0.42 +- 0.25, time 1.19s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+       SVC:       scissors -- scores: 0.41 +- 0.31, time 2.64s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+       SVC:           face -- scores: 0.58 +- 0.24, time 3.63s
+       SVC:            cat -- scores: 0.60 +- 0.25, time 2.52s
+       SVC:           shoe -- scores: 0.56 +- 0.23, time 2.65s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+       SVC:          house -- scores: 0.81 +- 0.28, time 1.53s
+       SVC:   scrambledpix -- scores: 0.79 +- 0.17, time 3.03s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+       SVC:         bottle -- scores: 0.53 +- 0.21, time 3.02s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+       SVC:          chair -- scores: 0.42 +- 0.25, time 2.62s
 ______________________________________________________________________
-    SVC cv:       scissors -- scores: 0.41 +- 0.31, time 17.08s
-    SVC cv:           face -- scores: 0.58 +- 0.24, time 15.31s
-    SVC cv:            cat -- scores: 0.60 +- 0.25, time 17.18s
-    SVC cv:           shoe -- scores: 0.56 +- 0.23, time 17.28s
-    SVC cv:          house -- scores: 0.81 +- 0.28, time 11.30s
-    SVC cv:   scrambledpix -- scores: 0.79 +- 0.17, time 13.42s
-    SVC cv:         bottle -- scores: 0.53 +- 0.21, time 18.91s
-    SVC cv:          chair -- scores: 0.42 +- 0.25, time 17.63s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+    SVC cv:       scissors -- scores: 0.41 +- 0.31, time 25.29s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+    SVC cv:           face -- scores: 0.58 +- 0.24, time 22.55s
+    SVC cv:            cat -- scores: 0.60 +- 0.25, time 23.72s
+    SVC cv:           shoe -- scores: 0.56 +- 0.23, time 24.65s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+    SVC cv:          house -- scores: 0.81 +- 0.28, time 15.51s
+    SVC cv:   scrambledpix -- scores: 0.79 +- 0.17, time 18.11s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+    SVC cv:         bottle -- scores: 0.53 +- 0.21, time 27.70s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+    SVC cv:          chair -- scores: 0.42 +- 0.25, time 25.58s
 ______________________________________________________________________
-    log l1:       scissors -- scores: 0.43 +- 0.28, time 0.91s
-    log l1:           face -- scores: 0.74 +- 0.13, time 0.50s
-    log l1:            cat -- scores: 0.63 +- 0.23, time 0.72s
-    log l1:           shoe -- scores: 0.49 +- 0.19, time 0.82s
-    log l1:          house -- scores: 0.89 +- 0.13, time 0.36s
-    log l1:   scrambledpix -- scores: 0.70 +- 0.18, time 0.42s
-    log l1:         bottle -- scores: 0.47 +- 0.15, time 1.00s
-    log l1:          chair -- scores: 0.44 +- 0.14, time 0.83s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+    log l1:       scissors -- scores: 0.43 +- 0.28, time 2.92s
+    log l1:           face -- scores: 0.74 +- 0.13, time 1.45s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+    log l1:            cat -- scores: 0.63 +- 0.23, time 1.90s
+    log l1:           shoe -- scores: 0.49 +- 0.19, time 1.76s
+    log l1:          house -- scores: 0.89 +- 0.13, time 0.79s
+    log l1:   scrambledpix -- scores: 0.69 +- 0.18, time 0.96s
+    log l1:         bottle -- scores: 0.47 +- 0.15, time 2.28s
+    log l1:          chair -- scores: 0.44 +- 0.14, time 1.98s
 ______________________________________________________________________
- log l1 50:       scissors -- scores: 0.43 +- 0.26, time 1.30s
- log l1 50:           face -- scores: 0.69 +- 0.14, time 0.61s
- log l1 50:            cat -- scores: 0.65 +- 0.18, time 0.99s
- log l1 50:           shoe -- scores: 0.48 +- 0.19, time 1.27s
- log l1 50:          house -- scores: 0.88 +- 0.10, time 0.50s
- log l1 50:   scrambledpix -- scores: 0.76 +- 0.20, time 0.47s
- log l1 50:         bottle -- scores: 0.47 +- 0.19, time 1.55s
- log l1 50:          chair -- scores: 0.45 +- 0.11, time 1.04s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+ log l1 50:       scissors -- scores: 0.43 +- 0.25, time 3.44s
+ log l1 50:           face -- scores: 0.67 +- 0.13, time 1.29s
+ log l1 50:            cat -- scores: 0.63 +- 0.18, time 2.33s
+ log l1 50:           shoe -- scores: 0.48 +- 0.19, time 3.08s
+ log l1 50:          house -- scores: 0.86 +- 0.11, time 1.00s
+ log l1 50:   scrambledpix -- scores: 0.75 +- 0.19, time 0.95s
+ log l1 50:         bottle -- scores: 0.49 +- 0.17, time 3.10s
+ log l1 50:          chair -- scores: 0.46 +- 0.11, time 2.33s
 ______________________________________________________________________
- log l1 cv:       scissors -- scores: 0.35 +- 0.30, time 6.04s
- log l1 cv:           face -- scores: 0.70 +- 0.18, time 4.18s
- log l1 cv:            cat -- scores: 0.52 +- 0.28, time 5.13s
- log l1 cv:           shoe -- scores: 0.49 +- 0.19, time 5.78s
- log l1 cv:          house -- scores: 0.84 +- 0.19, time 3.15s
- log l1 cv:   scrambledpix -- scores: 0.66 +- 0.18, time 3.25s
- log l1 cv:         bottle -- scores: 0.41 +- 0.25, time 6.07s
- log l1 cv:          chair -- scores: 0.45 +- 0.14, time 6.23s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+ log l1 cv:       scissors -- scores: 0.35 +- 0.29, time 11.62s
+ log l1 cv:           face -- scores: 0.70 +- 0.17, time 8.46s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+ log l1 cv:            cat -- scores: 0.52 +- 0.29, time 11.41s
+ log l1 cv:           shoe -- scores: 0.49 +- 0.19, time 13.08s
+ log l1 cv:          house -- scores: 0.84 +- 0.19, time 7.18s
+ log l1 cv:   scrambledpix -- scores: 0.69 +- 0.16, time 6.56s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+ log l1 cv:         bottle -- scores: 0.41 +- 0.25, time 13.47s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+ log l1 cv:          chair -- scores: 0.44 +- 0.14, time 13.80s
 ______________________________________________________________________
-    log l2:       scissors -- scores: 0.51 +- 0.15, time 1.54s
-    log l2:           face -- scores: 0.55 +- 0.19, time 1.31s
-    log l2:            cat -- scores: 0.54 +- 0.20, time 1.46s
-    log l2:           shoe -- scores: 0.51 +- 0.17, time 1.19s
-    log l2:          house -- scores: 0.63 +- 0.22, time 1.18s
-    log l2:   scrambledpix -- scores: 0.78 +- 0.18, time 1.20s
-    log l2:         bottle -- scores: 0.43 +- 0.20, time 1.49s
-    log l2:          chair -- scores: 0.54 +- 0.17, time 1.22s
+    log l2:       scissors -- scores: 0.51 +- 0.15, time 2.89s
+    log l2:           face -- scores: 0.55 +- 0.19, time 2.42s
+    log l2:            cat -- scores: 0.54 +- 0.20, time 2.83s
+    log l2:           shoe -- scores: 0.51 +- 0.17, time 2.68s
+    log l2:          house -- scores: 0.63 +- 0.22, time 2.44s
+    log l2:   scrambledpix -- scores: 0.78 +- 0.18, time 2.62s
+    log l2:         bottle -- scores: 0.43 +- 0.20, time 2.87s
+    log l2:          chair -- scores: 0.54 +- 0.17, time 2.54s
 ______________________________________________________________________
- log l2 cv:       scissors -- scores: 0.50 +- 0.15, time 10.05s
- log l2 cv:           face -- scores: 0.56 +- 0.20, time 10.18s
- log l2 cv:            cat -- scores: 0.55 +- 0.20, time 10.32s
- log l2 cv:           shoe -- scores: 0.51 +- 0.17, time 10.26s
- log l2 cv:          house -- scores: 0.64 +- 0.22, time 9.08s
- log l2 cv:   scrambledpix -- scores: 0.76 +- 0.18, time 8.85s
- log l2 cv:         bottle -- scores: 0.44 +- 0.21, time 10.36s
- log l2 cv:          chair -- scores: 0.53 +- 0.17, time 9.96s
+ log l2 cv:       scissors -- scores: 0.50 +- 0.15, time 20.82s
+ log l2 cv:           face -- scores: 0.56 +- 0.20, time 19.09s
+ log l2 cv:            cat -- scores: 0.55 +- 0.20, time 19.45s
+ log l2 cv:           shoe -- scores: 0.51 +- 0.17, time 19.53s
+ log l2 cv:          house -- scores: 0.64 +- 0.22, time 19.07s
+ log l2 cv:   scrambledpix -- scores: 0.76 +- 0.18, time 19.13s
+ log l2 cv:         bottle -- scores: 0.44 +- 0.21, time 24.27s
+ log l2 cv:          chair -- scores: 0.53 +- 0.17, time 24.56s
 ______________________________________________________________________
-     ridge:       scissors -- scores: 0.52 +- 0.22, time 0.06s
-     ridge:           face -- scores: 0.62 +- 0.18, time 0.07s
-     ridge:            cat -- scores: 0.43 +- 0.18, time 0.08s
-     ridge:           shoe -- scores: 0.48 +- 0.21, time 0.07s
-     ridge:          house -- scores: 0.90 +- 0.09, time 0.07s
-     ridge:   scrambledpix -- scores: 0.79 +- 0.17, time 0.09s
-     ridge:         bottle -- scores: 0.41 +- 0.19, time 0.09s
-     ridge:          chair -- scores: 0.50 +- 0.21, time 0.08s
+     ridge:       scissors -- scores: 0.52 +- 0.22, time 0.23s
+     ridge:           face -- scores: 0.62 +- 0.18, time 0.18s
+     ridge:            cat -- scores: 0.43 +- 0.18, time 0.18s
+     ridge:           shoe -- scores: 0.48 +- 0.21, time 0.18s
+     ridge:          house -- scores: 0.90 +- 0.09, time 0.18s
+     ridge:   scrambledpix -- scores: 0.79 +- 0.17, time 0.18s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+     ridge:         bottle -- scores: 0.41 +- 0.19, time 0.19s
+     ridge:          chair -- scores: 0.50 +- 0.21, time 0.19s
 ______________________________________________________________________
-  ridge cv:       scissors -- scores: 0.56 +- 0.26, time 0.61s
-  ridge cv:           face -- scores: 0.70 +- 0.13, time 0.73s
-  ridge cv:            cat -- scores: 0.54 +- 0.22, time 0.67s
-  ridge cv:           shoe -- scores: 0.49 +- 0.18, time 0.69s
-  ridge cv:          house -- scores: 0.90 +- 0.13, time 0.69s
-  ridge cv:   scrambledpix -- scores: 0.85 +- 0.11, time 0.66s
-  ridge cv:         bottle -- scores: 0.46 +- 0.24, time 0.80s
-  ridge cv:          chair -- scores: 0.51 +- 0.21, time 0.67s
+  ridge cv:       scissors -- scores: 0.56 +- 0.26, time 1.31s
+  ridge cv:           face -- scores: 0.70 +- 0.13, time 1.38s
+  ridge cv:            cat -- scores: 0.54 +- 0.22, time 1.49s
+  ridge cv:           shoe -- scores: 0.49 +- 0.18, time 1.32s
+  ridge cv:          house -- scores: 0.90 +- 0.13, time 1.20s
+  ridge cv:   scrambledpix -- scores: 0.85 +- 0.11, time 1.26s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+  ridge cv:         bottle -- scores: 0.46 +- 0.24, time 1.34s
+/home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  &#39;precision&#39;, &#39;predicted&#39;, average, warn_for)
+  ridge cv:          chair -- scores: 0.51 +- 0.21, time 1.31s
 </pre></div>
 </div>
 <p>Then we make a rudimentary diagram</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="View documentation for matplotlib.pyplot.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">()</span>
 
-<span class="n">tick_position</span> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.arange.html#numpy.arange" title="View documentation for numpy.arange"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">categories</span><span class="p">))</span>
-<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.xticks.html#matplotlib.pyplot.xticks" title="View documentation for matplotlib.pyplot.xticks"><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span></a><span class="p">(</span><span class="n">tick_position</span><span class="p">,</span> <span class="n">categories</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">)</span>
+<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">tick_position</span></a> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.arange.html#numpy.arange" title="View documentation for numpy.arange"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><span class="nb">len</span><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">categories</span></a><span class="p">))</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.xticks.html#matplotlib.pyplot.xticks" title="View documentation for matplotlib.pyplot.xticks"><span class="n">plt</span><span class="o">.</span><span class="n">xticks</span></a><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">tick_position</span></a><span class="p">,</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">categories</span></a><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">color</span><span class="p">,</span> <span class="n">classifier_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+<span class="k">for</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">color</span></a><span class="p">,</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">classifier_name</span></a> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
         <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="s1">&#39;.5&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;#ffaaaa&#39;</span><span class="p">],</span>
-        <span class="nb">sorted</span><span class="p">(</span><span class="n">classifiers</span><span class="p">)):</span>
-    <span class="n">score_means</span> <span class="o">=</span> <span class="p">[</span><span class="n">classifiers_scores</span><span class="p">[</span><span class="n">classifier_name</span><span class="p">][</span><span class="n">category</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-                   <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">]</span>
-    <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.bar.html#matplotlib.pyplot.bar" title="View documentation for matplotlib.pyplot.bar"><span class="n">plt</span><span class="o">.</span><span class="n">bar</span></a><span class="p">(</span><span class="n">tick_position</span><span class="p">,</span> <span class="n">score_means</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">classifier_name</span><span class="p">,</span>
-            <span class="n">width</span><span class="o">=.</span><span class="mi">11</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
-    <span class="n">tick_position</span> <span class="o">=</span> <span class="n">tick_position</span> <span class="o">+</span> <span class="o">.</span><span class="mi">09</span>
+        <span class="nb">sorted</span><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="View documentation for builtins.dict"><span class="n">classifiers</span></a><span class="p">)):</span>
+    <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="View documentation for builtins.list"><span class="n">score_means</span></a> <span class="o">=</span> <span class="p">[</span><a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="View documentation for builtins.dict"><span class="n">classifiers_scores</span></a><span class="p">[</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">classifier_name</span></a><span class="p">][</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">category</span></a><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                   <span class="k">for</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">category</span></a> <span class="ow">in</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">categories</span></a><span class="p">]</span>
+    <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.bar.html#matplotlib.pyplot.bar" title="View documentation for matplotlib.pyplot.bar"><span class="n">plt</span><span class="o">.</span><span class="n">bar</span></a><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">tick_position</span></a><span class="p">,</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="View documentation for builtins.list"><span class="n">score_means</span></a><span class="p">,</span> <span class="n">label</span><span class="o">=</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">classifier_name</span></a><span class="p">,</span>
+            <span class="n">width</span><span class="o">=.</span><span class="mi">11</span><span class="p">,</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">color</span></a><span class="o">=</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">color</span></a><span class="p">)</span>
+    <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">tick_position</span></a> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">tick_position</span></a> <span class="o">+</span> <span class="o">.</span><span class="mi">09</span>
 
 <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.ylabel.html#matplotlib.pyplot.ylabel" title="View documentation for matplotlib.pyplot.ylabel"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="s1">&#39;Classification accurancy (f1 score)&#39;</span><span class="p">)</span>
 <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.xlabel.html#matplotlib.pyplot.xlabel" title="View documentation for matplotlib.pyplot.xlabel"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s1">&#39;Visual stimuli category&#39;</span><span class="p">)</span>
@@ -522,67 +577,90 @@ ______________________________________________________________________
 <img alt="../../_images/sphx_glr_plot_haxby_different_estimators_001.png" class="sphx-glr-single-img" src="../../_images/sphx_glr_plot_haxby_different_estimators_001.png" />
 <p>Finally, w plot the face vs house map for the different classifiers</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use the average EPI as a background</span>
-<span class="kn">from</span> <span class="nn">nilearn</span> <span class="k">import</span> <span class="n">image</span>
-<span class="n">mean_epi_img</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img" title="View documentation for nilearn.image.mean_img"><span class="n">image</span><span class="o">.</span><span class="n">mean_img</span></a><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">image</span>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="View documentation for nibabel.nifti1.Nifti1Image"><span class="n">mean_epi_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img" title="View documentation for nilearn.image.mean_img"><span class="n">image</span><span class="o">.</span><span class="n">mean_img</span></a><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">func_filename</span></a><span class="p">)</span>
 
 <span class="c1"># Restrict the decoding to face vs house</span>
 <span class="n">condition_mask</span> <span class="o">=</span> <span class="n">stimuli</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s1">&#39;face&#39;</span><span class="p">,</span> <span class="s1">&#39;house&#39;</span><span class="p">])</span>
-<span class="n">masked_timecourses</span> <span class="o">=</span> <span class="n">masked_timecourses</span><span class="p">[</span>
+<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">masked_timecourses</span></a> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">masked_timecourses</span></a><span class="p">[</span>
     <span class="n">condition_mask</span><span class="p">[</span><span class="n">task_mask</span><span class="p">]]</span>
 <span class="n">stimuli</span> <span class="o">=</span> <span class="p">(</span><span class="n">stimuli</span><span class="p">[</span><span class="n">condition_mask</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;face&#39;</span><span class="p">)</span>
 <span class="c1"># Transform the stimuli to binary values</span>
 <span class="n">stimuli</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="View documentation for nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">,</span> <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="View documentation for nilearn.plotting.show"><span class="n">show</span></a>
+<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="View documentation for nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">,</span> <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="View documentation for nilearn.plotting.show"><span class="n">show</span></a>
 
-<span class="k">for</span> <span class="n">classifier_name</span><span class="p">,</span> <span class="n">classifier</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">classifiers</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
-    <span class="n">classifier</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">masked_timecourses</span><span class="p">,</span> <span class="n">stimuli</span><span class="p">)</span>
+<span class="k">for</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">classifier_name</span></a><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">classifier</span></a> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#dict.items" title="View documentation for builtins.dict.items"><span class="n">classifiers</span><span class="o">.</span><span class="n">items</span></a><span class="p">()):</span>
+    <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV.fit" title="View documentation for sklearn.linear_model.RidgeClassifierCV.fit"><span class="n">classifier</span><span class="o">.</span><span class="n">fit</span></a><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">masked_timecourses</span></a><span class="p">,</span> <span class="n">stimuli</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="s1">&#39;coef_&#39;</span><span class="p">):</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">classifier</span><span class="o">.</span><span class="n">coef_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="s1">&#39;best_estimator_&#39;</span><span class="p">):</span>
-        <span class="n">weights</span> <span class="o">=</span> <span class="n">classifier</span><span class="o">.</span><span class="n">best_estimator_</span><span class="o">.</span><span class="n">coef_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">classifier</span></a><span class="p">,</span> <span class="s1">&#39;coef_&#39;</span><span class="p">):</span>
+        <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">weights</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">classifier</span></a><span class="o">.</span><span class="n">coef_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">classifier</span></a><span class="p">,</span> <span class="s1">&#39;best_estimator_&#39;</span><span class="p">):</span>
+        <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">weights</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeClassifierCV.html#sklearn.linear_model.RidgeClassifierCV" title="View documentation for sklearn.linear_model.RidgeClassifierCV"><span class="n">classifier</span></a><span class="o">.</span><span class="n">best_estimator_</span><span class="o">.</span><span class="n">coef_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">continue</span>
-    <span class="n">weight_img</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
-    <span class="n">weight_map</span> <span class="o">=</span> <span class="n">weight_img</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
-    <span class="n">threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">weight_map</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1e-3</span>
-    <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="View documentation for nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><span class="n">weight_img</span><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><span class="n">mean_epi_img</span><span class="p">,</span>
+    <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="View documentation for nibabel.nifti1.Nifti1Image"><span class="n">weight_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">masker</span></a><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">weights</span></a><span class="p">)</span>
+    <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">weight_map</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="View documentation for nilearn.image.get_data"><span class="n">get_data</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="View documentation for nibabel.nifti1.Nifti1Image"><span class="n">weight_img</span></a><span class="p">)</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">weight_map</span></a><span class="p">))</span> <span class="o">*</span> <span class="mf">1e-3</span>
+    <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="View documentation for nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="View documentation for nibabel.nifti1.Nifti1Image"><span class="n">weight_img</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="View documentation for nibabel.nifti1.Nifti1Image"><span class="n">mean_epi_img</span></a><span class="p">,</span>
                   <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">15</span><span class="p">],</span>
                   <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span>
-                  <span class="n">title</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: face vs house&#39;</span> <span class="o">%</span> <span class="n">classifier_name</span><span class="p">)</span>
+                  <span class="n">title</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: face vs house&#39;</span> <span class="o">%</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">classifier_name</span></a><span class="p">)</span>
 
 <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="View documentation for nilearn.plotting.show"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
-<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_002.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_haxby_different_estimators_002.png" />
+<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_002.png" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_haxby_different_estimators_002.png" />
 </li>
-<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_003.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_haxby_different_estimators_003.png" />
+<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_003.png" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_haxby_different_estimators_003.png" />
 </li>
-<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_004.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_haxby_different_estimators_004.png" />
+<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_004.png" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_haxby_different_estimators_004.png" />
 </li>
-<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_005.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_haxby_different_estimators_005.png" />
+<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_005.png" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_haxby_different_estimators_005.png" />
 </li>
-<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_006.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_haxby_different_estimators_006.png" />
+<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_006.png" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_haxby_different_estimators_006.png" />
 </li>
-<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_007.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_haxby_different_estimators_007.png" />
+<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_007.png" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_haxby_different_estimators_007.png" />
 </li>
-<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_008.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_haxby_different_estimators_008.png" />
+<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_008.png" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_haxby_different_estimators_008.png" />
 </li>
-<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_009.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_haxby_different_estimators_009.png" />
+<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_009.png" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_haxby_different_estimators_009.png" />
 </li>
-<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_010.png" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_haxby_different_estimators_010.png" />
+<li><img alt="../../_images/sphx_glr_plot_haxby_different_estimators_010.png" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_haxby_different_estimators_010.png" />
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 5 minutes  4.102 seconds)</p>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  fraction * (x1 - x0), y1 - y0])
+/mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  fraction * (x1 - x0), y1 - y0])
+/mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  fraction * (x1 - x0), y1 - y0])
+/mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  fraction * (x1 - x0), y1 - y0])
+/mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  fraction * (x1 - x0), y1 - y0])
+/mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  fraction * (x1 - x0), y1 - y0])
+/mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  fraction * (x1 - x0), y1 - y0])
+/mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  fraction * (x1 - x0), y1 - y0])
+/mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  fraction * (x1 - x0), y1 - y0])
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 9 minutes  21.843 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-02-decoding-plot-haxby-different-estimators-py">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" download="" href="../../_downloads/a1323a1a4455075fbb51d7e7d5b6622c/plot_haxby_different_estimators.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_haxby_different_estimators.py</span></code></a></div>
-<div class="sphx-glr-download docutils container">
-<a class="reference download internal" download="" href="../../_downloads/c28368a7b2176511d7b759da39851e8a/plot_haxby_different_estimators.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_haxby_different_estimators.ipynb</span></code></a></div>
+<p><a class="reference download internal" download="" href="../../_downloads/ceb265174f5ffd68033863fca1bd8a2e/plot_haxby_different_estimators.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_haxby_different_estimators.py</span></code></a></p>
 </div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/541ccbb69ec8b43857d1760a7825d4c9/plot_haxby_different_estimators.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_haxby_different_estimators.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
 </div>
 
@@ -595,7 +673,7 @@ ______________________________________________________________________
 
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
-          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.8.2.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 2.2.2.
         <span style="padding-left: 5ex;">
           <a href="../../_sources/auto_examples/02_decoding/plot_haxby_different_estimators.rst.txt"
         	 rel="nofollow">Show this page source</a>

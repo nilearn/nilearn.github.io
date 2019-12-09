@@ -3,8 +3,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Nilearn: Machine learning for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
     <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -13,10 +12,11 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
     <script type="text/javascript" src="../_static/copybutton.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="3.3. Extracting resting-state networks: ICA and related" href="../connectivity/resting_state_networks.html" />
+    <link rel="next" title="3.3. Extracting functional brain networks: ICA and related" href="../connectivity/resting_state_networks.html" />
     <link rel="prev" title="3.2. Connectome extraction: inverse covariance for direct connections" href="../connectivity/connectome_extraction.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -199,7 +199,7 @@ $(function () {
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a></li>
         <li class="right" >
-          <a href="../connectivity/resting_state_networks.html" title="3.3. Extracting resting-state networks: ICA and related"
+          <a href="../connectivity/resting_state_networks.html" title="3.3. Extracting functional brain networks: ICA and related"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../connectivity/connectome_extraction.html" title="3.2. Connectome extraction: inverse covariance for direct connections"
@@ -260,15 +260,13 @@ $(function () {
                         title="previous chapter">3.2. Connectome extraction: inverse covariance for direct connections</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../connectivity/resting_state_networks.html"
-                        title="next chapter">3.3. Extracting resting-state networks: ICA and related</a></p>
+                        title="next chapter">3.3. Extracting functional brain networks: ICA and related</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
@@ -293,9 +291,10 @@ implementation.</p>
 two different interfaces to an implementation of the algorithm described
 in this article:</p>
 <blockquote>
-<div>Jean Honorio and Dimitris Samaras.
+<div><p>Jean Honorio and Dimitris Samaras.
 “Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
-Models”. arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.</div></blockquote>
+Models”. arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.</p>
+</div></blockquote>
 <p>The goal of the algorithm is to take a set of K covariance matrices as
 input, and estimate a set of K sparse precision matrices, using a
 penalized maximum-likelihood criterion. The penalization has been
@@ -307,10 +306,10 @@ Nilearn contains only Python code.</p>
 <p>In addition to the basic algorithm described in the article, several
 additions were implemented:</p>
 <ul class="simple">
-<li>computation of bounds for the regularization parameter</li>
-<li>several stopping criteria</li>
-<li>an ad-hoc cross-validation algorithm</li>
-<li>signals synthesis for testing purposes</li>
+<li><p>computation of bounds for the regularization parameter</p></li>
+<li><p>several stopping criteria</p></li>
+<li><p>an ad-hoc cross-validation algorithm</p></li>
+<li><p>signals synthesis for testing purposes</p></li>
 </ul>
 <p>These are described in the rest of this page. An overview of the design
 choices and the history of the development is also given.</p>
@@ -322,27 +321,27 @@ of inputs. It turned out that the condition numbers of the input
 matrices do not have any significant effect on numerical stability.
 What is relevant is:</p>
 <ul class="simple">
-<li>covariance matrix symmetry: input covariances matrices in
+<li><p>covariance matrix symmetry: input covariances matrices in
 <a class="reference internal" href="../modules/generated/nilearn.connectome.group_sparse_covariance.html#nilearn.connectome.group_sparse_covariance" title="nilearn.connectome.group_sparse_covariance"><code class="xref py py-func docutils literal notranslate"><span class="pre">group_sparse_covariance</span></code></a> must be as symmetric as possible.
 This is true in general: a small discrepancy in symmetry tends to be
 amplified. For this reason, our functions computing covariances ensure
-symmetry.</li>
-<li>covariance matrix normalization: using correlation matrices or
+symmetry.</p></li>
+<li><p>covariance matrix normalization: using correlation matrices or
 signals with unit variance is mandatory when a large number of
-signals is to be processed.</li>
-<li>normalization of the number of samples: the objective to be
+signals is to be processed.</p></li>
+<li><p>normalization of the number of samples: the objective to be
 optimized contains a sum of terms weighted by the number of samples
 available for each subject. The sum of these weights must be
 normalized to a small constant number (1 in the current
 implementation). Failing to do this leads quickly to instability,
-because too large numbers are used in the computation.</li>
-<li>an on-line computation of an inverse is performed in function
+because too large numbers are used in the computation.</p></li>
+<li><p>an on-line computation of an inverse is performed in function
 <cite>_update_submatrix</cite>. For large problems, this is faster than
 computing the full inverse each time, but gives unfortunately less
 precision. In particular, symmetry is not always perfect, that’s why
-it is enforced at the end on the final result.</li>
-<li>the Newton-Raphson tolerance value has no influence on numerical
-stability, unless very large values (like 0.5) are used.</li>
+it is enforced at the end on the final result.</p></li>
+<li><p>the Newton-Raphson tolerance value has no influence on numerical
+stability, unless very large values (like 0.5) are used.</p></li>
 </ul>
 <p>The <cite>debug</cite> keyword in <a class="reference internal" href="../modules/generated/nilearn.connectome.group_sparse_covariance.html#nilearn.connectome.group_sparse_covariance" title="nilearn.connectome.group_sparse_covariance"><code class="xref py py-func docutils literal notranslate"><span class="pre">group_sparse_covariance</span></code></a> activates a set
 of numerical consistency checks (mainly that matrices are s.p.d.) that
@@ -406,15 +405,15 @@ number of samples, but between two subjects, the sample number can
 differ. This structure is close to what is available in practice.</p>
 <p>Here is how signals are generated:</p>
 <ul class="simple">
-<li>a “topology” matrix containing only zero and ones is generated. This
-will govern the sparsity pattern of the precision matrices.</li>
-<li>for each subject, a precision matrix is generated by replacing every
+<li><p>a “topology” matrix containing only zero and ones is generated. This
+will govern the sparsity pattern of the precision matrices.</p></li>
+<li><p>for each subject, a precision matrix is generated by replacing every
 1 in the topology matrix by a random positive number, then
 multiplying the resulting matrix by its transpose to get a positive
 definite matrix. This is a way to get a sparse definite positive
-matrix.</li>
-<li>inverting precision matrices gives covariance matrices, that are in
-turn used to generate signals.</li>
+matrix.</p></li>
+<li><p>inverting precision matrices gives covariance matrices, that are in
+turn used to generate signals.</p></li>
 </ul>
 <p>The hardest part is generating sparse symmetric positive definite
 matrices, while controling the sparsity level. With the present
@@ -573,9 +572,10 @@ covariance matrices, and can be obtained by <cite>compute_alpha_max</cite>.
 The formula for computing this critical value can be obtained with
 techniques presented in:</p>
 <blockquote>
-<div>Duchi, John, Stephen Gould, and Daphne Koller. ‘Projected Subgradient
+<div><p>Duchi, John, Stephen Gould, and Daphne Koller. ‘Projected Subgradient
 Methods for Learning Sparse Gaussians’. ArXiv E-prints 1206 (1 June
-2012): 3249.</div></blockquote>
+2012): 3249.</p>
+</div></blockquote>
 <p>This very same method can be also used for determining a lower
 critical value, for which the optimal precision matrices are fully
 dense (no zero values). In practice, this critical value is zero if
@@ -597,7 +597,7 @@ used), then a tighter grid near the found maximum is computed, and so
 on. This allows for a very precise determination of the maximum
 location while reducing a lot the required evaluation number. The code
 is very close to what is done in
-<a class="reference external" href="https://scikit-learn.org/0.18/modules/generated/sklearn.covariance.GraphLassoCV.html#sklearn.covariance.GraphLassoCV" title="(in scikit-learn v0.18.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.covariance.GraphLassoCV</span></code></a>.</p>
+<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.covariance.GraphicalLassoCV.html#sklearn.covariance.GraphicalLassoCV" title="(in scikit-learn v0.22)"><code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.covariance.GraphicalLassoCV</span></code></a>.</p>
 </div>
 <div class="section" id="warm-restart">
 <h3>3.2.3.1.6.4. Warm restart<a class="headerlink" href="#warm-restart" title="Permalink to this headline">¶</a></h3>
@@ -681,7 +681,7 @@ test for the validity of the heuristic.</p>
 
     <div class="footer">
             &copy; The nilearn developers 2010-2015.
-          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.8.2.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 2.2.2.
         <span style="padding-left: 5ex;">
           <a href="../_sources/developers/group_sparse_covariance.rst.txt"
         	 rel="nofollow">Show this page source</a>

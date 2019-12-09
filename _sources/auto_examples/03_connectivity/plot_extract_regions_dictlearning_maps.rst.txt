@@ -14,8 +14,9 @@ This example shows how to use :class:`nilearn.regions.RegionExtractor`
 to extract spatially constrained brain regions from whole brain maps decomposed
 using dictionary learning and use them to build a functional connectome.
 
-We used 20 resting state ADHD functional datasets from :func:`nilearn.datasets.fetch_adhd`
-and :class:`nilearn.decomposition.DictLearning` for set of brain atlas maps.
+We used 20 movie-watching functional datasets from
+:func:`nilearn.datasets.fetch_development_fmri` and
+:class:`nilearn.decomposition.DictLearning` for set of brain atlas maps.
 
 This example can also be inspired to apply the same steps to even regions extraction
 using ICA maps. In that case, idea would be to replace dictionary learning to canonical
@@ -32,8 +33,8 @@ for more details.
     image using attribute `masker_` embedded in estimator.
     See the :ref:`section Inverse transform: unmasking data <unmasking_step>`.
 
-Fetch ADHD resting state functional datasets
----------------------------------------------
+Fetch brain development functional datasets
+------------------------------------------------------------
 
 We use nilearn's datasets downloading utilities
 
@@ -42,9 +43,9 @@ We use nilearn's datasets downloading utilities
 
     from nilearn import datasets
 
-    adhd_dataset = datasets.fetch_adhd(n_subjects=20)
-    func_filenames = adhd_dataset.func
-    confounds = adhd_dataset.confounds
+    rest_dataset = datasets.fetch_development_fmri(n_subjects=20)
+    func_filenames = rest_dataset.func
+    confounds = rest_dataset.confounds
 
 
 
@@ -52,8 +53,9 @@ We use nilearn's datasets downloading utilities
 
 
 
-Extract resting-state networks with DictionaryLearning
--------------------------------------------------------
+
+Extract functional networks with DictionaryLearning
+-----------------------------------------------------------------------
 
 
 .. code-block:: default
@@ -64,7 +66,7 @@ Extract resting-state networks with DictionaryLearning
     from nilearn.decomposition import DictLearning
 
     # Initialize DictLearning object
-    dict_learn = DictLearning(n_components=5, smoothing_fwhm=6.,
+    dict_learn = DictLearning(n_components=8, smoothing_fwhm=6.,
                               memory="nilearn_cache", memory_level=2,
                               random_state=0)
     # Fit to the data
@@ -74,7 +76,7 @@ Extract resting-state networks with DictionaryLearning
     # For older versions, see the note section above for details.
     components_img = dict_learn.components_img_
 
-    # Visualization of resting state networks
+    # Visualization of functional networks
     # Show networks using plotting utilities
     from nilearn import plotting
 
@@ -87,6 +89,19 @@ Extract resting-state networks with DictionaryLearning
 .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_001.png
     :class: sphx-glr-single-img
 
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    /mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:99: UserWarning: linewidths is ignored by contourf
+      **kwargs)
+    /mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:99: UserWarning: No contour levels were found within the data range.
+      **kwargs)
+
+    <nilearn.plotting.displays.OrthoSlicer object at 0x7f5e832e7390>
 
 
 
@@ -118,7 +133,7 @@ Extract regions from networks
     # Visualization of region extraction results
     title = ('%d regions are extracted from %d components.'
              '\nEach separate color of region indicates extracted region'
-             % (n_regions_extracted, 5))
+             % (n_regions_extracted, 8))
     plotting.plot_prob_atlas(regions_extracted_img, view_type='filled_contours',
                              title=title)
 
@@ -128,6 +143,21 @@ Extract regions from networks
 .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_002.png
     :class: sphx-glr-single-img
 
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    /mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:99: UserWarning: linewidths is ignored by contourf
+      **kwargs)
+    /home/kc/miniconda3/envs/nilearn-py37-latest/lib/python3.7/site-packages/numpy/ma/core.py:2786: UserWarning: Warning: converting a masked element to nan.
+      order=order, subok=True, ndmin=ndmin)
+    /mnt/c/Users/kshit/workspace/nilearn-org/nilearn-repo/kchawla-pi/nilearn/nilearn/plotting/displays.py:99: UserWarning: No contour levels were found within the data range.
+      **kwargs)
+
+    <nilearn.plotting.displays.OrthoSlicer object at 0x7f5e81c626d0>
 
 
 
@@ -160,6 +190,7 @@ Compute correlation coefficients
     import numpy as np
     mean_correlations = np.mean(correlations, axis=0).reshape(n_regions_extracted,
                                                               n_regions_extracted)
+
 
 
 
@@ -204,6 +235,15 @@ Plot resulting connectomes
             :class: sphx-glr-multi-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.OrthoProjector object at 0x7f5e82c20b50>
+
 
 
 Plot regions extracted for only one specific network
@@ -226,6 +266,7 @@ Plot regions extracted for only one specific network
 
 .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
     :class: sphx-glr-single-img
+
 
 
 
@@ -262,9 +303,10 @@ Each brain extracted region is identified as separate color.
 
 
 
+
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 3 minutes  5.612 seconds)
+   **Total running time of the script:** ( 5 minutes  9.306 seconds)
 
 
 .. _sphx_glr_download_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py:
@@ -292,4 +334,4 @@ Each brain extracted region is identified as separate color.
 
  .. rst-class:: sphx-glr-signature
 
-    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

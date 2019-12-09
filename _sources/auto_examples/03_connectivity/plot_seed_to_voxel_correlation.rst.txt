@@ -11,8 +11,9 @@ Producing single subject maps of seed-to-voxel correlation
 ==========================================================
 
 This example shows how to produce seed-to-voxel correlation maps for a single
-subject based on resting-state fMRI scans. These maps depict the temporal
-correlation of a **seed region** with the **rest of the brain**.
+subject based on movie-watching fMRI scans.
+These maps depict the temporal correlation of a **seed region** with the
+**rest of the brain**.
 
 This example is an advanced one that requires manipulating the data with numpy.
 Note the difference between images, that lie in brain space, and the
@@ -34,6 +35,7 @@ See also :ref:`for a similar example using cortical surface input data
 
 
 
+
 Getting the data
 ----------------
 
@@ -41,14 +43,15 @@ Getting the data
 .. code-block:: default
 
 
-    # We will work with the first subject of the adhd data set.
-    # adhd_dataset.func is a list of filenames. We select the 1st (0-based)
+    # We will work with the first subject of the brain development fmri data set.
+    # dataset.func is a list of filenames. We select the 1st (0-based)
     # subject by indexing with [0]).
     from nilearn import datasets
 
-    adhd_dataset = datasets.fetch_adhd(n_subjects=1)
-    func_filename = adhd_dataset.func[0]
-    confound_filename = adhd_dataset.confounds[0]
+    dataset = datasets.fetch_development_fmri(n_subjects=1)
+    func_filename = dataset.func[0]
+    confound_filename = dataset.confounds[0]
+
 
 
 
@@ -75,8 +78,10 @@ files on your hard drive.
 
  .. code-block:: none
 
-    /home/kshitij/nilearn_data/adhd/data/0010042/0010042_rest_tshift_RPI_voreg_mni.nii.gz
-    /home/kshitij/nilearn_data/adhd/data/0010042/0010042_regressors.csv
+    /home/kc/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz
+    /home/kc/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_desc-reducedConfounds_regressors.tsv
+
+
 
 
 Time series extraction
@@ -100,6 +105,7 @@ We will be working with one seed sphere in the Posterior Cingulate Cortex
 
 
 
+
 We use :class:`nilearn.input_data.NiftiSpheresMasker` to extract the
 **time series from the functional imaging within the sphere**. The
 sphere is centered at pcc_coords and will have the radius we pass the
@@ -116,8 +122,9 @@ This will create a NiftiSpheresMasker object.
     seed_masker = input_data.NiftiSpheresMasker(
         pcc_coords, radius=8,
         detrend=True, standardize=True,
-        low_pass=0.1, high_pass=0.01, t_r=2.,
+        low_pass=0.1, high_pass=0.01, t_r=2,
         memory='nilearn_cache', memory_level=1, verbose=0)
+
 
 
 
@@ -141,6 +148,7 @@ can be found in the dataset's csv file
 
 
 
+
 Next, we can proceed similarly for the **brain-wide voxel-wise time
 series**, using :class:`nilearn.input_data.NiftiMasker` with the same input
 arguments as in the seed_masker in addition to smoothing with a 6 mm kernel
@@ -151,8 +159,9 @@ arguments as in the seed_masker in addition to smoothing with a 6 mm kernel
     brain_masker = input_data.NiftiMasker(
         smoothing_fwhm=6,
         detrend=True, standardize=True,
-        low_pass=0.1, high_pass=0.01, t_r=2.,
+        low_pass=0.1, high_pass=0.01, t_r=2,
         memory='nilearn_cache', memory_level=1, verbose=0)
+
 
 
 
@@ -168,6 +177,7 @@ out the confounds as before
 
     brain_time_series = brain_masker.fit_transform(func_filename,
                                                    confounds=[confound_filename])
+
 
 
 
@@ -196,8 +206,10 @@ series** is an array with shape n_volumes, 1), while the
 
  .. code-block:: none
 
-    Seed time series shape: (176, 1)
-    Brain time series shape: (176, 69681)
+    Seed time series shape: (168, 1)
+    Brain time series shape: (168, 32504)
+
+
 
 
 We can plot the **seed time series**.
@@ -223,6 +235,7 @@ We can plot the **seed time series**.
 
 
 
+
 Exemplarily, we can also select 5 random voxels from the **brain-wide
 data** and plot the time series from.
 
@@ -241,6 +254,7 @@ data** and plot the time series from.
 
 .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_seed_to_voxel_correlation_002.png
     :class: sphx-glr-single-img
+
 
 
 
@@ -271,6 +285,7 @@ series.
 
 
 
+
 The resulting array will contain a value representing the correlation
 values between the signal in the **seed region** of interest and **each
 voxel's signal**, and will be of shape (n_voxels, 1). The correlation
@@ -294,8 +309,10 @@ values can potentially range between -1 and 1.
 
  .. code-block:: none
 
-    Seed-to-voxel correlation shape: (69681, 1)
-    Seed-to-voxel correlation: min = -0.655; max = 0.969
+    Seed-to-voxel correlation shape: (32504, 1)
+    Seed-to-voxel correlation: min = -0.624; max = 0.958
+
+
 
 
 Plotting the seed-to-voxel correlation map
@@ -332,6 +349,7 @@ set the cross to the center of the seed region of interest.
 
 
 
+
 Fisher-z transformation and save nifti
 --------------------------------------
 Finally, we can Fisher-z transform the data to achieve a normal distribution.
@@ -363,13 +381,15 @@ The transformed array can now have values more extreme than +/- 1.
 
  .. code-block:: none
 
-    Seed-to-voxel correlation Fisher-z transformed: min = -0.785; max = 2.073
+    Seed-to-voxel correlation Fisher-z transformed: min = -0.731; max = 1.927
+
+
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  13.980 seconds)
+   **Total running time of the script:** ( 0 minutes  18.806 seconds)
 
 
 .. _sphx_glr_download_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py:
@@ -397,4 +417,4 @@ The transformed array can now have values more extreme than +/- 1.
 
  .. rst-class:: sphx-glr-signature
 
-    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_
