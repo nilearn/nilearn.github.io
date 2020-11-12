@@ -1,10 +1,12 @@
-.. note::
-    :class: sphx-glr-download-link-note
+.. only:: html
 
-    Click :ref:`here <sphx_glr_download_auto_examples_02_decoding_plot_haxby_different_estimators.py>` to download the full example code or to run this example in your browser via Binder
-.. rst-class:: sphx-glr-example-title
+    .. note::
+        :class: sphx-glr-download-link-note
 
-.. _sphx_glr_auto_examples_02_decoding_plot_haxby_different_estimators.py:
+        Click :ref:`here <sphx_glr_download_auto_examples_02_decoding_plot_haxby_different_estimators.py>`     to download the full example code or to run this example in your browser via Binder
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_auto_examples_02_decoding_plot_haxby_different_estimators.py:
 
 
 Different classifiers in decoding the Haxby dataset
@@ -13,14 +15,14 @@ Different classifiers in decoding the Haxby dataset
 Here we compare different classifiers on a visual object recognition
 decoding task.
 
-We start by loading the data and applying simple transformations to it
------------------------------------------------------------------------
+Loading the data
+-----------------
 
 
 .. code-block:: default
 
 
-    # Fetch data using nilearn dataset fetcher
+    # We start by loading data using nilearn dataset fetcher
     from nilearn import datasets
     from nilearn.image import get_data
     # by default 2nd subject data will be fetched
@@ -37,8 +39,12 @@ We start by loading the data and applying simple transformations to it
     import pandas as pd
     labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
     stimuli = labels['labels']
-    # identify resting state labels in order to be able to remove them
-    task_mask = (stimuli != 'rest')
+
+    # identify resting state (baseline) labels in order to be able to remove them
+    resting_state = (stimuli == 'rest')
+
+    # extract the indices of the images corresponding to some condition or task
+    task_mask = np.logical_not(resting_state)
 
     # find names of remaining active labels
     categories = stimuli[task_mask].unique()
@@ -46,16 +52,18 @@ We start by loading the data and applying simple transformations to it
     # extract tags indicating to which acquisition run a tag belongs
     session_labels = labels['chunks'][task_mask]
 
-    # Load the fMRI data
-    from nilearn.input_data import NiftiMasker
 
+    # Load the fMRI data
     # For decoding, standardizing is often very important
     mask_filename = haxby_dataset.mask_vt[0]
-    masker = NiftiMasker(mask_img=mask_filename, standardize=True)
     func_filename = haxby_dataset.func[0]
-    masked_timecourses = masker.fit_transform(
-        func_filename)[task_mask]
 
+
+    # Because the data is in one single large 4D image, we need to use
+    # index_img to do the split easily.
+    from nilearn.image import index_img
+    fmri_niimgs = index_img(func_filename, task_mask)
+    classification_target = stimuli[task_mask]
 
 
 
@@ -67,119 +75,58 @@ We start by loading the data and applying simple transformations to it
 
  .. code-block:: none
 
-    First subject anatomical nifti image (3D) located is at: /home/emdupre/nilearn_data/haxby2001/subj2/anat.nii.gz
-    First subject functional nifti image (4D) is located at: /home/emdupre/nilearn_data/haxby2001/subj2/bold.nii.gz
+    First subject anatomical nifti image (3D) located is at: /home/varoquau/nilearn_data/haxby2001/subj2/anat.nii.gz
+    First subject functional nifti image (4D) is located at: /home/varoquau/nilearn_data/haxby2001/subj2/bold.nii.gz
 
 
 
 
-Then we define the various classifiers that we use
----------------------------------------------------
-A support vector classifier
-
-
-.. code-block:: default
-
-    from sklearn.svm import SVC
-    svm = SVC(C=1., kernel="linear")
-
-    # The logistic regression
-    from sklearn.linear_model import (LogisticRegression,
-                                      RidgeClassifier,
-                                      RidgeClassifierCV,
-                                      )
-    logistic = LogisticRegression(C=1., penalty="l1", solver='liblinear')
-    logistic_50 = LogisticRegression(C=50., penalty="l1", solver='liblinear')
-    logistic_l2 = LogisticRegression(C=1., penalty="l2", solver='liblinear')
-
-    # Cross-validated versions of these classifiers
-    from sklearn.model_selection import GridSearchCV
-    # GridSearchCV is slow, but note that it takes an 'n_jobs' parameter that
-    # can significantly speed up the fitting process on computers with
-    # multiple cores
-    svm_cv = GridSearchCV(SVC(C=1., kernel="linear"),
-                          param_grid={'C': [.1, 1., 10., 100.]},
-                          scoring='f1', n_jobs=1, cv=3, iid=False)
-
-    logistic_cv = GridSearchCV(
-            LogisticRegression(C=1., penalty="l1", solver='liblinear'),
-            param_grid={'C': [.1, 1., 10., 100.]},
-            scoring='f1', cv=3, iid=False,
-            )
-    logistic_l2_cv = GridSearchCV(
-            LogisticRegression(C=1., penalty="l2", solver='liblinear'),
-            param_grid={
-                'C': [.1, 1., 10., 100.]
-                },
-            scoring='f1', cv=3, iid=False,
-            )
-
-    # The ridge classifier has a specific 'CV' object that can set it's
-    # parameters faster than using a GridSearchCV
-    ridge = RidgeClassifier()
-    ridge_cv = RidgeClassifierCV()
-
-    # A dictionary, to hold all our classifiers
-    classifiers = {'SVC': svm,
-                   'SVC cv': svm_cv,
-                   'log l1': logistic,
-                   'log l1 50': logistic_50,
-                   'log l1 cv': logistic_cv,
-                   'log l2': logistic_l2,
-                   'log l2 cv': logistic_l2_cv,
-                   'ridge': ridge,
-                   'ridge cv': ridge_cv
-                   }
-
-
-
-
-
-
-
-
-Here we compute prediction scores
-----------------------------------
-Run time for all these classifiers
+Training the decoder
+---------------------
 
 
 .. code-block:: default
 
 
-    # Make a data splitting object for cross validation
-    from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
-    cv = LeaveOneGroupOut()
+    # Then we define the various classifiers that we use
+    classifiers = ['svc_l2', 'svc_l1', 'logistic_l1',
+                   'logistic_l2', 'ridge_classifier']
 
+    # Here we compute prediction scores and run time for all these
+    # classifiers
     import time
+    from nilearn.decoding import Decoder
+    from sklearn.model_selection import LeaveOneGroupOut
 
-    classifiers_scores = {}
+    cv = LeaveOneGroupOut()
+    classifiers_data = {}
 
-    for classifier_name, classifier in sorted(classifiers.items()):
-        classifiers_scores[classifier_name] = {}
+    for classifier_name in sorted(classifiers):
+        classifiers_data[classifier_name] = {}
         print(70 * '_')
 
+        # The decoder has as default score the `roc_auc`
+        decoder = Decoder(estimator=classifier_name, mask=mask_filename,
+                          standardize=True, cv=cv)
+        t0 = time.time()
+        decoder.fit(fmri_niimgs, classification_target, groups=session_labels)
+
+        classifiers_data[classifier_name] = {}
+        classifiers_data[classifier_name]['score'] = decoder.cv_scores_
+        classifiers_data[classifier_name]['map'] = decoder.coef_img_['house']
+
+        print("%10s: %.2fs" % (classifier_name, time.time() - t0))
         for category in categories:
-            classification_target = stimuli[task_mask].isin([category])
-            t0 = time.time()
-            classifiers_scores[classifier_name][category] = cross_val_score(
-                classifier,
-                masked_timecourses,
-                classification_target,
-                cv=cv,
-                groups=session_labels,
-                scoring="f1",
+            print("    %14s vs all -- AUC: %1.2f +- %1.2f" % (
+                category,
+                np.mean(classifiers_data[classifier_name]['score'][category]),
+                np.std(classifiers_data[classifier_name]['score'][category]))
             )
 
-            print(
-                "%10s: %14s -- scores: %1.2f +- %1.2f, time %.2fs" %
-                (
-                    classifier_name,
-                    category,
-                    classifiers_scores[classifier_name][category].mean(),
-                    classifiers_scores[classifier_name][category].std(),
-                    time.time() - t0,
-                ),
-            )
+        # Adding the average performance per estimator
+        scores = classifiers_data[classifier_name]['score']
+        scores['AVERAGE'] = np.mean(list(scores.values()), axis=0)
+        classifiers_data[classifier_name]['score'] = scores
 
 
 
@@ -192,740 +139,137 @@ Run time for all these classifiers
  .. code-block:: none
 
     ______________________________________________________________________
-           SVC:       scissors -- scores: 0.41 +- 0.31, time 1.24s
-           SVC:           face -- scores: 0.58 +- 0.24, time 0.92s
-           SVC:            cat -- scores: 0.60 +- 0.25, time 1.15s
-           SVC:           shoe -- scores: 0.56 +- 0.23, time 1.19s
-           SVC:          house -- scores: 0.81 +- 0.28, time 0.70s
-           SVC:   scrambledpix -- scores: 0.79 +- 0.17, time 0.86s
-           SVC:         bottle -- scores: 0.53 +- 0.21, time 1.32s
-           SVC:          chair -- scores: 0.42 +- 0.25, time 1.19s
+    logistic_l1: 12.69s
+              scissors vs all -- AUC: 0.92 +- 0.05
+                  face vs all -- AUC: 0.98 +- 0.02
+                   cat vs all -- AUC: 0.96 +- 0.04
+                  shoe vs all -- AUC: 0.92 +- 0.08
+                 house vs all -- AUC: 1.00 +- 0.00
+          scrambledpix vs all -- AUC: 0.99 +- 0.01
+                bottle vs all -- AUC: 0.90 +- 0.08
+                 chair vs all -- AUC: 0.91 +- 0.06
     ______________________________________________________________________
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-        SVC cv:       scissors -- scores: 0.41 +- 0.31, time 10.86s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-        SVC cv:           face -- scores: 0.58 +- 0.24, time 8.66s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-        SVC cv:            cat -- scores: 0.60 +- 0.25, time 10.61s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-        SVC cv:           shoe -- scores: 0.56 +- 0.23, time 10.66s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-        SVC cv:          house -- scores: 0.81 +- 0.28, time 7.01s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-        SVC cv:   scrambledpix -- scores: 0.79 +- 0.17, time 8.55s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-        SVC cv:         bottle -- scores: 0.53 +- 0.21, time 11.83s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-        SVC cv:          chair -- scores: 0.42 +- 0.25, time 11.35s
+    logistic_l2: 50.69s
+              scissors vs all -- AUC: 0.91 +- 0.08
+                  face vs all -- AUC: 0.97 +- 0.04
+                   cat vs all -- AUC: 0.97 +- 0.03
+                  shoe vs all -- AUC: 0.92 +- 0.09
+                 house vs all -- AUC: 1.00 +- 0.00
+          scrambledpix vs all -- AUC: 0.96 +- 0.11
+                bottle vs all -- AUC: 0.82 +- 0.18
+                 chair vs all -- AUC: 0.89 +- 0.18
     ______________________________________________________________________
-        log l1:       scissors -- scores: 0.43 +- 0.28, time 1.02s
-        log l1:           face -- scores: 0.74 +- 0.14, time 0.65s
-        log l1:            cat -- scores: 0.63 +- 0.23, time 1.15s
-        log l1:           shoe -- scores: 0.49 +- 0.19, time 1.19s
-        log l1:          house -- scores: 0.89 +- 0.13, time 0.56s
-        log l1:   scrambledpix -- scores: 0.69 +- 0.18, time 0.64s
-        log l1:         bottle -- scores: 0.47 +- 0.15, time 1.36s
-        log l1:          chair -- scores: 0.44 +- 0.14, time 1.21s
+    ridge_classifier: 25.69s
+              scissors vs all -- AUC: 0.91 +- 0.08
+                  face vs all -- AUC: 0.96 +- 0.03
+                   cat vs all -- AUC: 0.91 +- 0.07
+                  shoe vs all -- AUC: 0.91 +- 0.07
+                 house vs all -- AUC: 1.00 +- 0.00
+          scrambledpix vs all -- AUC: 0.99 +- 0.01
+                bottle vs all -- AUC: 0.85 +- 0.10
+                 chair vs all -- AUC: 0.91 +- 0.06
     ______________________________________________________________________
-     log l1 50:       scissors -- scores: 0.43 +- 0.25, time 1.68s
-     log l1 50:           face -- scores: 0.68 +- 0.14, time 0.87s
-     log l1 50:            cat -- scores: 0.63 +- 0.20, time 1.34s
-     log l1 50:           shoe -- scores: 0.49 +- 0.19, time 1.80s
-     log l1 50:          house -- scores: 0.87 +- 0.11, time 0.67s
-     log l1 50:   scrambledpix -- scores: 0.73 +- 0.21, time 0.65s
-     log l1 50:         bottle -- scores: 0.47 +- 0.17, time 1.82s
-     log l1 50:          chair -- scores: 0.45 +- 0.13, time 1.45s
+        svc_l1: 27.25s
+              scissors vs all -- AUC: 0.92 +- 0.05
+                  face vs all -- AUC: 0.98 +- 0.03
+                   cat vs all -- AUC: 0.96 +- 0.04
+                  shoe vs all -- AUC: 0.92 +- 0.07
+                 house vs all -- AUC: 1.00 +- 0.00
+          scrambledpix vs all -- AUC: 0.99 +- 0.01
+                bottle vs all -- AUC: 0.89 +- 0.08
+                 chair vs all -- AUC: 0.93 +- 0.04
     ______________________________________________________________________
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l1 cv:       scissors -- scores: 0.35 +- 0.29, time 7.03s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l1 cv:           face -- scores: 0.70 +- 0.17, time 5.03s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l1 cv:            cat -- scores: 0.52 +- 0.29, time 6.42s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l1 cv:           shoe -- scores: 0.49 +- 0.19, time 7.42s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l1 cv:          house -- scores: 0.84 +- 0.19, time 3.98s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l1 cv:   scrambledpix -- scores: 0.67 +- 0.17, time 4.29s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l1 cv:         bottle -- scores: 0.41 +- 0.25, time 7.49s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l1 cv:          chair -- scores: 0.44 +- 0.14, time 7.15s
-    ______________________________________________________________________
-        log l2:       scissors -- scores: 0.51 +- 0.15, time 1.56s
-        log l2:           face -- scores: 0.55 +- 0.19, time 1.45s
-        log l2:            cat -- scores: 0.54 +- 0.20, time 1.53s
-        log l2:           shoe -- scores: 0.51 +- 0.17, time 1.50s
-        log l2:          house -- scores: 0.63 +- 0.22, time 1.35s
-        log l2:   scrambledpix -- scores: 0.78 +- 0.18, time 1.33s
-        log l2:         bottle -- scores: 0.43 +- 0.20, time 1.49s
-        log l2:          chair -- scores: 0.54 +- 0.17, time 1.46s
-    ______________________________________________________________________
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l2 cv:       scissors -- scores: 0.50 +- 0.15, time 12.13s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l2 cv:           face -- scores: 0.56 +- 0.20, time 10.96s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l2 cv:            cat -- scores: 0.55 +- 0.20, time 11.51s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l2 cv:           shoe -- scores: 0.51 +- 0.17, time 12.44s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l2 cv:          house -- scores: 0.64 +- 0.22, time 10.46s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l2 cv:   scrambledpix -- scores: 0.76 +- 0.18, time 10.37s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l2 cv:         bottle -- scores: 0.44 +- 0.21, time 11.95s
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-     log l2 cv:          chair -- scores: 0.53 +- 0.17, time 11.76s
-    ______________________________________________________________________
-         ridge:       scissors -- scores: 0.52 +- 0.22, time 0.13s
-         ridge:           face -- scores: 0.62 +- 0.18, time 0.10s
-         ridge:            cat -- scores: 0.43 +- 0.18, time 0.10s
-         ridge:           shoe -- scores: 0.48 +- 0.21, time 0.10s
-         ridge:          house -- scores: 0.90 +- 0.09, time 0.12s
-         ridge:   scrambledpix -- scores: 0.79 +- 0.17, time 0.10s
-         ridge:         bottle -- scores: 0.41 +- 0.19, time 0.10s
-         ridge:          chair -- scores: 0.50 +- 0.21, time 0.10s
-    ______________________________________________________________________
-      ridge cv:       scissors -- scores: 0.56 +- 0.26, time 0.75s
-      ridge cv:           face -- scores: 0.70 +- 0.13, time 0.74s
-      ridge cv:            cat -- scores: 0.54 +- 0.22, time 0.81s
-      ridge cv:           shoe -- scores: 0.49 +- 0.18, time 0.75s
-      ridge cv:          house -- scores: 0.90 +- 0.13, time 0.78s
-      ridge cv:   scrambledpix -- scores: 0.85 +- 0.11, time 0.74s
-      ridge cv:         bottle -- scores: 0.46 +- 0.24, time 0.77s
-      ridge cv:          chair -- scores: 0.51 +- 0.21, time 0.75s
+        svc_l2: 62.57s
+              scissors vs all -- AUC: 0.90 +- 0.09
+                  face vs all -- AUC: 0.96 +- 0.05
+                   cat vs all -- AUC: 0.96 +- 0.04
+                  shoe vs all -- AUC: 0.91 +- 0.08
+                 house vs all -- AUC: 1.00 +- 0.00
+          scrambledpix vs all -- AUC: 0.96 +- 0.10
+                bottle vs all -- AUC: 0.82 +- 0.17
+                 chair vs all -- AUC: 0.87 +- 0.16
 
 
 
 
-Then we make a rudimentary diagram
+Visualization
+--------------
 
 
 .. code-block:: default
 
+
+    # Then we make a rudimentary diagram
     import matplotlib.pyplot as plt
-    plt.figure()
+    plt.figure(figsize=(6, 6))
 
-    tick_position = np.arange(len(categories))
-    plt.xticks(tick_position, categories, rotation=45)
+    all_categories = np.sort(np.hstack([categories, 'AVERAGE']))
+    tick_position = np.arange(len(all_categories))
+    plt.yticks(tick_position + 0.25, all_categories)
+    height = 0.1
 
-    for color, classifier_name in zip(
-            ['b', 'c', 'm', 'g', 'y', 'k', '.5', 'r', '#ffaaaa'],
-            sorted(classifiers)):
-        score_means = [classifiers_scores[classifier_name][category].mean()
-                       for category in categories]
-        plt.bar(tick_position, score_means, label=classifier_name,
-                width=.11, color=color)
-        tick_position = tick_position + .09
+    for i, (color, classifier_name) in enumerate(zip(['b', 'm', 'k', 'r', 'g'],
+                                                     classifiers)):
+        score_means = [
+            np.mean(classifiers_data[classifier_name]['score'][category])
+            for category in all_categories
+        ]
 
-    plt.ylabel('Classification accurancy (f1 score)')
-    plt.xlabel('Visual stimuli category')
-    plt.ylim(ymin=0)
-    plt.legend(loc='lower center', ncol=3)
+        plt.barh(tick_position, score_means,
+                 label=classifier_name.replace('_', ' '),
+                 height=height, color=color)
+        tick_position = tick_position + height
+
+    plt.xlabel('Classification accuracy (AUC score)')
+    plt.ylabel('Visual stimuli category')
+    plt.xlim(xmin=0.5)
+    plt.legend(loc='lower left', ncol=1)
     plt.title(
         'Category-specific classification accuracy for different classifiers')
     plt.tight_layout()
+
+    # We can see that for a fixed penalty the results are similar between the svc
+    # and the logistic regression. The main difference relies on the penalty
+    # ($\ell_1$ and $\ell_2$). The sparse penalty works better because we are in
+    # an intra-subject setting.
 
 
 
 
 .. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_001.png
+    :alt: Category-specific classification accuracy for different classifiers
     :class: sphx-glr-single-img
 
 
 
 
 
-Finally, w plot the face vs house map for the different classifiers
+Visualizing the face vs house map
+---------------------------------
 
 
 .. code-block:: default
 
 
+    # Finally, we plot the face vs house map for the different classifiers
     # Use the average EPI as a background
-    from nilearn import image
-    mean_epi_img = image.mean_img(func_filename)
+    from nilearn.image import mean_img
+    mean_epi_img = mean_img(func_filename)
 
     # Restrict the decoding to face vs house
-    condition_mask = stimuli.isin(['face', 'house'])
-    masked_timecourses = masked_timecourses[
-        condition_mask[task_mask]]
-    stimuli = (stimuli[condition_mask] == 'face')
-    # Transform the stimuli to binary values
-    stimuli.astype(np.int)
+    condition_mask = np.logical_or(stimuli == b'face', stimuli == b'house')
+    stimuli = stimuli[condition_mask]
+    fmri_niimgs_condition = index_img(func_filename, condition_mask)
 
     from nilearn.plotting import plot_stat_map, show
 
-    for classifier_name, classifier in sorted(classifiers.items()):
-        classifier.fit(masked_timecourses, stimuli)
-
-        if hasattr(classifier, 'coef_'):
-            weights = classifier.coef_[0]
-        elif hasattr(classifier, 'best_estimator_'):
-            weights = classifier.best_estimator_.coef_[0]
-        else:
-            continue
-        weight_img = masker.inverse_transform(weights)
-        weight_map = get_data(weight_img)
-        threshold = np.max(np.abs(weight_map)) * 1e-3
-        plot_stat_map(weight_img, bg_img=mean_epi_img,
-                      display_mode='z', cut_coords=[-15],
-                      threshold=threshold,
-                      title='%s: face vs house' % classifier_name)
+    for classifier_name in sorted(classifiers):
+        coef_img = classifiers_data[classifier_name]['map']
+        threshold = np.max(np.abs(get_data(coef_img))) * 1e-3
+        plot_stat_map(
+            coef_img, bg_img=mean_epi_img, display_mode='z', cut_coords=[-15],
+            threshold=threshold,
+            title='%s: face vs house' % classifier_name.replace('_', ' '))
 
     show()
 
@@ -937,47 +281,32 @@ Finally, w plot the face vs house map for the different classifiers
     *
 
       .. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_002.png
-            :class: sphx-glr-multi-img
+          :alt: plot haxby different estimators
+          :class: sphx-glr-multi-img
 
     *
 
       .. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_003.png
-            :class: sphx-glr-multi-img
+          :alt: plot haxby different estimators
+          :class: sphx-glr-multi-img
 
     *
 
       .. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_004.png
-            :class: sphx-glr-multi-img
+          :alt: plot haxby different estimators
+          :class: sphx-glr-multi-img
 
     *
 
       .. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_005.png
-            :class: sphx-glr-multi-img
+          :alt: plot haxby different estimators
+          :class: sphx-glr-multi-img
 
     *
 
       .. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_006.png
-            :class: sphx-glr-multi-img
-
-    *
-
-      .. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_007.png
-            :class: sphx-glr-multi-img
-
-    *
-
-      .. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_008.png
-            :class: sphx-glr-multi-img
-
-    *
-
-      .. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_009.png
-            :class: sphx-glr-multi-img
-
-    *
-
-      .. image:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_010.png
-            :class: sphx-glr-multi-img
+          :alt: plot haxby different estimators
+          :class: sphx-glr-multi-img
 
 
 .. rst-class:: sphx-glr-script-out
@@ -986,30 +315,8 @@ Finally, w plot the face vs house map for the different classifiers
 
  .. code-block:: none
 
-    /home/emdupre/Desktop/open_source/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
-      fraction * (x1 - x0), y1 - y0])
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/Desktop/open_source/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
-      fraction * (x1 - x0), y1 - y0])
-    /home/emdupre/Desktop/open_source/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
-      fraction * (x1 - x0), y1 - y0])
-    /home/emdupre/Desktop/open_source/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
-      fraction * (x1 - x0), y1 - y0])
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/Desktop/open_source/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
-      fraction * (x1 - x0), y1 - y0])
-    /home/emdupre/Desktop/open_source/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
-      fraction * (x1 - x0), y1 - y0])
-    /home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/sklearn/model_selection/_search.py:823: FutureWarning: The parameter 'iid' is deprecated in 0.22 and will be removed in 0.24.
-      "removed in 0.24.", FutureWarning
-    /home/emdupre/Desktop/open_source/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
-      fraction * (x1 - x0), y1 - y0])
-    /home/emdupre/Desktop/open_source/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
-      fraction * (x1 - x0), y1 - y0])
-    /home/emdupre/Desktop/open_source/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
-      fraction * (x1 - x0), y1 - y0])
+    /home/varoquau/dev/nilearn/nilearn/plotting/displays.py:1608: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+      ax = fh.add_axes([fraction * index * (x1 - x0) + x0, y0,
 
 
 
@@ -1017,7 +324,7 @@ Finally, w plot the face vs house map for the different classifiers
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 4 minutes  46.234 seconds)
+   **Total running time of the script:** ( 3 minutes  13.594 seconds)
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_haxby_different_estimators.py:
@@ -1036,13 +343,13 @@ Finally, w plot the face vs house map for the different classifiers
       :width: 150 px
 
 
-  .. container:: sphx-glr-download
+  .. container:: sphx-glr-download sphx-glr-download-python
 
      :download:`Download Python source code: plot_haxby_different_estimators.py <plot_haxby_different_estimators.py>`
 
 
 
-  .. container:: sphx-glr-download
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
 
      :download:`Download Jupyter notebook: plot_haxby_different_estimators.ipynb <plot_haxby_different_estimators.ipynb>`
 
