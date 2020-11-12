@@ -3,11 +3,14 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <meta charset="utf-8" />
-    <title>Nilearn: Machine learning for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Nilearn: Statistical Analysis for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
     <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-dataframe.css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
@@ -16,8 +19,8 @@
     <script type="text/javascript" src="../../_static/copybutton.js"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="8.3.11. Example of pattern recognition on simulated data" href="plot_simulated_data.html" />
-    <link rel="prev" title="8.3.9. ROI-based decoding analysis in Haxby et al. dataset" href="plot_haxby_full_analysis.html" />
+    <link rel="next" title="9.3.14. Example of pattern recognition on simulated data" href="plot_simulated_data.html" />
+    <link rel="prev" title="9.3.12. Different classifiers in decoding the Haxby dataset" href="plot_haxby_different_estimators.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
@@ -170,7 +173,7 @@ $(function () {
 
   <div class="banner">
     <h1>Nilearn:</h1>
-    <h2>Machine learning for Neuro-Imaging in Python</h2>
+    <h2>Statistics for NeuroImaging in Python</h2>
   </div>
   <div class="search_form">
     <div class="gcse-search" id="cse" style="width: 100%;"></div>
@@ -199,10 +202,10 @@ $(function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a></li>
         <li class="right" >
-          <a href="plot_simulated_data.html" title="8.3.11. Example of pattern recognition on simulated data"
+          <a href="plot_simulated_data.html" title="9.3.14. Example of pattern recognition on simulated data"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="plot_haxby_full_analysis.html" title="8.3.9. ROI-based decoding analysis in Haxby et al. dataset"
+          <a href="plot_haxby_different_estimators.html" title="9.3.12. Different classifiers in decoding the Haxby dataset"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
@@ -212,11 +215,261 @@ $(function () {
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 
           <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U"><span class="section-number">8. </span>Nilearn usage examples</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">9. Nilearn usage examples</a> &#187;</li> 
       </ul>
     </div>
 </div>
+  
 
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-auto-examples-02-decoding-plot-oasis-vbm-py"><span class="std std-ref">here</span></a>     to download the full example code or to run this example in your browser via Binder</p>
+</div>
+<div class="sphx-glr-example-title section" id="voxel-based-morphometry-on-oasis-dataset">
+<span id="sphx-glr-auto-examples-02-decoding-plot-oasis-vbm-py"></span><h1>9.3.13. Voxel-Based Morphometry on Oasis dataset<a class="headerlink" href="#voxel-based-morphometry-on-oasis-dataset" title="Permalink to this headline">¶</a></h1>
+<p>This example uses Voxel-Based Morphometry (VBM) to study the relationship
+between aging and gray matter density.</p>
+<p>The data come from the <a class="reference external" href="http://www.oasis-brains.org/">OASIS</a> project.
+If you use it, you need to agree with the data usage agreement available
+on the website.</p>
+<p>It has been run through a standard VBM pipeline (using SPM8 and
+NewSegment) to create VBM maps, which we study here.</p>
+<div class="section" id="predictive-modeling-analysis-vbm-bio-markers-of-aging">
+<h2>9.3.13.1. Predictive modeling analysis: VBM bio-markers of aging?<a class="headerlink" href="#predictive-modeling-analysis-vbm-bio-markers-of-aging" title="Permalink to this headline">¶</a></h2>
+<p>We run a standard SVM-ANOVA nilearn pipeline to predict age from the VBM
+data. We use only 100 subjects from the OASIS dataset to limit the memory
+usage.</p>
+<p>Note that for an actual predictive modeling study of aging, the study
+should be ran on the full set of subjects. Also, all parameters should be set
+by cross-validation. This includes the smoothing applied to the data and the
+number of features selected by the ANOVA step. Indeed, even these
+data-preparation parameter impact significantly the prediction score.</p>
+<p>Also, parameters such as the smoothing should be applied to the data and the
+number of features selected by the ANOVA step should be set by nested
+cross-validation, as they impact significantly the prediction score.</p>
+</div>
+<div class="section" id="brain-mapping-with-mass-univariate">
+<h2>9.3.13.2. Brain mapping with mass univariate<a class="headerlink" href="#brain-mapping-with-mass-univariate" title="Permalink to this headline">¶</a></h2>
+<p>SVM weights are very noisy, partly because heavy smoothing is detrimental
+for the prediction here. A standard analysis using mass-univariate GLM
+(here permuted to have exact correction for multiple comparisons) gives a
+much clearer view of the important regions.</p>
+<hr class="docutils" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Authors: Elvis Dhomatob, &lt;elvis.dohmatob@inria.fr&gt;, Apr. 2014</span>
+<span class="c1">#          Virgile Fritsch, &lt;virgile.fritsch@inria.fr&gt;, Apr 2014</span>
+<span class="c1">#          Gael Varoquaux, Apr 2014</span>
+<span class="c1">#          Andres Hoyos-Idrobo, Apr 2017</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="k">import</span> <span class="n">datasets</span>
+<span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-class"><span class="n">NiftiMasker</span></a>
+<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="nilearn.image.get_data" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">get_data</span></a>
+
+<a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_subjects</span></a> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># more subjects requires more memory</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-oasis-dataset">
+<h2>9.3.13.3. Load Oasis dataset<a class="headerlink" href="#load-oasis-dataset" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">oasis_dataset</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_oasis_vbm.html#nilearn.datasets.fetch_oasis_vbm" title="nilearn.datasets.fetch_oasis_vbm" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_oasis_vbm</span></a><span class="p">(</span><a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_subjects</span></a><span class="o">=</span><a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_subjects</span></a><span class="p">)</span>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gray_matter_map_filenames</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oasis_dataset</span><span class="o">.</span><span class="n">gray_matter_maps</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.recarray.html#numpy.recarray" title="numpy.recarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oasis_dataset</span><span class="o">.</span><span class="n">ext_vars</span></a><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="c1"># Split data into training set and test set</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html#sklearn.model_selection.train_test_split" title="sklearn.model_selection.train_test_split" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-function"><span class="n">train_test_split</span></a>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_train</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_test</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_train</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_test</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html#sklearn.model_selection.train_test_split" title="sklearn.model_selection.train_test_split" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-function"><span class="n">train_test_split</span></a><span class="p">(</span>
+    <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gray_matter_map_filenames</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age</span></a><span class="p">,</span> <span class="n">train_size</span><span class="o">=.</span><span class="mi">6</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># print basic information on the dataset</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;First gray-matter anatomy image (3D) is located at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+      <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oasis_dataset</span><span class="o">.</span><span class="n">gray_matter_maps</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># 3D data</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;First white-matter anatomy image (3D) is located at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+      <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oasis_dataset</span><span class="o">.</span><span class="n">white_matter_maps</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># 3D data</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3/dist-packages/numpy/lib/npyio.py:2358: VisibleDeprecationWarning: Reading unicode strings without specifying the encoding argument is deprecated. Set the encoding, use None for the system default.
+  output = genfromtxt(fname, **kwargs)
+First gray-matter anatomy image (3D) is located at: /home/varoquau/nilearn_data/oasis1/OAS1_0001_MR1/mwrc1OAS1_0001_MR1_mpr_anon_fslswapdim_bet.nii.gz
+First white-matter anatomy image (3D) is located at: /home/varoquau/nilearn_data/oasis1/OAS1_0001_MR1/mwrc2OAS1_0001_MR1_mpr_anon_fslswapdim_bet.nii.gz
+</pre></div>
+</div>
+</div>
+<div class="section" id="preprocess-data">
+<h2>9.3.13.4. Preprocess data<a class="headerlink" href="#preprocess-data" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nifti_masker</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-class"><span class="n">NiftiMasker</span></a><span class="p">(</span>
+    <span class="n">standardize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">memory</span><span class="o">=</span><span class="s1">&#39;nilearn_cache&#39;</span><span class="p">)</span>  <span class="c1"># cache options</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_masked</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker.fit_transform" title="nilearn.input_data.NiftiMasker.fit_transform" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-method"><span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit_transform</span></a><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_train</span></a><span class="p">)</span>
+
+<span class="c1"># The features with too low between-subject variance are removed using</span>
+<span class="c1"># :class:`sklearn.feature_selection.VarianceThreshold`.</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="k">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold" title="sklearn.feature_selection.VarianceThreshold" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-class"><span class="n">VarianceThreshold</span></a>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold" title="sklearn.feature_selection.VarianceThreshold" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">variance_threshold</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold" title="sklearn.feature_selection.VarianceThreshold" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-class"><span class="n">VarianceThreshold</span></a><span class="p">(</span><span class="n">threshold</span><span class="o">=.</span><span class="mi">01</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_thresholded</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.fit_transform" title="sklearn.feature_selection.VarianceThreshold.fit_transform" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-method"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">fit_transform</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_masked</span></a><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_masked</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.inverse_transform" title="sklearn.feature_selection.VarianceThreshold.inverse_transform" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-method"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">inverse_transform</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_thresholded</span></a><span class="p">)</span>
+
+<span class="c1"># Then we convert the data back to the mask image in order to use it for</span>
+<span class="c1"># decoding process</span>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker.inverse_transform" title="nilearn.input_data.NiftiMasker.inverse_transform" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-method"><span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span></a><span class="p">(</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.get_support" title="sklearn.feature_selection.VarianceThreshold.get_support" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-method"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">get_support</span></a><span class="p">())</span>
+</pre></div>
+</div>
+<p>Prediction pipeline with ANOVA and SVR using
+<a class="reference internal" href="../../modules/generated/nilearn.decoding.DecoderRegressor.html#nilearn.decoding.DecoderRegressor" title="nilearn.decoding.DecoderRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">nilearn.decoding.DecoderRegressor</span></code></a> Object</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># In nilearn we can benefit from the built-in DecoderRegressor object to</span>
+<span class="c1"># do ANOVA with SVR instead of manually defining the whole pipeline.</span>
+<span class="c1"># This estimator also uses Cross Validation to select best models and ensemble</span>
+<span class="c1"># them. Furthermore, you can pass n_jobs=&lt;some_high_value&gt; to the</span>
+<span class="c1"># DecoderRegressor class to take advantage of a multi-core system.</span>
+<span class="c1"># To save time (because these are anat images with many voxels), we include</span>
+<span class="c1"># only the 1-percent voxels most correlated with the age variable to fit. We</span>
+<span class="c1"># also want to set mask hyperparameter to be the mask we just obtained above.</span>
+
+<span class="kn">from</span> <span class="nn">nilearn.decoding</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.decoding.DecoderRegressor.html#nilearn.decoding.DecoderRegressor" title="nilearn.decoding.DecoderRegressor" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class"><span class="n">DecoderRegressor</span></a>
+<a href="../../modules/generated/nilearn.decoding.DecoderRegressor.html#nilearn.decoding.DecoderRegressor" title="nilearn.decoding.DecoderRegressor" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">decoder</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.decoding.DecoderRegressor.html#nilearn.decoding.DecoderRegressor" title="nilearn.decoding.DecoderRegressor" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class"><span class="n">DecoderRegressor</span></a><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="s1">&#39;svr&#39;</span><span class="p">,</span> <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a><span class="o">=</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a><span class="p">,</span>
+                           <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;neg_mean_absolute_error&#39;</span><span class="p">,</span>
+                           <span class="n">screening_percentile</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                           <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># Fit and predict with the decoder</span>
+<a href="../../modules/generated/nilearn.decoding.DecoderRegressor.html#nilearn.decoding.DecoderRegressor.fit" title="nilearn.decoding.DecoderRegressor.fit" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-method"><span class="n">decoder</span><span class="o">.</span><span class="n">fit</span></a><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_train</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_train</span></a><span class="p">)</span>
+
+<span class="c1"># Sort test data for better visualization (trend, etc.)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">perm</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.argsort.html#numpy.argsort" title="numpy.argsort" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">argsort</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_test</span></a><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_test</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_test</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">perm</span></a><span class="p">]</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_test</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_test</span></a><span class="p">)[</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">perm</span></a><span class="p">]</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_pred</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.decoding.DecoderRegressor.html#nilearn.decoding.DecoderRegressor.predict" title="nilearn.decoding.DecoderRegressor.predict" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-method"><span class="n">decoder</span><span class="o">.</span><span class="n">predict</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_test</span></a><span class="p">)</span>
+
+<span class="n">prediction_score</span> <span class="o">=</span> <span class="o">-</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.mean.html#numpy.mean" title="numpy.mean" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">decoder</span><span class="o">.</span><span class="n">cv_scores_</span></a><span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=== DECODER ===&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;explained variance for the cross-validation: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">prediction_score</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>=== DECODER ===
+explained variance for the cross-validation: 10.670598
+</pre></div>
+</div>
+</div>
+<div class="section" id="visualization">
+<h2>9.3.13.5. Visualization<a class="headerlink" href="#visualization" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">weight_img</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">decoder</span><span class="o">.</span><span class="n">coef_img_</span></a><span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">]</span>
+
+<span class="c1"># Create the figure</span>
+<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">,</span> <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bg_filename</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gray_matter_map_filenames</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_slice</span></a> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">weight_img</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bg_filename</span></a><span class="p">,</span>
+                        <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_slice</span></a><span class="p">])</span>
+<span class="n">display</span><span class="o">.</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">title</span></a><span class="p">(</span><span class="s2">&quot;SVM weights&quot;</span><span class="p">)</span>
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="plot oasis vbm" class="sphx-glr-single-img" src="../../_images/sphx_glr_plot_oasis_vbm_001.png" />
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/varoquau/dev/nilearn/nilearn/plotting/displays.py:1608: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  ax = fh.add_axes([fraction * index * (x1 - x0) + x0, y0,
+</pre></div>
+</div>
+</div>
+<div class="section" id="visualize-the-quality-of-predictions">
+<h2>9.3.13.6. Visualize the quality of predictions<a class="headerlink" href="#visualize-the-quality-of-predictions" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="matplotlib.pyplot.figure" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.suptitle.html#matplotlib.pyplot.suptitle" title="matplotlib.pyplot.suptitle" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span></a><span class="p">(</span><span class="s2">&quot;Decoder: Mean Absolute Error </span><span class="si">%.2f</span><span class="s2"> years&quot;</span> <span class="o">%</span> <span class="n">prediction_score</span><span class="p">)</span>
+<a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a> <span class="o">=</span> <span class="mi">3</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_test</span></a><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;True age&quot;</span><span class="p">,</span> <a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a><span class="o">=</span><a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_pred</span></a><span class="p">,</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Predicted age&quot;</span><span class="p">,</span> <a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a><span class="o">=</span><a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.ylabel.html#matplotlib.pyplot.ylabel" title="matplotlib.pyplot.ylabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.xlabel.html#matplotlib.pyplot.xlabel" title="matplotlib.pyplot.xlabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.legend.html#matplotlib.pyplot.legend" title="matplotlib.pyplot.legend" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="matplotlib.pyplot.figure" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_test</span></a> <span class="o">-</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_pred</span></a><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;True age - predicted age&quot;</span><span class="p">,</span>
+         <a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a><span class="o">=</span><a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.xlabel.html#matplotlib.pyplot.xlabel" title="matplotlib.pyplot.xlabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.legend.html#matplotlib.pyplot.legend" title="matplotlib.pyplot.legend" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="sphx-glr-horizontal">
+<li><img alt="Decoder: Mean Absolute Error 10.67 years" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_oasis_vbm_002.png" />
+</li>
+<li><img alt="plot oasis vbm" class="sphx-glr-multi-img first" src="../../_images/sphx_glr_plot_oasis_vbm_003.png" />
+</li>
+</ul>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend object at 0x7f8c0e6c5a90&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="inference-with-massively-univariate-model">
+<h2>9.3.13.7. Inference with massively univariate model<a class="headerlink" href="#inference-with-massively-univariate-model" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Massively univariate model&quot;</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_masked</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-class"><span class="n">NiftiMasker</span></a><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gray_matter_map_filenames</span></a><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.fit_transform" title="sklearn.feature_selection.VarianceThreshold.fit_transform" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-method"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">fit_transform</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_masked</span></a><span class="p">)</span>
+
+<span class="c1"># Statistical inference</span>
+<span class="kn">from</span> <span class="nn">nilearn.mass_univariate</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="nilearn.mass_univariate.permuted_ols" class="sphx-glr-backref-module-nilearn-mass_univariate sphx-glr-backref-type-py-function"><span class="n">permuted_ols</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">neg_log_pvals</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">t_scores_original_data</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">_</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="nilearn.mass_univariate.permuted_ols" class="sphx-glr-backref-module-nilearn-mass_univariate sphx-glr-backref-type-py-function"><span class="n">permuted_ols</span></a><span class="p">(</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a><span class="p">,</span>  <span class="c1"># + intercept as a covariate by default</span>
+    <span class="n">n_perm</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>  <span class="c1"># 1,000 in the interest of time; 10000 would be better</span>
+    <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># can be changed to use more CPUs</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signed_neg_log_pvals</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">neg_log_pvals</span></a> <span class="o">*</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.sign.html#numpy.sign" title="numpy.sign" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-data"><span class="n">np</span><span class="o">.</span><span class="n">sign</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">t_scores_original_data</span></a><span class="p">)</span>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signed_neg_log_pvals_unmasked</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker.inverse_transform" title="nilearn.input_data.NiftiMasker.inverse_transform" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-method"><span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span></a><span class="p">(</span>
+    <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.inverse_transform" title="sklearn.feature_selection.VarianceThreshold.inverse_transform" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-method"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">inverse_transform</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signed_neg_log_pvals</span></a><span class="p">))</span>
+
+<span class="c1"># Show results</span>
+<span class="n">threshold</span> <span class="o">=</span> <span class="o">-</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.log10.html#numpy.log10" title="numpy.log10" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-data"><span class="n">np</span><span class="o">.</span><span class="n">log10</span></a><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># 10% corrected</span>
+
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a> <span class="o">=</span> <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="matplotlib.pyplot.figure" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">5.5</span><span class="p">,</span> <span class="mf">7.5</span><span class="p">),</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+<span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signed_neg_log_pvals_unmasked</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bg_filename</span></a><span class="p">,</span>
+                        <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><a href="https://matplotlib.org/api/_as_gen/matplotlib.colors.LinearSegmentedColormap.html#matplotlib.colors.LinearSegmentedColormap" title="matplotlib.colors.LinearSegmentedColormap" class="sphx-glr-backref-module-matplotlib-colors sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">RdBu_r</span></a><span class="p">,</span>
+                        <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><a href="https://docs.python.org/3.6/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_slice</span></a><span class="p">],</span>
+                        <span class="n">figure</span><span class="o">=</span><a href="https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">)</span>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">title</span></a> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Negative $</span><span class="se">\\</span><span class="s1">log_</span><span class="si">{10}</span><span class="s1">$ p-values&#39;</span>
+         <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">(Non-parametric + max-type correction)&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="o">.</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">title</span></a><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">title</span></a><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+
+<span class="n">n_detections</span> <span class="o">=</span> <span class="p">(</span><a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="nilearn.image.get_data" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">get_data</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signed_neg_log_pvals_unmasked</span></a><span class="p">)</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="si">%d</span><span class="s1"> detections&#39;</span> <span class="o">%</span> <span class="n">n_detections</span><span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="plot oasis vbm" class="sphx-glr-single-img" src="../../_images/sphx_glr_plot_oasis_vbm_004.png" />
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Massively univariate model
+/home/varoquau/dev/nilearn/nilearn/plotting/displays.py:1608: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  ax = fh.add_axes([fraction * index * (x1 - x0) + x0, y0,
+
+1978 detections
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  24.211 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-02-decoding-plot-oasis-vbm-py">
+<div class="binder-badge docutils container">
+<a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn.github.io/master?filepath=examples/auto_examples/02_decoding/plot_oasis_vbm.ipynb"><img alt="https://mybinder.org/badge_logo.svg" src="https://mybinder.org/badge_logo.svg" width="150px" /></a>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<a class="reference download internal" download="" href="../../_downloads/1762b321e2d54728de2d7ecfc8d506f2/plot_oasis_vbm.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_oasis_vbm.py</span></code></a></div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<a class="reference download internal" download="" href="../../_downloads/f2acf1fc2d7b9b81494e3884171b1c86/plot_oasis_vbm.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_oasis_vbm.ipynb</span></code></a></div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
@@ -229,272 +482,44 @@ $(function () {
 
   <h3><a href="../../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">8.3.10. Voxel-Based Morphometry on Oasis dataset</a><ul>
-<li><a class="reference internal" href="#predictive-modeling-analysis-vbm-bio-markers-of-aging">8.3.10.1. Predictive modeling analysis: VBM bio-markers of aging?</a></li>
-<li><a class="reference internal" href="#brain-mapping-with-mass-univariate">8.3.10.2. Brain mapping with mass univariate</a></li>
-<li><a class="reference internal" href="#load-oasis-dataset">8.3.10.3. Load Oasis dataset</a></li>
-<li><a class="reference internal" href="#preprocess-data">8.3.10.4. Preprocess data</a></li>
-<li><a class="reference internal" href="#prediction-pipeline-with-anova-and-svr">8.3.10.5. Prediction pipeline with ANOVA and SVR</a></li>
-<li><a class="reference internal" href="#visualization">8.3.10.6. Visualization</a></li>
+<li><a class="reference internal" href="#">9.3.13. Voxel-Based Morphometry on Oasis dataset</a><ul>
+<li><a class="reference internal" href="#predictive-modeling-analysis-vbm-bio-markers-of-aging">9.3.13.1. Predictive modeling analysis: VBM bio-markers of aging?</a></li>
+<li><a class="reference internal" href="#brain-mapping-with-mass-univariate">9.3.13.2. Brain mapping with mass univariate</a></li>
+<li><a class="reference internal" href="#load-oasis-dataset">9.3.13.3. Load Oasis dataset</a></li>
+<li><a class="reference internal" href="#preprocess-data">9.3.13.4. Preprocess data</a></li>
+<li><a class="reference internal" href="#visualization">9.3.13.5. Visualization</a></li>
+<li><a class="reference internal" href="#visualize-the-quality-of-predictions">9.3.13.6. Visualize the quality of predictions</a></li>
+<li><a class="reference internal" href="#inference-with-massively-univariate-model">9.3.13.7. Inference with massively univariate model</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="plot_haxby_full_analysis.html"
-                        title="previous chapter"><span class="section-number">8.3.9. </span>ROI-based decoding analysis in Haxby et al. dataset</a></p>
+  <p class="topless"><a href="plot_haxby_different_estimators.html"
+                        title="previous chapter">9.3.12. Different classifiers in decoding the Haxby dataset</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="plot_simulated_data.html"
-                        title="next chapter"><span class="section-number">8.3.11. </span>Example of pattern recognition on simulated data</a></p>
+                        title="next chapter">9.3.14. Example of pattern recognition on simulated data</a></p>
 <div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
+  <h3>Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" />
       <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="sphx-glr-download-link-note admonition note">
-<p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-02-decoding-plot-oasis-vbm-py"><span class="std std-ref">here</span></a> to download the full example code or to run this example in your browser via Binder</p>
-</div>
-<div class="sphx-glr-example-title section" id="voxel-based-morphometry-on-oasis-dataset">
-<span id="sphx-glr-auto-examples-02-decoding-plot-oasis-vbm-py"></span><h1><span class="section-number">8.3.10. </span>Voxel-Based Morphometry on Oasis dataset<a class="headerlink" href="#voxel-based-morphometry-on-oasis-dataset" title="Permalink to this headline">¶</a></h1>
-<p>This example uses Voxel-Based Morphometry (VBM) to study the relationship
-between aging and gray matter density.</p>
-<p>The data come from the <a class="reference external" href="http://www.oasis-brains.org/">OASIS</a> project.
-If you use it, you need to agree with the data usage agreement available
-on the website.</p>
-<p>It has been run through a standard VBM pipeline (using SPM8 and
-NewSegment) to create VBM maps, which we study here.</p>
-<div class="section" id="predictive-modeling-analysis-vbm-bio-markers-of-aging">
-<h2><span class="section-number">8.3.10.1. </span>Predictive modeling analysis: VBM bio-markers of aging?<a class="headerlink" href="#predictive-modeling-analysis-vbm-bio-markers-of-aging" title="Permalink to this headline">¶</a></h2>
-<p>We run a standard SVM-ANOVA nilearn pipeline to predict age from the VBM
-data. We use only 100 subjects from the OASIS dataset to limit the memory
-usage.</p>
-<p>Note that for an actual predictive modeling study of aging, the study
-should be ran on the full set of subjects. Also, parameters such as the
-smoothing applied to the data and the number of features selected by the
-Anova step should be set by nested cross-validation, as they impact
-significantly the prediction score.</p>
-</div>
-<div class="section" id="brain-mapping-with-mass-univariate">
-<h2><span class="section-number">8.3.10.2. </span>Brain mapping with mass univariate<a class="headerlink" href="#brain-mapping-with-mass-univariate" title="Permalink to this headline">¶</a></h2>
-<p>SVM weights are very noisy, partly because heavy smoothing is detrimental
-for the prediction here. A standard analysis using mass-univariate GLM
-(here permuted to have exact correction for multiple comparisons) gives a
-much clearer view of the important regions.</p>
-<hr class="docutils" />
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Authors: Elvis Dhomatob, &lt;elvis.dohmatob@inria.fr&gt;, Apr. 2014</span>
-<span class="c1">#          Virgile Fritsch, &lt;virgile.fritsch@inria.fr&gt;, Apr 2014</span>
-<span class="c1">#          Gael Varoquaux, Apr 2014</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
-<span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a>
-<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="View documentation for nilearn.image.get_data"><span class="n">get_data</span></a>
-
-<a href="https://docs.python.org/3.6/library/functions.html#int" title="View documentation for builtins.int"><span class="n">n_subjects</span></a> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># more subjects requires more memory</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="load-oasis-dataset">
-<h2><span class="section-number">8.3.10.3. </span>Load Oasis dataset<a class="headerlink" href="#load-oasis-dataset" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">oasis_dataset</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_oasis_vbm.html#nilearn.datasets.fetch_oasis_vbm" title="View documentation for nilearn.datasets.fetch_oasis_vbm"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_oasis_vbm</span></a><span class="p">(</span><a href="https://docs.python.org/3.6/library/functions.html#int" title="View documentation for builtins.int"><span class="n">n_subjects</span></a><span class="o">=</span><a href="https://docs.python.org/3.6/library/functions.html#int" title="View documentation for builtins.int"><span class="n">n_subjects</span></a><span class="p">)</span>
-<a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="View documentation for builtins.list"><span class="n">gray_matter_map_filenames</span></a> <span class="o">=</span> <span class="n">oasis_dataset</span><span class="o">.</span><span class="n">gray_matter_maps</span>
-<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">age</span></a> <span class="o">=</span> <span class="n">oasis_dataset</span><span class="o">.</span><span class="n">ext_vars</span><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-
-<span class="c1"># print basic information on the dataset</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;First gray-matter anatomy image (3D) is located at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
-      <span class="n">oasis_dataset</span><span class="o">.</span><span class="n">gray_matter_maps</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># 3D data</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;First white-matter anatomy image (3D) is located at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
-      <span class="n">oasis_dataset</span><span class="o">.</span><span class="n">white_matter_maps</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># 3D data</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/emdupre/miniconda3/envs/nilearn/lib/python3.7/site-packages/numpy/lib/npyio.py:2372: VisibleDeprecationWarning: Reading unicode strings without specifying the encoding argument is deprecated. Set the encoding, use None for the system default.
-  output = genfromtxt(fname, **kwargs)
-First gray-matter anatomy image (3D) is located at: /home/emdupre/nilearn_data/oasis1/OAS1_0001_MR1/mwrc1OAS1_0001_MR1_mpr_anon_fslswapdim_bet.nii.gz
-First white-matter anatomy image (3D) is located at: /home/emdupre/nilearn_data/oasis1/OAS1_0001_MR1/mwrc2OAS1_0001_MR1_mpr_anon_fslswapdim_bet.nii.gz
-</pre></div>
-</div>
-</div>
-<div class="section" id="preprocess-data">
-<h2><span class="section-number">8.3.10.4. </span>Preprocess data<a class="headerlink" href="#preprocess-data" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">NiftiMasker</span></a><span class="p">(</span>
-    <span class="n">standardize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">memory</span><span class="o">=</span><span class="s1">&#39;nilearn_cache&#39;</span><span class="p">)</span>  <span class="c1"># cache options</span>
-<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">gm_maps_masked</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="View documentation for builtins.list"><span class="n">gray_matter_map_filenames</span></a><span class="p">)</span>
-<a href="https://docs.python.org/3.6/library/functions.html#int" title="View documentation for builtins.int"><span class="n">n_samples</span></a><span class="p">,</span> <a href="https://docs.python.org/3.6/library/functions.html#int" title="View documentation for builtins.int"><span class="n">n_features</span></a> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.shape.html#numpy.ndarray.shape" title="View documentation for numpy.ndarray.shape"><span class="n">gm_maps_masked</span><span class="o">.</span><span class="n">shape</span></a>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> samples, </span><span class="si">%d</span><span class="s2"> features&quot;</span> <span class="o">%</span> <span class="p">(</span><a href="https://docs.python.org/3.6/library/functions.html#int" title="View documentation for builtins.int"><span class="n">n_subjects</span></a><span class="p">,</span> <a href="https://docs.python.org/3.6/library/functions.html#int" title="View documentation for builtins.int"><span class="n">n_features</span></a><span class="p">))</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>100 samples, 902629 features
-</pre></div>
-</div>
-</div>
-<div class="section" id="prediction-pipeline-with-anova-and-svr">
-<h2><span class="section-number">8.3.10.5. </span>Prediction pipeline with ANOVA and SVR<a class="headerlink" href="#prediction-pipeline-with-anova-and-svr" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ANOVA + SVR&quot;</span><span class="p">)</span>
-<span class="c1"># Define the prediction function to be used.</span>
-<span class="c1"># Here we use a Support Vector Classification, with a linear kernel</span>
-<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html#sklearn.svm.SVR" title="View documentation for sklearn.svm.SVR"><span class="n">SVR</span></a>
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html#sklearn.svm.SVR" title="View documentation for sklearn.svm.SVR"><span class="n">svr</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html#sklearn.svm.SVR" title="View documentation for sklearn.svm.SVR"><span class="n">SVR</span></a><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
-
-<span class="c1"># Dimension reduction</span>
-<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold" title="View documentation for sklearn.feature_selection.VarianceThreshold"><span class="n">VarianceThreshold</span></a><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" title="View documentation for sklearn.feature_selection.SelectKBest"><span class="n">SelectKBest</span></a><span class="p">,</span> \
-        <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_regression.html#sklearn.feature_selection.f_regression" title="View documentation for sklearn.feature_selection.f_regression"><span class="n">f_regression</span></a>
-
-<span class="c1"># Remove features with too low between-subject variance</span>
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold" title="View documentation for sklearn.feature_selection.VarianceThreshold"><span class="n">variance_threshold</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold" title="View documentation for sklearn.feature_selection.VarianceThreshold"><span class="n">VarianceThreshold</span></a><span class="p">(</span><span class="n">threshold</span><span class="o">=.</span><span class="mi">01</span><span class="p">)</span>
-
-<span class="c1"># Here we use a classical univariate feature selection based on F-test,</span>
-<span class="c1"># namely Anova.</span>
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" title="View documentation for sklearn.feature_selection.SelectKBest"><span class="n">feature_selection</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" title="View documentation for sklearn.feature_selection.SelectKBest"><span class="n">SelectKBest</span></a><span class="p">(</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_regression.html#sklearn.feature_selection.f_regression" title="View documentation for sklearn.feature_selection.f_regression"><span class="n">f_regression</span></a><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
-
-<span class="c1"># We have our predictor (SVR), our feature selection (SelectKBest), and now,</span>
-<span class="c1"># we can plug them together in a *pipeline* that performs the two operations</span>
-<span class="c1"># successively:</span>
-<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="View documentation for sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a>
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="View documentation for sklearn.pipeline.Pipeline"><span class="n">anova_svr</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="View documentation for sklearn.pipeline.Pipeline"><span class="n">Pipeline</span></a><span class="p">([</span>
-            <span class="p">(</span><span class="s1">&#39;variance_threshold&#39;</span><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold" title="View documentation for sklearn.feature_selection.VarianceThreshold"><span class="n">variance_threshold</span></a><span class="p">),</span>
-            <span class="p">(</span><span class="s1">&#39;anova&#39;</span><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest" title="View documentation for sklearn.feature_selection.SelectKBest"><span class="n">feature_selection</span></a><span class="p">),</span>
-            <span class="p">(</span><span class="s1">&#39;svr&#39;</span><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html#sklearn.svm.SVR" title="View documentation for sklearn.svm.SVR"><span class="n">svr</span></a><span class="p">)])</span>
-
-<span class="c1">### Fit and predict</span>
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.fit" title="View documentation for sklearn.pipeline.Pipeline.fit"><span class="n">anova_svr</span><span class="o">.</span><span class="n">fit</span></a><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">gm_maps_masked</span></a><span class="p">,</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">age</span></a><span class="p">)</span>
-<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">age_pred</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline.predict" title="View documentation for sklearn.pipeline.Pipeline.predict"><span class="n">anova_svr</span><span class="o">.</span><span class="n">predict</span></a><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">gm_maps_masked</span></a><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>ANOVA + SVR
-</pre></div>
-</div>
-</div>
-<div class="section" id="visualization">
-<h2><span class="section-number">8.3.10.6. </span>Visualization<a class="headerlink" href="#visualization" title="Permalink to this headline">¶</a></h2>
-<p>Look at the SVR’s discriminating weights</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">coef</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html#sklearn.svm.SVR" title="View documentation for sklearn.svm.SVR"><span class="n">svr</span></a><span class="o">.</span><span class="n">coef_</span>
-<span class="c1"># reverse feature selection</span>
-<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">coef</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectKBest.html#sklearn.feature_selection.SelectKBest.inverse_transform" title="View documentation for sklearn.feature_selection.SelectKBest.inverse_transform"><span class="n">feature_selection</span><span class="o">.</span><span class="n">inverse_transform</span></a><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">coef</span></a><span class="p">)</span>
-<span class="c1"># reverse variance threshold</span>
-<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">coef</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.inverse_transform" title="View documentation for sklearn.feature_selection.VarianceThreshold.inverse_transform"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">inverse_transform</span></a><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">coef</span></a><span class="p">)</span>
-<span class="c1"># reverse masking</span>
-<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="View documentation for nibabel.nifti1.Nifti1Image"><span class="n">weight_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">coef</span></a><span class="p">)</span>
-
-<span class="c1"># Create the figure</span>
-<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="View documentation for nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">,</span> <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="View documentation for nilearn.plotting.show"><span class="n">show</span></a>
-<a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">bg_filename</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="View documentation for builtins.list"><span class="n">gray_matter_map_filenames</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<a href="https://docs.python.org/3.6/library/functions.html#int" title="View documentation for builtins.int"><span class="n">z_slice</span></a> <span class="o">=</span> <span class="mi">0</span>
-
-
-<a href="https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="View documentation for matplotlib.figure.Figure"><span class="n">fig</span></a> <span class="o">=</span> <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="View documentation for matplotlib.pyplot.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">5.5</span><span class="p">,</span> <span class="mf">7.5</span><span class="p">),</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
-<span class="c1"># Hard setting vmax to highlight weights more</span>
-<span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="View documentation for nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="View documentation for nibabel.nifti1.Nifti1Image"><span class="n">weight_img</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">bg_filename</span></a><span class="p">,</span>
-                        <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><a href="https://docs.python.org/3.6/library/functions.html#int" title="View documentation for builtins.int"><span class="n">z_slice</span></a><span class="p">],</span>
-                        <span class="n">figure</span><span class="o">=</span><a href="https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="View documentation for matplotlib.figure.Figure"><span class="n">fig</span></a><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">display</span><span class="o">.</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">title</span></a><span class="p">(</span><span class="s1">&#39;SVM weights&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
-
-<span class="c1"># Measure accuracy with cross validation</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html#sklearn.model_selection.cross_val_score" title="View documentation for sklearn.model_selection.cross_val_score"><span class="n">cross_val_score</span></a>
-<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">cv_scores</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html#sklearn.model_selection.cross_val_score" title="View documentation for sklearn.model_selection.cross_val_score"><span class="n">cross_val_score</span></a><span class="p">(</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="View documentation for sklearn.pipeline.Pipeline"><span class="n">anova_svr</span></a><span class="p">,</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">gm_maps_masked</span></a><span class="p">,</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">age</span></a><span class="p">)</span>
-
-<span class="c1"># Return the corresponding mean prediction accuracy</span>
-<span class="n">prediction_accuracy</span> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">cv_scores</span></a><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=== ANOVA ===&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Prediction accuracy: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">prediction_accuracy</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-
-<span class="c1">### Inference with massively univariate model #################################</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Massively univariate model&quot;</span><span class="p">)</span>
-
-<span class="c1"># Statistical inference</span>
-<span class="kn">from</span> <span class="nn">nilearn.mass_univariate</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="View documentation for nilearn.mass_univariate.permuted_ols"><span class="n">permuted_ols</span></a>
-<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">data</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.fit_transform" title="View documentation for sklearn.feature_selection.VarianceThreshold.fit_transform"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">fit_transform</span></a><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">gm_maps_masked</span></a><span class="p">)</span>
-<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">neg_log_pvals</span></a><span class="p">,</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">t_scores_original_data</span></a><span class="p">,</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">_</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="View documentation for nilearn.mass_univariate.permuted_ols"><span class="n">permuted_ols</span></a><span class="p">(</span>
-    <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">age</span></a><span class="p">,</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">data</span></a><span class="p">,</span>  <span class="c1"># + intercept as a covariate by default</span>
-    <span class="n">n_perm</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>  <span class="c1"># 1,000 in the interest of time; 10000 would be better</span>
-    <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># can be changed to use more CPUs</span>
-<a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">signed_neg_log_pvals</span></a> <span class="o">=</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">neg_log_pvals</span></a> <span class="o">*</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.sign.html#numpy.sign" title="View documentation for numpy.sign"><span class="n">np</span><span class="o">.</span><span class="n">sign</span></a><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">t_scores_original_data</span></a><span class="p">)</span>
-<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="View documentation for nibabel.nifti1.Nifti1Image"><span class="n">signed_neg_log_pvals_unmasked</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="View documentation for nilearn.input_data.NiftiMasker"><span class="n">nifti_masker</span></a><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span>
-    <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.inverse_transform" title="View documentation for sklearn.feature_selection.VarianceThreshold.inverse_transform"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">inverse_transform</span></a><span class="p">(</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html#numpy.ndarray" title="View documentation for numpy.ndarray"><span class="n">signed_neg_log_pvals</span></a><span class="p">))</span>
-
-<span class="c1"># Show results</span>
-<span class="n">threshold</span> <span class="o">=</span> <span class="o">-</span><a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.log10.html#numpy.log10" title="View documentation for numpy.log10"><span class="n">np</span><span class="o">.</span><span class="n">log10</span></a><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># 10% corrected</span>
-
-<a href="https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="View documentation for matplotlib.figure.Figure"><span class="n">fig</span></a> <span class="o">=</span> <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="View documentation for matplotlib.pyplot.figure"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">5.5</span><span class="p">,</span> <span class="mf">7.5</span><span class="p">),</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
-
-<span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="View documentation for nilearn.plotting.plot_stat_map"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="View documentation for nibabel.nifti1.Nifti1Image"><span class="n">signed_neg_log_pvals_unmasked</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">bg_filename</span></a><span class="p">,</span>
-                        <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">RdBu_r</span><span class="p">,</span>
-                        <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><a href="https://docs.python.org/3.6/library/functions.html#int" title="View documentation for builtins.int"><span class="n">z_slice</span></a><span class="p">],</span>
-                        <span class="n">figure</span><span class="o">=</span><a href="https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="View documentation for matplotlib.figure.Figure"><span class="n">fig</span></a><span class="p">)</span>
-<a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">title</span></a> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Negative $\log_</span><span class="si">{10}</span><span class="s1">$ p-values&#39;</span>
-         <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">(Non-parametric + max-type correction)&#39;</span><span class="p">)</span>
-<span class="n">display</span><span class="o">.</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">title</span></a><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="View documentation for builtins.str"><span class="n">title</span></a><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
-
-<span class="n">n_detections</span> <span class="o">=</span> <span class="p">(</span><a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="View documentation for nilearn.image.get_data"><span class="n">get_data</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="View documentation for nibabel.nifti1.Nifti1Image"><span class="n">signed_neg_log_pvals_unmasked</span></a><span class="p">)</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="si">%d</span><span class="s1"> detections&#39;</span> <span class="o">%</span> <span class="n">n_detections</span><span class="p">)</span>
-
-<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="View documentation for nilearn.plotting.show"><span class="n">show</span></a><span class="p">()</span>
-</pre></div>
-</div>
-<ul class="sphx-glr-horizontal">
-<li><img alt="../../_images/sphx_glr_plot_oasis_vbm_001.png" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_oasis_vbm_001.png" />
-</li>
-<li><img alt="../../_images/sphx_glr_plot_oasis_vbm_002.png" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_oasis_vbm_002.png" />
-</li>
-</ul>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/emdupre/Desktop/open_source/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
-  fraction * (x1 - x0), y1 - y0])
-=== ANOVA ===
-Prediction accuracy: 0.725415
-
-Massively univariate model
-/home/emdupre/Desktop/open_source/nilearn/nilearn/plotting/displays.py:1596: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
-  fraction * (x1 - x0), y1 - y0])
-
-1939 detections
-</pre></div>
-</div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  48.765 seconds)</p>
-<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-02-decoding-plot-oasis-vbm-py">
-<div class="binder-badge docutils container">
-<a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn.github.io/master?filepath=examples/auto_examples/02_decoding/plot_oasis_vbm.ipynb"><img alt="https://mybinder.org/badge_logo.svg" src="https://mybinder.org/badge_logo.svg" width="150px" /></a>
-</div>
-<div class="sphx-glr-download docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/1762b321e2d54728de2d7ecfc8d506f2/plot_oasis_vbm.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_oasis_vbm.py</span></code></a></p>
-</div>
-<div class="sphx-glr-download docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/f2acf1fc2d7b9b81494e3884171b1c86/plot_oasis_vbm.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_oasis_vbm.ipynb</span></code></a></p>
-</div>
-</div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
-</div>
-
-
-          </div>
-        </div>
-      </div>
       <div class="clearer"></div>
     </div>
 
     <div class="footer">
-            &copy; The nilearn developers 2010-2015.
-          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 2.3.1.
+            &copy; The nilearn developers 2010-2020.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.8.5.
         <span style="padding-left: 5ex;">
           <a href="../../_sources/auto_examples/02_decoding/plot_oasis_vbm.rst.txt"
         	 rel="nofollow">Show this page source</a>

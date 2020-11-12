@@ -1,0 +1,709 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Nilearn: Statistical Analysis for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-dataframe.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script type="text/javascript" src="../../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="9.8.5. NeuroVault meta-analysis of stop-go paradigm studies." href="plot_neurovault_meta_analysis.html" />
+    <link rel="prev" title="9.8.3. BIDS dataset first and second level analysis" href="plot_bids_analysis.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
+<script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000);
+        $('.related-wrapper').css("position", "sticky");
+        $('.related-wrapper').css("top", 0);
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative");
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight();
+    var banner_width = $('#logo-banner').outerWidth();
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight());
+
+    updateTopMenuPosition(banner_height, width);
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth();
+        var menu_height = $('.related').outerHeight();
+        $('.related').css("width", banner_width);
+        $('.related-wrapper').css("height", menu_height);
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop();
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset;
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1;
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed");
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative");
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0;
+    current_section = 0;
+    $('a.internal').removeClass('active');
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        }
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        }
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active');
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var tocOffset = $('.related-wrapper').outerHeight();
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop;
+    sections = {};
+    url = document.URL.replace(/#.*$/, "");
+
+    // Grab positions of our sections
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
+    });
+
+    updateSideBarPosition(top, tocOffset, sections);
+
+    $(window).scroll(function(event) {
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight();
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+});
+</script>
+
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head><body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="../../index.html">
+      <img src="../../_static/nilearn-logo.png" alt="Nilearn logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="../decoding/plot_haxby_anova_svm.html">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="../../connectivity/parcellating.html">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="../../decoding/searchlight.html">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
+    </li>
+    <li>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
+    </li>
+    <li>
+      <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nilearn:</h1>
+    <h2>Statistics for NeuroImaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div class="gcse-search" id="cse" style="width: 100%;"></div>
+    <script>
+      (function() {
+        var cx = '017289614950330089114:elrt9qoutrq';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
+    </script>
+  </div>
+</div>
+
+
+
+<div class=related-wrapper>
+    
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a></li>
+        <li class="right" >
+          <a href="plot_neurovault_meta_analysis.html" title="9.8.5. NeuroVault meta-analysis of stop-go paradigm studies."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plot_bids_analysis.html" title="9.8.3. BIDS dataset first and second level analysis"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="../index.html">Examples</a> |&nbsp;</li>
+<li><a href="../../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">9. Nilearn usage examples</a> &#187;</li> 
+      </ul>
+    </div>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-auto-examples-07-advanced-plot-age-group-prediction-cross-val-py"><span class="std std-ref">here</span></a>     to download the full example code or to run this example in your browser via Binder</p>
+</div>
+<div class="sphx-glr-example-title section" id="functional-connectivity-predicts-age-group">
+<span id="sphx-glr-auto-examples-07-advanced-plot-age-group-prediction-cross-val-py"></span><h1>9.8.4. Functional connectivity predicts age group<a class="headerlink" href="#functional-connectivity-predicts-age-group" title="Permalink to this headline">¶</a></h1>
+<p>This example compares different kinds of functional connectivity between
+regions of interest : correlation, partial correlation, and tangent space
+embedding.</p>
+<p>The resulting connectivity coefficients can be used to
+discriminate children from adults. In general, the tangent space embedding
+<strong>outperforms</strong> the standard correlations: see <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S1053811919301594">Dadi et al 2019</a>
+for a careful study.</p>
+<div class="section" id="load-brain-development-fmri-dataset-and-msdl-atlas">
+<h2>9.8.4.1. Load brain development fMRI dataset and MSDL atlas<a class="headerlink" href="#load-brain-development-fmri-dataset-and-msdl-atlas" title="Permalink to this headline">¶</a></h2>
+<p>We study only 60 subjects from the dataset, to save computation time.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn</span> <span class="k">import</span> <span class="n">datasets</span>
+
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">development_dataset</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_development_fmri.html#nilearn.datasets.fetch_development_fmri" title="nilearn.datasets.fetch_development_fmri" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_development_fmri</span></a><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading data from https://osf.io/download/5c8ff3eb2286e80019c3c198/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3ed2286e80017c41b56/ ...
+ ...done. (3 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3ee2286e80016c3c379/ ...
+ ...done. (3 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3ee4712b400183b70c3/ ...
+
+Downloaded 360448 of 5642114 bytes (6.4%,   14.7s remaining)
+Downloaded 655360 of 5642114 bytes (11.6%,   15.3s remaining)
+Downloaded 753664 of 5642114 bytes (13.4%,   20.1s remaining)
+Downloaded 827392 of 5642114 bytes (14.7%,   24.4s remaining)
+Downloaded 901120 of 5642114 bytes (16.0%,   27.9s remaining)
+Downloaded 974848 of 5642114 bytes (17.3%,   30.7s remaining)
+Downloaded 1024000 of 5642114 bytes (18.1%,   33.6s remaining)
+Downloaded 1081344 of 5642114 bytes (19.2%,   37.3s remaining)
+Downloaded 1146880 of 5642114 bytes (20.3%,   39.5s remaining)
+Downloaded 1228800 of 5642114 bytes (21.8%,   39.9s remaining)
+Downloaded 1310720 of 5642114 bytes (23.2%,   40.2s remaining)
+Downloaded 1400832 of 5642114 bytes (24.8%,   40.1s remaining)
+Downloaded 1499136 of 5642114 bytes (26.6%,   39.5s remaining)
+Downloaded 1646592 of 5642114 bytes (29.2%,   37.1s remaining)
+Downloaded 1835008 of 5642114 bytes (32.5%,   33.8s remaining)
+Downloaded 2097152 of 5642114 bytes (37.2%,   29.3s remaining)
+Downloaded 2449408 of 5642114 bytes (43.4%,   23.9s remaining)
+Downloaded 2801664 of 5642114 bytes (49.7%,   19.6s remaining)
+Downloaded 3162112 of 5642114 bytes (56.0%,   16.0s remaining)
+Downloaded 3719168 of 5642114 bytes (65.9%,   11.0s remaining)
+Downloaded 4489216 of 5642114 bytes (79.6%,    5.7s remaining)
+Downloaded 5619712 of 5642114 bytes (99.6%,    0.1s remaining) ...done. (26 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3efa743a9001660a0d5/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3f14712b4001a3b560e/ ...
+
+Downloaded 655360 of 6081959 bytes (10.8%,    8.3s remaining)
+Downloaded 1163264 of 6081959 bytes (19.1%,    8.6s remaining)
+Downloaded 1376256 of 6081959 bytes (22.6%,   10.6s remaining)
+Downloaded 1835008 of 6081959 bytes (30.2%,    9.5s remaining)
+Downloaded 2899968 of 6081959 bytes (47.7%,    5.6s remaining)
+Downloaded 4800512 of 6081959 bytes (78.9%,    1.6s remaining)
+Downloaded 5275648 of 6081959 bytes (86.7%,    1.1s remaining)
+Downloaded 5750784 of 6081959 bytes (94.6%,    0.5s remaining) ...done. (11 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3f1a743a90017608164/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3f12286e80016c3c37e/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3f34712b4001a3b5612/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3f7a743a90019606cdf/ ...
+
+Downloaded 557056 of 6432694 bytes (8.7%,   10.8s remaining)
+Downloaded 720896 of 6432694 bytes (11.2%,   16.3s remaining)
+Downloaded 778240 of 6432694 bytes (12.1%,   22.4s remaining)
+Downloaded 827392 of 6432694 bytes (12.9%,   28.6s remaining)
+Downloaded 868352 of 6432694 bytes (13.5%,   33.9s remaining)
+Downloaded 917504 of 6432694 bytes (14.3%,   39.4s remaining)
+Downloaded 958464 of 6432694 bytes (14.9%,   44.4s remaining)
+Downloaded 999424 of 6432694 bytes (15.5%,   48.0s remaining)
+Downloaded 1048576 of 6432694 bytes (16.3%,   50.6s remaining)
+Downloaded 1105920 of 6432694 bytes (17.2%,   52.6s remaining)
+Downloaded 1171456 of 6432694 bytes (18.2%,   54.0s remaining)
+Downloaded 1245184 of 6432694 bytes (19.4%,   54.4s remaining)
+Downloaded 1327104 of 6432694 bytes (20.6%,   54.4s remaining)
+Downloaded 1417216 of 6432694 bytes (22.0%,   53.6s remaining)
+Downloaded 1507328 of 6432694 bytes (23.4%,   53.0s remaining)
+Downloaded 1622016 of 6432694 bytes (25.2%,   51.1s remaining)
+Downloaded 1761280 of 6432694 bytes (27.4%,   48.5s remaining)
+Downloaded 1933312 of 6432694 bytes (30.1%,   45.0s remaining)
+Downloaded 2113536 of 6432694 bytes (32.9%,   41.5s remaining)
+Downloaded 2334720 of 6432694 bytes (36.3%,   37.5s remaining)
+Downloaded 2555904 of 6432694 bytes (39.7%,   33.9s remaining)
+Downloaded 2818048 of 6432694 bytes (43.8%,   30.0s remaining)
+Downloaded 3121152 of 6432694 bytes (48.5%,   25.9s remaining)
+Downloaded 3465216 of 6432694 bytes (53.9%,   21.8s remaining)
+Downloaded 3784704 of 6432694 bytes (58.8%,   18.6s remaining)
+Downloaded 4210688 of 6432694 bytes (65.5%,   14.6s remaining)
+Downloaded 4702208 of 6432694 bytes (73.1%,   10.5s remaining)
+Downloaded 5275648 of 6432694 bytes (82.0%,    6.5s remaining)
+Downloaded 5898240 of 6432694 bytes (91.7%,    2.8s remaining) ...done. (33 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3f6a743a90017608171/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3f64712b400183b70d8/ ...
+
+Downloaded 688128 of 5606383 bytes (12.3%,    7.2s remaining)
+Downloaded 876544 of 5606383 bytes (15.6%,   11.3s remaining)
+Downloaded 966656 of 5606383 bytes (17.2%,   15.3s remaining)
+Downloaded 1032192 of 5606383 bytes (18.4%,   19.2s remaining)
+Downloaded 1081344 of 5606383 bytes (19.3%,   22.6s remaining)
+Downloaded 1163264 of 5606383 bytes (20.7%,   25.3s remaining)
+Downloaded 1245184 of 5606383 bytes (22.2%,   27.0s remaining)
+Downloaded 1343488 of 5606383 bytes (24.0%,   27.9s remaining)
+Downloaded 1458176 of 5606383 bytes (26.0%,   28.0s remaining)
+Downloaded 1695744 of 5606383 bytes (30.2%,   25.0s remaining)
+Downloaded 2473984 of 5606383 bytes (44.1%,   15.0s remaining)
+Downloaded 3637248 of 5606383 bytes (64.9%,    7.0s remaining)
+Downloaded 5177344 of 5606383 bytes (92.3%,    1.1s remaining) ...done. (16 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3f72286e80019c3c1af/ ...
+ ...done. (1 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3f92286e80018c3e463/ ...
+
+Downloaded 909312 of 6274191 bytes (14.5%,    6.0s remaining)
+Downloaded 1540096 of 6274191 bytes (24.5%,    6.2s remaining)
+Downloaded 1802240 of 6274191 bytes (28.7%,    7.5s remaining)
+Downloaded 2015232 of 6274191 bytes (32.1%,    8.7s remaining)
+Downloaded 2949120 of 6274191 bytes (47.0%,    5.8s remaining)
+Downloaded 5128192 of 6274191 bytes (81.7%,    1.4s remaining) ...done. (9 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb47057f2be3c0019030a1f/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e63f2be3c0017056ba9/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb4704af2be3c001705703b/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e7a353c58001a9b3324/ ...
+
+Downloaded 3653632 of 6203305 bytes (58.9%,    0.7s remaining) ...done. (4 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3952286e80016c3c2e7/ ...
+ ...done. (1 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3954712b400193b5b79/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb47016a3bc970018f1fc88/ ...
+ ...done. (3 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e6ba3bc970019f07152/ ...
+
+Downloaded 622592 of 6168810 bytes (10.1%,    8.9s remaining)
+Downloaded 811008 of 6168810 bytes (13.1%,   13.5s remaining)
+Downloaded 925696 of 6168810 bytes (15.0%,   17.3s remaining)
+Downloaded 991232 of 6168810 bytes (16.1%,   22.4s remaining)
+Downloaded 1048576 of 6168810 bytes (17.0%,   26.5s remaining)
+Downloaded 1097728 of 6168810 bytes (17.8%,   30.8s remaining)
+Downloaded 1146880 of 6168810 bytes (18.6%,   34.4s remaining)
+Downloaded 1196032 of 6168810 bytes (19.4%,   37.6s remaining)
+Downloaded 1253376 of 6168810 bytes (20.3%,   39.6s remaining)
+Downloaded 1310720 of 6168810 bytes (21.2%,   41.4s remaining)
+Downloaded 1376256 of 6168810 bytes (22.3%,   42.5s remaining)
+Downloaded 1449984 of 6168810 bytes (23.5%,   43.1s remaining)
+Downloaded 1540096 of 6168810 bytes (25.0%,   43.0s remaining)
+Downloaded 1646592 of 6168810 bytes (26.7%,   42.1s remaining)
+Downloaded 1753088 of 6168810 bytes (28.4%,   41.2s remaining)
+Downloaded 1884160 of 6168810 bytes (30.5%,   39.5s remaining)
+Downloaded 2056192 of 6168810 bytes (33.3%,   36.8s remaining)
+Downloaded 2269184 of 6168810 bytes (36.8%,   33.4s remaining)
+Downloaded 2547712 of 6168810 bytes (41.3%,   29.1s remaining)
+Downloaded 2916352 of 6168810 bytes (47.3%,   23.9s remaining)
+Downloaded 3284992 of 6168810 bytes (53.3%,   19.7s remaining)
+Downloaded 3555328 of 6168810 bytes (57.6%,   17.3s remaining)
+Downloaded 3833856 of 6168810 bytes (62.1%,   15.0s remaining)
+Downloaded 4079616 of 6168810 bytes (66.1%,   13.1s remaining)
+Downloaded 4259840 of 6168810 bytes (69.1%,   11.9s remaining)
+Downloaded 4538368 of 6168810 bytes (73.6%,    9.9s remaining)
+Downloaded 4898816 of 6168810 bytes (79.4%,    7.4s remaining)
+Downloaded 5218304 of 6168810 bytes (84.6%,    5.4s remaining)
+Downloaded 5464064 of 6168810 bytes (88.6%,    4.0s remaining)
+Downloaded 5849088 of 6168810 bytes (94.8%,    1.7s remaining) ...done. (35 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff395a743a900176080af/ ...
+ ...done. (3 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3964712b400193b5b7d/ ...
+
+Downloaded 4202496 of 6287468 bytes (66.8%,    0.6s remaining) ...done. (3 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff399a743a9001660a031/ ...
+ ...done. (3 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3982286e80017c41a29/ ...
+
+Downloaded 557056 of 6146235 bytes (9.1%,   10.4s remaining)
+Downloaded 811008 of 6146235 bytes (13.2%,   13.6s remaining)
+Downloaded 925696 of 6146235 bytes (15.1%,   17.7s remaining)
+Downloaded 1015808 of 6146235 bytes (16.5%,   21.0s remaining)
+Downloaded 1097728 of 6146235 bytes (17.9%,   24.4s remaining)
+Downloaded 1982464 of 6146235 bytes (32.3%,   13.3s remaining) ...done. (10 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff39aa743a90018606e21/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff39aa743a900176080ba/ ...
+
+Downloaded 4202496 of 6358784 bytes (66.1%,    0.6s remaining) ...done. (4 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb470153992690018133d3b/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e793992690017108eb9/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb47038353c5800199ac9a2/ ...
+ ...done. (1 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e85a3bc97001aeff750/ ...
+ ...done. (3 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb4701c3992690018133d49/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e1c3992690018133a9e/ ...
+ ...done. (3 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff39aa743a900176080bf/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff39d4712b400193b5b89/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb4703039926900160f6b3e/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e4d353c58001b9cb325/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb4700af2be3c0017056f69/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e0cf2be3c001801f757/ ...
+
+Downloaded 958464 of 5527830 bytes (17.3%,    4.9s remaining)
+Downloaded 1179648 of 5527830 bytes (21.3%,    7.7s remaining)
+Downloaded 1343488 of 5527830 bytes (24.3%,   10.0s remaining)
+Downloaded 1458176 of 5527830 bytes (26.4%,   12.0s remaining)
+Downloaded 1654784 of 5527830 bytes (29.9%,   12.5s remaining)
+Downloaded 2252800 of 5527830 bytes (40.8%,    9.2s remaining)
+Downloaded 3276800 of 5527830 bytes (59.3%,    5.0s remaining)
+Downloaded 3538944 of 5527830 bytes (64.0%,    4.7s remaining)
+Downloaded 3751936 of 5527830 bytes (67.9%,    4.5s remaining)
+Downloaded 3981312 of 5527830 bytes (72.0%,    4.1s remaining)
+Downloaded 4349952 of 5527830 bytes (78.7%,    3.1s remaining)
+Downloaded 4595712 of 5527830 bytes (83.1%,    2.5s remaining)
+Downloaded 4800512 of 5527830 bytes (86.8%,    2.1s remaining)
+Downloaded 5029888 of 5527830 bytes (91.0%,    1.4s remaining)
+Downloaded 5275648 of 5527830 bytes (95.4%,    0.7s remaining) ...done. (19 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb4702b39926900171090e4/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e35f2be3c00190305ff/ ...
+ ...done. (3 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff39ca743a90019606c50/ ...
+ ...done. (1 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3a2a743a9001660a048/ ...
+
+Downloaded 4202496 of 6131100 bytes (68.5%,    0.6s remaining) ...done. (4 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb4701ff2be3c0017056fad/ ...
+ ...done. (1 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e0339926900160f6930/ ...
+
+Downloaded 778240 of 5344522 bytes (14.6%,    6.0s remaining)
+Downloaded 1048576 of 5344522 bytes (19.6%,    8.3s remaining)
+Downloaded 1245184 of 5344522 bytes (23.3%,   10.1s remaining)
+Downloaded 1785856 of 5344522 bytes (33.4%,    8.1s remaining)
+Downloaded 2105344 of 5344522 bytes (39.4%,    7.8s remaining)
+Downloaded 2375680 of 5344522 bytes (44.5%,    7.6s remaining)
+Downloaded 2596864 of 5344522 bytes (48.6%,    7.5s remaining)
+Downloaded 2859008 of 5344522 bytes (53.5%,    7.1s remaining)
+Downloaded 3153920 of 5344522 bytes (59.0%,    6.4s remaining)
+Downloaded 3670016 of 5344522 bytes (68.7%,    4.6s remaining)
+Downloaded 4145152 of 5344522 bytes (77.6%,    3.2s remaining)
+Downloaded 4603904 of 5344522 bytes (86.1%,    2.0s remaining)
+Downloaded 4964352 of 5344522 bytes (92.9%,    1.0s remaining) ...done. (16 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3a12286e80017c41a48/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3a12286e80016c3c2fc/ ...
+
+Downloaded 4202496 of 6235792 bytes (67.4%,    0.5s remaining) ...done. (4 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff39fa743a90018606e2f/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3a34712b4001a3b55a3/ ...
+
+Downloaded 4202496 of 5622722 bytes (74.7%,    0.5s remaining) ...done. (5 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb4703439926900160f6b43/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e40f2be3c001801f77f/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3a34712b400193b5b92/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3a84712b400183b7048/ ...
+ ...done. (3 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb47020f2be3c0019030968/ ...
+ ...done. (1 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e6f353c58001a9b3311/ ...
+
+Downloaded 4202496 of 6178036 bytes (68.0%,    0.5s remaining) ...done. (4 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3a72286e80017c41a54/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5c8ff3a7a743a90018606e42/ ...
+
+Downloaded 4202496 of 5978758 bytes (70.3%,    0.7s remaining) ...done. (5 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb4702639926900190faf1d/ ...
+ ...done. (2 seconds, 0 min)
+Downloading data from https://osf.io/download/5cb46e3f353c5800199ac787/ ...
+
+Downloaded 1097728 of 5920556 bytes (18.5%,    4.4s remaining)
+Downloaded 1507328 of 5920556 bytes (25.5%,    6.1s remaining)
+Downloaded 1687552 of 5920556 bytes (28.5%,    8.0s remaining)
+Downloaded 1835008 of 5920556 bytes (31.0%,    9.3s remaining)
+Downloaded 2015232 of 5920556 bytes (34.0%,   10.2s remaining)
+Downloaded 2146304 of 5920556 bytes (36.3%,   11.2s remaining)
+Downloaded 2236416 of 5920556 bytes (37.8%,   12.3s remaining)
+Downloaded 2310144 of 5920556 bytes (39.0%,   13.5s remaining)
+Downloaded 2375680 of 5920556 bytes (40.1%,   14.5s remaining)
+Downloaded 2441216 of 5920556 bytes (41.2%,   15.3s remaining)
+Downloaded 2547712 of 5920556 bytes (43.0%,   15.5s remaining)
+Downloaded 2752512 of 5920556 bytes (46.5%,   14.7s remaining)
+Downloaded 3055616 of 5920556 bytes (51.6%,   12.9s remaining)
+Downloaded 4128768 of 5920556 bytes (69.7%,    6.4s remaining)
+Downloaded 4587520 of 5920556 bytes (77.5%,    4.6s remaining)
+Downloaded 4784128 of 5920556 bytes (80.8%,    4.0s remaining)
+Downloaded 4964352 of 5920556 bytes (83.8%,    3.4s remaining)
+Downloaded 5144576 of 5920556 bytes (86.9%,    2.8s remaining)
+Downloaded 5357568 of 5920556 bytes (90.5%,    2.1s remaining)
+Downloaded 5545984 of 5920556 bytes (93.7%,    1.4s remaining)
+Downloaded 5750784 of 5920556 bytes (97.1%,    0.6s remaining)
+Downloaded 5890048 of 5920556 bytes (99.5%,    0.1s remaining) ...done. (25 seconds, 0 min)
+</pre></div>
+</div>
+<p>We use probabilistic regions of interest (ROIs) from the MSDL atlas.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-class"><span class="n">NiftiMapsMasker</span></a>
+
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">msdl_data</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_atlas_msdl.html#nilearn.datasets.fetch_atlas_msdl" title="nilearn.datasets.fetch_atlas_msdl" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_atlas_msdl</span></a><span class="p">()</span>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">msdl_coords</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">msdl_data</span><span class="o">.</span><span class="n">region_coords</span></a>
+
+<a href="../../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">masker</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker" title="nilearn.input_data.NiftiMapsMasker" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-class"><span class="n">NiftiMapsMasker</span></a><span class="p">(</span>
+    <a href="https://docs.python.org/3.6/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">msdl_data</span><span class="o">.</span><span class="n">maps</span></a><span class="p">,</span> <span class="n">resampling_target</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">t_r</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">low_pass</span><span class="o">=.</span><span class="mi">1</span><span class="p">,</span> <span class="n">high_pass</span><span class="o">=.</span><span class="mi">01</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="s1">&#39;nilearn_cache&#39;</span><span class="p">,</span> <span class="n">memory_level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">masked_data</span></a> <span class="o">=</span> <span class="p">[</span><a href="../../modules/generated/nilearn.input_data.NiftiMapsMasker.html#nilearn.input_data.NiftiMapsMasker.transform" title="nilearn.input_data.NiftiMapsMasker.transform" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-method"><span class="n">masker</span><span class="o">.</span><span class="n">transform</span></a><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">confounds</span><span class="p">)</span> <span class="k">for</span>
+               <span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">confounds</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                   <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">development_dataset</span><span class="o">.</span><span class="n">func</span></a><span class="p">,</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">development_dataset</span><span class="o">.</span><span class="n">confounds</span></a><span class="p">)]</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3/dist-packages/numpy/lib/npyio.py:2358: VisibleDeprecationWarning: Reading unicode strings without specifying the encoding argument is deprecated. Set the encoding, use None for the system default.
+  output = genfromtxt(fname, **kwargs)
+</pre></div>
+</div>
+</div>
+<div class="section" id="what-kind-of-connectivity-is-most-powerful-for-classification">
+<h2>9.8.4.2. What kind of connectivity is most powerful for classification?<a class="headerlink" href="#what-kind-of-connectivity-is-most-powerful-for-classification" title="Permalink to this headline">¶</a></h2>
+<p>we will use connectivity matrices as features to distinguish children from
+adults. We use cross-validation and measure classification accuracy to
+compare the different kinds of connectivity matrices.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># prepare the classification pipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="k">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="sklearn.pipeline.Pipeline" class="sphx-glr-backref-module-sklearn-pipeline sphx-glr-backref-type-py-class"><span class="n">Pipeline</span></a>
+<span class="kn">from</span> <span class="nn">nilearn.connectome</span> <span class="k">import</span> <a href="../../modules/generated/nilearn.connectome.ConnectivityMeasure.html#nilearn.connectome.ConnectivityMeasure" title="nilearn.connectome.ConnectivityMeasure" class="sphx-glr-backref-module-nilearn-connectome sphx-glr-backref-type-py-class"><span class="n">ConnectivityMeasure</span></a>
+<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="k">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html#sklearn.svm.LinearSVC" title="sklearn.svm.LinearSVC" class="sphx-glr-backref-module-sklearn-svm sphx-glr-backref-type-py-class"><span class="n">LinearSVC</span></a>
+<span class="kn">from</span> <span class="nn">sklearn.dummy</span> <span class="k">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier" title="sklearn.dummy.DummyClassifier" class="sphx-glr-backref-module-sklearn-dummy sphx-glr-backref-type-py-class"><span class="n">DummyClassifier</span></a>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="sklearn.model_selection.GridSearchCV" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-class"><span class="n">GridSearchCV</span></a>
+
+<a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kinds</span></a> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;correlation&#39;</span><span class="p">,</span> <span class="s1">&#39;partial correlation&#39;</span><span class="p">,</span> <span class="s1">&#39;tangent&#39;</span><span class="p">]</span>
+
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="sklearn.pipeline.Pipeline" class="sphx-glr-backref-module-sklearn-pipeline sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">pipe</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="sklearn.pipeline.Pipeline" class="sphx-glr-backref-module-sklearn-pipeline sphx-glr-backref-type-py-class"><span class="n">Pipeline</span></a><span class="p">(</span>
+    <span class="p">[(</span><span class="s1">&#39;connectivity&#39;</span><span class="p">,</span> <a href="../../modules/generated/nilearn.connectome.ConnectivityMeasure.html#nilearn.connectome.ConnectivityMeasure" title="nilearn.connectome.ConnectivityMeasure" class="sphx-glr-backref-module-nilearn-connectome sphx-glr-backref-type-py-class"><span class="n">ConnectivityMeasure</span></a><span class="p">(</span><span class="n">vectorize</span><span class="o">=</span><span class="kc">True</span><span class="p">)),</span>
+     <span class="p">(</span><span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="sklearn.model_selection.GridSearchCV" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-class"><span class="n">GridSearchCV</span></a><span class="p">(</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html#sklearn.svm.LinearSVC" title="sklearn.svm.LinearSVC" class="sphx-glr-backref-module-sklearn-svm sphx-glr-backref-type-py-class"><span class="n">LinearSVC</span></a><span class="p">(),</span> <span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">]},</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedShuffleSplit.html#sklearn.model_selection.StratifiedShuffleSplit" title="sklearn.model_selection.StratifiedShuffleSplit" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cv</span></a><span class="o">=</span><span class="mi">5</span><span class="p">))])</span>
+
+<a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_grid</span></a> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s1">&#39;classifier&#39;</span><span class="p">:</span> <span class="p">[</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html#sklearn.dummy.DummyClassifier" title="sklearn.dummy.DummyClassifier" class="sphx-glr-backref-module-sklearn-dummy sphx-glr-backref-type-py-class"><span class="n">DummyClassifier</span></a><span class="p">(</span><span class="s1">&#39;most_frequent&#39;</span><span class="p">)]},</span>
+    <span class="p">{</span><span class="s1">&#39;connectivity__kind&#39;</span><span class="p">:</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">kinds</span></a><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/varoquau/dev/scikit-learn/sklearn/utils/validation.py:68: FutureWarning: Pass strategy=most_frequent as keyword args. From version 0.25 passing these as positional arguments will result in an error
+  warnings.warn(&quot;Pass {} as keyword args. From version 0.25 &quot;
+</pre></div>
+</div>
+<p>We use random splits of the subjects into training/testing sets.
+StratifiedShuffleSplit allows preserving the proportion of children in the
+test set.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="sklearn.model_selection.GridSearchCV" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-class"><span class="n">GridSearchCV</span></a><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedShuffleSplit.html#sklearn.model_selection.StratifiedShuffleSplit" title="sklearn.model_selection.StratifiedShuffleSplit" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-class"><span class="n">StratifiedShuffleSplit</span></a>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html#sklearn.preprocessing.LabelEncoder" title="sklearn.preprocessing.LabelEncoder" class="sphx-glr-backref-module-sklearn-preprocessing sphx-glr-backref-type-py-class"><span class="n">LabelEncoder</span></a>
+
+<a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">groups</span></a> <span class="o">=</span> <span class="p">[</span><span class="n">pheno</span><span class="p">[</span><span class="s1">&#39;Child_Adult&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">pheno</span> <span class="ow">in</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">development_dataset</span><span class="o">.</span><span class="n">phenotypic</span></a><span class="p">]</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">classes</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html#sklearn.preprocessing.LabelEncoder" title="sklearn.preprocessing.LabelEncoder" class="sphx-glr-backref-module-sklearn-preprocessing sphx-glr-backref-type-py-class"><span class="n">LabelEncoder</span></a><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">groups</span></a><span class="p">)</span>
+
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedShuffleSplit.html#sklearn.model_selection.StratifiedShuffleSplit" title="sklearn.model_selection.StratifiedShuffleSplit" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cv</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedShuffleSplit.html#sklearn.model_selection.StratifiedShuffleSplit" title="sklearn.model_selection.StratifiedShuffleSplit" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-class"><span class="n">StratifiedShuffleSplit</span></a><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="sklearn.model_selection.GridSearchCV" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gs</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV" title="sklearn.model_selection.GridSearchCV" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-class"><span class="n">GridSearchCV</span></a><span class="p">(</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="sklearn.pipeline.Pipeline" class="sphx-glr-backref-module-sklearn-pipeline sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">pipe</span></a><span class="p">,</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">param_grid</span></a><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;accuracy&#39;</span><span class="p">,</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedShuffleSplit.html#sklearn.model_selection.StratifiedShuffleSplit" title="sklearn.model_selection.StratifiedShuffleSplit" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cv</span></a><span class="o">=</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.StratifiedShuffleSplit.html#sklearn.model_selection.StratifiedShuffleSplit" title="sklearn.model_selection.StratifiedShuffleSplit" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cv</span></a><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                  <span class="n">refit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV.fit" title="sklearn.model_selection.GridSearchCV.fit" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-method"><span class="n">gs</span><span class="o">.</span><span class="n">fit</span></a><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">masked_data</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">classes</span></a><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_scores</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gs</span><span class="o">.</span><span class="n">cv_results_</span></a><span class="p">[</span><span class="s1">&#39;mean_test_score&#39;</span><span class="p">]</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scores_std</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gs</span><span class="o">.</span><span class="n">cv_results_</span></a><span class="p">[</span><span class="s1">&#39;std_test_score&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Fitting 30 folds for each of 4 candidates, totalling 120 fits
+</pre></div>
+</div>
+<p>display the results</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="matplotlib.pyplot.figure" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">positions</span></a> <span class="o">=</span> <span class="p">[</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="o">.</span><span class="mi">2</span><span class="p">,</span> <span class="o">.</span><span class="mi">3</span><span class="p">,</span> <span class="o">.</span><span class="mi">4</span><span class="p">]</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.barh.html#matplotlib.pyplot.barh" title="matplotlib.pyplot.barh" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">barh</span></a><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">positions</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_scores</span></a><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=.</span><span class="mi">05</span><span class="p">,</span> <span class="n">xerr</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scores_std</span></a><span class="p">)</span>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">yticks</span></a> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;dummy&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gs</span><span class="o">.</span><span class="n">cv_results_</span></a><span class="p">[</span><span class="s1">&#39;param_connectivity__kind&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+<a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">yticks</span></a> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">yticks</span></a><span class="p">]</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.yticks.html#matplotlib.pyplot.yticks" title="matplotlib.pyplot.yticks" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">yticks</span></a><span class="p">(</span><a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">positions</span></a><span class="p">,</span> <a href="https://docs.python.org/3.6/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">yticks</span></a><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.xlabel.html#matplotlib.pyplot.xlabel" title="matplotlib.pyplot.xlabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s1">&#39;Classification accuracy&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.gca.html#matplotlib.pyplot.gca" title="matplotlib.pyplot.gca" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">gca</span></a><span class="p">()</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.gca.html#matplotlib.pyplot.gca" title="matplotlib.pyplot.gca" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">gca</span></a><span class="p">()</span><span class="o">.</span><span class="n">set_axisbelow</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.tight_layout.html#matplotlib.pyplot.tight_layout" title="matplotlib.pyplot.tight_layout" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="plot age group prediction cross val" class="sphx-glr-single-img" src="../../_images/sphx_glr_plot_age_group_prediction_cross_val_001.png" />
+<p>This is a small example to showcase nilearn features. In practice such
+comparisons need to be performed on much larger cohorts and several
+datasets.
+<a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S1053811919301594">Dadi et al 2019</a>
+Showed that across many cohorts and clinical questions, the tangent
+kind should be preferred.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 9 minutes  59.244 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-07-advanced-plot-age-group-prediction-cross-val-py">
+<div class="binder-badge docutils container">
+<a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn.github.io/master?filepath=examples/auto_examples/07_advanced/plot_age_group_prediction_cross_val.ipynb"><img alt="https://mybinder.org/badge_logo.svg" src="https://mybinder.org/badge_logo.svg" width="150px" /></a>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<a class="reference download internal" download="" href="../../_downloads/93a3b89242702a92cd37d9d5529a6421/plot_age_group_prediction_cross_val.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_age_group_prediction_cross_val.py</span></code></a></div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<a class="reference download internal" download="" href="../../_downloads/be786e5c7d0a5aa1e2dd62459a1c2ee8/plot_age_group_prediction_cross_val.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_age_group_prediction_cross_val.ipynb</span></code></a></div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="../../authors.html#citing">citing the
+                    papers</a>.</p></li>
+  </ul>
+
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">9.8.4. Functional connectivity predicts age group</a><ul>
+<li><a class="reference internal" href="#load-brain-development-fmri-dataset-and-msdl-atlas">9.8.4.1. Load brain development fMRI dataset and MSDL atlas</a></li>
+<li><a class="reference internal" href="#what-kind-of-connectivity-is-most-powerful-for-classification">9.8.4.2. What kind of connectivity is most powerful for classification?</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plot_bids_analysis.html"
+                        title="previous chapter">9.8.3. BIDS dataset first and second level analysis</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plot_neurovault_meta_analysis.html"
+                        title="next chapter">9.8.5. NeuroVault meta-analysis of stop-go paradigm studies.</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+            &copy; The nilearn developers 2010-2020.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.8.5.
+        <span style="padding-left: 5ex;">
+          <a href="../../_sources/auto_examples/07_advanced/plot_age_group_prediction_cross_val.rst.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>
