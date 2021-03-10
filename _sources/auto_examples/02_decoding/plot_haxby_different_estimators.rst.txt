@@ -75,8 +75,8 @@ Loading the data
 
  .. code-block:: none
 
-    First subject anatomical nifti image (3D) located is at: /home/varoquau/nilearn_data/haxby2001/subj2/anat.nii.gz
-    First subject functional nifti image (4D) is located at: /home/varoquau/nilearn_data/haxby2001/subj2/bold.nii.gz
+    First subject anatomical nifti image (3D) located is at: /home/nicolas/nilearn_data/haxby2001/subj2/anat.nii.gz
+    First subject functional nifti image (4D) is located at: /home/nicolas/nilearn_data/haxby2001/subj2/bold.nii.gz
 
 
 
@@ -102,7 +102,6 @@ Training the decoder
     classifiers_data = {}
 
     for classifier_name in sorted(classifiers):
-        classifiers_data[classifier_name] = {}
         print(70 * '_')
 
         # The decoder has as default score the `roc_auc`
@@ -113,7 +112,6 @@ Training the decoder
 
         classifiers_data[classifier_name] = {}
         classifiers_data[classifier_name]['score'] = decoder.cv_scores_
-        classifiers_data[classifier_name]['map'] = decoder.coef_img_['house']
 
         print("%10s: %.2fs" % (classifier_name, time.time() - t0))
         for category in categories:
@@ -139,7 +137,7 @@ Training the decoder
  .. code-block:: none
 
     ______________________________________________________________________
-    logistic_l1: 12.69s
+    logistic_l1: 22.01s
               scissors vs all -- AUC: 0.92 +- 0.05
                   face vs all -- AUC: 0.98 +- 0.02
                    cat vs all -- AUC: 0.96 +- 0.04
@@ -149,7 +147,7 @@ Training the decoder
                 bottle vs all -- AUC: 0.90 +- 0.08
                  chair vs all -- AUC: 0.91 +- 0.06
     ______________________________________________________________________
-    logistic_l2: 50.69s
+    logistic_l2: 68.73s
               scissors vs all -- AUC: 0.91 +- 0.08
                   face vs all -- AUC: 0.97 +- 0.04
                    cat vs all -- AUC: 0.97 +- 0.03
@@ -159,7 +157,7 @@ Training the decoder
                 bottle vs all -- AUC: 0.82 +- 0.18
                  chair vs all -- AUC: 0.89 +- 0.18
     ______________________________________________________________________
-    ridge_classifier: 25.69s
+    ridge_classifier: 35.78s
               scissors vs all -- AUC: 0.91 +- 0.08
                   face vs all -- AUC: 0.96 +- 0.03
                    cat vs all -- AUC: 0.91 +- 0.07
@@ -169,7 +167,7 @@ Training the decoder
                 bottle vs all -- AUC: 0.85 +- 0.10
                  chair vs all -- AUC: 0.91 +- 0.06
     ______________________________________________________________________
-        svc_l1: 27.25s
+        svc_l1: 50.97s
               scissors vs all -- AUC: 0.92 +- 0.05
                   face vs all -- AUC: 0.98 +- 0.03
                    cat vs all -- AUC: 0.96 +- 0.04
@@ -179,7 +177,7 @@ Training the decoder
                 bottle vs all -- AUC: 0.89 +- 0.08
                  chair vs all -- AUC: 0.93 +- 0.04
     ______________________________________________________________________
-        svc_l2: 62.57s
+        svc_l2: 110.46s
               scissors vs all -- AUC: 0.90 +- 0.09
                   face vs all -- AUC: 0.96 +- 0.05
                    cat vs all -- AUC: 0.96 +- 0.04
@@ -228,11 +226,6 @@ Visualization
         'Category-specific classification accuracy for different classifiers')
     plt.tight_layout()
 
-    # We can see that for a fixed penalty the results are similar between the svc
-    # and the logistic regression. The main difference relies on the penalty
-    # ($\ell_1$ and $\ell_2$). The sparse penalty works better because we are in
-    # an intra-subject setting.
-
 
 
 
@@ -244,24 +237,53 @@ Visualization
 
 
 
+We can see that for a fixed penalty the results are similar between the svc
+and the logistic regression. The main difference relies on the penalty
+($\ell_1$ and $\ell_2$). The sparse penalty works better because we are in
+an intra-subject setting.
+
 Visualizing the face vs house map
 ---------------------------------
+
+Restrict the decoding to face vs house
 
 
 .. code-block:: default
 
 
-    # Finally, we plot the face vs house map for the different classifiers
-    # Use the average EPI as a background
-    from nilearn.image import mean_img
-    mean_epi_img = mean_img(func_filename)
-
-    # Restrict the decoding to face vs house
-    condition_mask = np.logical_or(stimuli == b'face', stimuli == b'house')
+    condition_mask = np.logical_or(stimuli == 'face', stimuli == 'house')
     stimuli = stimuli[condition_mask]
+    assert len(stimuli) == 216
     fmri_niimgs_condition = index_img(func_filename, condition_mask)
+    session_labels = labels['chunks'][condition_mask]
+    categories = stimuli.unique()
+    assert len(categories) == 2
 
+    for classifier_name in sorted(classifiers):
+        decoder = Decoder(estimator=classifier_name, mask=mask_filename,
+                          standardize=True, cv=cv)
+        decoder.fit(fmri_niimgs_condition, stimuli, groups=session_labels)
+        classifiers_data[classifier_name] = {}
+        classifiers_data[classifier_name]['score'] = decoder.cv_scores_
+        classifiers_data[classifier_name]['map'] = decoder.coef_img_['face']
+
+
+
+
+
+
+
+
+Finally, we plot the face vs house map for the different classifiers
+Use the average EPI as a background
+
+
+.. code-block:: default
+
+
+    from nilearn.image import mean_img
     from nilearn.plotting import plot_stat_map, show
+    mean_epi_img = mean_img(func_filename)
 
     for classifier_name in sorted(classifiers):
         coef_img = classifiers_data[classifier_name]['map']
@@ -315,7 +337,7 @@ Visualizing the face vs house map
 
  .. code-block:: none
 
-    /home/varoquau/dev/nilearn/nilearn/plotting/displays.py:1608: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/plotting/displays.py:1750: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
       ax = fh.add_axes([fraction * index * (x1 - x0) + x0, y0,
 
 
@@ -324,7 +346,7 @@ Visualizing the face vs house map
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 3 minutes  13.594 seconds)
+   **Total running time of the script:** ( 5 minutes  24.027 seconds)
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_haxby_different_estimators.py:
@@ -338,8 +360,9 @@ Visualizing the face vs house map
 
   .. container:: binder-badge
 
-    .. image:: https://mybinder.org/badge_logo.svg
+    .. image:: images/binder_badge_logo.svg
       :target: https://mybinder.org/v2/gh/nilearn/nilearn.github.io/master?filepath=examples/auto_examples/02_decoding/plot_haxby_different_estimators.ipynb
+      :alt: Launch binder
       :width: 150 px
 
 
