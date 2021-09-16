@@ -39,21 +39,21 @@ print('First functional nifti image (4D) is at: %s' %
 ####################################################################
 # Apply CanICA on the data
 # ---------------------------------
-# We use as "template" as a strategy to compute the mask, as this leads
-# to slightly faster and more reproducible results. However, the images
-# need to be in :term:`MNI` template space.
+# We use "whole-brain-template" as a strategy to compute the mask,
+# as this leads to slightly faster and more reproducible results.
+# However, the images need to be in :term:`MNI` template space.
 
 from nilearn.decomposition import CanICA
 
 canica = CanICA(n_components=20,
                 memory="nilearn_cache", memory_level=2,
                 verbose=10,
-                mask_strategy='template',
+                mask_strategy='whole-brain-template',
                 random_state=0)
 canica.fit(func_filenames)
 
 # Retrieve the independent components in brain space. Directly
-# accesible through attribute `components_img_`.
+# accessible through attribute `components_img_`.
 canica_components_img = canica.components_img_
 # components_img is a Nifti Image object, and can be saved to a file with
 # the following line:
@@ -101,7 +101,7 @@ dict_learning = DictLearning(n_components=20,
                              verbose=1,
                              random_state=0,
                              n_epochs=1,
-                             mask_strategy='template')
+                             mask_strategy='whole-brain-template')
 
 print('[Example] Fitting dicitonary learning model')
 dict_learning.fit(func_filenames)
