@@ -1,0 +1,451 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta property="og:title" content="9.3.2. FREM on Jimura et al “mixed gambles” dataset." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://nilearn.github.io/auto_examples/02_decoding/plot_mixed_gambles_frem.html" />
+  <meta property="og:site_name" content="Nilearn" />
+  <meta property="og:description" content="In this example, we use fast ensembling of regularized models (FREM) to solve a regression problem, predicting the gain level corresponding to each beta maps regressed from mixed gambles experiment..." />
+  <meta property="og:image" content="https://nilearn.github.io/_static/nilearn-logo.png" />
+  <meta property="og:image:alt" content="Nilearn" />
+  
+    <title>Nilearn: Statistical Analysis for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="9.3.3. Decoding with FREM: face vs house object recognition" href="plot_haxby_frem.html" />
+    <link rel="prev" title="9.3.1. Show stimuli of Haxby et al. dataset" href="plot_haxby_stimuli.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
+<script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000);
+        $('.related-wrapper').css("position", "sticky");
+        $('.related-wrapper').css("top", 0);
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative");
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight();
+    var banner_width = $('#logo-banner').outerWidth();
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight());
+
+    updateTopMenuPosition(banner_height, width);
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth();
+        var menu_height = $('.related').outerHeight();
+        $('.related').css("width", banner_width);
+        $('.related-wrapper').css("height", menu_height);
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop();
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset;
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1;
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed");
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative");
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0;
+    current_section = 0;
+    $('a.internal').removeClass('active');
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        }
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        }
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active');
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var tocOffset = $('.related-wrapper').outerHeight();
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop;
+    sections = {};
+    url = document.URL.replace(/#.*$/, "");
+
+    // Grab positions of our sections
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
+    });
+
+    updateSideBarPosition(top, tocOffset, sections);
+
+    $(window).scroll(function(event) {
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight();
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+});
+</script>
+
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head><body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="../../index.html">
+      <img src="../../_static/nilearn-logo.png" alt="Nilearn logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="../decoding/plot_haxby_anova_svm.html">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="../../connectivity/parcellating.html">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="../../decoding/searchlight.html">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
+    </li>
+    <li>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
+    </li>
+    <li>
+      <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nilearn:</h1>
+    <h2>Statistics for NeuroImaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div class="gcse-search" id="cse" style="width: 100%;"></div>
+    <script>
+      (function() {
+        var cx = '017289614950330089114:elrt9qoutrq';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
+    </script>
+  </div>
+</div>
+
+
+
+<div class=related-wrapper>
+    
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a></li>
+        <li class="right" >
+          <a href="plot_haxby_frem.html" title="9.3.3. Decoding with FREM: face vs house object recognition"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plot_haxby_stimuli.html" title="9.3.1. Show stimuli of Haxby et al. dataset"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="../index.html">Examples</a> |&nbsp;</li>
+<li><a href="../../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
+<li><a href="../../glossary.html">Glossary</a>|&nbsp;</li>
+<li><a href="../../bibliography.html">Bibliography</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U"><span class="section-number">9. </span>Nilearn usage examples</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Nilearn: Statistical Analysis for NeuroImaging in Python</a></li> 
+      </ul>
+    </div>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-02-decoding-plot-mixed-gambles-frem-py"><span class="std std-ref">here</span></a>
+to download the full example code or to run this example in your browser via Binder</p>
+</div>
+<section class="sphx-glr-example-title" id="frem-on-jimura-et-al-mixed-gambles-dataset">
+<span id="sphx-glr-auto-examples-02-decoding-plot-mixed-gambles-frem-py"></span><h1><span class="section-number">9.3.2. </span>FREM on Jimura et al “mixed gambles” dataset.<a class="headerlink" href="#frem-on-jimura-et-al-mixed-gambles-dataset" title="Permalink to this headline">¶</a></h1>
+<p>In this example, we use fast ensembling of regularized models (FREM) to
+solve a regression problem, predicting the gain level corresponding to each
+beta maps regressed from mixed gambles experiment. FREM uses an implicit
+spatial regularization through fast clustering and aggregates a high number
+of  estimators trained on various splits of the training set, thus returning
+a very robust decoder at a lower computational cost than other spatially
+regularized methods.</p>
+<p>To have more details, see: <a class="reference internal" href="../../decoding/frem.html#frem"><span class="std std-ref">FREM: fast ensembling of regularized models for robust decoding</span></a>.</p>
+<section id="load-the-data-from-the-jimura-mixed-gamble-experiment">
+<h2><span class="section-number">9.3.2.1. </span>Load the data from the Jimura mixed-gamble experiment<a class="headerlink" href="#load-the-data-from-the-jimura-mixed-gamble-experiment" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.datasets</span> <span class="kn">import</span> <span class="n">fetch_mixed_gambles</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">data</span></a> <span class="o">=</span> <span class="n">fetch_mixed_gambles</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+
+<a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zmap_filenames</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span><span class="o">.</span><span class="n">zmaps</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">behavioral_target</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span><span class="o">.</span><span class="n">gain</span></a>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask_filename</span></a> <span class="o">=</span> <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span><span class="o">.</span><span class="n">mask_img</span></a>
+</pre></div>
+</div>
+</section>
+<section id="fit-frem">
+<h2><span class="section-number">9.3.2.2. </span>Fit FREM<a class="headerlink" href="#fit-frem" title="Permalink to this headline">¶</a></h2>
+<p>We compare both of these models to a pipeline ensembling many models</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.decoding</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.decoding.FREMRegressor.html#nilearn.decoding.FREMRegressor" title="nilearn.decoding.FREMRegressor" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class"><span class="n">FREMRegressor</span></a>
+<a href="../../modules/generated/nilearn.decoding.FREMRegressor.html#nilearn.decoding.FREMRegressor" title="nilearn.decoding.FREMRegressor" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frem</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.decoding.FREMRegressor.html#nilearn.decoding.FREMRegressor" title="nilearn.decoding.FREMRegressor" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class"><span class="n">FREMRegressor</span></a><span class="p">(</span><span class="s1">&#39;svr&#39;</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.decoding.FREMRegressor.html#nilearn.decoding.FREMRegressor.fit" title="nilearn.decoding.FREMRegressor.fit" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-method"><span class="n">frem</span><span class="o">.</span><span class="n">fit</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">zmap_filenames</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">behavioral_target</span></a><span class="p">)</span>
+
+<span class="c1"># Visualize FREM weights</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a>
+<a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frem</span><span class="o">.</span><span class="n">coef_img_</span></a><span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;FREM&quot;</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;yz&quot;</span><span class="p">,</span>
+              <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">.2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img src="../../_images/sphx_glr_plot_mixed_gambles_frem_001.png" srcset="../../_images/sphx_glr_plot_mixed_gambles_frem_001.png" alt="plot mixed gambles frem" class = "sphx-glr-single-img"/><p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/circleci/project/nilearn/_utils/param_validation.py:197: UserWarning: Brain mask is bigger than the volume of a standard human brain. This object is probably not tuned to be used on such data.
+  screening_percentile_ = _adjust_screening_percentile(
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+/home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/svm/_base.py:255: ConvergenceWarning: Solver terminated early (max_iter=10000).  Consider pre-processing your data with StandardScaler or MinMaxScaler.
+  warnings.warn(&#39;Solver terminated early (max_iter=%i).&#39;
+
+&lt;nilearn.plotting.displays.YZSlicer object at 0x7f9af0e75700&gt;
+</pre></div>
+</div>
+<p>We can observe that the coefficients map learnt by FREM is structured,
+due to the spatial regularity imposed by working on clusters and model
+ensembling. Although these maps have been thresholded for display, they are
+not sparse (i.e. almost all voxels have non-zero coefficients). See also this
+<a class="reference internal" href="plot_haxby_frem.html#sphx-glr-auto-examples-02-decoding-plot-haxby-frem-py"><span class="std std-ref">other example</span></a>
+using FREM, and related <a class="reference internal" href="../../decoding/frem.html#frem"><span class="std std-ref">section of user guide</span></a>.</p>
+</section>
+<section id="example-use-of-tv-l1-spacenet">
+<h2><span class="section-number">9.3.2.3. </span>Example use of TV-L1 SpaceNet<a class="headerlink" href="#example-use-of-tv-l1-spacenet" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="../../decoding/space_net.html#space-net"><span class="std std-ref">SpaceNet</span></a> is another method available in Nilearn to decode
+with spatially sparse models. Depending on the penalty that is used,
+it yields either very structured maps (TV-L1) or unstructured maps
+(graph_net). Because of their heavy computational costs, these methods are
+not demonstrated on this example but you can try them easily if you have a
+few minutes. Example code is included below.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.decoding</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.decoding.SpaceNetRegressor.html#nilearn.decoding.SpaceNetRegressor" title="nilearn.decoding.SpaceNetRegressor" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class"><span class="n">SpaceNetRegressor</span></a>
+
+<span class="c1"># We use the regressor object since the task is to predict a continuous</span>
+<span class="c1"># variable (gain of the gamble).</span>
+
+<a href="../../modules/generated/nilearn.decoding.SpaceNetRegressor.html#nilearn.decoding.SpaceNetRegressor" title="nilearn.decoding.SpaceNetRegressor" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">tv_l1</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.decoding.SpaceNetRegressor.html#nilearn.decoding.SpaceNetRegressor" title="nilearn.decoding.SpaceNetRegressor" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class"><span class="n">SpaceNetRegressor</span></a><span class="p">(</span><span class="n">mask</span><span class="o">=</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask_filename</span></a><span class="p">,</span> <span class="n">penalty</span><span class="o">=</span><span class="s2">&quot;tv-l1&quot;</span><span class="p">,</span>
+                          <span class="n">eps</span><span class="o">=</span><span class="mf">1e-1</span><span class="p">,</span>  <span class="c1"># prefer large alphas</span>
+                          <span class="n">memory</span><span class="o">=</span><span class="s2">&quot;nilearn_cache&quot;</span><span class="p">)</span>
+<span class="c1"># tv_l1.fit(zmap_filenames, behavioral_target)</span>
+<span class="c1"># plot_stat_map(tv_l1.coef_img_, title=&quot;TV-L1&quot;, display_mode=&quot;yz&quot;,</span>
+<span class="c1">#               cut_coords=[20, -2])</span>
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  46.319 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-02-decoding-plot-mixed-gambles-frem-py">
+<div class="binder-badge docutils container">
+<a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn.github.io/main?filepath=examples/auto_examples/02_decoding/plot_mixed_gambles_frem.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo1.svg" width="150px" /></a>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/95d88a64a1011103ed1dfbadd8493684/plot_mixed_gambles_frem.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_mixed_gambles_frem.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/e349ed7667bdc0b3e144b4a97a123f55/plot_mixed_gambles_frem.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_mixed_gambles_frem.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="../../authors.html#citing">citing the
+                    papers</a>.</p></li>
+  </ul>
+
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">9.3.2. FREM on Jimura et al “mixed gambles” dataset.</a><ul>
+<li><a class="reference internal" href="#load-the-data-from-the-jimura-mixed-gamble-experiment">9.3.2.1. Load the data from the Jimura mixed-gamble experiment</a></li>
+<li><a class="reference internal" href="#fit-frem">9.3.2.2. Fit FREM</a></li>
+<li><a class="reference internal" href="#example-use-of-tv-l1-spacenet">9.3.2.3. Example use of TV-L1 SpaceNet</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plot_haxby_stimuli.html"
+                        title="previous chapter"><span class="section-number">9.3.1. </span>Show stimuli of Haxby et al. dataset</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plot_haxby_frem.html"
+                        title="next chapter"><span class="section-number">9.3.3. </span>Decoding with FREM: face vs house object recognition</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+            &copy; The nilearn developers 2010-2021.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.2.0.
+        <span style="padding-left: 5ex;">
+          <a href="../../_sources/auto_examples/02_decoding/plot_mixed_gambles_frem.rst.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>

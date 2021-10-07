@@ -1,0 +1,378 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta property="og:title" content="9.5.2. Example of a events.tsv file generation: the neurospin/localizer events." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://nilearn.github.io/auto_examples/04_glm_first_level/write_events_file.html" />
+  <meta property="og:site_name" content="Nilearn" />
+  <meta property="og:description" content="The protocol described is the so-called “archi standard” localizer event sequence. See Pinel et al., BMC neuroscience 2007 for reference. print(__doc__) Define the onset times in seconds. Those are..." />
+  <meta property="og:image" content="https://nilearn.github.io/_static/nilearn-logo.png" />
+  <meta property="og:image:alt" content="Nilearn" />
+  
+    <title>Nilearn: Statistical Analysis for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="9.5.3. Example of explicit fixed effects fMRI model fitting" href="plot_fixed_effects.html" />
+    <link rel="prev" title="9.5.1. Example of hemodynamic response functions." href="plot_hrf.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
+<script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000);
+        $('.related-wrapper').css("position", "sticky");
+        $('.related-wrapper').css("top", 0);
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative");
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight();
+    var banner_width = $('#logo-banner').outerWidth();
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight());
+
+    updateTopMenuPosition(banner_height, width);
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth();
+        var menu_height = $('.related').outerHeight();
+        $('.related').css("width", banner_width);
+        $('.related-wrapper').css("height", menu_height);
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop();
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset;
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1;
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed");
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative");
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0;
+    current_section = 0;
+    $('a.internal').removeClass('active');
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        }
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        }
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active');
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var tocOffset = $('.related-wrapper').outerHeight();
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop;
+    sections = {};
+    url = document.URL.replace(/#.*$/, "");
+
+    // Grab positions of our sections
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
+    });
+
+    updateSideBarPosition(top, tocOffset, sections);
+
+    $(window).scroll(function(event) {
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight();
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+});
+</script>
+
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head><body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="../../index.html">
+      <img src="../../_static/nilearn-logo.png" alt="Nilearn logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="../decoding/plot_haxby_anova_svm.html">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="../../connectivity/parcellating.html">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="../../decoding/searchlight.html">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
+    </li>
+    <li>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
+    </li>
+    <li>
+      <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nilearn:</h1>
+    <h2>Statistics for NeuroImaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div class="gcse-search" id="cse" style="width: 100%;"></div>
+    <script>
+      (function() {
+        var cx = '017289614950330089114:elrt9qoutrq';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
+    </script>
+  </div>
+</div>
+
+
+
+<div class=related-wrapper>
+    
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a></li>
+        <li class="right" >
+          <a href="plot_fixed_effects.html" title="9.5.3. Example of explicit fixed effects fMRI model fitting"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plot_hrf.html" title="9.5.1. Example of hemodynamic response functions."
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="../index.html">Examples</a> |&nbsp;</li>
+<li><a href="../../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
+<li><a href="../../glossary.html">Glossary</a>|&nbsp;</li>
+<li><a href="../../bibliography.html">Bibliography</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U"><span class="section-number">9. </span>Nilearn usage examples</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Nilearn: Statistical Analysis for NeuroImaging in Python</a></li> 
+      </ul>
+    </div>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-04-glm-first-level-write-events-file-py"><span class="std std-ref">here</span></a>
+to download the full example code or to run this example in your browser via Binder</p>
+</div>
+<section class="sphx-glr-example-title" id="example-of-a-events-tsv-file-generation-the-neurospin-localizer-events">
+<span id="sphx-glr-auto-examples-04-glm-first-level-write-events-file-py"></span><h1><span class="section-number">9.5.2. </span>Example of a events.tsv file generation: the neurospin/localizer events.<a class="headerlink" href="#example-of-a-events-tsv-file-generation-the-neurospin-localizer-events" title="Permalink to this headline">¶</a></h1>
+<p>The protocol described is the so-called “archi standard” localizer
+event sequence.  See Pinel et al., BMC neuroscience 2007 for reference.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="vm">__doc__</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Define the onset times in seconds. Those are typically extracted
+from the stimulation software used.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="n">onset</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span>
+    <span class="mf">0.</span><span class="p">,</span> <span class="mf">2.4</span><span class="p">,</span> <span class="mf">8.7</span><span class="p">,</span> <span class="mf">11.4</span><span class="p">,</span> <span class="mf">15.</span><span class="p">,</span> <span class="mf">18.</span><span class="p">,</span> <span class="mf">20.7</span><span class="p">,</span> <span class="mf">23.7</span><span class="p">,</span> <span class="mf">26.7</span><span class="p">,</span> <span class="mf">29.7</span><span class="p">,</span> <span class="mf">33.</span><span class="p">,</span> <span class="mf">35.4</span><span class="p">,</span> <span class="mf">39.</span><span class="p">,</span>
+    <span class="mf">41.7</span><span class="p">,</span> <span class="mf">44.7</span><span class="p">,</span> <span class="mf">48.</span><span class="p">,</span> <span class="mf">56.4</span><span class="p">,</span> <span class="mf">59.7</span><span class="p">,</span> <span class="mf">62.4</span><span class="p">,</span> <span class="mf">69.</span><span class="p">,</span> <span class="mf">71.4</span><span class="p">,</span> <span class="mf">75.</span><span class="p">,</span> <span class="mf">83.4</span><span class="p">,</span> <span class="mf">87.</span><span class="p">,</span> <span class="mf">89.7</span><span class="p">,</span>
+    <span class="mf">96.</span><span class="p">,</span> <span class="mf">108.</span><span class="p">,</span> <span class="mf">116.7</span><span class="p">,</span> <span class="mf">119.4</span><span class="p">,</span> <span class="mf">122.7</span><span class="p">,</span> <span class="mf">125.4</span><span class="p">,</span> <span class="mf">131.4</span><span class="p">,</span> <span class="mf">135.</span><span class="p">,</span> <span class="mf">137.7</span><span class="p">,</span> <span class="mf">140.4</span><span class="p">,</span>
+    <span class="mf">143.4</span><span class="p">,</span> <span class="mf">146.7</span><span class="p">,</span> <span class="mf">149.4</span><span class="p">,</span> <span class="mf">153.</span><span class="p">,</span> <span class="mf">156.</span><span class="p">,</span> <span class="mf">159.</span><span class="p">,</span> <span class="mf">162.</span><span class="p">,</span> <span class="mf">164.4</span><span class="p">,</span> <span class="mf">167.7</span><span class="p">,</span> <span class="mf">170.4</span><span class="p">,</span>
+    <span class="mf">173.7</span><span class="p">,</span> <span class="mf">176.7</span><span class="p">,</span> <span class="mf">188.4</span><span class="p">,</span> <span class="mf">191.7</span><span class="p">,</span> <span class="mf">195.</span><span class="p">,</span> <span class="mf">198.</span><span class="p">,</span> <span class="mf">201.</span><span class="p">,</span> <span class="mf">203.7</span><span class="p">,</span> <span class="mf">207.</span><span class="p">,</span> <span class="mf">210.</span><span class="p">,</span>
+    <span class="mf">212.7</span><span class="p">,</span> <span class="mf">215.7</span><span class="p">,</span> <span class="mf">218.7</span><span class="p">,</span> <span class="mf">221.4</span><span class="p">,</span> <span class="mf">224.7</span><span class="p">,</span> <span class="mf">227.7</span><span class="p">,</span> <span class="mf">230.7</span><span class="p">,</span> <span class="mf">234.</span><span class="p">,</span> <span class="mf">236.7</span><span class="p">,</span> <span class="mf">246.</span><span class="p">,</span>
+    <span class="mf">248.4</span><span class="p">,</span> <span class="mf">251.7</span><span class="p">,</span> <span class="mf">254.7</span><span class="p">,</span> <span class="mf">257.4</span><span class="p">,</span> <span class="mf">260.4</span><span class="p">,</span> <span class="mf">264.</span><span class="p">,</span> <span class="mf">266.7</span><span class="p">,</span> <span class="mf">269.7</span><span class="p">,</span> <span class="mf">275.4</span><span class="p">,</span> <span class="mf">278.4</span><span class="p">,</span>
+    <span class="mf">284.4</span><span class="p">,</span> <span class="mf">288.</span><span class="p">,</span> <span class="mf">291.</span><span class="p">,</span> <span class="mf">293.4</span><span class="p">,</span> <span class="mf">296.7</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Associated trial types: these are numbered between 0 and 9, hence
+correspond to 10 different conditions.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trial_idx</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span>
+    <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span>
+     <span class="mi">2</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span>
+     <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+     <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>We may want to map these indices to explicit condition names.
+For that, we define a list of 10 strings.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">condition_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;horizontal checkerboard&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;vertical checkerboard&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;right button press, auditory instructions&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;left button press, auditory instructions&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;right button press, visual instructions&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;left button press, visual instructions&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;mental computation, auditory instructions&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;mental computation, visual instructions&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;visual sentence&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;auditory sentence&#39;</span><span class="p">]</span>
+
+<span class="n">trial_type</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="n">condition_ids</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">trial_idx</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>We also define a duration (required by BIDS conventions).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">duration</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ones_like.html#numpy.ones_like" title="numpy.ones_like" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span></a><span class="p">(</span><span class="n">onset</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Form an event dataframe from these information.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="n">events</span> <span class="o">=</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span></a><span class="p">({</span><span class="s1">&#39;trial_type&#39;</span><span class="p">:</span> <span class="n">trial_type</span><span class="p">,</span>
+                       <span class="s1">&#39;onset&#39;</span><span class="p">:</span> <span class="n">onset</span><span class="p">,</span>
+                       <span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="n">duration</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>Export them to a tsv file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tsvfile</span> <span class="o">=</span> <span class="s1">&#39;localizer_events.tsv&#39;</span>
+<span class="n">events</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">tsvfile</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Created the events file in </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">tsvfile</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Optionally, the events can be visualized using the plot_event function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_event.html#nilearn.plotting.plot_event" title="nilearn.plotting.plot_event" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_event</span></a>
+<a href="../../modules/generated/nilearn.plotting.plot_event.html#nilearn.plotting.plot_event" title="nilearn.plotting.plot_event" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_event</span></a><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-04-glm-first-level-write-events-file-py">
+<div class="binder-badge docutils container">
+<a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn.github.io/main?filepath=examples/auto_examples/04_glm_first_level/write_events_file.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo3.svg" width="150px" /></a>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/9b7411e4423bec53e1d59329c723695e/write_events_file.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">write_events_file.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/4975fd52313ccd89194c7cb668259873/write_events_file.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">write_events_file.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="../../authors.html#citing">citing the
+                    papers</a>.</p></li>
+  </ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plot_hrf.html"
+                        title="previous chapter"><span class="section-number">9.5.1. </span>Example of hemodynamic response functions.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plot_fixed_effects.html"
+                        title="next chapter"><span class="section-number">9.5.3. </span>Example of explicit fixed effects fMRI model fitting</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+            &copy; The nilearn developers 2010-2021.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.2.0.
+        <span style="padding-left: 5ex;">
+          <a href="../../_sources/auto_examples/04_glm_first_level/write_events_file.rst.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>
