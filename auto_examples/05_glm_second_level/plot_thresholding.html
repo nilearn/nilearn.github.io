@@ -5,6 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta property="og:title" content="9.6.3. Statistical testing of a second-level analysis" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://nilearn.github.io/auto_examples/05_glm_second_level/plot_thresholding.html" />
+  <meta property="og:site_name" content="Nilearn" />
+  <meta property="og:description" content="Perform a one-sample t-test on a bunch of images (a.k.a. second-level analysis in fMRI) and threshold the resulting statistical map. This example is based on the so-called localizer dataset. It sho..." />
+  <meta property="og:image" content="../../_images/sphx_glr_plot_thresholding_001.png" />
+  <meta property="og:image:alt" content="plot thresholding" />
+  
     <title>Nilearn: Statistical Analysis for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
@@ -279,11 +287,27 @@ is only one possible contrast, we don’t need to specify it in detail.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.second_level.SecondLevelModel.html#nilearn.glm.second_level.SecondLevelModel.compute_contrast" title="nilearn.glm.second_level.SecondLevelModel.compute_contrast" class="sphx-glr-backref-module-nilearn-glm-second_level sphx-glr-backref-type-py-method"><span class="n">second_level_model</span><span class="o">.</span><span class="n">compute_contrast</span></a><span class="p">(</span><span class="n">output_type</span><span class="o">=</span><span class="s1">&#39;z_score&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Threshold the resulting map:
+<p>Threshold the resulting map without multiple comparisons correction,
+abs(z) &gt; 3.29 (equivalent to p &lt; 0.001), cluster size &gt; 10 voxels.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.image.threshold_img.html#nilearn.image.threshold_img" title="nilearn.image.threshold_img" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">threshold_img</span></a>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">thresholded_map</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.threshold_img.html#nilearn.image.threshold_img" title="nilearn.image.threshold_img" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">threshold_img</span></a><span class="p">(</span>
+    <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span>
+    <span class="n">threshold</span><span class="o">=</span><span class="mf">3.29</span><span class="p">,</span>
+    <span class="n">cluster_threshold</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">two_sided</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This is equivalent to thresholding a z-statistic image with a
 false positive rate &lt; .001, cluster size &gt; 10 voxels.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.glm</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.glm.threshold_stats_img.html#nilearn.glm.threshold_stats_img" title="nilearn.glm.threshold_stats_img" class="sphx-glr-backref-module-nilearn-glm sphx-glr-backref-type-py-function"><span class="n">threshold_stats_img</span></a>
 <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">thresholded_map1</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold1</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.threshold_stats_img.html#nilearn.glm.threshold_stats_img" title="nilearn.glm.threshold_stats_img" class="sphx-glr-backref-module-nilearn-glm sphx-glr-backref-type-py-function"><span class="n">threshold_stats_img</span></a><span class="p">(</span>
-    <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">001</span><span class="p">,</span> <span class="n">height_control</span><span class="o">=</span><span class="s1">&#39;fpr&#39;</span><span class="p">,</span> <span class="n">cluster_threshold</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span>
+    <span class="n">alpha</span><span class="o">=.</span><span class="mi">001</span><span class="p">,</span>
+    <span class="n">height_control</span><span class="o">=</span><span class="s1">&#39;fpr&#39;</span><span class="p">,</span>
+    <span class="n">cluster_threshold</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">two_sided</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <p>Now use FDR &lt;.05 (False Discovery Rate) and no cluster-level threshold.</p>
@@ -326,7 +350,7 @@ voxels).</p>
 </div>
 <img alt="plot thresholding" class="sphx-glr-single-img" src="../../_images/sphx_glr_plot_thresholding_002.png" />
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays.OrthoSlicer object at 0x7fbedd319550&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays.OrthoSlicer object at 0x7ff01cd3f280&gt;
 </pre></div>
 </div>
 <p>Third, the fdr-thresholded map.</p>
@@ -337,7 +361,7 @@ voxels).</p>
 </div>
 <img alt="plot thresholding" class="sphx-glr-single-img" src="../../_images/sphx_glr_plot_thresholding_003.png" />
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays.OrthoSlicer object at 0x7fbefbaa1c40&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays.OrthoSlicer object at 0x7ff03d94b970&gt;
 </pre></div>
 </div>
 <p>Fourth, the Bonferroni-thresholded map.</p>
@@ -348,7 +372,7 @@ voxels).</p>
 </div>
 <img alt="plot thresholding" class="sphx-glr-single-img" src="../../_images/sphx_glr_plot_thresholding_004.png" />
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays.OrthoSlicer object at 0x7fbefba161f0&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays.OrthoSlicer object at 0x7ff01d0fe9a0&gt;
 </pre></div>
 </div>
 <p>These different thresholds correspond to different statistical
@@ -360,7 +384,7 @@ positive voxels.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  16.166 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  16.242 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-05-glm-second-level-plot-thresholding-py">
 <div class="binder-badge docutils container">
 <a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn.github.io/main?filepath=examples/auto_examples/05_glm_second_level/plot_thresholding.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo4.svg" width="150px" /></a>
