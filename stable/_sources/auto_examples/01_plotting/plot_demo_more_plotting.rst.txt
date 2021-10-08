@@ -1,0 +1,743 @@
+.. only:: html
+
+    .. note::
+        :class: sphx-glr-download-link-note
+
+        Click :ref:`here <sphx_glr_download_auto_examples_01_plotting_plot_demo_more_plotting.py>`     to download the full example code or to run this example in your browser via Binder
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_auto_examples_01_plotting_plot_demo_more_plotting.py:
+
+
+More plotting tools from nilearn
+================================
+
+In this example, we demonstrate how to use plotting options from
+nilearn essential in visualizing brain image analysis results.
+
+We emphasize the use of parameters such as `display_mode` and `cut_coords`
+with plotting function :func:`nilearn.plotting.plot_stat_map`. Also,
+we show how to use various features such as `add_edges`, `add_contours`,
+`add_markers` essential in visualizing regions of interest images or
+mask images overlaying on subject specific anatomical/EPI image.
+The display features shown here are inherited from the
+:class:`nilearn.plotting.displays.OrthoSlicer` class.
+
+The parameter `display_mode` is used to draw brain slices along given
+specific directions, where directions can be one of 'ortho',
+'tiled','x', 'y', 'z', 'yx', 'xz', 'yz'. whereas parameter `cut_coords`
+is used to specify a limited number of slices to visualize along given
+specific slice direction. The parameter `cut_coords` can also be used
+to draw the specific cuts in the slices by giving its particular
+coordinates in MNI space accordingly with particular slice direction.
+This helps us point to the activation specific location of the brain slices.
+
+See :ref:`plotting` for more details.
+
+First, we retrieve data from nilearn provided (general-purpose) datasets
+-------------------------------------------------------------------------
+
+
+.. code-block:: default
+
+
+    from nilearn import datasets
+
+    # haxby dataset to have anatomical image, EPI images and masks
+    haxby_dataset = datasets.fetch_haxby()
+    haxby_anat_filename = haxby_dataset.anat[0]
+    haxby_mask_filename = haxby_dataset.mask_vt[0]
+    haxby_func_filename = haxby_dataset.func[0]
+
+    # localizer dataset to have contrast maps
+    motor_images = datasets.fetch_neurovault_motor_task()
+    stat_img = motor_images.images[0]
+
+
+
+
+
+
+
+
+
+Now, we show from here how to visualize the retrieved datasets using plotting
+tools from nilearn.
+
+
+.. code-block:: default
+
+
+    from nilearn import plotting
+
+
+
+
+
+
+
+
+Visualizing in - 'sagittal', 'coronal' and 'axial' with given coordinates
+-------------------------------------------------------------------------
+The first argument is a path to the filename of a contrast map,
+optional argument `display_mode` is given as string 'ortho' to visualize
+the map in three specific directions xyz and the optional `cut_coords`
+argument, is here a list of integers denotes coordinates of each slice
+in the order [x, y, z]. By default the `colorbar` argument is set to True
+in plot_stat_map.
+
+
+.. code-block:: default
+
+    plotting.plot_stat_map(stat_img, display_mode='ortho',
+                           cut_coords=[36, -27, 60],
+                           title="display_mode='ortho', cut_coords=[36, -27, 60]")
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_001.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.OrthoSlicer object at 0x7fc023b35cd0>
+
+
+
+Visualizing in - single view 'axial' with number of cuts=5
+-----------------------------------------------------------
+In this type of visualization, the `display_mode` argument is given as
+string 'z' for axial direction and `cut_coords` as integer 5 without a
+list implies that number of cuts in the slices should be maximum of 5.
+The coordinates to cut the slices are selected automatically
+
+
+.. code-block:: default
+
+    plotting.plot_stat_map(stat_img, display_mode='z', cut_coords=5,
+                           title="display_mode='z', cut_coords=5")
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_002.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.ZSlicer object at 0x7fc01d24a910>
+
+
+
+Visualizing in - single view 'sagittal' with only two slices
+-------------------------------------------------------------
+In this type, `display_mode` should be given as string 'x' for sagittal
+view and coordinates should be given as integers in a list
+
+
+.. code-block:: default
+
+    plotting.plot_stat_map(stat_img, display_mode='x',
+                           cut_coords=[-36, 36],
+                           title="display_mode='x', cut_coords=[-36, 36]")
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_003.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.XSlicer object at 0x7fc0252e80a0>
+
+
+
+Visualizing in - 'coronal' view with single cut
+------------------------------------------------
+For coronal view, `display_mode` is given as string 'y' and `cut_coords`
+as integer 1 not as a list for single cut. The coordinates are selected
+automatically
+
+
+.. code-block:: default
+
+    plotting.plot_stat_map(stat_img, display_mode='y', cut_coords=1,
+                           title="display_mode='y', cut_coords=1")
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_004.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.YSlicer object at 0x7fc0188d48e0>
+
+
+
+Visualizing without a colorbar on the right side
+-------------------------------------------------
+The argument `colorbar` should be given as False to show plots without
+a colorbar on the right side.
+
+
+.. code-block:: default
+
+    plotting.plot_stat_map(stat_img, display_mode='z',
+                           cut_coords=1, colorbar=False,
+                           title="display_mode='z', cut_coords=1, colorbar=False")
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_005.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.ZSlicer object at 0x7fc01e391160>
+
+
+
+Visualize in - two views 'sagittal' and 'axial' with given coordinates
+-------------------------------------------------------------------------
+argument display_mode='xz' where 'x' for sagittal and 'z' for axial view.
+argument `cut_coords` should match with input number of views therefore two
+integers should be given in a list to select the slices to be displayed
+
+
+.. code-block:: default
+
+    plotting.plot_stat_map(stat_img, display_mode='xz',
+                           cut_coords=[36, 60],
+                           title="display_mode='xz', cut_coords=[36, 60]")
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_006.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.XZSlicer object at 0x7fc01c91e7c0>
+
+
+
+Changing the views to 'coronal', 'sagittal' views with coordinates
+-------------------------------------------------------------------
+display_mode='yx' for coronal and sagittal view and coordinates will be
+assigned in the order of direction as [x, y, z]
+
+
+.. code-block:: default
+
+    plotting.plot_stat_map(stat_img, display_mode='yx',
+                           cut_coords=[-27, 36],
+                           title="display_mode='yx', cut_coords=[-27, 36]")
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_007.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.YXSlicer object at 0x7fc023b351f0>
+
+
+
+Now, views are changed to 'coronal' and 'axial' views with coordinates
+-----------------------------------------------------------------------
+
+
+.. code-block:: default
+
+
+    plotting.plot_stat_map(stat_img, display_mode='yz',
+                           cut_coords=[-27, 60],
+                           title="display_mode='yz', cut_coords=[-27, 60]")
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_008.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.YZSlicer object at 0x7fc0174b2f10>
+
+
+
+Visualizing three views in 2x2 fashion
+-------------------------------------------------------------------------
+display_mode='tiled' for sagittal, coronal and axial view
+
+
+.. code-block:: default
+
+
+    plotting.plot_stat_map(stat_img, display_mode='tiled',
+                           cut_coords=[36, -27, 60],
+                           title="display_mode='tiled'")
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_009.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.TiledSlicer object at 0x7fc018c6ef70>
+
+
+
+Visualizing three views along multiple rows and columns
+-------------------------------------------------------------------------
+display_mode='mosaic' for sagittal, coronal and axial view with
+default option i.e. cut_coords=None
+
+
+.. code-block:: default
+
+
+    plotting.plot_stat_map(stat_img, display_mode='mosaic',
+                           title="display_mode='mosaic' default cut_coords")
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_010.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.MosaicSlicer object at 0x7fc019ffa790>
+
+
+
+Now, changing the number of slices along columns
+-------------------------------------------------------------------------
+display_mode='mosaic' for sagittal, coronal and axial view with
+number of slices specified as integer i.e. cut_coords=3
+
+
+.. code-block:: default
+
+
+    plotting.plot_stat_map(stat_img, display_mode='mosaic',
+                           cut_coords=3,
+                           title="display_mode='mosaic' with cut_coords=3")
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_011.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.MosaicSlicer object at 0x7fc01a5990d0>
+
+
+
+Now, another way of limiting the number of slices along rows and columns
+-------------------------------------------------------------------------
+display_mode='mosaic' for sagittal, coronal and axial view with
+number of slices specified as tuple of length 3
+
+
+.. code-block:: default
+
+
+    plotting.plot_stat_map(stat_img, display_mode='mosaic',
+                           cut_coords=(5, 4, 10),
+                           title="display_mode='mosaic' with cut_coords as tuple")
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_012.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.MosaicSlicer object at 0x7fc025237670>
+
+
+
+Demonstrating various display features
+---------------------------------------
+In second part, we switch to demonstrating various features add_* from
+nilearn where each specific feature will be helpful in projecting brain
+imaging results for further interpretation.
+
+
+.. code-block:: default
+
+
+    # Import image processing tool for basic processing of functional brain image
+    from nilearn import image
+
+    # Compute voxel-wise mean functional image across time dimension. Now we have
+    # functional image in 3D assigned in mean_haxby_img
+    mean_haxby_img = image.mean_img(haxby_func_filename)
+
+
+
+
+
+
+
+
+Showing how to use `add_edges`
+------------------------------
+Now let us see how to use `add_edges`, method useful for checking
+coregistration by overlaying anatomical image as edges (red) on top of
+mean functional image (background), both being of same subject.
+
+
+.. code-block:: default
+
+
+    # First, we call the `plot_anat` plotting function, with a background image
+    # as first argument, in this case the mean fMRI image.
+
+    display = plotting.plot_anat(mean_haxby_img, title="add_edges")
+
+    # We are now able to use add_edges method inherited in plotting object named as
+    # display. First argument - anatomical image  and by default edges will be
+    # displayed as red 'r', to choose different colors green 'g' and  blue 'b'.
+    display.add_edges(haxby_anat_filename)
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_013.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+
+
+
+How to use `add_contours`
+-------------------------
+Plotting outline of the mask (red) on top of the mean EPI image with
+`add_contours`. This method is useful for region specific interpretation
+of brain images
+
+
+.. code-block:: default
+
+
+    # As seen before, we call the `plot_anat` function with a background image
+    # as first argument, in this case again the mean fMRI image and argument
+    # `cut_coords` as list for manual cut with coordinates pointing at masked
+    # brain regions
+    display = plotting.plot_anat(mean_haxby_img, title="add_contours",
+                                 cut_coords=[-34, -39, -9])
+    # Now use `add_contours` in display object with the path to a mask image from
+    # the Haxby dataset as first argument and argument `levels` given as list
+    # of values to select particular level in the contour to display and argument
+    # `colors` specified as red 'r' to see edges as red in color.
+    # See help on matplotlib.pyplot.contour to use more options with this method
+    display.add_contours(haxby_mask_filename, levels=[0.5], colors='r')
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_014.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+
+
+
+Plotting outline of the mask (blue) with color fillings using same method
+`add_contours`.
+
+
+.. code-block:: default
+
+
+    display = plotting.plot_anat(mean_haxby_img,
+                                 title="add_contours with filled=True",
+                                 cut_coords=[-34, -39, -9])
+
+    # By default, no color fillings will be shown using `add_contours`. To see
+    # contours with color fillings use argument filled=True. contour colors are
+    # changed to blue 'b' with alpha=0.7 sets the transparency of color fillings.
+    # See help on matplotlib.pyplot.contourf to use more options given that filled
+    # should be True
+    display.add_contours(haxby_mask_filename, filled=True, alpha=0.7,
+                         levels=[0.5], colors='b')
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_015.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/plotting/displays.py:101: UserWarning: No contour levels were found within the data range.
+      im = getattr(ax, type)(data_2d.copy(),
+
+
+
+
+Plotting seeds using `add_markers`
+----------------------------------
+Plotting seed regions of interest as spheres using new feature `add_markers`
+with MNI coordinates of interest.
+
+
+.. code-block:: default
+
+
+    display = plotting.plot_anat(mean_haxby_img, title="add_markers",
+                                 cut_coords=[-34, -39, -9])
+
+    # Coordinates of seed regions should be specified in first argument and second
+    # argument `marker_color` denotes color of the sphere in this case yellow 'y'
+    # and third argument `marker_size` denotes size of the sphere
+    coords = [(-34, -39, -9)]
+    display.add_markers(coords, marker_color='y', marker_size=100)
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_016.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+
+
+
+Annotating plots
+------------------------------
+It is possible to alter the default annotations of plots, using the
+``annotate`` member function of display objects.
+For example, we can add a scale bar at the bottom right of each view:
+
+
+.. code-block:: default
+
+
+    display = plotting.plot_anat(mean_haxby_img,
+                                 title="adding a scale bar",
+                                 cut_coords=[-34, -39, -9])
+    display.annotate(scalebar=True)
+
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_017.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+
+
+
+Further configuration can be achieved by setting ``scale_*`` keyword args.
+For instance, changing ``units`` to `mm` or a different scale bar size.
+
+
+.. code-block:: default
+
+    display = plotting.plot_anat(mean_haxby_img,
+                                 title="adding a scale bar",
+                                 cut_coords=[-34, -39, -9])
+    display.annotate(scalebar=True, scale_size=25, scale_units='mm')
+
+
+
+
+.. image:: /auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_018.png
+    :alt: plot demo more plotting
+    :class: sphx-glr-single-img
+
+
+
+
+
+Saving plots to file
+--------------------
+Finally, saving the plots to file with two different ways
+
+
+.. code-block:: default
+
+
+    # Contrast maps plotted with function `plot_stat_map` can be saved using an
+    # inbuilt parameter output_file as filename + .extension as string. Valid
+    # extensions are .png, .pdf, .svg
+    plotting.plot_stat_map(stat_img,
+                           title='Using plot_stat_map output_file',
+                           output_file='plot_stat_map.png')
+
+
+
+
+
+
+
+
+Another way of saving plots is using 'savefig' option from display object
+
+
+.. code-block:: default
+
+    display = plotting.plot_stat_map(stat_img,
+                                     title='Using display savefig')
+    display.savefig('plot_stat_map_from_display.png')
+    # In non-interactive settings make sure you close your displays
+    display.close()
+
+    plotting.show()
+
+
+
+
+
+
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  30.303 seconds)
+
+
+.. _sphx_glr_download_auto_examples_01_plotting_plot_demo_more_plotting.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+  .. container:: binder-badge
+
+    .. image:: images/binder_badge_logo.svg
+      :target: https://mybinder.org/v2/gh/nilearn/nilearn.github.io/main?filepath=examples/auto_examples/01_plotting/plot_demo_more_plotting.ipynb
+      :alt: Launch binder
+      :width: 150 px
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+     :download:`Download Python source code: plot_demo_more_plotting.py <plot_demo_more_plotting.py>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+     :download:`Download Jupyter notebook: plot_demo_more_plotting.ipynb <plot_demo_more_plotting.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

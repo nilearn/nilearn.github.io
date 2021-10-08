@@ -1,0 +1,730 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nilearn: Statistical Analysis for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-dataframe.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="9.3.15. Encoding models for visual stimuli from Miyawaki et al. 2008" href="plot_miyawaki_encoding.html" />
+    <link rel="prev" title="9.3.13. Example of pattern recognition on simulated data" href="plot_simulated_data.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
+<script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000);
+        $('.related-wrapper').css("position", "sticky");
+        $('.related-wrapper').css("top", 0);
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative");
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight();
+    var banner_width = $('#logo-banner').outerWidth();
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight());
+
+    updateTopMenuPosition(banner_height, width);
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth();
+        var menu_height = $('.related').outerHeight();
+        $('.related').css("width", banner_width);
+        $('.related-wrapper').css("height", menu_height);
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop();
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset;
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1;
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed");
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative");
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0;
+    current_section = 0;
+    $('a.internal').removeClass('active');
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        }
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        }
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active');
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var tocOffset = $('.related-wrapper').outerHeight();
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop;
+    sections = {};
+    url = document.URL.replace(/#.*$/, "");
+
+    // Grab positions of our sections
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
+    });
+
+    updateSideBarPosition(top, tocOffset, sections);
+
+    $(window).scroll(function(event) {
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight();
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+});
+</script>
+
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head><body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="../../index.html">
+      <img src="../../_static/nilearn-logo.png" alt="Nilearn logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="../decoding/plot_haxby_anova_svm.html">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="../../connectivity/parcellating.html">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="../../decoding/searchlight.html">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
+    </li>
+    <li>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
+    </li>
+    <li>
+      <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nilearn:</h1>
+    <h2>Statistics for NeuroImaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div class="gcse-search" id="cse" style="width: 100%;"></div>
+    <script>
+      (function() {
+        var cx = '017289614950330089114:elrt9qoutrq';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
+    </script>
+  </div>
+</div>
+
+
+
+<div class=related-wrapper>
+    
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a></li>
+        <li class="right" >
+          <a href="plot_miyawaki_encoding.html" title="9.3.15. Encoding models for visual stimuli from Miyawaki et al. 2008"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plot_simulated_data.html" title="9.3.13. Example of pattern recognition on simulated data"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="../index.html">Examples</a> |&nbsp;</li>
+<li><a href="../../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
+<li><a href="../../glossary.html">Glossary</a>|&nbsp;</li>
+<li><a href="../../bibliography.html">Bibliography</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U"><span class="section-number">9. </span>Nilearn usage examples</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Nilearn: Statistical Analysis for NeuroImaging in Python</a></li> 
+      </ul>
+    </div>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-02-decoding-plot-oasis-vbm-py"><span class="std std-ref">here</span></a>     to download the full example code or to run this example in your browser via Binder</p>
+</div>
+<div class="sphx-glr-example-title section" id="voxel-based-morphometry-on-oasis-dataset">
+<span id="sphx-glr-auto-examples-02-decoding-plot-oasis-vbm-py"></span><h1><span class="section-number">9.3.14. </span>Voxel-Based Morphometry on Oasis dataset<a class="headerlink" href="#voxel-based-morphometry-on-oasis-dataset" title="Permalink to this headline">¶</a></h1>
+<p>This example uses Voxel-Based Morphometry (VBM) to study the relationship
+between aging and gray matter density.</p>
+<p>The data come from the <a class="reference external" href="http://www.oasis-brains.org/">OASIS</a> project.
+If you use it, you need to agree with the data usage agreement available
+on the website.</p>
+<p>It has been run through a standard VBM pipeline (using SPM8 and
+NewSegment) to create VBM maps, which we study here.</p>
+<div class="section" id="predictive-modeling-analysis-vbm-bio-markers-of-aging">
+<h2><span class="section-number">9.3.14.1. </span>Predictive modeling analysis: VBM bio-markers of aging?<a class="headerlink" href="#predictive-modeling-analysis-vbm-bio-markers-of-aging" title="Permalink to this headline">¶</a></h2>
+<p>We run a standard SVM-ANOVA nilearn pipeline to predict age from the VBM
+data. We use only 100 subjects from the OASIS dataset to limit the memory
+usage.</p>
+<p>Note that for an actual predictive modeling study of aging, the study
+should be ran on the full set of subjects. Also, all parameters should be set
+by cross-validation. This includes the smoothing applied to the data and the
+number of features selected by the ANOVA step. Indeed, even these
+data-preparation parameter impact significantly the prediction score.</p>
+<p>Also, parameters such as the smoothing should be applied to the data and the
+number of features selected by the ANOVA step should be set by nested
+cross-validation, as they impact significantly the prediction score.</p>
+</div>
+<div class="section" id="brain-mapping-with-mass-univariate">
+<h2><span class="section-number">9.3.14.2. </span>Brain mapping with mass univariate<a class="headerlink" href="#brain-mapping-with-mass-univariate" title="Permalink to this headline">¶</a></h2>
+<p>SVM weights are very noisy, partly because heavy smoothing is detrimental
+for the prediction here. A standard analysis using mass-univariate GLM
+(here permuted to have exact correction for multiple comparisons) gives a
+much clearer view of the important regions.</p>
+<hr class="docutils" />
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Authors: Elvis Dhomatob, &lt;elvis.dohmatob@inria.fr&gt;, Apr. 2014</span>
+<span class="c1">#          Virgile Fritsch, &lt;virgile.fritsch@inria.fr&gt;, Apr 2014</span>
+<span class="c1">#          Gael Varoquaux, Apr 2014</span>
+<span class="c1">#          Andres Hoyos-Idrobo, Apr 2017</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+<span class="kn">from</span> <span class="nn">nilearn.input_data</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-class"><span class="n">NiftiMasker</span></a>
+<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="nilearn.image.get_data" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">get_data</span></a>
+
+<a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_subjects</span></a> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># more subjects requires more memory</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-oasis-dataset">
+<h2><span class="section-number">9.3.14.3. </span>Load Oasis dataset<a class="headerlink" href="#load-oasis-dataset" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">oasis_dataset</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_oasis_vbm.html#nilearn.datasets.fetch_oasis_vbm" title="nilearn.datasets.fetch_oasis_vbm" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_oasis_vbm</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_subjects</span></a><span class="o">=</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_subjects</span></a><span class="p">)</span>
+<a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gray_matter_map_filenames</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oasis_dataset</span><span class="o">.</span><span class="n">gray_matter_maps</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.recarray.html#numpy.recarray" title="numpy.recarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oasis_dataset</span><span class="o">.</span><span class="n">ext_vars</span></a><span class="p">[</span><span class="s1">&#39;age&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+<span class="c1"># Split data into training set and test set</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html#sklearn.model_selection.train_test_split" title="sklearn.model_selection.train_test_split" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-function"><span class="n">train_test_split</span></a>
+<a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_train</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_test</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_train</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_test</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html#sklearn.model_selection.train_test_split" title="sklearn.model_selection.train_test_split" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-function"><span class="n">train_test_split</span></a><span class="p">(</span>
+    <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gray_matter_map_filenames</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age</span></a><span class="p">,</span> <span class="n">train_size</span><span class="o">=.</span><span class="mi">6</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># print basic information on the dataset</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;First gray-matter anatomy image (3D) is located at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+      <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oasis_dataset</span><span class="o">.</span><span class="n">gray_matter_maps</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># 3D data</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;First white-matter anatomy image (3D) is located at: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+      <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oasis_dataset</span><span class="o">.</span><span class="n">white_matter_maps</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># 3D data</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/nicolas/anaconda3/envs/nilearn/lib/python3.8/site-packages/numpy/lib/npyio.py:2405: VisibleDeprecationWarning: Reading unicode strings without specifying the encoding argument is deprecated. Set the encoding, use None for the system default.
+  output = genfromtxt(fname, **kwargs)
+First gray-matter anatomy image (3D) is located at: /home/nicolas/nilearn_data/oasis1/OAS1_0001_MR1/mwrc1OAS1_0001_MR1_mpr_anon_fslswapdim_bet.nii.gz
+First white-matter anatomy image (3D) is located at: /home/nicolas/nilearn_data/oasis1/OAS1_0001_MR1/mwrc2OAS1_0001_MR1_mpr_anon_fslswapdim_bet.nii.gz
+</pre></div>
+</div>
+</div>
+<div class="section" id="preprocess-data">
+<h2><span class="section-number">9.3.14.4. </span>Preprocess data<a class="headerlink" href="#preprocess-data" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nifti_masker</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-class"><span class="n">NiftiMasker</span></a><span class="p">(</span>
+    <span class="n">standardize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">memory</span><span class="o">=</span><span class="s1">&#39;nilearn_cache&#39;</span><span class="p">)</span>  <span class="c1"># cache options</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_masked</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker.fit_transform" title="nilearn.input_data.NiftiMasker.fit_transform" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-method"><span class="n">nifti_masker</span><span class="o">.</span><span class="n">fit_transform</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_train</span></a><span class="p">)</span>
+
+<span class="c1"># The features with too low between-subject variance are removed using</span>
+<span class="c1"># :class:`sklearn.feature_selection.VarianceThreshold`.</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold" title="sklearn.feature_selection.VarianceThreshold" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-class"><span class="n">VarianceThreshold</span></a>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold" title="sklearn.feature_selection.VarianceThreshold" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">variance_threshold</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold" title="sklearn.feature_selection.VarianceThreshold" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-class"><span class="n">VarianceThreshold</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="o">=.</span><span class="mi">01</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_thresholded</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.fit_transform" title="sklearn.feature_selection.VarianceThreshold.fit_transform" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-method"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">fit_transform</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_masked</span></a><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_masked</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.inverse_transform" title="sklearn.feature_selection.VarianceThreshold.inverse_transform" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-method"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">inverse_transform</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_thresholded</span></a><span class="p">)</span>
+
+<span class="c1"># Then we convert the data back to the mask image in order to use it for</span>
+<span class="c1"># decoding process</span>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker.inverse_transform" title="nilearn.input_data.NiftiMasker.inverse_transform" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-method"><span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span></a><span class="p">(</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.get_support" title="sklearn.feature_selection.VarianceThreshold.get_support" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-method"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">get_support</span></a><span class="p">())</span>
+</pre></div>
+</div>
+<p>Prediction pipeline with ANOVA and SVR using
+<a class="reference internal" href="../../modules/generated/nilearn.decoding.DecoderRegressor.html#nilearn.decoding.DecoderRegressor" title="nilearn.decoding.DecoderRegressor"><code class="xref py py-class docutils literal notranslate"><span class="pre">nilearn.decoding.DecoderRegressor</span></code></a> Object</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># In nilearn we can benefit from the built-in DecoderRegressor object to</span>
+<span class="c1"># do ANOVA with SVR instead of manually defining the whole pipeline.</span>
+<span class="c1"># This estimator also uses Cross Validation to select best models and ensemble</span>
+<span class="c1"># them. Furthermore, you can pass n_jobs=&lt;some_high_value&gt; to the</span>
+<span class="c1"># DecoderRegressor class to take advantage of a multi-core system.</span>
+<span class="c1"># To save time (because these are anat images with many voxels), we include</span>
+<span class="c1"># only the 1-percent voxels most correlated with the age variable to fit. We</span>
+<span class="c1"># also want to set mask hyperparameter to be the mask we just obtained above.</span>
+
+<span class="kn">from</span> <span class="nn">nilearn.decoding</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.decoding.DecoderRegressor.html#nilearn.decoding.DecoderRegressor" title="nilearn.decoding.DecoderRegressor" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class"><span class="n">DecoderRegressor</span></a>
+<a href="../../modules/generated/nilearn.decoding.DecoderRegressor.html#nilearn.decoding.DecoderRegressor" title="nilearn.decoding.DecoderRegressor" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">decoder</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.decoding.DecoderRegressor.html#nilearn.decoding.DecoderRegressor" title="nilearn.decoding.DecoderRegressor" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class"><span class="n">DecoderRegressor</span></a><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="s1">&#39;svr&#39;</span><span class="p">,</span> <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a><span class="o">=</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask</span></a><span class="p">,</span>
+                           <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;neg_mean_absolute_error&#39;</span><span class="p">,</span>
+                           <span class="n">screening_percentile</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                           <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># Fit and predict with the decoder</span>
+<a href="../../modules/generated/nilearn.decoding.DecoderRegressor.html#nilearn.decoding.DecoderRegressor.fit" title="nilearn.decoding.DecoderRegressor.fit" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-method"><span class="n">decoder</span><span class="o">.</span><span class="n">fit</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_train</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_train</span></a><span class="p">)</span>
+
+<span class="c1"># Sort test data for better visualization (trend, etc.)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">perm</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.argsort.html#numpy.argsort" title="numpy.argsort" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">argsort</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_test</span></a><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_test</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_test</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">perm</span></a><span class="p">]</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_test</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_test</span></a><span class="p">)[</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">perm</span></a><span class="p">]</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_pred</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.decoding.DecoderRegressor.html#nilearn.decoding.DecoderRegressor.predict" title="nilearn.decoding.DecoderRegressor.predict" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-method"><span class="n">decoder</span><span class="o">.</span><span class="n">predict</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_imgs_test</span></a><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">prediction_score</span></a> <span class="o">=</span> <span class="o">-</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.mean.html#numpy.mean" title="numpy.mean" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">decoder</span><span class="o">.</span><span class="n">cv_scores_</span></a><span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=== DECODER ===&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;explained variance for the cross-validation: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">prediction_score</span></a><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>=== DECODER ===
+explained variance for the cross-validation: 10.670598
+</pre></div>
+</div>
+</div>
+<div class="section" id="visualization">
+<h2><span class="section-number">9.3.14.5. </span>Visualization<a class="headerlink" href="#visualization" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">weight_img</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">decoder</span><span class="o">.</span><span class="n">coef_img_</span></a><span class="p">[</span><span class="s1">&#39;beta&#39;</span><span class="p">]</span>
+
+<span class="c1"># Create the figure</span>
+<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">,</span> <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a>
+<a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bg_filename</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gray_matter_map_filenames</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_slice</span></a> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">weight_img</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bg_filename</span></a><span class="p">,</span>
+                        <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_slice</span></a><span class="p">])</span>
+<span class="n">display</span><span class="o">.</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">title</span></a><span class="p">(</span><span class="s2">&quot;SVM weights&quot;</span><span class="p">)</span>
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="plot oasis vbm" class="sphx-glr-single-img" src="../../_images/sphx_glr_plot_oasis_vbm_001.png" />
+</div>
+<div class="section" id="visualize-the-quality-of-predictions">
+<h2><span class="section-number">9.3.14.6. </span>Visualize the quality of predictions<a class="headerlink" href="#visualize-the-quality-of-predictions" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="matplotlib.pyplot.figure" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.suptitle.html#matplotlib.pyplot.suptitle" title="matplotlib.pyplot.suptitle" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span></a><span class="p">(</span><span class="s2">&quot;Decoder: Mean Absolute Error </span><span class="si">%.2f</span><span class="s2"> years&quot;</span> <span class="o">%</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">prediction_score</span></a><span class="p">)</span>
+<a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a> <span class="o">=</span> <span class="mi">3</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_test</span></a><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;True age&quot;</span><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a><span class="o">=</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_pred</span></a><span class="p">,</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Predicted age&quot;</span><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a><span class="o">=</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.ylabel.html#matplotlib.pyplot.ylabel" title="matplotlib.pyplot.ylabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span></a><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.xlabel.html#matplotlib.pyplot.xlabel" title="matplotlib.pyplot.xlabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.legend.html#matplotlib.pyplot.legend" title="matplotlib.pyplot.legend" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="matplotlib.pyplot.figure" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_test</span></a> <span class="o">-</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age_pred</span></a><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;True age - predicted age&quot;</span><span class="p">,</span>
+         <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a><span class="o">=</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">linewidth</span></a><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.xlabel.html#matplotlib.pyplot.xlabel" title="matplotlib.pyplot.xlabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.legend.html#matplotlib.pyplot.legend" title="matplotlib.pyplot.legend" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="sphx-glr-horizontal">
+<li><img alt="Decoder: Mean Absolute Error 10.67 years" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_oasis_vbm_002.png" />
+</li>
+<li><img alt="plot oasis vbm" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_oasis_vbm_003.png" />
+</li>
+</ul>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;matplotlib.legend.Legend object at 0x7fc01c154b50&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="inference-with-massively-univariate-model">
+<h2><span class="section-number">9.3.14.7. </span>Inference with massively univariate model<a class="headerlink" href="#inference-with-massively-univariate-model" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Massively univariate model&quot;</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_masked</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-class"><span class="n">NiftiMasker</span></a><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gray_matter_map_filenames</span></a><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.fit_transform" title="sklearn.feature_selection.VarianceThreshold.fit_transform" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-method"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">fit_transform</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gm_maps_masked</span></a><span class="p">)</span>
+
+<span class="c1"># Statistical inference</span>
+<span class="kn">from</span> <span class="nn">nilearn.mass_univariate</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="nilearn.mass_univariate.permuted_ols" class="sphx-glr-backref-module-nilearn-mass_univariate sphx-glr-backref-type-py-function"><span class="n">permuted_ols</span></a>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">neg_log_pvals</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">t_scores_original_data</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">_</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.mass_univariate.permuted_ols.html#nilearn.mass_univariate.permuted_ols" title="nilearn.mass_univariate.permuted_ols" class="sphx-glr-backref-module-nilearn-mass_univariate sphx-glr-backref-type-py-function"><span class="n">permuted_ols</span></a><span class="p">(</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">age</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a><span class="p">,</span>  <span class="c1"># + intercept as a covariate by default</span>
+    <span class="n">n_perm</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>  <span class="c1"># 1,000 in the interest of time; 10000 would be better</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="c1"># display progress bar</span>
+    <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># can be changed to use more CPUs</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signed_neg_log_pvals</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">neg_log_pvals</span></a> <span class="o">*</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ufunc.html#numpy.ufunc" title="numpy.ufunc" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">np</span><span class="o">.</span><span class="n">sign</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">t_scores_original_data</span></a><span class="p">)</span>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signed_neg_log_pvals_unmasked</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker.inverse_transform" title="nilearn.input_data.NiftiMasker.inverse_transform" class="sphx-glr-backref-module-nilearn-input_data sphx-glr-backref-type-py-method"><span class="n">nifti_masker</span><span class="o">.</span><span class="n">inverse_transform</span></a><span class="p">(</span>
+    <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.VarianceThreshold.html#sklearn.feature_selection.VarianceThreshold.inverse_transform" title="sklearn.feature_selection.VarianceThreshold.inverse_transform" class="sphx-glr-backref-module-sklearn-feature_selection sphx-glr-backref-type-py-method"><span class="n">variance_threshold</span><span class="o">.</span><span class="n">inverse_transform</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signed_neg_log_pvals</span></a><span class="p">))</span>
+
+<span class="c1"># Show results</span>
+<a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a> <span class="o">=</span> <span class="o">-</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ufunc.html#numpy.ufunc" title="numpy.ufunc" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">np</span><span class="o">.</span><span class="n">log10</span></a><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># 10% corrected</span>
+
+<a href="https://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a> <span class="o">=</span> <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="matplotlib.pyplot.figure" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">5.5</span><span class="p">,</span> <span class="mf">7.5</span><span class="p">),</span> <span class="n">facecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+
+<span class="n">display</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signed_neg_log_pvals_unmasked</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bg_filename</span></a><span class="p">,</span>
+                        <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><a href="https://matplotlib.org/api/_as_gen/matplotlib.colors.LinearSegmentedColormap.html#matplotlib.colors.LinearSegmentedColormap" title="matplotlib.colors.LinearSegmentedColormap" class="sphx-glr-backref-module-matplotlib-colors sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">RdBu_r</span></a><span class="p">,</span>
+                        <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="p">[</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_slice</span></a><span class="p">],</span>
+                        <span class="n">figure</span><span class="o">=</span><a href="https://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">)</span>
+<a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">title</span></a> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Negative $</span><span class="se">\\</span><span class="s1">log_</span><span class="si">{10}</span><span class="s1">$ p-values&#39;</span>
+         <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">(Non-parametric + max-type correction)&#39;</span><span class="p">)</span>
+<span class="n">display</span><span class="o">.</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">title</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">title</span></a><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+
+<a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int64" title="numpy.int64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">n_detections</span></a> <span class="o">=</span> <span class="p">(</span><a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="nilearn.image.get_data" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">get_data</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signed_neg_log_pvals_unmasked</span></a><span class="p">)</span> <span class="o">&gt;</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="si">%d</span><span class="s1"> detections&#39;</span> <span class="o">%</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int64" title="numpy.int64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">n_detections</span></a><span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="plot oasis vbm" class="sphx-glr-single-img" src="../../_images/sphx_glr_plot_oasis_vbm_004.png" />
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Massively univariate model
+[Parallel(n_jobs=1)]: Using backend SequentialBackend with 1 concurrent workers.
+Job #1, processed 0/2000 permutations (0.00%, 116 seconds remaining)
+Job #1, processed 10/2000 permutations (0.50%, 31 seconds remaining)
+Job #1, processed 20/2000 permutations (1.00%, 30 seconds remaining)
+Job #1, processed 30/2000 permutations (1.50%, 30 seconds remaining)
+Job #1, processed 40/2000 permutations (2.00%, 30 seconds remaining)
+Job #1, processed 50/2000 permutations (2.50%, 30 seconds remaining)
+Job #1, processed 60/2000 permutations (3.00%, 30 seconds remaining)
+Job #1, processed 70/2000 permutations (3.50%, 30 seconds remaining)
+Job #1, processed 80/2000 permutations (4.00%, 29 seconds remaining)
+Job #1, processed 90/2000 permutations (4.50%, 29 seconds remaining)
+Job #1, processed 100/2000 permutations (5.00%, 29 seconds remaining)
+Job #1, processed 110/2000 permutations (5.50%, 29 seconds remaining)
+Job #1, processed 120/2000 permutations (6.00%, 29 seconds remaining)
+Job #1, processed 130/2000 permutations (6.50%, 29 seconds remaining)
+Job #1, processed 140/2000 permutations (7.00%, 29 seconds remaining)
+Job #1, processed 150/2000 permutations (7.50%, 29 seconds remaining)
+Job #1, processed 160/2000 permutations (8.00%, 29 seconds remaining)
+Job #1, processed 170/2000 permutations (8.50%, 29 seconds remaining)
+Job #1, processed 180/2000 permutations (9.00%, 29 seconds remaining)
+Job #1, processed 190/2000 permutations (9.50%, 28 seconds remaining)
+Job #1, processed 200/2000 permutations (10.00%, 28 seconds remaining)
+Job #1, processed 210/2000 permutations (10.50%, 28 seconds remaining)
+Job #1, processed 220/2000 permutations (11.00%, 28 seconds remaining)
+Job #1, processed 230/2000 permutations (11.50%, 28 seconds remaining)
+Job #1, processed 240/2000 permutations (12.00%, 28 seconds remaining)
+Job #1, processed 250/2000 permutations (12.50%, 28 seconds remaining)
+Job #1, processed 260/2000 permutations (13.00%, 28 seconds remaining)
+Job #1, processed 270/2000 permutations (13.50%, 28 seconds remaining)
+Job #1, processed 280/2000 permutations (14.00%, 27 seconds remaining)
+Job #1, processed 290/2000 permutations (14.50%, 27 seconds remaining)
+Job #1, processed 300/2000 permutations (15.00%, 27 seconds remaining)
+Job #1, processed 310/2000 permutations (15.50%, 27 seconds remaining)
+Job #1, processed 320/2000 permutations (16.00%, 27 seconds remaining)
+Job #1, processed 330/2000 permutations (16.50%, 27 seconds remaining)
+Job #1, processed 340/2000 permutations (17.00%, 27 seconds remaining)
+Job #1, processed 350/2000 permutations (17.50%, 26 seconds remaining)
+Job #1, processed 360/2000 permutations (18.00%, 26 seconds remaining)
+Job #1, processed 370/2000 permutations (18.50%, 26 seconds remaining)
+Job #1, processed 380/2000 permutations (19.00%, 26 seconds remaining)
+Job #1, processed 390/2000 permutations (19.50%, 26 seconds remaining)
+Job #1, processed 400/2000 permutations (20.00%, 26 seconds remaining)
+Job #1, processed 410/2000 permutations (20.50%, 26 seconds remaining)
+Job #1, processed 420/2000 permutations (21.00%, 25 seconds remaining)
+Job #1, processed 430/2000 permutations (21.50%, 25 seconds remaining)
+Job #1, processed 440/2000 permutations (22.00%, 25 seconds remaining)
+Job #1, processed 450/2000 permutations (22.50%, 25 seconds remaining)
+Job #1, processed 460/2000 permutations (23.00%, 25 seconds remaining)
+Job #1, processed 470/2000 permutations (23.50%, 25 seconds remaining)
+Job #1, processed 480/2000 permutations (24.00%, 25 seconds remaining)
+Job #1, processed 490/2000 permutations (24.50%, 24 seconds remaining)
+Job #1, processed 500/2000 permutations (25.00%, 24 seconds remaining)
+Job #1, processed 510/2000 permutations (25.50%, 24 seconds remaining)
+Job #1, processed 520/2000 permutations (26.00%, 24 seconds remaining)
+Job #1, processed 530/2000 permutations (26.50%, 24 seconds remaining)
+Job #1, processed 540/2000 permutations (27.00%, 24 seconds remaining)
+Job #1, processed 550/2000 permutations (27.50%, 24 seconds remaining)
+Job #1, processed 560/2000 permutations (28.00%, 23 seconds remaining)
+Job #1, processed 570/2000 permutations (28.50%, 23 seconds remaining)
+Job #1, processed 580/2000 permutations (29.00%, 23 seconds remaining)
+Job #1, processed 590/2000 permutations (29.50%, 23 seconds remaining)
+Job #1, processed 600/2000 permutations (30.00%, 23 seconds remaining)
+Job #1, processed 610/2000 permutations (30.50%, 23 seconds remaining)
+Job #1, processed 620/2000 permutations (31.00%, 22 seconds remaining)
+Job #1, processed 630/2000 permutations (31.50%, 22 seconds remaining)
+Job #1, processed 640/2000 permutations (32.00%, 22 seconds remaining)
+Job #1, processed 650/2000 permutations (32.50%, 22 seconds remaining)
+Job #1, processed 660/2000 permutations (33.00%, 22 seconds remaining)
+Job #1, processed 670/2000 permutations (33.50%, 22 seconds remaining)
+Job #1, processed 680/2000 permutations (34.00%, 21 seconds remaining)
+Job #1, processed 690/2000 permutations (34.50%, 21 seconds remaining)
+Job #1, processed 700/2000 permutations (35.00%, 21 seconds remaining)
+Job #1, processed 710/2000 permutations (35.50%, 21 seconds remaining)
+Job #1, processed 720/2000 permutations (36.00%, 21 seconds remaining)
+Job #1, processed 730/2000 permutations (36.50%, 21 seconds remaining)
+Job #1, processed 740/2000 permutations (37.00%, 21 seconds remaining)
+Job #1, processed 750/2000 permutations (37.50%, 20 seconds remaining)
+Job #1, processed 760/2000 permutations (38.00%, 20 seconds remaining)
+Job #1, processed 770/2000 permutations (38.50%, 20 seconds remaining)
+Job #1, processed 780/2000 permutations (39.00%, 20 seconds remaining)
+Job #1, processed 790/2000 permutations (39.50%, 20 seconds remaining)
+Job #1, processed 800/2000 permutations (40.00%, 20 seconds remaining)
+Job #1, processed 810/2000 permutations (40.50%, 19 seconds remaining)
+Job #1, processed 820/2000 permutations (41.00%, 19 seconds remaining)
+Job #1, processed 830/2000 permutations (41.50%, 19 seconds remaining)
+Job #1, processed 840/2000 permutations (42.00%, 19 seconds remaining)
+Job #1, processed 850/2000 permutations (42.50%, 19 seconds remaining)
+Job #1, processed 860/2000 permutations (43.00%, 19 seconds remaining)
+Job #1, processed 870/2000 permutations (43.50%, 18 seconds remaining)
+Job #1, processed 880/2000 permutations (44.00%, 18 seconds remaining)
+Job #1, processed 890/2000 permutations (44.50%, 18 seconds remaining)
+Job #1, processed 900/2000 permutations (45.00%, 18 seconds remaining)
+Job #1, processed 910/2000 permutations (45.50%, 18 seconds remaining)
+Job #1, processed 920/2000 permutations (46.00%, 18 seconds remaining)
+Job #1, processed 930/2000 permutations (46.50%, 17 seconds remaining)
+Job #1, processed 940/2000 permutations (47.00%, 17 seconds remaining)
+Job #1, processed 950/2000 permutations (47.50%, 17 seconds remaining)
+Job #1, processed 960/2000 permutations (48.00%, 17 seconds remaining)
+Job #1, processed 970/2000 permutations (48.50%, 17 seconds remaining)
+Job #1, processed 980/2000 permutations (49.00%, 17 seconds remaining)
+Job #1, processed 990/2000 permutations (49.50%, 16 seconds remaining)
+Job #1, processed 1000/2000 permutations (50.00%, 16 seconds remaining)
+Job #1, processed 1010/2000 permutations (50.50%, 16 seconds remaining)
+Job #1, processed 1020/2000 permutations (51.00%, 16 seconds remaining)
+Job #1, processed 1030/2000 permutations (51.50%, 16 seconds remaining)
+Job #1, processed 1040/2000 permutations (52.00%, 16 seconds remaining)
+Job #1, processed 1050/2000 permutations (52.50%, 15 seconds remaining)
+Job #1, processed 1060/2000 permutations (53.00%, 15 seconds remaining)
+Job #1, processed 1070/2000 permutations (53.50%, 15 seconds remaining)
+Job #1, processed 1080/2000 permutations (54.00%, 15 seconds remaining)
+Job #1, processed 1090/2000 permutations (54.50%, 15 seconds remaining)
+Job #1, processed 1100/2000 permutations (55.00%, 15 seconds remaining)
+Job #1, processed 1110/2000 permutations (55.50%, 14 seconds remaining)
+Job #1, processed 1120/2000 permutations (56.00%, 14 seconds remaining)
+Job #1, processed 1130/2000 permutations (56.50%, 14 seconds remaining)
+Job #1, processed 1140/2000 permutations (57.00%, 14 seconds remaining)
+Job #1, processed 1150/2000 permutations (57.50%, 14 seconds remaining)
+Job #1, processed 1160/2000 permutations (58.00%, 14 seconds remaining)
+Job #1, processed 1170/2000 permutations (58.50%, 13 seconds remaining)
+Job #1, processed 1180/2000 permutations (59.00%, 13 seconds remaining)
+Job #1, processed 1190/2000 permutations (59.50%, 13 seconds remaining)
+Job #1, processed 1200/2000 permutations (60.00%, 13 seconds remaining)
+Job #1, processed 1210/2000 permutations (60.50%, 13 seconds remaining)
+Job #1, processed 1220/2000 permutations (61.00%, 13 seconds remaining)
+Job #1, processed 1230/2000 permutations (61.50%, 12 seconds remaining)
+Job #1, processed 1240/2000 permutations (62.00%, 12 seconds remaining)
+Job #1, processed 1250/2000 permutations (62.50%, 12 seconds remaining)
+Job #1, processed 1260/2000 permutations (63.00%, 12 seconds remaining)
+Job #1, processed 1270/2000 permutations (63.50%, 12 seconds remaining)
+Job #1, processed 1280/2000 permutations (64.00%, 12 seconds remaining)
+Job #1, processed 1290/2000 permutations (64.50%, 11 seconds remaining)
+Job #1, processed 1300/2000 permutations (65.00%, 11 seconds remaining)
+Job #1, processed 1310/2000 permutations (65.50%, 11 seconds remaining)
+Job #1, processed 1320/2000 permutations (66.00%, 11 seconds remaining)
+Job #1, processed 1330/2000 permutations (66.50%, 11 seconds remaining)
+Job #1, processed 1340/2000 permutations (67.00%, 11 seconds remaining)
+Job #1, processed 1350/2000 permutations (67.50%, 10 seconds remaining)
+Job #1, processed 1360/2000 permutations (68.00%, 10 seconds remaining)
+Job #1, processed 1370/2000 permutations (68.50%, 10 seconds remaining)
+Job #1, processed 1380/2000 permutations (69.00%, 10 seconds remaining)
+Job #1, processed 1390/2000 permutations (69.50%, 10 seconds remaining)
+Job #1, processed 1400/2000 permutations (70.00%, 10 seconds remaining)
+Job #1, processed 1410/2000 permutations (70.50%, 9 seconds remaining)
+Job #1, processed 1420/2000 permutations (71.00%, 9 seconds remaining)
+Job #1, processed 1430/2000 permutations (71.50%, 9 seconds remaining)
+Job #1, processed 1440/2000 permutations (72.00%, 9 seconds remaining)
+Job #1, processed 1450/2000 permutations (72.50%, 9 seconds remaining)
+Job #1, processed 1460/2000 permutations (73.00%, 9 seconds remaining)
+Job #1, processed 1470/2000 permutations (73.50%, 8 seconds remaining)
+Job #1, processed 1480/2000 permutations (74.00%, 8 seconds remaining)
+Job #1, processed 1490/2000 permutations (74.50%, 8 seconds remaining)
+Job #1, processed 1500/2000 permutations (75.00%, 8 seconds remaining)
+Job #1, processed 1510/2000 permutations (75.50%, 8 seconds remaining)
+Job #1, processed 1520/2000 permutations (76.00%, 8 seconds remaining)
+Job #1, processed 1530/2000 permutations (76.50%, 7 seconds remaining)
+Job #1, processed 1540/2000 permutations (77.00%, 7 seconds remaining)
+Job #1, processed 1550/2000 permutations (77.50%, 7 seconds remaining)
+Job #1, processed 1560/2000 permutations (78.00%, 7 seconds remaining)
+Job #1, processed 1570/2000 permutations (78.50%, 7 seconds remaining)
+Job #1, processed 1580/2000 permutations (79.00%, 7 seconds remaining)
+Job #1, processed 1590/2000 permutations (79.50%, 6 seconds remaining)
+Job #1, processed 1600/2000 permutations (80.00%, 6 seconds remaining)
+Job #1, processed 1610/2000 permutations (80.50%, 6 seconds remaining)
+Job #1, processed 1620/2000 permutations (81.00%, 6 seconds remaining)
+Job #1, processed 1630/2000 permutations (81.50%, 6 seconds remaining)
+Job #1, processed 1640/2000 permutations (82.00%, 6 seconds remaining)
+Job #1, processed 1650/2000 permutations (82.50%, 5 seconds remaining)
+Job #1, processed 1660/2000 permutations (83.00%, 5 seconds remaining)
+Job #1, processed 1670/2000 permutations (83.50%, 5 seconds remaining)
+Job #1, processed 1680/2000 permutations (84.00%, 5 seconds remaining)
+Job #1, processed 1690/2000 permutations (84.50%, 5 seconds remaining)
+Job #1, processed 1700/2000 permutations (85.00%, 5 seconds remaining)
+Job #1, processed 1710/2000 permutations (85.50%, 4 seconds remaining)
+Job #1, processed 1720/2000 permutations (86.00%, 4 seconds remaining)
+Job #1, processed 1730/2000 permutations (86.50%, 4 seconds remaining)
+Job #1, processed 1740/2000 permutations (87.00%, 4 seconds remaining)
+Job #1, processed 1750/2000 permutations (87.50%, 4 seconds remaining)
+Job #1, processed 1760/2000 permutations (88.00%, 4 seconds remaining)
+Job #1, processed 1770/2000 permutations (88.50%, 3 seconds remaining)
+Job #1, processed 1780/2000 permutations (89.00%, 3 seconds remaining)
+Job #1, processed 1790/2000 permutations (89.50%, 3 seconds remaining)
+Job #1, processed 1800/2000 permutations (90.00%, 3 seconds remaining)
+Job #1, processed 1810/2000 permutations (90.50%, 3 seconds remaining)
+Job #1, processed 1820/2000 permutations (91.00%, 3 seconds remaining)
+Job #1, processed 1830/2000 permutations (91.50%, 2 seconds remaining)
+Job #1, processed 1840/2000 permutations (92.00%, 2 seconds remaining)
+Job #1, processed 1850/2000 permutations (92.50%, 2 seconds remaining)
+Job #1, processed 1860/2000 permutations (93.00%, 2 seconds remaining)
+Job #1, processed 1870/2000 permutations (93.50%, 2 seconds remaining)
+Job #1, processed 1880/2000 permutations (94.00%, 2 seconds remaining)
+Job #1, processed 1890/2000 permutations (94.50%, 1 seconds remaining)
+Job #1, processed 1900/2000 permutations (95.00%, 1 seconds remaining)
+Job #1, processed 1910/2000 permutations (95.50%, 1 seconds remaining)
+Job #1, processed 1920/2000 permutations (96.00%, 1 seconds remaining)
+Job #1, processed 1930/2000 permutations (96.50%, 1 seconds remaining)
+Job #1, processed 1940/2000 permutations (97.00%, 1 seconds remaining)
+Job #1, processed 1950/2000 permutations (97.50%, 0 seconds remaining)
+Job #1, processed 1960/2000 permutations (98.00%, 0 seconds remaining)
+Job #1, processed 1970/2000 permutations (98.50%, 0 seconds remaining)
+Job #1, processed 1980/2000 permutations (99.00%, 0 seconds remaining)
+Job #1, processed 1990/2000 permutations (99.50%, 0 seconds remaining)
+[Parallel(n_jobs=1)]: Done   1 out of   1 | elapsed:   33.7s finished
+
+1963 detections
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  1.206 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-02-decoding-plot-oasis-vbm-py">
+<div class="binder-badge docutils container">
+<a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn.github.io/main?filepath=examples/auto_examples/02_decoding/plot_oasis_vbm.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo1.svg" width="150px" /></a>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/1762b321e2d54728de2d7ecfc8d506f2/plot_oasis_vbm.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_oasis_vbm.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/f2acf1fc2d7b9b81494e3884171b1c86/plot_oasis_vbm.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_oasis_vbm.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="../../authors.html#citing">citing the
+                    papers</a>.</p></li>
+  </ul>
+
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">9.3.14. Voxel-Based Morphometry on Oasis dataset</a><ul>
+<li><a class="reference internal" href="#predictive-modeling-analysis-vbm-bio-markers-of-aging">9.3.14.1. Predictive modeling analysis: VBM bio-markers of aging?</a></li>
+<li><a class="reference internal" href="#brain-mapping-with-mass-univariate">9.3.14.2. Brain mapping with mass univariate</a></li>
+<li><a class="reference internal" href="#load-oasis-dataset">9.3.14.3. Load Oasis dataset</a></li>
+<li><a class="reference internal" href="#preprocess-data">9.3.14.4. Preprocess data</a></li>
+<li><a class="reference internal" href="#visualization">9.3.14.5. Visualization</a></li>
+<li><a class="reference internal" href="#visualize-the-quality-of-predictions">9.3.14.6. Visualize the quality of predictions</a></li>
+<li><a class="reference internal" href="#inference-with-massively-univariate-model">9.3.14.7. Inference with massively univariate model</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plot_simulated_data.html"
+                        title="previous chapter"><span class="section-number">9.3.13. </span>Example of pattern recognition on simulated data</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plot_miyawaki_encoding.html"
+                        title="next chapter"><span class="section-number">9.3.15. </span>Encoding models for visual stimuli from Miyawaki et al. 2008</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+            &copy; The nilearn developers 2010-2021.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.0.2.
+        <span style="padding-left: 5ex;">
+          <a href="../../_sources/auto_examples/02_decoding/plot_oasis_vbm.rst.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,723 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nilearn: Statistical Analysis for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-dataframe.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/clipboard.min.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="8.8.9. nilearn.regions.ReNA" href="nilearn.regions.ReNA.html" />
+    <link rel="prev" title="8.8.7. nilearn.regions.RegionExtractor" href="nilearn.regions.RegionExtractor.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
+<script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000);
+        $('.related-wrapper').css("position", "sticky");
+        $('.related-wrapper').css("top", 0);
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative");
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight();
+    var banner_width = $('#logo-banner').outerWidth();
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight());
+
+    updateTopMenuPosition(banner_height, width);
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth();
+        var menu_height = $('.related').outerHeight();
+        $('.related').css("width", banner_width);
+        $('.related-wrapper').css("height", menu_height);
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop();
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset;
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1;
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed");
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative");
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0;
+    current_section = 0;
+    $('a.internal').removeClass('active');
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        }
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        }
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active');
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var tocOffset = $('.related-wrapper').outerHeight();
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop;
+    sections = {};
+    url = document.URL.replace(/#.*$/, "");
+
+    // Grab positions of our sections
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
+    });
+
+    updateSideBarPosition(top, tocOffset, sections);
+
+    $(window).scroll(function(event) {
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight();
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+});
+</script>
+
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head><body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="../../index.html">
+      <img src="../../_static/nilearn-logo.png" alt="Nilearn logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="../../auto_examples/decoding/plot_haxby_anova_svm.html">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="../../connectivity/parcellating.html">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="../../decoding/searchlight.html">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
+    </li>
+    <li>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
+    </li>
+    <li>
+      <a href="../reference.html#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nilearn:</h1>
+    <h2>Statistics for NeuroImaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div class="gcse-search" id="cse" style="width: 100%;"></div>
+    <script>
+      (function() {
+        var cx = '017289614950330089114:elrt9qoutrq';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
+    </script>
+  </div>
+</div>
+
+
+
+<div class=related-wrapper>
+    
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a></li>
+        <li class="right" >
+          <a href="nilearn.regions.ReNA.html" title="8.8.9. nilearn.regions.ReNA"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nilearn.regions.RegionExtractor.html" title="8.8.7. nilearn.regions.RegionExtractor"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="../../auto_examples/index.html">Examples</a> |&nbsp;</li>
+<li><a href="../reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
+<li><a href="../../glossary.html">Glossary</a>|&nbsp;</li>
+<li><a href="../../bibliography.html">Bibliography</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../reference.html" accesskey="U"><span class="section-number">8. </span>Reference documentation: all nilearn functions</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Nilearn: Statistical Analysis for NeuroImaging in Python</a></li> 
+      </ul>
+    </div>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This page is a reference documentation. It only explains the class
+signature, and not how to use it. Please refer to the
+<a class="reference internal" href="../../user_guide.html#user-guide"><span class="std std-ref">user guide</span></a> for the big picture.</p>
+</div>
+<div class="section" id="nilearn-regions-parcellations">
+<h1><span class="section-number">8.8.8. </span>nilearn.regions.Parcellations<a class="headerlink" href="#nilearn-regions-parcellations" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="nilearn.regions.Parcellations">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">nilearn.regions.</span></span><span class="sig-name descname"><span class="pre">Parcellations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_parcels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standardize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detrend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_affine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'epi'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Memory(location=None)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/nilearn/nilearn/blob/2fd66656/nilearn/regions/parcellations.py#L115"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nilearn.regions.Parcellations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Learn <a class="reference internal" href="../../glossary.html#term-parcellation"><span class="xref std std-term">parcellations</span></a>
+on <a class="reference internal" href="../../glossary.html#term-fMRI"><span class="xref std std-term">fMRI</span></a> images.</p>
+<p>Five different types of clustering methods can be used:
+kmeans, ward, complete, average and rena.
+kmeans will call MiniBatchKMeans whereas
+ward, complete, average are used within in Agglomerative Clustering and
+rena will call ReNA.
+kmeans, ward, complete, average are leveraged from scikit-learn.
+rena is built into nilearn.</p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 0.4.1.</span></p>
+</div>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>method</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, {‘kmeans’, ‘ward’, ‘complete’, ‘average’, ‘rena’}</span></dt><dd><p>A method to choose between for brain parcellations.
+For a small number of parcels, kmeans is usually advisable.
+For a large number of parcellations (several hundreds, or thousands),
+ward and rena are the best options. Ward will give higher quality
+parcels, but with increased computation time. ReNA is most useful as a
+fast data-reduction step, typically dividing the signal size by ten.</p>
+</dd>
+<dt><strong>n_parcels</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>, optional</span></dt><dd><p>Number of parcels to divide the data into.
+Default=50.</p>
+</dd>
+<dt><strong>random_state</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a> or RandomState, optional</span></dt><dd><p>Pseudo-random number generator state used for random sampling.
+Default=0.</p>
+</dd>
+<dt><strong>mask</strong><span class="classifier">Niimg-like object or <a class="reference internal" href="nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><code class="xref py py-class docutils literal notranslate"><span class="pre">nilearn.input_data.NiftiMasker</span></code></a>, <a class="reference internal" href="nilearn.input_data.MultiNiftiMasker.html#nilearn.input_data.MultiNiftiMasker" title="nilearn.input_data.MultiNiftiMasker"><code class="xref py py-class docutils literal notranslate"><span class="pre">nilearn.input_data.MultiNiftiMasker</span></code></a>, optional</span></dt><dd><p>Mask/Masker used for masking the data.
+If mask image if provided, it will be used in the MultiNiftiMasker.
+If an instance of MultiNiftiMasker is provided, then this instance
+parameters will be used in masking the data by overriding the default
+masker parameters.
+If None, mask will be automatically computed by a MultiNiftiMasker
+with default parameters.</p>
+</dd>
+<dt><strong>smoothing_fwhm</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional.</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">smoothing_fwhm</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, it gives
+the full-width at half maximum in millimeters
+of the spatial smoothing to apply to the signal.
+Default=4.0.</p>
+</dd>
+<dt><strong>standardize</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>, optional.</span></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">standardize</span></code> is True, the data are centered and normed:
+their mean is put to 0 and their variance is put to 1 in the
+time dimension.
+Default=False.</p>
+</dd>
+<dt><strong>detrend</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>, optional</span></dt><dd><p>Whether to detrend signals or not.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This parameter is passed to <a class="reference internal" href="nilearn.signal.clean.html#nilearn.signal.clean" title="nilearn.signal.clean"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.signal.clean</span></code></a>.
+Please see the related documentation for details.</p>
+</div>
+<p>Default=False.</p>
+</dd>
+<dt><strong>low_pass</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or None, optional</span></dt><dd><p>Low cutoff frequency in Hertz.
+If None, no low-pass filtering will be performed.
+Default=None.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This parameter is passed to <a class="reference internal" href="nilearn.signal.clean.html#nilearn.signal.clean" title="nilearn.signal.clean"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.signal.clean</span></code></a>.
+Please see the related documentation for details.</p>
+</div>
+</dd>
+<dt><strong>high_pass</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a>, optional</span></dt><dd><p>High cutoff frequency in Hertz.
+Default=None.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This parameter is passed to <a class="reference internal" href="nilearn.signal.clean.html#nilearn.signal.clean" title="nilearn.signal.clean"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.signal.clean</span></code></a>.
+Please see the related documentation for details.</p>
+</div>
+</dd>
+<dt><strong>t_r</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code></a> or None, optional</span></dt><dd><p>Repetition time, in seconds (sampling period).
+Set to <code class="docutils literal notranslate"><span class="pre">None</span></code> if not provided.
+Default=None.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This parameter is passed to <a class="reference internal" href="nilearn.signal.clean.html#nilearn.signal.clean" title="nilearn.signal.clean"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.signal.clean</span></code></a>.
+Please see the related documentation for details.</p>
+</div>
+</dd>
+<dt><strong>target_affine</strong><span class="classifier"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a>, optional.</span></dt><dd><p>If specified, the image is resampled corresponding to this new affine.
+<code class="docutils literal notranslate"><span class="pre">target_affine</span></code> can be a 3x3 or a 4x4 matrix.
+Default=None.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This parameter is passed to <a class="reference internal" href="nilearn.image.resample_img.html#nilearn.image.resample_img" title="nilearn.image.resample_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.resample_img</span></code></a>.
+Please see the related documentation for details.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The given affine will be considered as same for all
+given list of images.</p>
+</div>
+</dd>
+<dt><strong>target_shape</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tuple</span></code></a> or <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a>, optional.</span></dt><dd><p>If specified, the image will be resized to match this new shape.
+<code class="docutils literal notranslate"><span class="pre">len(target_shape)</span></code> must be equal to 3.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">target_shape</span></code> is specified, a <code class="docutils literal notranslate"><span class="pre">target_affine</span></code> of shape
+<code class="docutils literal notranslate"><span class="pre">(4,</span> <span class="pre">4)</span></code> must also be given.</p>
+</div>
+<p>Default=None.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This parameter is passed to <a class="reference internal" href="nilearn.image.resample_img.html#nilearn.image.resample_img" title="nilearn.image.resample_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.resample_img</span></code></a>.
+Please see the related documentation for details.</p>
+</div>
+</dd>
+<dt><strong>mask_strategy</strong><span class="classifier">{‘background’, ‘epi’, ‘whole-brain-template’,’gm-template’, ‘wm-template’}, optional</span></dt><dd><p>The strategy used to compute the mask:</p>
+<blockquote>
+<div><ul>
+<li><p>‘background’: Use this option if your images present
+a clear homogeneous background.</p></li>
+<li><p>‘epi’: Use this option if your images are raw EPI images</p></li>
+<li><p>‘whole-brain-template’: This will extract the whole-brain
+part of your data by resampling the MNI152 brain mask for
+your data’s field of view.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This option is equivalent to the previous ‘template’ option
+which is now deprecated.</p>
+</div>
+</div></blockquote>
+</li>
+<li><p>‘gm-template’: This will extract the gray matter part of your
+data by resampling the corresponding MNI152 template for your
+data’s field of view.</p>
+<blockquote>
+<div><div class="versionadded">
+<p><span class="versionmodified added">New in version 0.8.1.</span></p>
+</div>
+</div></blockquote>
+</li>
+<li><p>‘wm-template’: This will extract the white matter part of your
+data by resampling the corresponding MNI152 template for your
+data’s field of view.</p>
+<blockquote>
+<div><div class="versionadded">
+<p><span class="versionmodified added">New in version 0.8.1.</span></p>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Depending on this value, the mask will be computed from
+<a class="reference internal" href="nilearn.masking.compute_background_mask.html#nilearn.masking.compute_background_mask" title="nilearn.masking.compute_background_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.compute_background_mask</span></code></a>,
+<a class="reference internal" href="nilearn.masking.compute_epi_mask.html#nilearn.masking.compute_epi_mask" title="nilearn.masking.compute_epi_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.compute_epi_mask</span></code></a>, or
+<a class="reference internal" href="nilearn.masking.compute_brain_mask.html#nilearn.masking.compute_brain_mask" title="nilearn.masking.compute_brain_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.compute_brain_mask</span></code></a>.</p>
+</div>
+<p>Default=’epi’.</p>
+</dd>
+<dt><strong>mask_args</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></a>, optional</span></dt><dd><p>If mask is None, these are additional parameters passed to
+masking.compute_background_mask or masking.compute_epi_mask
+to fine-tune mask computation. Please see the related documentation
+for details.</p>
+</dd>
+<dt><strong>scaling</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>, optional</span></dt><dd><p>Used only when the method selected is ‘rena’. If scaling is True, each
+cluster is scaled by the square root of its size, preserving the
+l2-norm of the image. Default=False.</p>
+</dd>
+<dt><strong>n_iter</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>, optional</span></dt><dd><p>Used only when the method selected is ‘rena’. Number of iterations of
+the recursive neighbor agglomeration. Default=10.</p>
+</dd>
+<dt><strong>memory</strong><span class="classifier">instance of <a class="reference external" href="https://joblib.readthedocs.io/en/latest/generated/joblib.Memory.html#joblib.Memory" title="(in joblib v1.1.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">joblib.Memory</span></code></a> or <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a></span></dt><dd><p>Used to cache the masking process.
+By default, no caching is done. If a <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a> is given, it is the
+path to the caching directory.</p>
+</dd>
+<dt><strong>memory_level</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>, optional.</span></dt><dd><p>Rough estimator of the amount of memory used by caching. Higher value
+means more memory for caching.
+Default=0.</p>
+</dd>
+<dt><strong>n_jobs</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>, optional.</span></dt><dd><p>The number of CPUs to use to do the computation. -1 means ‘all CPUs’.
+Default=1.</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a>, optional</span></dt><dd><p>Verbosity level (0 means no message).
+Default=0.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Transforming list of Nifti images to data matrix takes few steps.
+Reducing the data dimensionality using randomized SVD, build brain
+parcellations using KMeans or various Agglomerative methods.</p></li>
+<li><p>This object uses spatially-constrained AgglomerativeClustering for
+method=’ward’ or ‘complete’ or ‘average’ and spatially-constrained
+ReNA clustering for method=’rena’. Spatial connectivity matrix
+(voxel-to-voxel) is built-in object which means no need of explicitly
+giving the matrix.</p></li>
+</ul>
+<dl class="field-list">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl>
+<dt><strong>`labels_img_`</strong><span class="classifier"><a class="reference external" href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="(in NiBabel v3.2.1+100.g9fdf5e3e)"><code class="xref py py-class docutils literal notranslate"><span class="pre">nibabel.nifti1.Nifti1Image</span></code></a></span></dt><dd><p>Labels image to each parcellation learned on fmri images.</p>
+</dd>
+<dt><strong>`masker_`</strong><span class="classifier"><a class="reference internal" href="nilearn.input_data.NiftiMasker.html#nilearn.input_data.NiftiMasker" title="nilearn.input_data.NiftiMasker"><code class="xref py py-class docutils literal notranslate"><span class="pre">nilearn.input_data.NiftiMasker</span></code></a> or <a class="reference internal" href="nilearn.input_data.MultiNiftiMasker.html#nilearn.input_data.MultiNiftiMasker" title="nilearn.input_data.MultiNiftiMasker"><code class="xref py py-class docutils literal notranslate"><span class="pre">nilearn.input_data.MultiNiftiMasker</span></code></a></span></dt><dd><p>The masker used to mask the data.</p>
+</dd>
+<dt><strong>`connectivity_`</strong><span class="classifier"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></span></dt><dd><p>Voxel-to-voxel connectivity matrix computed from a mask.
+Note that this attribute is only seen if selected methods are
+Agglomerative Clustering type, ‘ward’, ‘complete’, ‘average’.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="nilearn.regions.Parcellations.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_parcels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_fwhm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standardize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detrend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high_pass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_affine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'epi'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Memory(location=None)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/nilearn/nilearn/blob/2fd66656/nilearn/regions/parcellations.py#L253"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nilearn.regions.Parcellations.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nilearn.regions.Parcellations.VALID_METHODS">
+<span class="sig-name descname"><span class="pre">VALID_METHODS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">['kmeans',</span> <span class="pre">'ward',</span> <span class="pre">'complete',</span> <span class="pre">'average',</span> <span class="pre">'rena']</span></em><a class="headerlink" href="#nilearn.regions.Parcellations.VALID_METHODS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nilearn.regions.Parcellations.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/nilearn/nilearn/blob/2fd66656/nilearn/regions/parcellations.py#L391"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nilearn.regions.Parcellations.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract signals from <a class="reference internal" href="../../glossary.html#term-parcellation"><span class="xref std std-term">parcellations</span></a> learned
+on <a class="reference internal" href="../../glossary.html#term-fMRI"><span class="xref std std-term">fMRI</span></a> images.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>imgs</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> of Niimg-like objects</span></dt><dd><p>See <a class="reference external" href="http://nilearn.github.io/manipulating_images/input_output.html">input-output</a>.
+Images to process.</p>
+</dd>
+<dt><strong>confounds</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> of CSV files, arrays-like, or <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>, optional</span></dt><dd><p>Each file or numpy array in a list should have shape
+(number of scans, number of confounds)
+Must be of same length as imgs.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This parameter is passed to <a class="reference internal" href="nilearn.signal.clean.html#nilearn.signal.clean" title="nilearn.signal.clean"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.signal.clean</span></code></a>.
+Please see the related documentation for details.</p>
+</div>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>region_signals</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> of or 2D <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></span></dt><dd><p>Signals extracted for each label for each image.
+Example, for single image shape will be
+(number of scans, number of labels)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nilearn.regions.Parcellations.fit_transform">
+<span class="sig-name descname"><span class="pre">fit_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/nilearn/nilearn/blob/2fd66656/nilearn/regions/parcellations.py#L449"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nilearn.regions.Parcellations.fit_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit the images to <a class="reference internal" href="../../glossary.html#term-parcellation"><span class="xref std std-term">parcellations</span></a> and
+then transform them.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>imgs</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> of Niimg-like objects</span></dt><dd><p>See <a class="reference external" href="http://nilearn.github.io/manipulating_images/input_output.html">input-output</a>.
+Images for process for fit as well for transform to signals.</p>
+</dd>
+<dt><strong>confounds</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> of CSV files, arrays-like or <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v1.3.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code></a>, optional</span></dt><dd><p>Each file or numpy array in a list should have shape
+(number of scans, number of confounds).
+Given confounds should have same length as images if
+given as a list.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This parameter is passed to <a class="reference internal" href="nilearn.signal.clean.html#nilearn.signal.clean" title="nilearn.signal.clean"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.signal.clean</span></code></a>.
+Please see the related documentation for details.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Confounds will be used for cleaning signals before
+learning parcellations.</p>
+</div>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>region_signals</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> of or 2D <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></span></dt><dd><p>Signals extracted for each label for each image.
+Example, for single image shape will be
+(number of scans, number of labels)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nilearn.regions.Parcellations.inverse_transform">
+<span class="sig-name descname"><span class="pre">inverse_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signals</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/nilearn/nilearn/blob/2fd66656/nilearn/regions/parcellations.py#L484"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nilearn.regions.Parcellations.inverse_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform signals extracted from <a class="reference internal" href="../../glossary.html#term-parcellation"><span class="xref std std-term">parcellations</span></a>
+back to brain images.</p>
+<p>Uses <cite>labels_img_</cite> (parcellations) built at fit() level.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>signals</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> of 2D <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></span></dt><dd><p>Each 2D array with shape (number of scans, number of regions).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt><strong>imgs</strong><span class="classifier"><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code></a> of Niimg-like objects</span></dt><dd><p>See <a class="reference external" href="http://nilearn.github.io/manipulating_images/input_output.html">input-output</a>.
+Brain image(s).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nilearn.regions.Parcellations.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/nilearn/nilearn/blob/2fd66656/nilearn/decomposition/base.py#L366"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nilearn.regions.Parcellations.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the mask and the components across subjects</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>imgs</strong><span class="classifier">list of Niimg-like objects</span></dt><dd><p>See <a class="reference external" href="http://nilearn.github.io/manipulating_images/input_output.html">http://nilearn.github.io/manipulating_images/input_output.html</a>
+Data on which the mask is calculated. If this is a list,
+the affine is considered the same for all.</p>
+</dd>
+<dt><strong>confounds</strong><span class="classifier">list of CSV file paths or numpy.ndarrays or pandas DataFrames, optional</span></dt><dd><p>This parameter is passed to nilearn.signal.clean. Please see the
+related documentation for details. Should match with the list of imgs given.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">object</span></dt><dd><p>Returns the instance itself. Contains attributes listed
+at the object level.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nilearn.regions.Parcellations.get_params">
+<span class="sig-name descname"><span class="pre">get_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.regions.Parcellations.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>deep</strong><span class="classifier">bool, default=True</span></dt><dd><p>If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>params</strong><span class="classifier">dict</span></dt><dd><p>Parameter names mapped to their values.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nilearn.regions.Parcellations.score">
+<span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">per_component</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/nilearn/nilearn/blob/2fd66656/nilearn/decomposition/base.py#L510"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nilearn.regions.Parcellations.score" title="Permalink to this definition">¶</a></dt>
+<dd><p>Score function based on explained variance on imgs.</p>
+<p>Should only be used by DecompositionEstimator derived classes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>imgs</strong><span class="classifier">iterable of Niimg-like objects</span></dt><dd><p>See <a class="reference external" href="http://nilearn.github.io/manipulating_images/input_output.html">http://nilearn.github.io/manipulating_images/input_output.html</a>
+Data to be scored</p>
+</dd>
+<dt><strong>confounds</strong><span class="classifier">CSV file path or numpy.ndarray or pandas DataFrame, optional</span></dt><dd><p>This parameter is passed to nilearn.signal.clean. Please see the
+related documentation for details</p>
+</dd>
+<dt><strong>per_component</strong><span class="classifier">bool, optional</span></dt><dd><p>Specify whether the explained variance ratio is desired for each
+map or for the global set of components. Default=False.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>score</strong><span class="classifier">float</span></dt><dd><p>Holds the score for each subjects. Score is two dimensional
+if per_component is True. First dimension
+is squeezed if the number of subjects is one</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nilearn.regions.Parcellations.set_params">
+<span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nilearn.regions.Parcellations.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as <a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline" title="(in scikit-learn v1.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Pipeline</span></code></a>). The latter have
+parameters of the form <code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s
+possible to update each component of a nested object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>**params</strong><span class="classifier">dict</span></dt><dd><p>Estimator parameters.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">estimator instance</span></dt><dd><p>Estimator instance.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="examples-using-nilearn-regions-parcellations">
+<h2><span class="section-number">8.8.8.1. </span>Examples using <code class="docutils literal notranslate"><span class="pre">nilearn.regions.Parcellations</span></code><a class="headerlink" href="#examples-using-nilearn-regions-parcellations" title="Permalink to this headline">¶</a></h2>
+<div class="sphx-glr-thumbcontainer" tooltip="We use spatially-constrained Ward-clustering, KMeans, and Recursive Neighbor Agglomeration (ReN..."><div class="figure align-default" id="id3">
+<img alt="Clustering methods to learn a brain parcellation from fMRI" src="../../_images/sphx_glr_plot_data_driven_parcellations_thumb.png" />
+<p class="caption"><span class="caption-text"><a class="reference internal" href="../../auto_examples/03_connectivity/plot_data_driven_parcellations.html#sphx-glr-auto-examples-03-connectivity-plot-data-driven-parcellations-py"><span class="std std-ref">Clustering methods to learn a brain parcellation from fMRI</span></a></span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+</div><div style='clear:both'></div></div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="../../authors.html#citing">citing the
+                    papers</a>.</p></li>
+  </ul>
+
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">8.8.8. nilearn.regions.Parcellations</a><ul>
+<li><a class="reference internal" href="#examples-using-nilearn-regions-parcellations">8.8.8.1. Examples using <code class="docutils literal notranslate"><span class="pre">nilearn.regions.Parcellations</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="nilearn.regions.RegionExtractor.html"
+                        title="previous chapter"><span class="section-number">8.8.7. </span>nilearn.regions.RegionExtractor</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="nilearn.regions.ReNA.html"
+                        title="next chapter"><span class="section-number">8.8.9. </span>nilearn.regions.ReNA</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+            &copy; The nilearn developers 2010-2021.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.0.2.
+        <span style="padding-left: 5ex;">
+          <a href="../../_sources/modules/generated/nilearn.regions.Parcellations.rst.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>

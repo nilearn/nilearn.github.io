@@ -1,0 +1,381 @@
+.. only:: html
+
+    .. note::
+        :class: sphx-glr-download-link-note
+
+        Click :ref:`here <sphx_glr_download_auto_examples_07_advanced_plot_ica_neurovault.py>`     to download the full example code or to run this example in your browser via Binder
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_auto_examples_07_advanced_plot_ica_neurovault.py:
+
+
+NeuroVault cross-study ICA maps.
+================================
+
+This example shows how to download statistical maps from
+NeuroVault, label them with NeuroSynth terms,
+and compute ICA components across all the maps.
+
+See :func:`nilearn.datasets.fetch_neurovault`
+documentation for more details.
+
+
+.. code-block:: default
+
+    # Author: Ben Cipollini
+    # License: BSD
+    # Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
+    # https://github.com/NeuroVault/neurovault_analysis
+    import warnings
+
+    import numpy as np
+    from scipy import stats
+    from sklearn.decomposition import FastICA
+
+    from nilearn.datasets import fetch_neurovault
+    from nilearn.image import smooth_img
+
+    from nilearn.datasets import load_mni152_brain_mask
+    from nilearn.input_data import NiftiMasker
+
+    from nilearn import plotting
+
+
+
+
+
+
+
+
+
+Get image and term data
+-----------------------
+
+
+.. code-block:: default
+
+
+    # Download images
+    # Here by default we only download 80 images to save time,
+    # but for better results I recommend using at least 200.
+    print("Fetching Neurovault images; "
+          "if you haven't downloaded any Neurovault data before "
+          "this will take several minutes.")
+    nv_data = fetch_neurovault(max_images=30, fetch_neurosynth_words=True)
+
+    images = nv_data['images']
+    term_weights = nv_data['word_frequencies']
+    vocabulary = nv_data['vocabulary']
+    if term_weights is None:
+        term_weights = np.ones((len(images), 2))
+        vocabulary = np.asarray(
+            ["Neurosynth is down", "Please try again later"])
+
+    # Clean and report term scores
+    term_weights[term_weights < 0] = 0
+    total_scores = np.mean(term_weights, axis=0)
+
+    print("\nTop 10 neurosynth terms from downloaded images:\n")
+
+    for term_idx in np.argsort(total_scores)[-10:][::-1]:
+        print(vocabulary[term_idx])
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Fetching Neurovault images; if you haven't downloaded any Neurovault data before this will take several minutes.
+    Reading local neurovault data.
+    Already fetched 1 image
+    Already fetched 2 images
+    Already fetched 3 images
+    Already fetched 4 images
+    Already fetched 5 images
+    Already fetched 6 images
+    Already fetched 7 images
+    Already fetched 8 images
+    Already fetched 9 images
+    Already fetched 10 images
+    Already fetched 11 images
+    Already fetched 12 images
+    Already fetched 13 images
+    Already fetched 14 images
+    Already fetched 15 images
+    Already fetched 16 images
+    Already fetched 17 images
+    Already fetched 18 images
+    Already fetched 19 images
+    Already fetched 20 images
+    Already fetched 21 images
+    Already fetched 22 images
+    Already fetched 23 images
+    Already fetched 24 images
+    Already fetched 25 images
+    Already fetched 26 images
+    Already fetched 27 images
+    Already fetched 28 images
+    Already fetched 29 images
+    Already fetched 30 images
+    30 images found on local disk.
+    Computing word features.
+    Computing word features done; vocabulary size: 1307
+
+    Top 10 neurosynth terms from downloaded images:
+
+    superior temporal
+    auditory
+    task
+    planum temporale
+    temporale
+    planum
+    superior
+    anterior insula
+    parietal
+    posterior superior
+
+
+
+
+Reshape and mask images
+-----------------------
+
+
+.. code-block:: default
+
+
+    print("\nReshaping and masking images.\n")
+
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', UserWarning)
+        warnings.simplefilter('ignore', DeprecationWarning)
+
+        mask_img = load_mni152_brain_mask()
+        masker = NiftiMasker(
+            mask_img=mask_img, memory='nilearn_cache', memory_level=1)
+        masker = masker.fit()
+
+        # Images may fail to be transformed, and are of different shapes,
+        # so we need to transform one-by-one and keep track of failures.
+        X = []
+        is_usable = np.ones((len(images),), dtype=bool)
+
+        for index, image_path in enumerate(images):
+            # load image and remove nan and inf values.
+            # applying smooth_img to an image with fwhm=None simply cleans up
+            # non-finite values but otherwise doesn't modify the image.
+            image = smooth_img(image_path, fwhm=None)
+            try:
+                X.append(masker.transform(image))
+            except Exception as e:
+                meta = nv_data['images_meta'][index]
+                print("Failed to mask/reshape image: id: {0}; "
+                      "name: '{1}'; collection: {2}; error: {3}".format(
+                          meta.get('id'), meta.get('name'),
+                          meta.get('collection_id'), e))
+                is_usable[index] = False
+
+    # Now reshape list into 2D matrix, and remove failed images from terms
+    X = np.vstack(X)
+    term_weights = term_weights[is_usable, :]
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    Reshaping and masking images.
+
+
+
+
+
+Run ICA and map components to terms
+-----------------------------------
+
+
+.. code-block:: default
+
+
+    print("Running ICA; may take time...")
+    # We use a very small number of components as we have downloaded only 80
+    # images. For better results, increase the number of images downloaded
+    # and the number of components
+    n_components = 8
+    fast_ica = FastICA(n_components=n_components, random_state=0)
+    ica_maps = fast_ica.fit_transform(X.T).T
+
+    term_weights_for_components = np.dot(fast_ica.components_, term_weights)
+    print('Done, plotting results.')
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Running ICA; may take time...
+    Done, plotting results.
+
+
+
+
+Generate figures
+----------------
+
+
+.. code-block:: default
+
+
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', DeprecationWarning)
+
+        for index, (ic_map, ic_terms) in enumerate(
+                zip(ica_maps, term_weights_for_components)):
+            if -ic_map.min() > ic_map.max():
+                # Flip the map's sign for prettiness
+                ic_map = - ic_map
+                ic_terms = - ic_terms
+
+            ic_threshold = stats.scoreatpercentile(np.abs(ic_map), 90)
+            ic_img = masker.inverse_transform(ic_map)
+            important_terms = vocabulary[np.argsort(ic_terms)[-3:]]
+            title = 'IC%i  %s' % (index, ', '.join(important_terms[::-1]))
+
+            plotting.plot_stat_map(
+                ic_img, threshold=ic_threshold, colorbar=False,
+                title=title)
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_001.png
+          :alt: plot ica neurovault
+          :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_002.png
+          :alt: plot ica neurovault
+          :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_003.png
+          :alt: plot ica neurovault
+          :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_004.png
+          :alt: plot ica neurovault
+          :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_005.png
+          :alt: plot ica neurovault
+          :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_006.png
+          :alt: plot ica neurovault
+          :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_007.png
+          :alt: plot ica neurovault
+          :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_008.png
+          :alt: plot ica neurovault
+          :class: sphx-glr-multi-img
+
+
+
+
+
+As we can see, some of the components capture cognitive or neurological
+maps, while other capture noise in the database. More data, better
+filtering, and better cognitive labels would give better maps
+
+
+.. code-block:: default
+
+
+    # Done.
+    plotting.show()
+
+
+
+
+
+
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  43.785 seconds)
+
+
+.. _sphx_glr_download_auto_examples_07_advanced_plot_ica_neurovault.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+  .. container:: binder-badge
+
+    .. image:: images/binder_badge_logo.svg
+      :target: https://mybinder.org/v2/gh/nilearn/nilearn.github.io/main?filepath=examples/auto_examples/07_advanced/plot_ica_neurovault.ipynb
+      :alt: Launch binder
+      :width: 150 px
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+     :download:`Download Python source code: plot_ica_neurovault.py <plot_ica_neurovault.py>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+     :download:`Download Jupyter notebook: plot_ica_neurovault.ipynb <plot_ica_neurovault.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_
