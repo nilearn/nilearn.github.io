@@ -6,11 +6,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-  <meta property="og:title" content="9.5.1. Example of hemodynamic response functions." />
+  <meta property="og:title" content="9.5.7. Example of MRI response functions" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://nilearn.github.io/auto_examples/04_glm_first_level/plot_hrf.html" />
   <meta property="og:site_name" content="Nilearn" />
-  <meta property="og:description" content="Within this example we are going to plot the hemodynamic response function (hrf) model in SPM together with the hrf shape proposed by G.Glover, as well as their time and dispersion derivatives. Thi..." />
+  <meta property="og:description" content="Within this example we are going to plot the hemodynamic response function ( HRF) model in SPM together with the HRF shape proposed by G.Glover, as well as their time and dispersion derivatives. We..." />
   <meta property="og:image" content="https://nilearn.github.io/_static/nilearn-logo.png" />
   <meta property="og:image:alt" content="Nilearn" />
   
@@ -30,8 +30,8 @@
     <script src="../../_static/copybutton.js"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="9.5.2. Example of a events.tsv file generation: the neurospin/localizer events." href="write_events_file.html" />
-    <link rel="prev" title="9.4.12. Extract signals on spheres and plot a connectome" href="../03_connectivity/plot_sphere_based_connectome.html" />
+    <link rel="next" title="9.5.8. Simple example of two-session fMRI model fitting" href="plot_fiac_analysis.html" />
+    <link rel="prev" title="9.5.6. Single-subject data (two sessions) in native space" href="plot_spm_multimodal_faces.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
@@ -213,10 +213,10 @@ $(function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a></li>
         <li class="right" >
-          <a href="write_events_file.html" title="9.5.2. Example of a events.tsv file generation: the neurospin/localizer events."
+          <a href="plot_fiac_analysis.html" title="9.5.8. Simple example of two-session fMRI model fitting"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../03_connectivity/plot_sphere_based_connectome.html" title="9.4.12. Extract signals on spheres and plot a connectome"
+          <a href="plot_spm_multimodal_faces.html" title="9.5.6. Single-subject data (two sessions) in native space"
              accesskey="P">previous</a> |</li>
 <li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
 <li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
@@ -251,66 +251,160 @@ the current stable version is available <a href="https://nilearn.github.io/stabl
 <p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-04-glm-first-level-plot-hrf-py"><span class="std std-ref">here</span></a>
 to download the full example code or to run this example in your browser via Binder</p>
 </div>
-<section class="sphx-glr-example-title" id="example-of-hemodynamic-response-functions">
-<span id="sphx-glr-auto-examples-04-glm-first-level-plot-hrf-py"></span><h1><span class="section-number">9.5.1. </span>Example of hemodynamic response functions.<a class="headerlink" href="#example-of-hemodynamic-response-functions" title="Permalink to this headline">¶</a></h1>
+<section class="sphx-glr-example-title" id="example-of-mri-response-functions">
+<span id="sphx-glr-auto-examples-04-glm-first-level-plot-hrf-py"></span><h1><span class="section-number">9.5.7. </span>Example of MRI response functions<a class="headerlink" href="#example-of-mri-response-functions" title="Permalink to this headline">¶</a></h1>
 <p>Within this example we are going to plot the hemodynamic response function
-(hrf) model in SPM together with the hrf shape proposed by G.Glover, as well as
-their time and dispersion derivatives.</p>
-<p>This example requires matplotlib.</p>
-<p>The hrf is the filter that couples neural responses to the metabolic-related
-changes in the MRI signal.  hrf models are simply phenomenological.</p>
-<p>In current analysis frameworks, the choice of hrf model is essentially left to
-the user. Fortunately, using the spm or Glover model does not make a huge
-difference.  Adding derivatives should be considered whenever timing
-information has some degree of uncertainty. It is actually useful to detect
+(<a class="reference internal" href="../../glossary.html#term-HRF"><span class="xref std std-term">HRF</span></a>) model in <a class="reference internal" href="../../glossary.html#term-SPM"><span class="xref std std-term">SPM</span></a> together with the <a class="reference internal" href="../../glossary.html#term-HRF"><span class="xref std std-term">HRF</span></a> shape
+proposed by G.Glover, as well as
+their time and dispersion derivatives.
+We also illustrate how users can input a custom response function,
+which can for instance be useful when dealing with non human primate data
+acquired using a contrast agent. In our case, we input a custom response
+function for MION, a common
+<a class="reference external" href="https://en.wikipedia.org/wiki/MRI_contrast_agent">agent</a> used to
+enhance contrast on MRI images of monkeys.</p>
+<p>The <a class="reference internal" href="../../glossary.html#term-HRF"><span class="xref std std-term">HRF</span></a> is the filter which couples neural responses to the
+metabolic-related changes in the MRI signal. <a class="reference internal" href="../../glossary.html#term-HRF"><span class="xref std std-term">HRF</span></a> models
+are simply phenomenological.</p>
+<p>In current analysis frameworks, the choice of <a class="reference internal" href="../../glossary.html#term-HRF"><span class="xref std std-term">HRF</span></a> model is essentially
+left to the user. Fortunately, using the <a class="reference internal" href="../../glossary.html#term-SPM"><span class="xref std std-term">SPM</span></a> or
+Glover model does not make a huge
+difference. Adding derivatives should be considered whenever timing
+information has some degree of uncertainty, and is actually useful to detect
 timing issues.</p>
-<section id="set-up-some-parameters-for-model-display">
-<h2><span class="section-number">9.5.1.1. </span>Set up some parameters for model display<a class="headerlink" href="#set-up-some-parameters-for-model-display" title="Permalink to this headline">¶</a></h2>
+<p>This example requires matplotlib and scipy.</p>
+<section id="define-stimulus-parameters-and-response-models">
+<h2><span class="section-number">9.5.7.1. </span>Define stimulus parameters and response models<a class="headerlink" href="#define-stimulus-parameters-and-response-models" title="Permalink to this headline">¶</a></h2>
 <p>To get an impulse response, we simulate a single event occurring at time t=0,
 with duration 1s.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frame_times</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.linspace.html#numpy.linspace" title="numpy.linspace" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">linspace</span></a><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">61</span><span class="p">)</span>
-<a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">onset</span></a><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">amplitude</span></a><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">duration</span></a> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span>
+
+<a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">time_length</span></a> <span class="o">=</span> <span class="mf">30.0</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frame_times</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.linspace.html#numpy.linspace" title="numpy.linspace" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">linspace</span></a><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">time_length</span></a><span class="p">,</span> <span class="mi">61</span><span class="p">)</span>
+<a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">onset</span></a><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">amplitude</span></a><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">duration</span></a> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">exp_condition</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">((</span><a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">onset</span></a><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">duration</span></a><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">amplitude</span></a><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We sample this on a fris for display</p>
+<p>Make a time array of this condition for display:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">stim</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros_like.html#numpy.zeros_like" title="numpy.zeros_like" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frame_times</span></a><span class="p">)</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">stim</span></a><span class="p">[(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frame_times</span></a> <span class="o">&gt;</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">onset</span></a><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frame_times</span></a> <span class="o">&lt;=</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">onset</span></a> <span class="o">+</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">duration</span></a><span class="p">)]</span> <span class="o">=</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">amplitude</span></a>
 </pre></div>
 </div>
-<p>Now we have to define the candidate hrf models.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">hrf_models</span></a> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;glover + derivative&#39;</span><span class="p">,</span> <span class="s1">&#39;glover + derivative + dispersion&#39;</span><span class="p">]</span>
+<p>Define custom response functions for MION. Custom response
+functions should at least take tr and oversampling as arguments:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">gamma</span>
+
+
+<span class="k">def</span> <span class="nf">mion_response_function</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oversampling</span></a><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">onset</span></a><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of the MION response function model.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tr: float</span>
+<span class="sd">        scan repeat time, in seconds</span>
+<span class="sd">    oversampling: int, optional</span>
+<span class="sd">        temporal oversampling factor</span>
+<span class="sd">    onset: float, optional</span>
+<span class="sd">        hrf onset time, in seconds</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    response_function: array of shape(length / tr * oversampling, dtype=float)</span>
+<span class="sd">        response_function sampling on the oversampled time grid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">tr</span> <span class="o">/</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oversampling</span></a>
+    <span class="n">time_stamps</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.linspace.html#numpy.linspace" title="numpy.linspace" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">linspace</span></a><span class="p">(</span>
+        <span class="mi">0</span><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">time_length</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ufunc.html#numpy.ufunc" title="numpy.ufunc" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">np</span><span class="o">.</span><span class="n">rint</span></a><span class="p">(</span><span class="nb">float</span><span class="p">(</span><a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">time_length</span></a><span class="p">)</span> <span class="o">/</span> <span class="n">dt</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">time_stamps</span> <span class="o">-=</span> <a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">onset</span></a>
+
+    <span class="c1"># parameters of the gamma function</span>
+    <span class="n">delay</span> <span class="o">=</span> <span class="mf">1.55</span>
+    <span class="n">dispersion</span> <span class="o">=</span> <span class="mf">5.5</span>
+
+    <span class="n">response_function</span> <span class="o">=</span> <a href="http://scipy.github.io/devdocs/reference/generated/scipy.stats.rv_continuous.pdf.html#scipy.stats.rv_continuous.pdf" title="scipy.stats.rv_continuous.pdf" class="sphx-glr-backref-module-scipy-stats sphx-glr-backref-type-py-method"><span class="n">gamma</span><span class="o">.</span><span class="n">pdf</span></a><span class="p">(</span><span class="n">time_stamps</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">dispersion</span><span class="p">)</span>
+    <span class="n">response_function</span> <span class="o">/=</span> <span class="n">response_function</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">response_function</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">response_function</span>
+
+
+<span class="k">def</span> <span class="nf">mion_time_derivative</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oversampling</span></a><span class="o">=</span><span class="mf">16.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of the MION time derivative response function model.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tr: float</span>
+<span class="sd">        scan repeat time, in seconds</span>
+<span class="sd">    oversampling: int, optional</span>
+<span class="sd">        temporal oversampling factor, optional</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    drf: array of shape(time_length / tr * oversampling, dtype=float)</span>
+<span class="sd">        derived_response_function sampling on the provided grid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">do</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">drf</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">mion_response_function</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oversampling</span></a><span class="p">)</span>
+        <span class="o">-</span> <span class="n">mion_response_function</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oversampling</span></a><span class="p">,</span> <span class="n">do</span><span class="p">)</span>
+    <span class="p">)</span> <span class="o">/</span> <span class="n">do</span>
+
+    <span class="k">return</span> <span class="n">drf</span>
+</pre></div>
+</div>
+<p>Define response function models to be displayed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rf_models</span></a> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;spm + derivative + dispersion&quot;</span><span class="p">,</span> <span class="s2">&quot;SPM HRF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;glover + derivative + dispersion&quot;</span><span class="p">,</span> <span class="s2">&quot;Glover HRF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="p">(</span>
+        <span class="p">[</span><span class="n">mion_response_function</span><span class="p">,</span> <span class="n">mion_time_derivative</span><span class="p">],</span>
+        <span class="s2">&quot;Mion RF + derivative&quot;</span><span class="p">,</span>
+        <span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;main_derivative&quot;</span><span class="p">],</span>
+    <span class="p">),</span>
+<span class="p">]</span>
 </pre></div>
 </div>
 </section>
-<section id="sample-the-hrf">
-<h2><span class="section-number">9.5.1.2. </span>Sample the hrf<a class="headerlink" href="#sample-the-hrf" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.glm.first_level</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.glm.first_level.compute_regressor.html#nilearn.glm.first_level.compute_regressor" title="nilearn.glm.first_level.compute_regressor" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-function"><span class="n">compute_regressor</span></a>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<section id="sample-and-plot-response-functions">
+<h2><span class="section-number">9.5.7.2. </span>Sample and plot response functions<a class="headerlink" href="#sample-and-plot-response-functions" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">nilearn.glm.first_level</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.glm.first_level.compute_regressor.html#nilearn.glm.first_level.compute_regressor" title="nilearn.glm.first_level.compute_regressor" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-function"><span class="n">compute_regressor</span></a>
+
+<a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oversampling</span></a> <span class="o">=</span> <span class="mi">16</span>
 
 <a href="https://matplotlib.org/api/figure_api.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a> <span class="o">=</span> <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="matplotlib.pyplot.figure" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
-<span class="k">for</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">i</span></a><span class="p">,</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">hrf_model</span></a> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">hrf_models</span></a><span class="p">):</span>
-    <span class="c1"># obtain the signal of interest by convolution</span>
-    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signal</span></a><span class="p">,</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">name</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.first_level.compute_regressor.html#nilearn.glm.first_level.compute_regressor" title="nilearn.glm.first_level.compute_regressor" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-function"><span class="n">compute_regressor</span></a><span class="p">(</span>
-        <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">exp_condition</span></a><span class="p">,</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">hrf_model</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frame_times</span></a><span class="p">,</span> <span class="n">con_id</span><span class="o">=</span><span class="s1">&#39;main&#39;</span><span class="p">,</span>
-        <span class="n">oversampling</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="k">for</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">i</span></a><span class="p">,</span> <span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rf_model</span></a><span class="p">,</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model_title</span></a><span class="p">,</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels</span></a><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rf_models</span></a><span class="p">):</span>
+    <span class="c1"># compute signal of interest by convolution</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signal</span></a><span class="p">,</span> <span class="n">_labels</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.first_level.compute_regressor.html#nilearn.glm.first_level.compute_regressor" title="nilearn.glm.first_level.compute_regressor" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-function"><span class="n">compute_regressor</span></a><span class="p">(</span>
+        <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">exp_condition</span></a><span class="p">,</span>
+        <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rf_model</span></a><span class="p">,</span>
+        <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frame_times</span></a><span class="p">,</span>
+        <span class="n">con_id</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
+        <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oversampling</span></a><span class="o">=</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">oversampling</span></a><span class="p">,</span>
+    <span class="p">)</span>
 
-    <span class="c1"># plot this</span>
-    <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplot.html#matplotlib.pyplot.subplot" title="matplotlib.pyplot.subplot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">i</span></a> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-    <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.fill.html#matplotlib.pyplot.fill" title="matplotlib.pyplot.fill" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">fill</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frame_times</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">stim</span></a><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;stimulus&#39;</span><span class="p">)</span>
+    <span class="c1"># plot signal</span>
+    <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplot.html#matplotlib.pyplot.subplot" title="matplotlib.pyplot.subplot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span></a><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">rf_models</span></a><span class="p">),</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">i</span></a> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.fill.html#matplotlib.pyplot.fill" title="matplotlib.pyplot.fill" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">fill</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frame_times</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">stim</span></a><span class="p">,</span> <span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;stimulus&quot;</span><span class="p">)</span>
     <span class="k">for</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">j</span></a> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signal</span><span class="o">.</span><span class="n">shape</span></a><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-        <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frame_times</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signal</span><span class="o">.</span><span class="n">T</span></a><span class="p">[</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">j</span></a><span class="p">],</span> <span class="n">label</span><span class="o">=</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">name</span></a><span class="p">[</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">j</span></a><span class="p">])</span>
-    <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.xlabel.html#matplotlib.pyplot.xlabel" title="matplotlib.pyplot.xlabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s1">&#39;time (s)&#39;</span><span class="p">)</span>
+        <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span>
+            <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">frame_times</span></a><span class="p">,</span>
+            <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">signal</span><span class="o">.</span><span class="n">T</span></a><span class="p">[</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">j</span></a><span class="p">],</span>
+            <span class="n">label</span><span class="o">=</span><span class="p">(</span>
+                <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels</span></a><span class="p">[</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">j</span></a><span class="p">]</span>
+                <span class="k">if</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels</span></a> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="p">(</span><span class="n">_labels</span><span class="p">[</span><a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">j</span></a><span class="p">]</span> <span class="k">if</span> <span class="n">_labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+    <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.xlabel.html#matplotlib.pyplot.xlabel" title="matplotlib.pyplot.xlabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s2">&quot;time (s)&quot;</span><span class="p">)</span>
     <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.legend.html#matplotlib.pyplot.legend" title="matplotlib.pyplot.legend" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span></a><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.title.html#matplotlib.pyplot.title" title="matplotlib.pyplot.title" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">hrf_model</span></a><span class="p">)</span>
+    <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.title.html#matplotlib.pyplot.title" title="matplotlib.pyplot.title" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model_title</span></a><span class="p">)</span>
 
-<span class="c1"># adjust the plot</span>
-<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplots_adjust.html#matplotlib.pyplot.subplots_adjust" title="matplotlib.pyplot.subplots_adjust" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span></a><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="mf">.12</span><span class="p">)</span>
+<span class="c1"># adjust plot</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplots_adjust.html#matplotlib.pyplot.subplots_adjust" title="matplotlib.pyplot.subplots_adjust" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span></a><span class="p">(</span><span class="n">bottom</span><span class="o">=</span><span class="mf">0.12</span><span class="p">)</span>
 <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_plot_hrf_001.png" srcset="../../_images/sphx_glr_plot_hrf_001.png" alt="glover + derivative, glover + derivative + dispersion" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.182 seconds)</p>
+<img src="../../_images/sphx_glr_plot_hrf_001.png" srcset="../../_images/sphx_glr_plot_hrf_001.png" alt="SPM HRF, Glover HRF, Mion RF + derivative" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.157 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-04-glm-first-level-plot-hrf-py">
 <div class="binder-badge docutils container">
 <a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn.github.io/main?filepath=examples/auto_examples/04_glm_first_level/plot_hrf.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo3.svg" width="150px" /></a>
@@ -343,19 +437,19 @@ with duration 1s.</p>
 
   <h3><a href="../../index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">9.5.1. Example of hemodynamic response functions.</a><ul>
-<li><a class="reference internal" href="#set-up-some-parameters-for-model-display">9.5.1.1. Set up some parameters for model display</a></li>
-<li><a class="reference internal" href="#sample-the-hrf">9.5.1.2. Sample the hrf</a></li>
+<li><a class="reference internal" href="#">9.5.7. Example of MRI response functions</a><ul>
+<li><a class="reference internal" href="#define-stimulus-parameters-and-response-models">9.5.7.1. Define stimulus parameters and response models</a></li>
+<li><a class="reference internal" href="#sample-and-plot-response-functions">9.5.7.2. Sample and plot response functions</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../03_connectivity/plot_sphere_based_connectome.html"
-                        title="previous chapter"><span class="section-number">9.4.12. </span>Extract signals on spheres and plot a connectome</a></p>
+  <p class="topless"><a href="plot_spm_multimodal_faces.html"
+                        title="previous chapter"><span class="section-number">9.5.6. </span>Single-subject data (two sessions) in native space</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="write_events_file.html"
-                        title="next chapter"><span class="section-number">9.5.2. </span>Example of a events.tsv file generation: the neurospin/localizer events.</a></p>
+  <p class="topless"><a href="plot_fiac_analysis.html"
+                        title="next chapter"><span class="section-number">9.5.8. </span>Simple example of two-session fMRI model fitting</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
