@@ -68,6 +68,19 @@ Now we can load the data set:
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    Dataset created in /home/circleci/nilearn_data/miyawaki2008
+
+    Downloading data from https://www.nitrc.org/frs/download.php/8486/miyawaki2008.tgz ...
+    Downloaded 24657920 of 161069109 bytes (15.3%,    5.5s remaining)    Downloaded 53198848 of 161069109 bytes (33.0%,    4.1s remaining)    Downloaded 83132416 of 161069109 bytes (51.6%,    2.8s remaining)    Downloaded 108773376 of 161069109 bytes (67.5%,    1.9s remaining)    Downloaded 136036352 of 161069109 bytes (84.5%,    0.9s remaining) ...done. (6 seconds, 0 min)
+    Extracting data from /home/circleci/nilearn_data/miyawaki2008/18b67c55cebe5e71427c5ffdcfafd948/miyawaki2008.tgz..... done.
+
 
 
 
@@ -117,22 +130,12 @@ data, clean and mask it.
     stimuli = []
     for stimulus_run in stimuli_random_runs_filenames:
         stimuli.append(np.reshape(np.loadtxt(stimulus_run,
-                                  dtype=np.int, delimiter=','),
+                                  dtype=int, delimiter=','),
                                   (-1,) + stimulus_shape, order='F'))
 
 
 
 
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    /home/circleci/project/examples/02_decoding/plot_miyawaki_encoding.py:70: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
-    Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-      dtype=np.int, delimiter=','),
 
 
 
@@ -399,15 +402,19 @@ pixels, so we use `Lasso regression
 <http://en.wikipedia.org/wiki/Lasso_(statistics)>`_ to estimate a sparse
 set of regression coefficients.
 
-.. GENERATED FROM PYTHON SOURCE LINES 203-254
+.. GENERATED FROM PYTHON SOURCE LINES 203-260
 
 .. code-block:: default
 
 
     from sklearn.linear_model import LassoLarsCV
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.pipeline import make_pipeline
 
     # automatically estimate the sparsity by cross-validation
-    lasso = LassoLarsCV(max_iter=10)
+
+    lasso = make_pipeline(StandardScaler(),
+                          LassoLarsCV(normalize=False, max_iter=10))
 
     # Mark the same pixel in each receptive field
     marked_pixel = (4, 2)
@@ -424,8 +431,9 @@ set of regression coefficients.
     # we fit the Lasso for each of the three voxels of the upper row
     for i, index in enumerate([1780, 1951, 2131]):
         ax = plt.subplot(gs1[0, i])
+        lasso.fit(stimuli, fmri_data[:, index])
         # we reshape the coefficients into the form of the original images
-        rf = lasso.fit(stimuli, fmri_data[:, index]).coef_.reshape((10, 10))
+        rf = lasso.named_steps['lassolarscv'].coef_.reshape((10, 10))
         # add a black background
         ax.imshow(np.zeros_like(rf), vmin=0., vmax=1., cmap='gray')
         ax_im = ax.imshow(np.ma.masked_less(rf, 0.1), interpolation="nearest",
@@ -441,8 +449,9 @@ set of regression coefficients.
 
     gs1.update(left=0., right=1., wspace=0.1)
     ax = plt.subplot(gs1[1, 1])
+    lasso.fit(stimuli, fmri_data[:, 1935])
     # we reshape the coefficients into the form of the original images
-    rf = lasso.fit(stimuli, fmri_data[:, 1935]).coef_.reshape((10, 10))
+    rf = lasso.named_steps['lassolarscv'].coef_.reshape((10, 10))
     ax.imshow(np.zeros_like(rf), vmin=0., vmax=1., cmap='gray')
     ax_im = ax.imshow(np.ma.masked_less(rf, 0.1), interpolation="nearest",
                       cmap='RdPu', vmin=0., vmax=0.75)
@@ -469,68 +478,12 @@ set of regression coefficients.
 
  .. code-block:: none
 
-    /home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/linear_model/_base.py:133: FutureWarning: The default of 'normalize' will be set to False in version 1.2 and deprecated in version 1.4.
-    If you wish to scale the data, use Pipeline with a StandardScaler in a preprocessing stage. To reproduce the previous behavior:
 
-    from sklearn.pipeline import make_pipeline
-
-    model = make_pipeline(StandardScaler(with_mean=False), LassoLarsCV())
-
-    If you wish to pass a sample_weight parameter, you need to pass it as a fit parameter to each step of the pipeline as follows:
-
-    kwargs = {s[0] + '__sample_weight': sample_weight for s in model.steps}
-    model.fit(X, y, **kwargs)
-
-    Set parameter alpha to: original_alpha * np.sqrt(n_samples). 
-      warnings.warn(
-    /home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/linear_model/_base.py:133: FutureWarning: The default of 'normalize' will be set to False in version 1.2 and deprecated in version 1.4.
-    If you wish to scale the data, use Pipeline with a StandardScaler in a preprocessing stage. To reproduce the previous behavior:
-
-    from sklearn.pipeline import make_pipeline
-
-    model = make_pipeline(StandardScaler(with_mean=False), LassoLarsCV())
-
-    If you wish to pass a sample_weight parameter, you need to pass it as a fit parameter to each step of the pipeline as follows:
-
-    kwargs = {s[0] + '__sample_weight': sample_weight for s in model.steps}
-    model.fit(X, y, **kwargs)
-
-    Set parameter alpha to: original_alpha * np.sqrt(n_samples). 
-      warnings.warn(
-    /home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/linear_model/_base.py:133: FutureWarning: The default of 'normalize' will be set to False in version 1.2 and deprecated in version 1.4.
-    If you wish to scale the data, use Pipeline with a StandardScaler in a preprocessing stage. To reproduce the previous behavior:
-
-    from sklearn.pipeline import make_pipeline
-
-    model = make_pipeline(StandardScaler(with_mean=False), LassoLarsCV())
-
-    If you wish to pass a sample_weight parameter, you need to pass it as a fit parameter to each step of the pipeline as follows:
-
-    kwargs = {s[0] + '__sample_weight': sample_weight for s in model.steps}
-    model.fit(X, y, **kwargs)
-
-    Set parameter alpha to: original_alpha * np.sqrt(n_samples). 
-      warnings.warn(
-    /home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/sklearn/linear_model/_base.py:133: FutureWarning: The default of 'normalize' will be set to False in version 1.2 and deprecated in version 1.4.
-    If you wish to scale the data, use Pipeline with a StandardScaler in a preprocessing stage. To reproduce the previous behavior:
-
-    from sklearn.pipeline import make_pipeline
-
-    model = make_pipeline(StandardScaler(with_mean=False), LassoLarsCV())
-
-    If you wish to pass a sample_weight parameter, you need to pass it as a fit parameter to each step of the pipeline as follows:
-
-    kwargs = {s[0] + '__sample_weight': sample_weight for s in model.steps}
-    model.fit(X, y, **kwargs)
-
-    Set parameter alpha to: original_alpha * np.sqrt(n_samples). 
-      warnings.warn(
-
-    <matplotlib.colorbar.Colorbar object at 0x7f972828a880>
+    <matplotlib.colorbar.Colorbar object at 0x7f18fa5e1cd0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 255-260
+.. GENERATED FROM PYTHON SOURCE LINES 261-266
 
 The receptive fields of the four voxels are not only close to each other,
 the relative location of the pixel each voxel is most sensitive to
@@ -541,7 +494,7 @@ its location in the brain.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  36.887 seconds)
+   **Total running time of the script:** ( 0 minutes  44.777 seconds)
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_miyawaki_encoding.py:
