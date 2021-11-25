@@ -18,8 +18,8 @@
 .. _sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py:
 
 
-Regions extraction using Dictionary Learning and functional connectomes
-=======================================================================
+Regions extraction using :term:`Dictionary learning` and functional connectomes
+===============================================================================
 
 This example shows how to use :class:`nilearn.regions.RegionExtractor`
 to extract spatially constrained brain regions from whole brain maps decomposed
@@ -41,7 +41,7 @@ for more details.
 .. GENERATED FROM PYTHON SOURCE LINES 25-29
 
 Fetch brain development functional datasets
-------------------------------------------------------------
+-------------------------------------------
 
 We use nilearn's datasets downloading utilities
 
@@ -62,18 +62,20 @@ We use nilearn's datasets downloading utilities
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 36-38
+.. GENERATED FROM PYTHON SOURCE LINES 36-43
 
 Extract functional networks with :term:`Dictionary learning`
------------------------------------------------------------------------
+------------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-59
+Import :class:`~nilearn.decomposition.DictLearning` from the
+:mod:`~nilearn.decomposition` module, instantiate the object, and
+:meth:`~nilearn.decomposition.DictLearning.fit` the model to the
+functional datasets
+
+.. GENERATED FROM PYTHON SOURCE LINES 43-61
 
 .. code-block:: default
 
-
-    # Import dictionary learning algorithm from decomposition module and call the
-    # object and fit the model to the functional datasets
     from nilearn.decomposition import DictLearning
 
     # Initialize DictLearning object
@@ -112,23 +114,25 @@ Extract functional networks with :term:`Dictionary learning`
     /home/circleci/project/nilearn/plotting/displays.py:101: UserWarning: No contour levels were found within the data range.
       im = getattr(ax, type)(data_2d.copy(),
 
-    <nilearn.plotting.displays.OrthoSlicer object at 0x7fa292ea2100>
+    <nilearn.plotting.displays.OrthoSlicer object at 0x7f64a07fa4f0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 60-62
+.. GENERATED FROM PYTHON SOURCE LINES 62-70
 
 Extract regions from networks
-------------------------------
+-----------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-88
+Import :class:`~nilearn.regions.RegionExtractor` from the
+:mod:`~nilearn.regions` module.
+``threshold=0.5`` indicates that we keep nominal of amount nonzero
+:term:`voxels<voxel>` across all maps, less the threshold means that
+more intense non-voxels will be survived.
+
+.. GENERATED FROM PYTHON SOURCE LINES 70-92
 
 .. code-block:: default
 
-
-    # Import Region Extractor algorithm from regions module
-    # threshold=0.5 indicates that we keep nominal of amount nonzero voxels across all
-    # maps, less the threshold means that more intense non-voxels will be survived.
     from nilearn.regions import RegionExtractor
 
     extractor = RegionExtractor(components_img, threshold=0.5,
@@ -173,25 +177,26 @@ Extract regions from networks
     /home/circleci/miniconda3/envs/testenv/lib/python3.8/site-packages/numpy/ma/core.py:2829: UserWarning: Warning: converting a masked element to nan.
       _data = np.array(data, dtype=dtype, copy=copy,
 
-    <nilearn.plotting.displays.OrthoSlicer object at 0x7fa2939bd640>
+    <nilearn.plotting.displays.OrthoSlicer object at 0x7f64a17cdb50>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-91
+.. GENERATED FROM PYTHON SOURCE LINES 93-102
 
 Compute correlation coefficients
----------------------------------
+--------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-115
+First we need to do subjects timeseries signals extraction and then estimating
+correlation matrices on those signals.
+To extract timeseries signals, we call
+:meth:`~nilearn.regions.RegionExtractor.transform` onto each subject
+functional data stored in ``func_filenames``.
+To estimate correlation matrices we import connectome utilities from nilearn.
+
+.. GENERATED FROM PYTHON SOURCE LINES 102-120
 
 .. code-block:: default
 
-
-    # First we need to do subjects timeseries signals extraction and then estimating
-    # correlation matrices on those signals.
-    # To extract timeseries signals, we call transform() from RegionExtractor object
-    # onto each subject functional data stored in func_filenames.
-    # To estimate correlation matrices we import connectome utilities from nilearn
     from nilearn.connectome import ConnectivityMeasure
 
     correlations = []
@@ -217,12 +222,17 @@ Compute correlation coefficients
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 116-118
+.. GENERATED FROM PYTHON SOURCE LINES 121-128
 
 Plot resulting connectomes
-----------------------------
+--------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-132
+First we plot the mean of correlation matrices with
+:func:`~nilearn.plotting.plot_matrix`, and we use
+:func:`~nilearn.plotting.plot_connectome` to plot the
+connectome relations.
+
+.. GENERATED FROM PYTHON SOURCE LINES 128-142
 
 .. code-block:: default
 
@@ -268,21 +278,22 @@ Plot resulting connectomes
  .. code-block:: none
 
 
-    <nilearn.plotting.displays.OrthoProjector object at 0x7fa2939ecee0>
+    <nilearn.plotting.displays.OrthoProjector object at 0x7f64a1a59700>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-135
+.. GENERATED FROM PYTHON SOURCE LINES 143-148
 
 Plot regions extracted for only one specific network
 ----------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-144
+First, we plot a network of ``index=4`` without
+region extraction (left plot).
+
+.. GENERATED FROM PYTHON SOURCE LINES 148-155
 
 .. code-block:: default
 
-
-    # First, we plot a network of index=4 without region extraction (left plot)
     from nilearn import image
 
     img = image.index_img(components_img, 4)
@@ -302,19 +313,19 @@ Plot regions extracted for only one specific network
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 145-148
+.. GENERATED FROM PYTHON SOURCE LINES 156-162
 
 Now, we plot (right side) same network after region extraction to show that
 connected regions are nicely separated.
 Each brain extracted region is identified as separate color.
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-163
+For this, we take the indices of the all regions extracted related to original
+network given as 4.
+
+.. GENERATED FROM PYTHON SOURCE LINES 162-174
 
 .. code-block:: default
 
-
-    # For this, we take the indices of the all regions extracted related to original
-    # network given as 4.
     regions_indices_of_map3 = np.where(np.array(regions_index) == 4)
 
     display = plotting.plot_anat(cut_coords=coords,
@@ -342,9 +353,9 @@ Each brain extracted region is identified as separate color.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 2 minutes  40.447 seconds)
+   **Total running time of the script:** ( 2 minutes  41.094 seconds)
 
-**Estimated memory usage:**  1030 MB
+**Estimated memory usage:**  979 MB
 
 
 .. _sphx_glr_download_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py:
