@@ -56,15 +56,14 @@ labels = [
 #
 # We can compute the mean signal within **spheres** of a fixed radius
 # around a sequence of (x, y, z) coordinates with the object
-# :class:`nilearn.input_data.NiftiSpheresMasker`.
+# :class:`nilearn.maskers.NiftiSpheresMasker`.
 # The resulting signal is then prepared by the masker object: Detrended,
 # band-pass filtered and **standardized to 1 variance**.
 
-from nilearn import input_data
+from nilearn.maskers import NiftiSpheresMasker
 
-masker = input_data.NiftiSpheresMasker(
-    dmn_coords, radius=8,
-    detrend=True, standardize=True,
+masker = NiftiSpheresMasker(
+    dmn_coords, radius=8, detrend=True, standardize=True,
     low_pass=0.1, high_pass=0.01, t_r=2,
     memory='nilearn_cache', memory_level=1, verbose=2)
 
@@ -159,7 +158,7 @@ view
 #
 # First we fetch the coordinates of the Power atlas
 
-power = datasets.fetch_coords_power_2011()
+power = datasets.fetch_coords_power_2011(legacy_format=False)
 print('Power atlas comes with {0}.'.format(power.keys()))
 
 
@@ -187,7 +186,7 @@ print('Stacked power coordinates in array of shape {0}.'.format(coords.shape))
 ###############################################################################
 # and define spheres masker, with small enough radius to avoid regions overlap.
 
-spheres_masker = input_data.NiftiSpheresMasker(
+spheres_masker = NiftiSpheresMasker(
     seeds=coords, smoothing_fwhm=6, radius=5.,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
@@ -307,7 +306,7 @@ plotting.plot_markers(
 # -------------------------------------------
 #
 # We repeat the same steps for Dosenbach's atlas.
-dosenbach = datasets.fetch_coords_dosenbach_2010()
+dosenbach = datasets.fetch_coords_dosenbach_2010(legacy_format=False)
 
 coords = np.vstack((
     dosenbach.rois['x'],
@@ -315,7 +314,7 @@ coords = np.vstack((
     dosenbach.rois['z'],
 )).T
 
-spheres_masker = input_data.NiftiSpheresMasker(
+spheres_masker = NiftiSpheresMasker(
     seeds=coords, smoothing_fwhm=6, radius=4.5,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
