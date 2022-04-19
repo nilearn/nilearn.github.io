@@ -281,9 +281,10 @@ terminal, or use <code class="docutils literal notranslate"><span class="pre">ju
 <li><p><a class="reference internal" href="#changing-the-hemodynamic-response-model" id="id5">Changing the hemodynamic response model</a></p></li>
 <li><p><a class="reference internal" href="#the-noise-model-ar-1-ols-or-higher-order-ar" id="id6">The noise model: ar(1), ols, or higher order ar?</a></p></li>
 <li><p><a class="reference internal" href="#removing-confounds" id="id7">Removing confounds</a></p></li>
-<li><p><a class="reference internal" href="#smoothing" id="id8">Smoothing</a></p></li>
-<li><p><a class="reference internal" href="#masking" id="id9">Masking</a></p></li>
-<li><p><a class="reference internal" href="#conclusion" id="id10">Conclusion</a></p></li>
+<li><p><a class="reference internal" href="#volume-censoring" id="id8">Volume censoring</a></p></li>
+<li><p><a class="reference internal" href="#smoothing" id="id9">Smoothing</a></p></li>
+<li><p><a class="reference internal" href="#masking" id="id10">Masking</a></p></li>
+<li><p><a class="reference internal" href="#conclusion" id="id11">Conclusion</a></p></li>
 </ul>
 </div>
 <section id="retrieving-the-data">
@@ -789,8 +790,32 @@ killed, probably because they were somewhat colinear to the confounds. On the
 other hand, some of the maps become cleaner (horizontal-vertical,
 computation) after this addition.</p>
 </section>
+<section id="volume-censoring">
+<h2><a class="toc-backref" href="#id8"><span class="section-number">9.5.12.8. </span>Volume censoring</a><a class="headerlink" href="#volume-censoring" title="Permalink to this headline">¶</a></h2>
+<p>Volume censoring is a common way to remove non-steady state volumes, or
+high-motion volumes in scrubbing based noise removal strategies. In this
+scenario, we can apply a sample mask along the time dimension to exclude
+unwanted volumes. When using <a class="reference internal" href="../../glossary.html#term-fMRIPrep"><span class="xref std std-term">fMRIPrep</span></a> outputs from 1.4.x series or
+above, wecan use the <a class="reference internal" href="../../modules/generated/nilearn.interfaces.fmriprep.load_confounds.html#nilearn.interfaces.fmriprep.load_confounds" title="nilearn.interfaces.fmriprep.load_confounds"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_confounds</span></code></a>
+function of Nilearn to retrieve sample masks based on the given scrubbing
+threshold and the non-steady state columns.
+For non-fMRIPrep output, we can still define a sample mask. Here we apply a
+sample mask that removes the first 50 volumes.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sample_masks</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.arange.html#numpy.arange" title="numpy.arange" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">arange</span></a><span class="p">(</span><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.shape.html#pandas.DataFrame.shape" title="pandas.DataFrame.shape" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-property"><span class="n">events</span><span class="o">.</span><span class="n">shape</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">50</span><span class="p">:]</span>
+<a href="../../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">first_level_model</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class"><span class="n">FirstLevelModel</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">t_r</span></a><span class="p">,</span> <span class="n">hrf_model</span><span class="o">=</span><span class="s1">&#39;spm + derivative&#39;</span><span class="p">,</span>
+                                    <span class="n">slice_time_ref</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<a href="../../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">first_level_model</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel.fit" title="nilearn.glm.first_level.FirstLevelModel.fit" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-method"><span class="n">first_level_model</span><span class="o">.</span><span class="n">fit</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.core.frame.DataFrame" class="sphx-glr-backref-module-pandas-core-frame sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">events</span></a><span class="o">=</span><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.core.frame.DataFrame" class="sphx-glr-backref-module-pandas-core-frame sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">events</span></a><span class="p">,</span>
+                                          <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sample_masks</span></a><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sample_masks</span></a><span class="p">)</span>
+<a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.core.frame.DataFrame" class="sphx-glr-backref-module-pandas-core-frame sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrix</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">first_level_model</span><span class="o">.</span><span class="n">design_matrices_</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a href="../../modules/generated/nilearn.plotting.plot_design_matrix.html#nilearn.plotting.plot_design_matrix" title="nilearn.plotting.plot_design_matrix" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_design_matrix</span></a><span class="p">(</span><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.core.frame.DataFrame" class="sphx-glr-backref-module-pandas-core-frame sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrix</span></a><span class="p">)</span>
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img src="../../_images/sphx_glr_plot_first_level_details_027.png" srcset="../../_images/sphx_glr_plot_first_level_details_027.png" alt="plot first level details" class = "sphx-glr-single-img"/><p>Note the significantly shorter design matrix compared to the previous
+examples.</p>
+</section>
 <section id="smoothing">
-<h2><a class="toc-backref" href="#id8"><span class="section-number">9.5.12.8. </span>Smoothing</a><a class="headerlink" href="#smoothing" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id9"><span class="section-number">9.5.12.9. </span>Smoothing</a><a class="headerlink" href="#smoothing" title="Permalink to this headline">¶</a></h2>
 <p>Smoothing is a regularization of the model. It has two benefits:
 decrease the noise level in images, and reduce the discrepancy
 between individuals. The drawback is that it biases the shape and
@@ -807,13 +832,13 @@ gains.  We use a mild smoothing of 5mm
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
-<li><img src="../../_images/sphx_glr_plot_first_level_details_027.png" srcset="../../_images/sphx_glr_plot_first_level_details_027.png" alt="plot first level details" class = "sphx-glr-multi-img"/></li>
 <li><img src="../../_images/sphx_glr_plot_first_level_details_028.png" srcset="../../_images/sphx_glr_plot_first_level_details_028.png" alt="plot first level details" class = "sphx-glr-multi-img"/></li>
+<li><img src="../../_images/sphx_glr_plot_first_level_details_029.png" srcset="../../_images/sphx_glr_plot_first_level_details_029.png" alt="plot first level details" class = "sphx-glr-multi-img"/></li>
 </ul>
 <p>The design is unchanged but the maps are smoother and more contrasted.</p>
 </section>
 <section id="masking">
-<h2><a class="toc-backref" href="#id9"><span class="section-number">9.5.12.9. </span>Masking</a><a class="headerlink" href="#masking" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id10"><span class="section-number">9.5.12.10. </span>Masking</a><a class="headerlink" href="#masking" title="Permalink to this headline">¶</a></h2>
 <p>Masking consists in selecting the region of the image on which the
 model is run: it is useless to run it outside of the brain.</p>
 <p>The approach taken by FirstLeveModel is to estimate it from the fMRI
@@ -837,7 +862,7 @@ data.</p>
 <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_plot_first_level_details_029.png" srcset="../../_images/sphx_glr_plot_first_level_details_029.png" alt="plot first level details" class = "sphx-glr-single-img"/><p>For the sake of time saving, we resample icbm_mask to our data.
+<img src="../../_images/sphx_glr_plot_first_level_details_030.png" srcset="../../_images/sphx_glr_plot_first_level_details_030.png" alt="plot first level details" class = "sphx-glr-single-img"/><p>For the sake of time saving, we resample icbm_mask to our data.
 For this we call the resample_to_img routine of Nilearn.
 We use interpolation = ‘nearest’ to keep the mask as a binary image.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.image.resample_to_img.html#nilearn.image.resample_to_img" title="nilearn.image.resample_to_img" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">resample_to_img</span></a>
@@ -857,20 +882,20 @@ We use interpolation = ‘nearest’ to keep the mask as a binary image.</p>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
-<li><img src="../../_images/sphx_glr_plot_first_level_details_030.png" srcset="../../_images/sphx_glr_plot_first_level_details_030.png" alt="plot first level details" class = "sphx-glr-multi-img"/></li>
 <li><img src="../../_images/sphx_glr_plot_first_level_details_031.png" srcset="../../_images/sphx_glr_plot_first_level_details_031.png" alt="plot first level details" class = "sphx-glr-multi-img"/></li>
+<li><img src="../../_images/sphx_glr_plot_first_level_details_032.png" srcset="../../_images/sphx_glr_plot_first_level_details_032.png" alt="plot first level details" class = "sphx-glr-multi-img"/></li>
 </ul>
 <p>Note that it removed spurious spots in the white matter.</p>
 </section>
 <section id="conclusion">
-<h2><a class="toc-backref" href="#id10"><span class="section-number">9.5.12.10. </span>Conclusion</a><a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id11"><span class="section-number">9.5.12.11. </span>Conclusion</a><a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
 <p>Interestingly, the model used here seems quite resilient to
 manipulation of modeling parameters: this is reassuring. It shows
 that Nilearn defaults (‘cosine’ drift, cutoff=128s, ‘glover’ hrf,
 ar(1) model) are actually reasonable.  Note that these conclusions
 are specific to this dataset and may vary with other ones.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 4 minutes  40.971 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  194 MB</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 4 minutes  24.574 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  296 MB</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-04-glm-first-level-plot-first-level-details-py">
 <div class="binder-badge docutils container">
 <a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn.github.io/main?filepath=examples/auto_examples/04_glm_first_level/plot_first_level_details.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo3.svg" width="150px" /></a>
@@ -915,9 +940,10 @@ are specific to this dataset and may vary with other ones.</p>
 </li>
 <li><a class="reference internal" href="#the-noise-model-ar-1-ols-or-higher-order-ar">9.5.12.6. The noise model: ar(1), ols, or higher order ar?</a></li>
 <li><a class="reference internal" href="#removing-confounds">9.5.12.7. Removing confounds</a></li>
-<li><a class="reference internal" href="#smoothing">9.5.12.8. Smoothing</a></li>
-<li><a class="reference internal" href="#masking">9.5.12.9. Masking</a></li>
-<li><a class="reference internal" href="#conclusion">9.5.12.10. Conclusion</a></li>
+<li><a class="reference internal" href="#volume-censoring">9.5.12.8. Volume censoring</a></li>
+<li><a class="reference internal" href="#smoothing">9.5.12.9. Smoothing</a></li>
+<li><a class="reference internal" href="#masking">9.5.12.10. Masking</a></li>
+<li><a class="reference internal" href="#conclusion">9.5.12.11. Conclusion</a></li>
 </ul>
 </li>
 </ul>

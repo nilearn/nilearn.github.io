@@ -1030,7 +1030,54 @@ killed, probably because they were somewhat colinear to the confounds. On the
 other hand, some of the maps become cleaner (horizontal-vertical,
 computation) after this addition.
 
-.. GENERATED FROM PYTHON SOURCE LINES 442-451
+.. GENERATED FROM PYTHON SOURCE LINES 441-454
+
+Volume censoring
+------------------
+
+Volume censoring is a common way to remove non-steady state volumes, or
+high-motion volumes in scrubbing based noise removal strategies. In this
+scenario, we can apply a sample mask along the time dimension to exclude
+unwanted volumes. When using :term:`fMRIPrep` outputs from 1.4.x series or
+above, wecan use the :func:`~nilearn.interfaces.fmriprep.load_confounds`
+function of Nilearn to retrieve sample masks based on the given scrubbing
+threshold and the non-steady state columns.
+For non-fMRIPrep output, we can still define a sample mask. Here we apply a
+sample mask that removes the first 50 volumes.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 454-464
+
+.. code-block:: default
+
+
+    sample_masks = np.arange(events.shape[0])[50:]
+    first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative',
+                                        slice_time_ref=0.5)
+    first_level_model = first_level_model.fit(fmri_img, events=events,
+                                              sample_masks=sample_masks)
+    design_matrix = first_level_model.design_matrices_[0]
+    plot_design_matrix(design_matrix)
+    plt.show()
+
+
+
+
+.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_027.png
+   :alt: plot first level details
+   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_027.png
+   :class: sphx-glr-single-img
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 465-467
+
+Note the significantly shorter design matrix compared to the previous
+examples.
+
+.. GENERATED FROM PYTHON SOURCE LINES 469-478
 
 Smoothing
 ---------
@@ -1042,7 +1089,7 @@ position of activation. Here, we simply illustrate the statistical
 gains.  We use a mild smoothing of 5mm
 :term:`full-width at half maximum<FWHM>` (:term:`FWHM`).
 
-.. GENERATED FROM PYTHON SOURCE LINES 451-460
+.. GENERATED FROM PYTHON SOURCE LINES 478-487
 
 .. code-block:: default
 
@@ -1063,28 +1110,28 @@ gains.  We use a mild smoothing of 5mm
 
     *
 
-      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_027.png
-         :alt: plot first level details
-         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_027.png
-         :class: sphx-glr-multi-img
-
-    *
-
       .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_028.png
          :alt: plot first level details
          :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_028.png
          :class: sphx-glr-multi-img
 
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_029.png
+         :alt: plot first level details
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_029.png
+         :class: sphx-glr-multi-img
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 461-463
+
+.. GENERATED FROM PYTHON SOURCE LINES 488-490
 
 The design is unchanged but the maps are smoother and more contrasted.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 465-479
+.. GENERATED FROM PYTHON SOURCE LINES 492-506
 
 Masking
 -------
@@ -1101,7 +1148,7 @@ non-grey matter regions, in which no BOLD signal is expected.  The
 downside is that the mask may not fit very well this particular
 data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 479-492
+.. GENERATED FROM PYTHON SOURCE LINES 506-519
 
 .. code-block:: default
 
@@ -1121,22 +1168,22 @@ data.
 
 
 
-.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_029.png
+.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_030.png
    :alt: plot first level details
-   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_029.png
+   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_030.png
    :class: sphx-glr-single-img
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 493-496
+.. GENERATED FROM PYTHON SOURCE LINES 520-523
 
 For the sake of time saving, we resample icbm_mask to our data.
 For this we call the resample_to_img routine of Nilearn.
 We use interpolation = 'nearest' to keep the mask as a binary image.
 
-.. GENERATED FROM PYTHON SOURCE LINES 496-500
+.. GENERATED FROM PYTHON SOURCE LINES 523-527
 
 .. code-block:: default
 
@@ -1151,11 +1198,11 @@ We use interpolation = 'nearest' to keep the mask as a binary image.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 501-502
+.. GENERATED FROM PYTHON SOURCE LINES 528-529
 
 Impact on the first-level model.
 
-.. GENERATED FROM PYTHON SOURCE LINES 502-511
+.. GENERATED FROM PYTHON SOURCE LINES 529-538
 
 .. code-block:: default
 
@@ -1176,27 +1223,27 @@ Impact on the first-level model.
 
     *
 
-      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_030.png
-         :alt: plot first level details
-         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_030.png
-         :class: sphx-glr-multi-img
-
-    *
-
       .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_031.png
          :alt: plot first level details
          :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_031.png
          :class: sphx-glr-multi-img
 
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_032.png
+         :alt: plot first level details
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_032.png
+         :class: sphx-glr-multi-img
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 512-513
+
+.. GENERATED FROM PYTHON SOURCE LINES 539-540
 
 Note that it removed spurious spots in the white matter.
 
-.. GENERATED FROM PYTHON SOURCE LINES 515-523
+.. GENERATED FROM PYTHON SOURCE LINES 542-550
 
 Conclusion
 ----------
@@ -1210,9 +1257,9 @@ are specific to this dataset and may vary with other ones.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 4 minutes  40.971 seconds)
+   **Total running time of the script:** ( 4 minutes  24.574 seconds)
 
-**Estimated memory usage:**  194 MB
+**Estimated memory usage:**  296 MB
 
 
 .. _sphx_glr_download_auto_examples_04_glm_first_level_plot_first_level_details.py:
