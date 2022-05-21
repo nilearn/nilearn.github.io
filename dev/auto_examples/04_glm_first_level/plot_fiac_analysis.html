@@ -36,7 +36,7 @@
     <script src="../../_static/copybutton.js"></script>
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="9.5.9. First level analysis of a complete BIDS dataset from openneuro" href="plot_bids_features.html" />
+    <link rel="next" title="9.5.9. Predicted time series and residuals" href="plot_predictions_residuals.html" />
     <link rel="prev" title="9.5.7. Example of MRI response functions" href="plot_hrf.html" />
 <meta content="True" name="HandheldFriendly">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -219,7 +219,7 @@ $(function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a></li>
         <li class="right" >
-          <a href="plot_bids_features.html" title="9.5.9. First level analysis of a complete BIDS dataset from openneuro"
+          <a href="plot_predictions_residuals.html" title="9.5.9. Predicted time series and residuals"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="plot_hrf.html" title="9.5.7. Example of MRI response functions"
@@ -291,8 +291,8 @@ it will be a ‘results’ subdirectory of the current directory.</p>
 <h2><span class="section-number">9.5.8.1. </span>Prepare data and analysis parameters<a class="headerlink" href="#prepare-data-and-analysis-parameters" title="Permalink to this headline">¶</a></h2>
 <p>Note that there are two sessions.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.datasets</span> <span class="kn">import</span> <span class="n">func</span>
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">data</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_fiac_first_level.html#nilearn.datasets.fetch_fiac_first_level" title="nilearn.datasets.fetch_fiac_first_level" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">func</span><span class="o">.</span><span class="n">fetch_fiac_first_level</span></a><span class="p">()</span>
-<a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a> <span class="o">=</span> <span class="p">[</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">data</span></a><span class="p">[</span><span class="s1">&#39;func1&#39;</span><span class="p">],</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">data</span></a><span class="p">[</span><span class="s1">&#39;func2&#39;</span><span class="p">]]</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_fiac_first_level.html#nilearn.datasets.fetch_fiac_first_level" title="nilearn.datasets.fetch_fiac_first_level" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">func</span><span class="o">.</span><span class="n">fetch_fiac_first_level</span></a><span class="p">()</span>
+<a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a> <span class="o">=</span> <span class="p">[</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a><span class="p">[</span><span class="s1">&#39;func1&#39;</span><span class="p">],</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a><span class="p">[</span><span class="s1">&#39;func2&#39;</span><span class="p">]]</span>
 </pre></div>
 </div>
 <p>Create a mean image for plotting purpose.</p>
@@ -302,7 +302,7 @@ it will be a ‘results’ subdirectory of the current directory.</p>
 </div>
 <p>The design matrices were pre-computed, we simply put them in a list of
 DataFrames.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_files</span></a> <span class="o">=</span> <span class="p">[</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">data</span></a><span class="p">[</span><span class="s1">&#39;design_matrix1&#39;</span><span class="p">],</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">data</span></a><span class="p">[</span><span class="s1">&#39;design_matrix2&#39;</span><span class="p">]]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_files</span></a> <span class="o">=</span> <span class="p">[</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a><span class="p">[</span><span class="s1">&#39;design_matrix1&#39;</span><span class="p">],</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a><span class="p">[</span><span class="s1">&#39;design_matrix2&#39;</span><span class="p">]]</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrices</span></a> <span class="o">=</span> <span class="p">[</span><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.core.frame.DataFrame" class="sphx-glr-backref-module-pandas-core-frame sphx-glr-backref-type-py-class"><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.load.html#numpy.load" title="numpy.load" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">load</span></a><span class="p">(</span><span class="n">df</span><span class="p">)[</span><span class="s1">&#39;X&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_files</span></a><span class="p">]</span>
@@ -313,7 +313,7 @@ DataFrames.</p>
 <h2><span class="section-number">9.5.8.2. </span>GLM estimation<a class="headerlink" href="#glm-estimation" title="Permalink to this headline">¶</a></h2>
 <p>GLM specification. Note that the mask was provided in the dataset. So we use it.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.glm.first_level</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class"><span class="n">FirstLevelModel</span></a>
-<a href="../../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_glm</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class"><span class="n">FirstLevelModel</span></a><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">data</span></a><span class="p">[</span><span class="s1">&#39;mask&#39;</span><span class="p">],</span> <span class="n">minimize_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a href="../../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_glm</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class"><span class="n">FirstLevelModel</span></a><span class="p">(</span><span class="n">mask_img</span><span class="o">=</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a><span class="p">[</span><span class="s1">&#39;mask&#39;</span><span class="p">],</span> <span class="n">minimize_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Let’s fit the GLM.</p>
@@ -391,7 +391,7 @@ then the fixed effects version.</p>
 </pre></div>
 </div>
 <img src="../../_images/sphx_glr_plot_fiac_analysis_001.png" srcset="../../_images/sphx_glr_plot_fiac_analysis_001.png" alt="plot fiac analysis" class = "sphx-glr-single-img"/><p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f3ccadee220&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f3e8c4bacd0&gt;
 </pre></div>
 </div>
 <p>Compute the statistics for the second session.</p>
@@ -404,7 +404,7 @@ then the fixed effects version.</p>
 </pre></div>
 </div>
 <img src="../../_images/sphx_glr_plot_fiac_analysis_002.png" srcset="../../_images/sphx_glr_plot_fiac_analysis_002.png" alt="plot fiac analysis" class = "sphx-glr-single-img"/><p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f3cc3293520&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f3e83a7d4f0&gt;
 </pre></div>
 </div>
 <p>Compute the Fixed effects statistics.</p>
@@ -460,7 +460,7 @@ Running approximate fixed effects on F statistics.
 <span class="c1"># report.open_in_browser()</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  14.439 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  41.568 seconds)</p>
 <p><strong>Estimated memory usage:</strong>  367 MB</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-04-glm-first-level-plot-fiac-analysis-py">
 <div class="binder-badge docutils container">
@@ -511,8 +511,8 @@ Running approximate fixed effects on F statistics.
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="plot_bids_features.html"
-                          title="next chapter"><span class="section-number">9.5.9. </span>First level analysis of a complete BIDS dataset from openneuro</a></p>
+    <p class="topless"><a href="plot_predictions_residuals.html"
+                          title="next chapter"><span class="section-number">9.5.9. </span>Predicted time series and residuals</a></p>
   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
