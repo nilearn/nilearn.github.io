@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_04_glm_first_level_plot_design_matrix.py>`
-        to download the full example code or to run this example in your browser via Binder
+        to download the full example code. or to run this example in your browser via Binder
 
 .. rst-class:: sphx-glr-example-title
 
@@ -212,7 +212,7 @@ Finally we compute a :term:`FIR` model
 
 Here are the three designs side by side.
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-115
+.. GENERATED FROM PYTHON SOURCE LINES 105-117
 
 .. code-block:: Python
 
@@ -225,7 +225,9 @@ Here are the three designs side by side.
     ax2.set_title("Block design matrix", fontsize=12)
     plot_design_matrix(X3, ax=ax3)
     ax3.set_title("FIR design matrix", fontsize=12)
-    fig.show()
+    plt.show()
+
+
 
 
 
@@ -238,10 +240,80 @@ Here are the three designs side by side.
 
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 118-135
+
+Parametric modulation
+---------------------
+By default, the fMRI GLM will expect that all events
+for a given condition have a BOLD
+response with the same amplitude.
+Sometimes, we may have specific expectations
+about how strong the BOLD response
+will be on a given event.
+This can be incorporated into the model by using **parametric modulation**,
+wherein each event has a predicted amplitude.
+This can be used both to improve model fit and to test hypotheses regarding
+how the BOLD response scales with important features of events,
+such as trial intensity or response time.
+
+Here we will assume that when a trial
+is the same condition as the previous one,
+it will elicit a less intense response.
+
+.. GENERATED FROM PYTHON SOURCE LINES 135-163
+
+.. code-block:: Python
+
+
+    conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c3", "c3", "c3"]
+    modulation = [1.0, 0.5, 0.25, 1.0, 0.5, 0.25, 1.0, 0.5, 0.25]
+    modulated_events = pd.DataFrame(
+        {
+            "trial_type": conditions,
+            "onset": onsets,
+            "duration": duration,
+            "modulation": modulation,
+        }
+    )
+
+    hrf_model = "glover"
+    X4 = make_first_level_design_matrix(
+        frame_times,
+        modulated_events,
+        drift_model="polynomial",
+        drift_order=3,
+        hrf_model=hrf_model,
+    )
+
+    # Let's compare it to the unmodulated block design
+    fig, (ax1, ax2) = plt.subplots(figsize=(10, 6), nrows=1, ncols=2)
+    plot_design_matrix(X2, ax=ax1)
+    ax1.set_title("Block design matrix", fontsize=12)
+    plot_design_matrix(X4, ax=ax2)
+    ax2.set_title("Modulated block design matrix", fontsize=12)
+    plt.show()
+
+
+
+.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_design_matrix_002.png
+   :alt: Block design matrix, Modulated block design matrix
+   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_design_matrix_002.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    A 'modulation' column was found in the given events data and is used.
+
+
+
+
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.579 seconds)
+   **Total running time of the script:** (0 minutes 2.745 seconds)
 
 **Estimated memory usage:**  10 MB
 
