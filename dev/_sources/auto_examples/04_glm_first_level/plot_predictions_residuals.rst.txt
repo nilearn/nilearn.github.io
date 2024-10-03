@@ -35,7 +35,7 @@ quality of the model fit.
 Import modules
 --------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 19-40
+.. GENERATED FROM PYTHON SOURCE LINES 19-41
 
 .. code-block:: Python
 
@@ -43,10 +43,11 @@ Import modules
 
     from nilearn import image, masking
     from nilearn.datasets import fetch_spm_auditory
+    from nilearn.plotting import plot_stat_map, show
 
     # load fMRI data
     subject_data = fetch_spm_auditory()
-    fmri_img = image.concat_imgs(subject_data.func)
+    fmri_img = subject_data.func[0]
 
     # Make an average
     mean_img = image.mean_img(fmri_img, copy_header=True)
@@ -57,7 +58,7 @@ Import modules
     fmri_img = image.smooth_img(fmri_img, 5.0)
 
     # load events
-    events = pd.read_table(subject_data["events"])
+    events = pd.read_csv(subject_data.events, sep="\t")
 
 
 
@@ -73,7 +74,7 @@ Import modules
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 41-47
+.. GENERATED FROM PYTHON SOURCE LINES 42-48
 
 Fit model
 ---------
@@ -82,7 +83,7 @@ stores the residuals.
 `signal_scaling` is set to False, so we keep the same scaling as the
 original data in `fmri_img`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-60
+.. GENERATED FROM PYTHON SOURCE LINES 48-61
 
 .. code-block:: Python
 
@@ -106,20 +107,26 @@ original data in `fmri_img`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-63
+.. GENERATED FROM PYTHON SOURCE LINES 62-64
 
 Calculate and plot contrast
 ---------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-70
+.. GENERATED FROM PYTHON SOURCE LINES 64-77
 
 .. code-block:: Python
 
-    from nilearn import plotting
+    z_map = fmri_glm.compute_contrast("listening")
 
-    z_map = fmri_glm.compute_contrast("active - rest")
+    threshold = 3.1
+    plot_stat_map(
+        z_map,
+        bg_img=mean_img,
+        threshold=threshold,
+        title=f"listening > rest (t-test; |Z|>{threshold})",
+    )
 
-    plotting.plot_stat_map(z_map, bg_img=mean_img, threshold=3.1)
+    show()
 
 
 
@@ -131,28 +138,24 @@ Calculate and plot contrast
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7fe0af7ef680>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-73
+.. GENERATED FROM PYTHON SOURCE LINES 78-80
 
 Extract the largest clusters
 ----------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-89
+.. GENERATED FROM PYTHON SOURCE LINES 80-98
 
 .. code-block:: Python
 
     from nilearn.maskers import NiftiSpheresMasker
     from nilearn.reporting import get_clusters_table
 
-    table = get_clusters_table(z_map, stat_threshold=3.1, cluster_threshold=20)
+    table = get_clusters_table(
+        z_map, stat_threshold=threshold, cluster_threshold=20
+    )
     table.set_index("Cluster ID", drop=True)
     table.head()
 
@@ -172,12 +175,12 @@ Extract the largest clusters
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 90-92
+.. GENERATED FROM PYTHON SOURCE LINES 99-101
 
 Plot predicted and actual time series for 6 most significant clusters
 ---------------------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 92-120
+.. GENERATED FROM PYTHON SOURCE LINES 101-131
 
 .. code-block:: Python
 
@@ -195,7 +198,7 @@ Plot predicted and actual time series for 6 most significant clusters
         axs1[0, i].set_xlabel("Time")
         axs1[0, i].set_ylabel("Signal intensity", labelpad=0)
         # plotting image below the time series
-        roi_img = plotting.plot_stat_map(
+        roi_img = plot_stat_map(
             z_map,
             cut_coords=[coords[i][2]],
             threshold=3.1,
@@ -208,12 +211,14 @@ Plot predicted and actual time series for 6 most significant clusters
         roi_img.add_markers([coords[i]], colors[i], 300)
     fig1.set_size_inches(24, 14)
 
+    show()
+
 
 
 
 
 .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_predictions_residuals_002.png
-   :alt: Cluster peak [-42. -12.  39.] , Cluster peak [-63.   6.  36.] , Cluster peak [-63.  15.  33.] , Cluster peak [60.  0. 36.] , Cluster peak [66. 12. 27.] , Cluster peak [57. -6. 33.] 
+   :alt: Cluster peak [-51. -12.  39.] , Cluster peak [-39. -12.  39.] , Cluster peak [-63.  12.  33.] , Cluster peak [60.  0. 36.] , Cluster peak [66. 12. 27.] , Cluster peak [ 60. -18.  30.] 
    :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_predictions_residuals_002.png
    :class: sphx-glr-single-img
 
@@ -221,12 +226,12 @@ Plot predicted and actual time series for 6 most significant clusters
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-123
+.. GENERATED FROM PYTHON SOURCE LINES 132-134
 
 Get residuals
 -------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-127
+.. GENERATED FROM PYTHON SOURCE LINES 134-138
 
 .. code-block:: Python
 
@@ -241,13 +246,13 @@ Get residuals
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-131
+.. GENERATED FROM PYTHON SOURCE LINES 139-142
 
 Plot distribution of residuals
 ------------------------------
 Note that residuals are not really distributed normally.
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-142
+.. GENERATED FROM PYTHON SOURCE LINES 142-155
 
 .. code-block:: Python
 
@@ -261,12 +266,14 @@ Note that residuals are not really distributed normally.
 
     fig2.set_size_inches(12, 7)
 
+    show()
+
 
 
 
 
 .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_predictions_residuals_003.png
-   :alt: Cluster peak [-42. -12.  39.] , Cluster peak [-63.   6.  36.] , Cluster peak [-63.  15.  33.] , Cluster peak [60.  0. 36.] , Cluster peak [66. 12. 27.] , Cluster peak [57. -6. 33.] 
+   :alt: Cluster peak [-51. -12.  39.] , Cluster peak [-39. -12.  39.] , Cluster peak [-63.  12.  33.] , Cluster peak [60.  0. 36.] , Cluster peak [66. 12. 27.] , Cluster peak [ 60. -18.  30.] 
    :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_predictions_residuals_003.png
    :class: sphx-glr-single-img
 
@@ -275,17 +282,17 @@ Note that residuals are not really distributed normally.
 
  .. code-block:: none
 
-    Mean residuals: -0.0014611693074915166
-    Mean residuals: 0.006119419787077973
-    Mean residuals: -0.015362080009879672
-    Mean residuals: -0.04838647025228723
-    Mean residuals: 0.0028454183043208716
-    Mean residuals: 0.007493699537890623
+    Mean residuals: 0.018869405610299532
+    Mean residuals: 0.045756026122034346
+    Mean residuals: -1.5670004976137923e-14
+    Mean residuals: -0.13042393047259077
+    Mean residuals: -0.01499899481931678
+    Mean residuals: 0.049556260499625526
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-159
+.. GENERATED FROM PYTHON SOURCE LINES 156-172
 
 Plot R-squared
 --------------
@@ -304,18 +311,23 @@ that could be present in the :term:`GLM`.
 To isolate the influence of the experiment,
 we can use an F-test as shown in the next section.
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-168
+.. GENERATED FROM PYTHON SOURCE LINES 172-186
 
 .. code-block:: Python
 
 
-    plotting.plot_stat_map(
+    plot_stat_map(
         fmri_glm.r_square[0],
         bg_img=mean_img,
         threshold=0.1,
         display_mode="z",
         cut_coords=7,
+        cmap="black_red",
+        title="R-squared",
+        vmin=0,
+        symmetric_cbar=False,
     )
+
 
 
 
@@ -331,11 +343,11 @@ we can use an F-test as shown in the next section.
  .. code-block:: none
 
 
-    <nilearn.plotting.displays._slicers.ZSlicer object at 0x7fe098df2780>
+    <nilearn.plotting.displays._slicers.ZSlicer object at 0x7f17d13cf7d0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 169-177
+.. GENERATED FROM PYTHON SOURCE LINES 187-195
 
 Calculate and Plot F-test
 -------------------------
@@ -346,29 +358,29 @@ tells you how well the overall :term:`GLM` fits the data,
 including active, rest and all the other columns
 in the design matrix such as drift and motion.
 
-.. GENERATED FROM PYTHON SOURCE LINES 177-197
+.. GENERATED FROM PYTHON SOURCE LINES 195-215
 
 .. code-block:: Python
 
-    import numpy as np
 
-    design_matrix = fmri_glm.design_matrices_[0]
-
-    # contrast with a one for "active" and zero everywhere else
-    active = np.array([1 if c == "active" else 0 for c in design_matrix.columns])
-
-    # contrast with a one for "rest" and zero everywhere else
-    rest = np.array([1 if c == "rest" else 0 for c in design_matrix.columns])
-
-    effects_of_interest = np.vstack((active, rest))
-    # f-test for rest and activity
+    # f-test for 'listening'
     z_map_ftest = fmri_glm.compute_contrast(
-        effects_of_interest, stat_type="F", output_type="z_score"
+        "listening", stat_type="F", output_type="z_score"
     )
 
-    plotting.plot_stat_map(
-        z_map_ftest, bg_img=mean_img, threshold=3.1, display_mode="z", cut_coords=7
+    plot_stat_map(
+        z_map_ftest,
+        bg_img=mean_img,
+        threshold=threshold,
+        display_mode="z",
+        cut_coords=7,
+        cmap="black_red",
+        title=f"listening > rest (F-test; Z>{threshold})",
+        symmetric_cbar=False,
+        vmin=0,
     )
+
+    show()
 
 
 
@@ -379,21 +391,15 @@ in the design matrix such as drift and motion.
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    <nilearn.plotting.displays._slicers.ZSlicer object at 0x7fe09953e750>
 
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 26.219 seconds)
+   **Total running time of the script:** (0 minutes 20.683 seconds)
 
-**Estimated memory usage:**  886 MB
+**Estimated memory usage:**  887 MB
 
 
 .. _sphx_glr_download_auto_examples_04_glm_first_level_plot_predictions_residuals.py:
