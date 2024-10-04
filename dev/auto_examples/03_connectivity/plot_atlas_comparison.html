@@ -11,7 +11,7 @@
 <meta property="og:image" content="https://nilearn.github.io/_static/nilearn-logo.png" />
 <meta property="og:image:alt" content="Nilearn" />
 <meta name="description" content="This examples shows how to turn a parcellation into connectome for visualization. This requires choosing centers for each parcel or network, via nilearn.plotting.find_parcellation_cut_coords for pa..." />
-<link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Classification of age groups using functional connectivity" href="plot_group_level_connectivity.html" /><link rel="prev" title="Regions extraction using dictionary learning and functional connectomes" href="plot_extract_regions_dictlearning_maps.html" />
+<link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Extract signals on spheres and plot a connectome" href="plot_sphere_based_connectome.html" /><link rel="prev" title="Extracting signals from a brain parcellation" href="plot_signal_extraction.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.ico"/><!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Comparing connectomes on different reference atlases - Nilearn</title>
@@ -186,7 +186,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.10.5.dev117+g706fcd6e4) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.10.4)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.10.5.dev119+gd7c4367ac) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.10.4)</span></a></p> 
   </aside>
 </div>
 
@@ -280,6 +280,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_haxby_grid_search.html">Setting a parameter by cross-validation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_oasis_vbm.html">Voxel-Based Morphometry on Oasis dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_haxby_different_estimators.html">Different classifiers in decoding the Haxby dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_haxby_understand_decoder.html">Understanding <code class="xref py py-class docutils literal notranslate"><span class="pre">nilearn.decoding.Decoder</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_simulated_data.html">Example of pattern recognition on simulated data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_miyawaki_encoding.html">Encoding models for visual stimuli from Miyawaki et al. 2008</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_miyawaki_reconstruction.html">Reconstruction of visual stimuli from Miyawaki et al. 2008</a></li>
@@ -293,9 +294,9 @@
 <li class="toctree-l3"><a class="reference internal" href="plot_compare_decomposition.html">Deriving spatial maps from group fMRI data using ICA and Dictionary Learning</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_seed_to_voxel_correlation.html">Producing single subject maps of seed-to-voxel correlation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_extract_regions_dictlearning_maps.html">Regions extraction using dictionary learning and functional connectomes</a></li>
-<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">Comparing connectomes on different reference atlases</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_group_level_connectivity.html">Classification of age groups using functional connectivity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_signal_extraction.html">Extracting signals from a brain parcellation</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">Comparing connectomes on different reference atlases</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_sphere_based_connectome.html">Extract signals on spheres and plot a connectome</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_data_driven_parcellations.html">Clustering methods to learn a brain parcellation from fMRI</a></li>
 </ul>
@@ -899,14 +900,11 @@ Counfound csv files (of same subject) are located at : &#39;/home/runner/work/ni
     <span class="n">standardize</span><span class="o">=</span><span class="s2">&quot;zscore_sample&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="c1"># useful for plotting connectivity interactions on glass brain</span>
-<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">plotting</span>
-
 <span class="c1"># create masker using MultiNiftiLabelsMasker to extract functional data within</span>
 <span class="c1"># atlas parcels from multiple subjects using parallelization to speed up the</span>
 <span class="c1"># computation</span>
 <a href="../../modules/generated/nilearn.maskers.MultiNiftiMapsMasker.html#nilearn.maskers.MultiNiftiMapsMasker" title="nilearn.maskers.MultiNiftiMapsMasker" class="sphx-glr-backref-module-nilearn-maskers sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">masker</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.maskers.MultiNiftiLabelsMasker.html#nilearn.maskers.MultiNiftiLabelsMasker" title="nilearn.maskers.MultiNiftiLabelsMasker" class="sphx-glr-backref-module-nilearn-maskers sphx-glr-backref-type-py-class"><span class="n">MultiNiftiLabelsMasker</span></a><span class="p">(</span>
-    <span class="n">labels_img</span><span class="o">=</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">yeo</span></a><span class="p">[</span><span class="s2">&quot;thick_17&quot;</span><span class="p">],</span>
+    <span class="n">labels_img</span><span class="o">=</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">yeo</span></a><span class="p">[</span><span class="s2">&quot;thick_17&quot;</span><span class="p">],</span>  <span class="c1"># Both hemispheres</span>
     <span class="n">standardize</span><span class="o">=</span><span class="s2">&quot;zscore_sample&quot;</span><span class="p">,</span>
     <span class="n">standardize_confounds</span><span class="o">=</span><span class="s2">&quot;zscore_sample&quot;</span><span class="p">,</span>
     <span class="n">memory</span><span class="o">=</span><span class="s2">&quot;nilearn_cache&quot;</span><span class="p">,</span>
@@ -923,21 +921,82 @@ Counfound csv files (of same subject) are located at : &#39;/home/runner/work/ni
 <span class="c1"># using connectome measure object</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_correlation_matrix</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">connectome_measure</span><span class="o">.</span><span class="n">mean_</span></a>
 
+<span class="c1"># useful for plotting connectivity interactions on glass brain</span>
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">plotting</span>
+
 <span class="c1"># grab center coordinates for atlas labels</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">coordinates</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.find_parcellation_cut_coords.html#nilearn.plotting.find_parcellation_cut_coords" title="nilearn.plotting.find_parcellation_cut_coords" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">find_parcellation_cut_coords</span></a><span class="p">(</span><span class="n">labels_img</span><span class="o">=</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">yeo</span></a><span class="p">[</span><span class="s2">&quot;thick_17&quot;</span><span class="p">])</span>
 
 <span class="c1"># plot connectome with 80% edge strength in the connectivity</span>
-<a href="../../modules/generated/nilearn.plotting.plot_connectome.html#nilearn.plotting.plot_connectome" title="nilearn.plotting.plot_connectome" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_connectome</span></a><span class="p">(</span>
-    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_correlation_matrix</span></a><span class="p">,</span>
-    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">coordinates</span></a><span class="p">,</span>
-    <span class="n">edge_threshold</span><span class="o">=</span><span class="s2">&quot;80%&quot;</span><span class="p">,</span>
-    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Yeo Atlas 17 thick (func)&quot;</span><span class="p">,</span>
+<a href="../../modules/generated/nilearn.plotting.displays.OrthoProjector.html#nilearn.plotting.displays.OrthoProjector" title="nilearn.plotting.displays.OrthoProjector" class="sphx-glr-backref-module-nilearn-plotting-displays sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">left_connectome</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_connectome.html#nilearn.plotting.plot_connectome" title="nilearn.plotting.plot_connectome" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_connectome</span></a><span class="p">(</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_correlation_matrix</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">coordinates</span></a><span class="p">,</span> <span class="n">edge_threshold</span><span class="o">=</span><span class="s2">&quot;80%&quot;</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_plot_atlas_comparison_001.png" srcset="../../_images/sphx_glr_plot_atlas_comparison_001.png" alt="plot atlas comparison" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays._projectors.OrthoProjector object at 0x7f4aaf44cda0&gt;
+<img src="../../_images/sphx_glr_plot_atlas_comparison_001.png" srcset="../../_images/sphx_glr_plot_atlas_comparison_001.png" alt="plot atlas comparison" class = "sphx-glr-single-img"/><p>Note that the approach above will extract time series and compute a
+single connectivity matrix for both hemispheres. However, the connectome
+is plotted only for the left hemisphere. If your aim is to compute and plot
+hemisphere-wise connectivity, you can follow the example below.
+First, create a separate atlas image for each hemisphere:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nibabel</span> <span class="k">as</span> <span class="nn">nb</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="nilearn.image.get_data" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">get_data</span></a><span class="p">,</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a>
+<span class="kn">from</span> <span class="nn">nilearn.image.resampling</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.image.coord_transform.html#nilearn.image.coord_transform" title="nilearn.image.coord_transform" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">coord_transform</span></a>
+
+<span class="c1"># load the atlas image first</span>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">label_image</span></a> <span class="o">=</span> <span class="n">nb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">yeo</span></a><span class="p">[</span><span class="s2">&quot;thick_17&quot;</span><span class="p">])</span>
+
+<span class="c1"># extract the affine matrix of the image</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels_affine</span></a> <span class="o">=</span> <a href="https://nipy.org/nibabel/reference/nibabel.spatialimages.html#nibabel.spatialimages.SpatialImage.affine" title="nibabel.spatialimages.SpatialImage.affine" class="sphx-glr-backref-module-nibabel-spatialimages sphx-glr-backref-type-py-property"><span class="n">label_image</span><span class="o">.</span><span class="n">affine</span></a>
+
+<span class="c1"># generate image coordinates using affine</span>
+<a href="https://docs.python.org/3.9/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">x</span></a><span class="p">,</span> <a href="https://docs.python.org/3.9/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">y</span></a><span class="p">,</span> <a href="https://docs.python.org/3.9/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.coord_transform.html#nilearn.image.coord_transform" title="nilearn.image.coord_transform" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">coord_transform</span></a><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.inv.html#numpy.linalg.inv" title="numpy.linalg.inv" class="sphx-glr-backref-module-numpy-linalg sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels_affine</span></a><span class="p">))</span>
+
+<span class="c1"># generate an separate image for the left hemisphere</span>
+<span class="c1"># left/right split is done along x-axis</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">left_hemi</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="nilearn.image.get_data" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">get_data</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">label_image</span></a><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">left_hemi</span></a><span class="p">[:</span> <span class="nb">int</span><span class="p">(</span><a href="https://docs.python.org/3.9/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">x</span></a><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">label_image_left</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">label_image</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">left_hemi</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels_affine</span></a><span class="p">)</span>
+
+<span class="c1"># same for the right hemisphere</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">right_hemi</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="nilearn.image.get_data" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">get_data</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">label_image</span></a><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">right_hemi</span></a><span class="p">[</span><span class="nb">int</span><span class="p">(</span><a href="https://docs.python.org/3.9/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">x</span></a><span class="p">)</span> <span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">label_image_right</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">label_image</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">right_hemi</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels_affine</span></a><span class="p">)</span>
 </pre></div>
 </div>
+<p>Then, create a masker object, compute a connectivity matrix and
+plot the results for each hemisphere:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <a href="https://docs.python.org/3.9/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">hemi</span></a><span class="p">,</span> <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">img</span></a> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">],</span> <span class="p">[</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">label_image_right</span></a><span class="p">,</span> <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">label_image_left</span></a><span class="p">]):</span>
+    <a href="../../modules/generated/nilearn.maskers.MultiNiftiMapsMasker.html#nilearn.maskers.MultiNiftiMapsMasker" title="nilearn.maskers.MultiNiftiMapsMasker" class="sphx-glr-backref-module-nilearn-maskers sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">masker</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.maskers.MultiNiftiLabelsMasker.html#nilearn.maskers.MultiNiftiLabelsMasker" title="nilearn.maskers.MultiNiftiLabelsMasker" class="sphx-glr-backref-module-nilearn-maskers sphx-glr-backref-type-py-class"><span class="n">MultiNiftiLabelsMasker</span></a><span class="p">(</span>
+        <span class="n">labels_img</span><span class="o">=</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">img</span></a><span class="p">,</span>
+        <span class="n">standardize</span><span class="o">=</span><span class="s2">&quot;zscore_sample&quot;</span><span class="p">,</span>
+        <span class="n">standardize_confounds</span><span class="o">=</span><span class="s2">&quot;zscore_sample&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">time_series</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.maskers.MultiNiftiMapsMasker.html#nilearn.maskers.MultiNiftiMapsMasker.fit_transform" title="nilearn.maskers.MultiNiftiMapsMasker.fit_transform" class="sphx-glr-backref-module-nilearn-maskers sphx-glr-backref-type-py-method"><span class="n">masker</span><span class="o">.</span><span class="n">fit_transform</span></a><span class="p">(</span><a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span><span class="o">.</span><span class="n">func</span></a><span class="p">,</span> <span class="n">confounds</span><span class="o">=</span><a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span><span class="o">.</span><span class="n">confounds</span></a><span class="p">)</span>
+
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">correlation_matrices</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.connectome.ConnectivityMeasure.html#nilearn.connectome.ConnectivityMeasure.fit_transform" title="nilearn.connectome.ConnectivityMeasure.fit_transform" class="sphx-glr-backref-module-nilearn-connectome sphx-glr-backref-type-py-method"><span class="n">connectome_measure</span><span class="o">.</span><span class="n">fit_transform</span></a><span class="p">(</span><a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">time_series</span></a><span class="p">)</span>
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_correlation_matrix</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">connectome_measure</span><span class="o">.</span><span class="n">mean_</span></a>
+
+    <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">coordinates</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.find_parcellation_cut_coords.html#nilearn.plotting.find_parcellation_cut_coords" title="nilearn.plotting.find_parcellation_cut_coords" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">find_parcellation_cut_coords</span></a><span class="p">(</span>
+        <span class="n">labels_img</span><span class="o">=</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">img</span></a><span class="p">,</span> <span class="n">label_hemisphere</span><span class="o">=</span><a href="https://docs.python.org/3.9/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">hemi</span></a>
+    <span class="p">)</span>
+
+    <a href="../../modules/generated/nilearn.plotting.plot_connectome.html#nilearn.plotting.plot_connectome" title="nilearn.plotting.plot_connectome" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_connectome</span></a><span class="p">(</span>
+        <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_correlation_matrix</span></a><span class="p">,</span>
+        <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">coordinates</span></a><span class="p">,</span>
+        <span class="n">edge_threshold</span><span class="o">=</span><span class="s2">&quot;80%&quot;</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Yeo Atlas 17 thick (func) - </span><span class="si">{</span><a href="https://docs.python.org/3.9/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">hemi</span></a><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<ul class="sphx-glr-horizontal">
+<li><img src="../../_images/sphx_glr_plot_atlas_comparison_002.png" srcset="../../_images/sphx_glr_plot_atlas_comparison_002.png" alt="plot atlas comparison" class = "sphx-glr-multi-img"/></li>
+<li><img src="../../_images/sphx_glr_plot_atlas_comparison_003.png" srcset="../../_images/sphx_glr_plot_atlas_comparison_003.png" alt="plot atlas comparison" class = "sphx-glr-multi-img"/></li>
+</ul>
 </section>
 <section id="plot-a-directed-connectome-asymmetric-connectivity-measure">
 <h2>Plot a directed connectome - asymmetric connectivity measure<a class="headerlink" href="#plot-a-directed-connectome-asymmetric-connectivity-measure" title="Link to this heading">¶</a></h2>
@@ -979,10 +1038,10 @@ matrices, but plot the latter as a directed graph.</p>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
-<li><img src="../../_images/sphx_glr_plot_atlas_comparison_002.png" srcset="../../_images/sphx_glr_plot_atlas_comparison_002.png" alt="plot atlas comparison" class = "sphx-glr-multi-img"/></li>
-<li><img src="../../_images/sphx_glr_plot_atlas_comparison_003.png" srcset="../../_images/sphx_glr_plot_atlas_comparison_003.png" alt="plot atlas comparison" class = "sphx-glr-multi-img"/></li>
+<li><img src="../../_images/sphx_glr_plot_atlas_comparison_004.png" srcset="../../_images/sphx_glr_plot_atlas_comparison_004.png" alt="plot atlas comparison" class = "sphx-glr-multi-img"/></li>
+<li><img src="../../_images/sphx_glr_plot_atlas_comparison_005.png" srcset="../../_images/sphx_glr_plot_atlas_comparison_005.png" alt="plot atlas comparison" class = "sphx-glr-multi-img"/></li>
 </ul>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/nilearn/nilearn/examples/03_connectivity/plot_atlas_comparison.py:136: UserWarning:
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/nilearn/nilearn/examples/03_connectivity/plot_atlas_comparison.py:195: UserWarning:
 
 &#39;adjacency_matrix&#39; is not symmetric. A directed graph will be plotted.
 </pre></div>
@@ -1040,13 +1099,13 @@ matrices, but plot the latter as a directed graph.</p>
 <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_plot_atlas_comparison_004.png" srcset="../../_images/sphx_glr_plot_atlas_comparison_004.png" alt="plot atlas comparison" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/opt/hostedtoolcache/Python/3.12.6/x64/lib/python3.12/site-packages/nilearn/maskers/multi_nifti_maps_masker.py:225: UserWarning:
+<img src="../../_images/sphx_glr_plot_atlas_comparison_006.png" srcset="../../_images/sphx_glr_plot_atlas_comparison_006.png" alt="plot atlas comparison" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/opt/hostedtoolcache/Python/3.12.6/x64/lib/python3.12/site-packages/nilearn/maskers/multi_nifti_maps_masker.py:225: UserWarning:
 
 memory_level is currently set to 0 but a Memory object has been provided. Setting memory_level to 1.
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 59.135 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  2009 MB</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 49.489 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  2154 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-03-connectivity-plot-atlas-comparison-py">
 <div class="binder-badge docutils container">
 <a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/03_connectivity/plot_atlas_comparison.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo3.svg" style="width: 150px;" />
@@ -1071,23 +1130,23 @@ memory_level is currently set to 0 but a Memory object has been provided. Settin
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="plot_group_level_connectivity.html">
+          <a class="next-page" href="plot_sphere_based_connectome.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Classification of age groups using functional connectivity</div>
+                <div class="title">Extract signals on spheres and plot a connectome</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="plot_extract_regions_dictlearning_maps.html">
+          <a class="prev-page" href="plot_signal_extraction.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Regions extraction using dictionary learning and functional connectomes</div>
+                <div class="title">Extracting signals from a brain parcellation</div>
                 
               </div>
             </a>
