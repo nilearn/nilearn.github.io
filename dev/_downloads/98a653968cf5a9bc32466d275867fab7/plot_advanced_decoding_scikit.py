@@ -49,8 +49,7 @@ conditions = behavioral["labels"]
 condition_mask = conditions.isin(["face", "cat"])
 fmri_niimgs = index_img(fmri_filename, condition_mask)
 conditions = conditions[condition_mask]
-# Convert to numpy array
-conditions = conditions.values
+conditions = conditions.to_numpy()
 run_label = behavioral["chunks"][condition_mask]
 
 # %%
@@ -245,8 +244,8 @@ cv_scores = cross_val_score(
 classification_accuracy = np.mean(cv_scores)
 n_conditions = len(set(conditions))  # number of target classes
 print(
-    "ANOVA + LDA classification accuracy: %.4f / Chance Level: %.4f"
-    % (classification_accuracy, 1.0 / n_conditions)
+    f"ANOVA + LDA classification accuracy: {classification_accuracy:.4f} "
+    f"/ Chance Level: {1.0 / n_conditions:.4f}"
 )
 
 # %%

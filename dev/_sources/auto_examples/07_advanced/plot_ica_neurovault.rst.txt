@@ -38,11 +38,10 @@ documentation for more details.
     Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
     https://github.com/NeuroVault/neurovault_analysis
 
-.. GENERATED FROM PYTHON SOURCE LINES 25-36
+.. GENERATED FROM PYTHON SOURCE LINES 23-33
 
 .. code-block:: Python
 
-    import warnings
 
     import numpy as np
     from scipy import stats
@@ -60,12 +59,12 @@ documentation for more details.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 37-39
+.. GENERATED FROM PYTHON SOURCE LINES 34-36
 
 Get image and term data
 -----------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-66
+.. GENERATED FROM PYTHON SOURCE LINES 36-63
 
 .. code-block:: Python
 
@@ -133,8 +132,6 @@ Get image and term data
     [fetch_neurovault] Already fetched 24 images
     [fetch_neurovault] Already fetched 25 images
     [fetch_neurovault] Already fetched 26 images
-    [fetch_neurovault] Downloading file: https://neurosynth.org/api/decode/?neurovault=32980
-    [fetch_neurovault] Download succeeded, downloaded to: /home/runner/work/nilearn/nilearn/nilearn_data/neurovault/collection_1952/neurosynth_words_for_image_32980.json
     [fetch_neurovault] Already fetched 27 images
     [fetch_neurovault] Already fetched 28 images
     [fetch_neurovault] Already fetched 29 images
@@ -145,62 +142,56 @@ Get image and term data
 
     Top 10 neurosynth terms from downloaded images:
 
-    superior temporal
     task
+    superior temporal
+    anterior insula
     parietal
     auditory
-    superior
     planum temporale
     temporale
-    anterior insula
-    tasks
     planum
+    tasks
+    superior
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-69
+.. GENERATED FROM PYTHON SOURCE LINES 64-66
 
 Reshape and mask images
 -----------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-107
+.. GENERATED FROM PYTHON SOURCE LINES 66-98
 
 .. code-block:: Python
 
 
     print("\nReshaping and masking images.\n")
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", UserWarning)
-        warnings.simplefilter("ignore", DeprecationWarning)
+    mask_img = load_mni152_brain_mask(resolution=2)
+    masker = NiftiMasker(mask_img=mask_img, memory="nilearn_cache", memory_level=1)
+    masker = masker.fit()
 
-        mask_img = load_mni152_brain_mask(resolution=2)
-        masker = NiftiMasker(
-            mask_img=mask_img, memory="nilearn_cache", memory_level=1
-        )
-        masker = masker.fit()
+    # Images may fail to be transformed, and are of different shapes,
+    # so we need to transform one-by-one and keep track of failures.
+    X = []
+    is_usable = np.ones((len(images),), dtype=bool)
 
-        # Images may fail to be transformed, and are of different shapes,
-        # so we need to transform one-by-one and keep track of failures.
-        X = []
-        is_usable = np.ones((len(images),), dtype=bool)
-
-        for index, image_path in enumerate(images):
-            # load image and remove nan and inf values.
-            # applying smooth_img to an image with fwhm=None simply cleans up
-            # non-finite values but otherwise doesn't modify the image.
-            image = smooth_img(image_path, fwhm=None)
-            try:
-                X.append(masker.transform(image))
-            except Exception as e:
-                meta = nv_data["images_meta"][index]
-                print(
-                    f"Failed to mask/reshape image: id: {meta.get('id')}; "
-                    f"name: '{meta.get('name')}'; "
-                    f"collection: {meta.get('collection_id')}; error: {e}"
-                )
-                is_usable[index] = False
+    for index, image_path in enumerate(images):
+        # load image and remove nan and inf values.
+        # applying smooth_img to an image with fwhm=None simply cleans up
+        # non-finite values but otherwise doesn't modify the image.
+        image = smooth_img(image_path, fwhm=None)
+        try:
+            X.append(masker.transform(image))
+        except Exception as e:
+            meta = nv_data["images_meta"][index]
+            print(
+                f"Failed to mask/reshape image: id: {meta.get('id')}; "
+                f"name: '{meta.get('name')}'; "
+                f"collection: {meta.get('collection_id')}; error: {e}"
+            )
+            is_usable[index] = False
 
     # Now reshape list into 2D matrix, and remove failed images from terms
     X = np.vstack(X)
@@ -217,45 +208,161 @@ Reshape and mask images
 
     Reshaping and masking images.
 
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
+    /opt/hostedtoolcache/Python/3.12.7/x64/lib/python3.12/site-packages/nilearn/maskers/nifti_masker.py:114: UserWarning:
+
+    imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+
     [NiftiMasker.wrapped] Resampling images
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-110
+.. GENERATED FROM PYTHON SOURCE LINES 99-101
 
 Run :term:`ICA` and map components to terms
 -------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-122
+.. GENERATED FROM PYTHON SOURCE LINES 101-113
 
 .. code-block:: Python
 
@@ -285,35 +392,32 @@ Run :term:`ICA` and map components to terms
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-125
+.. GENERATED FROM PYTHON SOURCE LINES 114-116
 
 Generate figures
 ----------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-146
+.. GENERATED FROM PYTHON SOURCE LINES 116-134
 
 .. code-block:: Python
 
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", DeprecationWarning)
+    for index, (ic_map, ic_terms) in enumerate(
+        zip(ica_maps, term_weights_for_components)
+    ):
+        if -ic_map.min() > ic_map.max():
+            # Flip the map's sign for prettiness
+            ic_map = -ic_map
+            ic_terms = -ic_terms
 
-        for index, (ic_map, ic_terms) in enumerate(
-            zip(ica_maps, term_weights_for_components)
-        ):
-            if -ic_map.min() > ic_map.max():
-                # Flip the map's sign for prettiness
-                ic_map = -ic_map
-                ic_terms = -ic_terms
+        ic_threshold = stats.scoreatpercentile(np.abs(ic_map), 90)
+        ic_img = masker.inverse_transform(ic_map)
+        important_terms = vocabulary[np.argsort(ic_terms)[-3:]]
+        title = f"IC{int(index)}  {', '.join(important_terms[::-1])}"
 
-            ic_threshold = stats.scoreatpercentile(np.abs(ic_map), 90)
-            ic_img = masker.inverse_transform(ic_map)
-            important_terms = vocabulary[np.argsort(ic_terms)[-3:]]
-            title = f"IC{int(index)}  {', '.join(important_terms[::-1])}"
-
-            plotting.plot_stat_map(
-                ic_img, threshold=ic_threshold, colorbar=False, title=title
-            )
+        plotting.plot_stat_map(
+            ic_img, threshold=ic_threshold, colorbar=False, title=title
+        )
 
 
 
@@ -381,13 +485,13 @@ Generate figures
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 147-150
+.. GENERATED FROM PYTHON SOURCE LINES 135-138
 
 As we can see, some of the components capture cognitive or neurological
 maps, while other capture noise in the database. More data, better
 filtering, and better cognitive labels would give better maps
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-153
+.. GENERATED FROM PYTHON SOURCE LINES 138-141
 
 .. code-block:: Python
 
@@ -404,9 +508,9 @@ filtering, and better cognitive labels would give better maps
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 29.013 seconds)
+   **Total running time of the script:** (0 minutes 25.143 seconds)
 
-**Estimated memory usage:**  358 MB
+**Estimated memory usage:**  416 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_ica_neurovault.py:

@@ -76,7 +76,7 @@ to build the LSS beta series.
 
 .. include:: ../../../examples/masker_note.rst
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-63
+.. GENERATED FROM PYTHON SOURCE LINES 61-62
 
 .. code-block:: Python
    :dedent: 1
@@ -89,8 +89,7 @@ to build the LSS beta series.
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 65-67
+.. GENERATED FROM PYTHON SOURCE LINES 64-66
 
 .. code-block:: Python
 
@@ -103,14 +102,14 @@ to build the LSS beta series.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-72
+.. GENERATED FROM PYTHON SOURCE LINES 67-71
 
 Prepare data and analysis parameters
 ------------------------------------
 Download data in :term:`BIDS` format and event information for one subject,
 and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-96
+.. GENERATED FROM PYTHON SOURCE LINES 71-95
 
 .. code-block:: Python
 
@@ -147,7 +146,7 @@ and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
  .. code-block:: none
 
     [get_dataset_dir] Dataset found in /home/runner/work/nilearn/nilearn/nilearn_data/fMRI-language-localizer-demo-dataset
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_beta_series.py:77: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_beta_series.py:76: UserWarning:
 
     'StartTime' not found in file /home/runner/work/nilearn/nilearn/nilearn_data/fMRI-language-localizer-demo-dataset/derivatives/sub-01/func/sub-01_task-languagelocalizer_desc-preproc_bold.json.
 
@@ -155,7 +154,7 @@ and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-104
+.. GENERATED FROM PYTHON SOURCE LINES 96-103
 
 Define the standard model
 -------------------------
@@ -165,7 +164,7 @@ models.
 We will just use the one created by
 :func:`~nilearn.glm.first_level.first_level_from_bids`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-114
+.. GENERATED FROM PYTHON SOURCE LINES 103-113
 
 .. code-block:: Python
 
@@ -191,7 +190,7 @@ We will just use the one created by
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-123
+.. GENERATED FROM PYTHON SOURCE LINES 114-122
 
 Define the LSA model
 --------------------
@@ -202,7 +201,7 @@ It's important to ensure that the original trial types can be inferred from
 the updated trial-wise trial types, in order to collect the resulting
 beta maps into condition-wise beta series.
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-143
+.. GENERATED FROM PYTHON SOURCE LINES 122-142
 
 .. code-block:: Python
 
@@ -238,13 +237,13 @@ beta maps into condition-wise beta series.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-147
+.. GENERATED FROM PYTHON SOURCE LINES 143-146
 
 Aggregate beta maps from the LSA model based on condition
 `````````````````````````````````````````````````````````
 Collect the :term:`Parameter Estimate` maps
 
-.. GENERATED FROM PYTHON SOURCE LINES 147-162
+.. GENERATED FROM PYTHON SOURCE LINES 146-161
 
 .. code-block:: Python
 
@@ -270,7 +269,7 @@ Collect the :term:`Parameter Estimate` maps
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-172
+.. GENERATED FROM PYTHON SOURCE LINES 162-171
 
 Define the LSS models
 ---------------------
@@ -282,13 +281,13 @@ We loop through the trials, create a version of the DataFrame where the
 targeted trial has a unique trial type, fit the model to that DataFrame,
 and finally collect the targeted trial's beta map for the beta series.
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-243
+.. GENERATED FROM PYTHON SOURCE LINES 171-242
 
 .. code-block:: Python
 
 
 
-    def lss_transformer(df, row_number):
+    def lss_transformer(events_df, row_number):
         """Label one trial for one LSS model.
 
         Parameters
@@ -306,11 +305,11 @@ and finally collect the targeted trial's beta map for the beta series.
         trial_name : str
             Name of the isolated trial's trial type.
         """
-        df = df.copy()
+        events_df = events_df.copy()
 
         # Determine which number trial it is *within the condition*
-        trial_condition = df.loc[row_number, "trial_type"]
-        trial_type_series = df["trial_type"]
+        trial_condition = events_df.loc[row_number, "trial_type"]
+        trial_type_series = events_df["trial_type"]
         trial_type_series = trial_type_series.loc[
             trial_type_series == trial_condition
         ]
@@ -324,8 +323,8 @@ and finally collect the targeted trial's beta map for the beta series.
         # However, we may want to have meaningful 'trial_type's (e.g., 'Left_001')
         # across models, so that you could track individual trials across models.
         trial_name = f"{trial_condition}__{trial_number:03d}"
-        df.loc[row_number, "trial_type"] = trial_name
-        return df, trial_name
+        events_df.loc[row_number, "trial_type"] = trial_name
+        return events_df, trial_name
 
 
     # Loop through the trials of interest and transform the DataFrame for LSS
@@ -364,12 +363,12 @@ and finally collect the targeted trial's beta map for the beta series.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 244-246
+.. GENERATED FROM PYTHON SOURCE LINES 243-245
 
 Show the design matrices for the first few trials
 `````````````````````````````````````````````````
 
-.. GENERATED FROM PYTHON SOURCE LINES 246-256
+.. GENERATED FROM PYTHON SOURCE LINES 245-255
 
 .. code-block:: Python
 
@@ -395,12 +394,12 @@ Show the design matrices for the first few trials
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 257-259
+.. GENERATED FROM PYTHON SOURCE LINES 256-258
 
 Compare the three modeling approaches
 -------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 259-279
+.. GENERATED FROM PYTHON SOURCE LINES 258-278
 
 .. code-block:: Python
 
@@ -436,7 +435,7 @@ Compare the three modeling approaches
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 280-301
+.. GENERATED FROM PYTHON SOURCE LINES 279-300
 
 Applications of beta series
 ---------------------------
@@ -460,7 +459,7 @@ This section is based on
 which goes into more detail about seed-to-voxel functional connectivity
 analyses.
 
-.. GENERATED FROM PYTHON SOURCE LINES 301-394
+.. GENERATED FROM PYTHON SOURCE LINES 300-393
 
 .. code-block:: Python
 
@@ -569,7 +568,7 @@ analyses.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 395-399
+.. GENERATED FROM PYTHON SOURCE LINES 394-398
 
 References
 ----------
@@ -579,9 +578,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 10.233 seconds)
+   **Total running time of the script:** (2 minutes 9.452 seconds)
 
-**Estimated memory usage:**  734 MB
+**Estimated memory usage:**  740 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_beta_series.py:
