@@ -109,7 +109,7 @@ Prepare data and analysis parameters
 Download data in :term:`BIDS` format and event information for one subject,
 and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-95
+.. GENERATED FROM PYTHON SOURCE LINES 71-96
 
 .. code-block:: Python
 
@@ -119,8 +119,9 @@ and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
     data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
     models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
-        data.data_dir,
-        "languagelocalizer",
+        dataset_path=data.data_dir,
+        task_label="languagelocalizer",
+        sub_labels=["01"],
         img_filters=[("desc", "preproc")],
         n_jobs=2,
     )
@@ -135,7 +136,7 @@ and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 
     # We need to override one parameter (signal_scaling)
     # with the value of scaling_axis
-    glm_parameters["signal_scaling"] = standard_glm.scaling_axis
+    glm_parameters["signal_scaling"] = standard_glm.signal_scaling
 
 
 
@@ -155,7 +156,7 @@ and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-103
+.. GENERATED FROM PYTHON SOURCE LINES 97-104
 
 Define the standard model
 -------------------------
@@ -165,11 +166,13 @@ models.
 We will just use the one created by
 :func:`~nilearn.glm.first_level.first_level_from_bids`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-113
+.. GENERATED FROM PYTHON SOURCE LINES 104-116
 
 .. code-block:: Python
 
     import matplotlib.pyplot as plt
+
+    print("Fit model")
 
     standard_glm.fit(fmri_file, events_df)
 
@@ -188,10 +191,16 @@ We will just use the one created by
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Fit model
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-122
+
+.. GENERATED FROM PYTHON SOURCE LINES 117-125
 
 Define the LSA model
 --------------------
@@ -202,10 +211,11 @@ It's important to ensure that the original trial types can be inferred from
 the updated trial-wise trial types, in order to collect the resulting
 beta maps into condition-wise beta series.
 
-.. GENERATED FROM PYTHON SOURCE LINES 122-142
+.. GENERATED FROM PYTHON SOURCE LINES 125-146
 
 .. code-block:: Python
 
+    print("Define and fit LSA")
 
     # Transform the DataFrame for LSA
     lsa_events_df = events_df.copy()
@@ -235,16 +245,22 @@ beta maps into condition-wise beta series.
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Define and fit LSA
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-146
+
+.. GENERATED FROM PYTHON SOURCE LINES 147-150
 
 Aggregate beta maps from the LSA model based on condition
 `````````````````````````````````````````````````````````
 Collect the :term:`Parameter Estimate` maps
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-161
+.. GENERATED FROM PYTHON SOURCE LINES 150-165
 
 .. code-block:: Python
 
@@ -270,7 +286,7 @@ Collect the :term:`Parameter Estimate` maps
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 162-171
+.. GENERATED FROM PYTHON SOURCE LINES 166-175
 
 Define the LSS models
 ---------------------
@@ -282,10 +298,11 @@ We loop through the trials, create a version of the DataFrame where the
 targeted trial has a unique trial type, fit the model to that DataFrame,
 and finally collect the targeted trial's beta map for the beta series.
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-242
+.. GENERATED FROM PYTHON SOURCE LINES 175-247
 
 .. code-block:: Python
 
+    print("Define and fit LSS")
 
 
     def lss_transformer(events_df, row_number):
@@ -361,15 +378,21 @@ and finally collect the targeted trial's beta map for the beta series.
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Define and fit LSS
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 243-245
+
+.. GENERATED FROM PYTHON SOURCE LINES 248-250
 
 Show the design matrices for the first few trials
 `````````````````````````````````````````````````
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-255
+.. GENERATED FROM PYTHON SOURCE LINES 250-260
 
 .. code-block:: Python
 
@@ -395,15 +418,16 @@ Show the design matrices for the first few trials
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 256-258
+.. GENERATED FROM PYTHON SOURCE LINES 261-263
 
 Compare the three modeling approaches
 -------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 258-278
+.. GENERATED FROM PYTHON SOURCE LINES 263-284
 
 .. code-block:: Python
 
+    print("Compare models")
 
     DM_TITLES = ["Standard GLM", "LSA Model", "LSS Model (Trial 1)"]
     DESIGN_MATRICES = [
@@ -433,10 +457,16 @@ Compare the three modeling approaches
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Compare models
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 279-300
+
+.. GENERATED FROM PYTHON SOURCE LINES 285-306
 
 Applications of beta series
 ---------------------------
@@ -460,13 +490,15 @@ This section is based on
 which goes into more detail about seed-to-voxel functional connectivity
 analyses.
 
-.. GENERATED FROM PYTHON SOURCE LINES 300-393
+.. GENERATED FROM PYTHON SOURCE LINES 306-401
 
 .. code-block:: Python
 
     import numpy as np
 
     from nilearn.maskers import NiftiMasker, NiftiSpheresMasker
+
+    print("Apply beta series")
 
     # Coordinate taken from Neurosynth's 'language' meta-analysis
     coords = [(-54, -42, 3)]
@@ -566,10 +598,16 @@ analyses.
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Apply beta series
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 394-398
+
+.. GENERATED FROM PYTHON SOURCE LINES 402-406
 
 References
 ----------
@@ -579,9 +617,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 21.206 seconds)
+   **Total running time of the script:** (2 minutes 21.896 seconds)
 
-**Estimated memory usage:**  684 MB
+**Estimated memory usage:**  715 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_beta_series.py:
