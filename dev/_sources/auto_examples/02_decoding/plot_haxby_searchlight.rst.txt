@@ -138,7 +138,7 @@ Prepare masks
 Searchlight computation
 -----------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-92
+.. GENERATED FROM PYTHON SOURCE LINES 66-93
 
 .. code-block:: Python
 
@@ -172,6 +172,7 @@ Searchlight computation
 
 
 
+
 .. rst-class:: sphx-glr-script-out
 
  .. code-block:: none
@@ -181,8 +182,8 @@ Searchlight computation
     The provided image has no sform in its header. Please check the provided file. Results may not be as expected.
 
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   14.5s remaining:    0.0s
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   14.5s finished
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   15.2s remaining:    0.0s
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   15.2s finished
 
 
 .. raw:: html
@@ -593,105 +594,83 @@ Searchlight computation
       background-color: var(--sklearn-color-fitted-level-3);
     }
     </style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>SearchLight(cv=KFold(n_splits=4, random_state=None, shuffle=False),
-                mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x7effd732d2e0&gt;,
+                mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x7fbe53aca9a0&gt;,
                 n_jobs=2,
-                process_mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x7effe2f95fa0&gt;,
+                process_mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x7fbe6c6cf940&gt;,
                 radius=5.6, verbose=1)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked><label for="sk-estimator-id-1" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;SearchLight<span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>SearchLight(cv=KFold(n_splits=4, random_state=None, shuffle=False),
-                mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x7effd732d2e0&gt;,
+                mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x7fbe53aca9a0&gt;,
                 n_jobs=2,
-                process_mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x7effe2f95fa0&gt;,
+                process_mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x7fbe6c6cf940&gt;,
                 radius=5.6, verbose=1)</pre></div> </div></div></div></div>
     </div>
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-97
+.. GENERATED FROM PYTHON SOURCE LINES 94-96
 
-Accessing the searchlight results
----------------------------------
-After fitting the searchlight, we can access the searchlight scores
-as a NIfTI image using the `scores_img_` attribute.
+Visualization
+-------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-99
+.. GENERATED FROM PYTHON SOURCE LINES 96-120
 
 .. code-block:: Python
 
+    from nilearn import image
+    from nilearn.plotting import plot_img, plot_stat_map, show
+
+    # After fitting the searchlight, we can access the searchlight scores
+    # as a NIfTI image using the `scores_img_` attribute.
     scores_img = searchlight.scores_img_
-    print("Searchlight scores image created:", scores_img)
+
+    # Use the :term:`fMRI` mean image as a surrogate of anatomical data
+    mean_fmri = image.mean_img(fmri_img, copy_header=True)
+
+    # Because scores are not a zero-center test statistics,
+    # we cannot use plot_stat_map
+    plot_img(
+        scores_img,
+        bg_img=mean_fmri,
+        title="Searchlight scores image",
+        display_mode="z",
+        cut_coords=[-9],
+        vmin=0.42,
+        cmap="hot",
+        threshold=0.2,
+        black_bg=True,
+    )
 
 
+
+
+.. image-sg:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
+   :alt: plot haxby searchlight
+   :srcset: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
+   :class: sphx-glr-single-img
 
 
 .. rst-class:: sphx-glr-script-out
 
  .. code-block:: none
 
-    Searchlight scores image created: 
-    <class 'nibabel.nifti1.Nifti1Image'>
-    data shape (40, 64, 64)
-    affine:
-    [[  -3.5      0.       0.      68.25 ]
-     [   0.       3.75     0.    -118.125]
-     [   0.       0.       3.75  -118.125]
-     [   0.       0.       0.       1.   ]]
-    metadata:
-    <class 'nibabel.nifti1.Nifti1Header'> object, endian='<'
-    sizeof_hdr      : 348
-    data_type       : b''
-    db_name         : b''
-    extents         : 0
-    session_error   : 0
-    regular         : b''
-    dim_info        : 0
-    dim             : [ 3 40 64 64  1  1  1  1]
-    intent_p1       : 0.0
-    intent_p2       : 0.0
-    intent_p3       : 0.0
-    intent_code     : none
-    datatype        : float64
-    bitpix          : 64
-    slice_start     : 0
-    pixdim          : [-1.    3.5   3.75  3.75  1.    1.    1.    1.  ]
-    vox_offset      : 0.0
-    scl_slope       : nan
-    scl_inter       : nan
-    slice_end       : 0
-    slice_code      : unknown
-    xyzt_units      : 0
-    cal_max         : 0.0
-    cal_min         : 0.0
-    slice_duration  : 0.0
-    toffset         : 0.0
-    glmax           : 0
-    glmin           : 0
-    descrip         : b''
-    aux_file        : b''
-    qform_code      : unknown
-    sform_code      : aligned
-    quatern_b       : 0.0
-    quatern_c       : 1.0
-    quatern_d       : 0.0
-    qoffset_x       : 68.25
-    qoffset_y       : -118.125
-    qoffset_z       : -118.125
-    srow_x          : [-3.5   0.    0.   68.25]
-    srow_y          : [   0.       3.75     0.    -118.125]
-    srow_z          : [   0.       0.       3.75  -118.125]
-    intent_name     : b''
-    magic           : b'n+1'
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1523: MatplotlibDeprecationWarning:
+
+    Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+
+
+    <nilearn.plotting.displays._slicers.ZSlicer object at 0x7fbe52407670>
 
 
 
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 100-102
+.. GENERATED FROM PYTHON SOURCE LINES 121-123
 
 F-scores computation
 --------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 102-121
+.. GENERATED FROM PYTHON SOURCE LINES 123-156
 
 .. code-block:: Python
+
+    from sklearn.feature_selection import f_classif
 
     from nilearn.maskers import NiftiMasker
 
@@ -705,49 +684,10 @@ F-scores computation
     )
     fmri_masked = nifti_masker.fit_transform(fmri_img)
 
-    from sklearn.feature_selection import f_classif
-
     _, p_values = f_classif(fmri_masked, y)
     p_values = -np.log10(p_values)
     p_values[p_values > 10] = 10
     p_unmasked = get_data(nifti_masker.inverse_transform(p_values))
-
-
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 122-125
-
-Visualization
--------------
-Use the :term:`fMRI` mean image as a surrogate of anatomical data
-
-.. GENERATED FROM PYTHON SOURCE LINES 125-159
-
-.. code-block:: Python
-
-    from nilearn import image
-
-    mean_fmri = image.mean_img(fmri_img, copy_header=True)
-
-    from nilearn.plotting import plot_img, plot_stat_map, show
-
-    # Because scores are not a zero-center test statistics, we cannot use
-    # plot_stat_map
-    plot_img(
-        scores_img,
-        bg_img=mean_fmri,
-        title="Searchlight scores image",
-        display_mode="z",
-        cut_coords=[-9],
-        vmin=0.42,
-        cmap="hot",
-        threshold=0.2,
-        black_bg=True,
-    )
 
     # F_score results
     p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
@@ -766,22 +706,10 @@ Use the :term:`fMRI` mean image as a surrogate of anatomical data
 
 
 
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image-sg:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
-         :alt: plot haxby searchlight
-         :srcset: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_002.png
-         :alt: plot haxby searchlight
-         :srcset: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_002.png
-         :class: sphx-glr-multi-img
+.. image-sg:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_002.png
+   :alt: plot haxby searchlight
+   :srcset: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_002.png
+   :class: sphx-glr-single-img
 
 
 .. rst-class:: sphx-glr-script-out
@@ -799,9 +727,9 @@ Use the :term:`fMRI` mean image as a surrogate of anatomical data
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 24.693 seconds)
+   **Total running time of the script:** (0 minutes 25.402 seconds)
 
-**Estimated memory usage:**  1055 MB
+**Estimated memory usage:**  1054 MB
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_haxby_searchlight.py:
