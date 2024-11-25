@@ -33,7 +33,7 @@ Define parameters
 -----------------
 At first, we define parameters related to the images acquisition.
 
-.. GENERATED FROM PYTHON SOURCE LINES 17-27
+.. GENERATED FROM PYTHON SOURCE LINES 17-31
 
 .. code-block:: Python
 
@@ -41,8 +41,12 @@ At first, we define parameters related to the images acquisition.
 
     from nilearn.plotting import plot_design_matrix
 
-    t_r = 1.0  # repetition time is 1 second
-    n_scans = 128  # the acquisition comprises 128 scans
+    t_r = 1
+    n_scans = 128
+
+    print(f"repetition time is {t_r} second")
+    print(f"the acquisition comprises {n_scans} scans")
+
     frame_times = (
         np.arange(n_scans) * t_r
     )  # here are the corresponding frame times
@@ -51,21 +55,28 @@ At first, we define parameters related to the images acquisition.
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    repetition time is 1 second
+    the acquisition comprises 128 scans
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 28-29
+
+.. GENERATED FROM PYTHON SOURCE LINES 32-33
 
 Then we define parameters related to the experimental design.
 
-.. GENERATED FROM PYTHON SOURCE LINES 29-42
+.. GENERATED FROM PYTHON SOURCE LINES 33-46
 
 .. code-block:: Python
 
 
     # these are the types of the different trials
     conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c3", "c3", "c3"]
-    duration = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    duration = [0.1, 0.0, 0.1, 0.1, 0.0, 0.1, 0.1, 0.0, 0.1]
     # these are the corresponding onset times
     onsets = [30.0, 70.0, 100.0, 10.0, 30.0, 90.0, 30.0, 40.0, 60.0]
     # Next, we simulate 6 motion parameters jointly observed with fMRI acquisitions
@@ -82,14 +93,14 @@ Then we define parameters related to the experimental design.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 43-47
+.. GENERATED FROM PYTHON SOURCE LINES 47-51
 
 Create design matrices
 ----------------------
 The same parameters allow us to obtain a variety of design matrices.
 We first create an events object.
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-53
+.. GENERATED FROM PYTHON SOURCE LINES 51-57
 
 .. code-block:: Python
 
@@ -106,12 +117,12 @@ We first create an events object.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-56
+.. GENERATED FROM PYTHON SOURCE LINES 58-60
 
-We sample the events into a design matrix, also including additional
-regressors.
+We sample the events into a design matrix,
+also including additional regressors.
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-69
+.. GENERATED FROM PYTHON SOURCE LINES 60-73
 
 .. code-block:: Python
 
@@ -132,16 +143,29 @@ regressors.
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/glm/first_level/design_matrix.py:412: UserWarning:
+
+    The following conditions contain events with null duration:
+    - 'c0'
+    - 'c1'
+    - 'c3'
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-73
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 74-77
 
 Now we compute a block design matrix. We add duration to create the blocks.
 For this we first define an event structure that includes the duration
 parameter.
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-79
+.. GENERATED FROM PYTHON SOURCE LINES 77-83
 
 .. code-block:: Python
 
@@ -158,11 +182,11 @@ parameter.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 80-81
+.. GENERATED FROM PYTHON SOURCE LINES 84-85
 
 Then we sample the design matrix.
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-90
+.. GENERATED FROM PYTHON SOURCE LINES 85-94
 
 .. code-block:: Python
 
@@ -182,11 +206,11 @@ Then we sample the design matrix.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-92
+.. GENERATED FROM PYTHON SOURCE LINES 95-96
 
 Finally we compute a :term:`FIR` model
 
-.. GENERATED FROM PYTHON SOURCE LINES 92-106
+.. GENERATED FROM PYTHON SOURCE LINES 96-110
 
 .. code-block:: Python
 
@@ -211,11 +235,17 @@ Finally we compute a :term:`FIR` model
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-108
+.. GENERATED FROM PYTHON SOURCE LINES 111-118
 
 Here are the three designs side by side.
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-123
+.. note::
+
+    The events with a duration of 0 seconds are be modelled
+    using a 'delta function' in the event-related design matrix.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 118-133
 
 .. code-block:: Python
 
@@ -246,7 +276,7 @@ Here are the three designs side by side.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 124-131
+.. GENERATED FROM PYTHON SOURCE LINES 134-141
 
 Correlation between regressors
 ------------------------------
@@ -256,7 +286,7 @@ the effficieny of
 `your design <https://imaging.mrc-cbu.cam.ac.uk/imaging/DesignEfficiency#Correlation_between_regressors>`_. # noqa: E501
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-146
+.. GENERATED FROM PYTHON SOURCE LINES 141-156
 
 .. code-block:: Python
 
@@ -287,7 +317,7 @@ the effficieny of
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 147-164
+.. GENERATED FROM PYTHON SOURCE LINES 157-174
 
 Parametric modulation
 ---------------------
@@ -307,7 +337,7 @@ Here we will assume that when a trial
 is the same condition as the previous one,
 it will elicit a less intense response.
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-195
+.. GENERATED FROM PYTHON SOURCE LINES 174-205
 
 .. code-block:: Python
 
@@ -364,7 +394,7 @@ it will elicit a less intense response.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 3.933 seconds)
+   **Total running time of the script:** (0 minutes 3.784 seconds)
 
 **Estimated memory usage:**  147 MB
 
