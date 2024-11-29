@@ -88,7 +88,7 @@ Retrieving the data
     )
     labels = [x.decode("utf-8") for x in destrieux.labels]
 
-    parcellation = destrieux_atlas.data.parts[hemi][0]
+    parcellation = destrieux_atlas.data.parts[hemi]
 
     # Fsaverage5 surface template
     fsaverage_meshes = load_fsaverage()
@@ -126,11 +126,11 @@ Retrieving the data
     /home/runner/nilearn_data/nki_enhanced_surface
     [load_nki] Loading subject 1 of 1.
     [get_dataset_dir] Dataset found in /home/runner/nilearn_data/destrieux_surface
-    Fsaverage5 pial surface of left hemisphere is: <FileMesh with 10242 vertices>
-    Fsaverage5 inflated surface of left hemisphere is: <FileMesh with 10242 vertices>
-    Fsaverage5 inflated surface of left hemisphere is: <FileMesh with 10242 vertices>
-    Fsaverage5 sulcal depth map: <SurfaceImage (1, 20484)>
-    Fsaverage5 sulcal curvature map: <SurfaceImage (1, 20484)>
+    Fsaverage5 pial surface of left hemisphere is: <FileMesh with 10242 vertices and 20480 faces.>
+    Fsaverage5 inflated surface of left hemisphere is: <FileMesh with 10242 vertices and 18654 faces.>
+    Fsaverage5 inflated surface of left hemisphere is: <FileMesh with 10242 vertices and 20480 faces.>
+    Fsaverage5 sulcal depth map: <SurfaceImage (20484,)>
+    Fsaverage5 sulcal curvature map: <SurfaceImage (20484,)>
 
 
 
@@ -147,7 +147,7 @@ Extracting the seed time series
     import numpy as np
 
     # Load resting state time series from nilearn
-    timeseries = nki_dataset[0].data.parts[hemi].T
+    timeseries = nki_dataset[0].data.parts[hemi]
 
     # Coercing to float is required to avoid errors with scipy >= 0.14.0
     timeseries = timeseries.astype(float)
@@ -172,7 +172,7 @@ Extracting the seed time series
 Calculating seed-based functional connectivity
 ----------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-125
+.. GENERATED FROM PYTHON SOURCE LINES 114-126
 
 .. code-block:: Python
 
@@ -185,7 +185,8 @@ Calculating seed-based functional connectivity
         stat_map[i] = stats.pearsonr(seed_timeseries, timeseries[i])[0]
 
     # Re-mask previously masked nodes (medial wall)
-    stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
+    medial_wall_vertices = np.mean(timeseries, axis=1) == 0
+    stat_map[medial_wall_vertices] = 0
 
 
 
@@ -201,11 +202,11 @@ Calculating seed-based functional connectivity
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-127
+.. GENERATED FROM PYTHON SOURCE LINES 127-128
 
 Display ROI on surface
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-145
+.. GENERATED FROM PYTHON SOURCE LINES 128-146
 
 .. code-block:: Python
 
@@ -239,14 +240,14 @@ Display ROI on surface
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-150
+.. GENERATED FROM PYTHON SOURCE LINES 147-151
 
 Using a flat :term:`mesh` can be useful in order to easily locate the area
 of interest on the cortex.
 To make this plot easier to read,
 we use the :term:`mesh` curvature as a background map.
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-166
+.. GENERATED FROM PYTHON SOURCE LINES 151-167
 
 .. code-block:: Python
 
@@ -284,11 +285,11 @@ we use the :term:`mesh` curvature as a background map.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-168
+.. GENERATED FROM PYTHON SOURCE LINES 168-169
 
 Display unthresholded stat map with a slightly dimmed background
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-182
+.. GENERATED FROM PYTHON SOURCE LINES 169-183
 
 .. code-block:: Python
 
@@ -318,12 +319,12 @@ Display unthresholded stat map with a slightly dimmed background
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 183-185
+.. GENERATED FROM PYTHON SOURCE LINES 184-186
 
 Many different options are available for plotting, for example thresholding,
 or using custom colormaps
 
-.. GENERATED FROM PYTHON SOURCE LINES 185-200
+.. GENERATED FROM PYTHON SOURCE LINES 186-201
 
 .. code-block:: Python
 
@@ -335,7 +336,7 @@ or using custom colormaps
         colorbar=True,
         bg_map=fsaverage_sulcal,
         bg_on_data=True,
-        cmap="Spectral",
+        cmap="bwr",
         threshold=0.5,
         title="Threshold and colormap",
     )
@@ -354,7 +355,7 @@ or using custom colormaps
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 201-206
+.. GENERATED FROM PYTHON SOURCE LINES 202-207
 
 Here the surface is plotted in a lateral view without a background map.
 To capture 3D structure without depth information,
@@ -362,7 +363,7 @@ the default is to plot a half transparent surface.
 Note that you can also control the transparency
 with a background map using the alpha parameter.
 
-.. GENERATED FROM PYTHON SOURCE LINES 206-219
+.. GENERATED FROM PYTHON SOURCE LINES 207-220
 
 .. code-block:: Python
 
@@ -372,7 +373,7 @@ with a background map using the alpha parameter.
         hemi=hemi,
         view="lateral",
         colorbar=True,
-        cmap="Spectral",
+        cmap="bwr",
         threshold=0.5,
         title="Plotting without background",
     )
@@ -391,12 +392,12 @@ with a background map using the alpha parameter.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 220-222
+.. GENERATED FROM PYTHON SOURCE LINES 221-223
 
 The plots can be saved to file,
 in which case the display is closed after creating the figure
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-241
+.. GENERATED FROM PYTHON SOURCE LINES 223-241
 
 .. code-block:: Python
 
@@ -415,9 +416,8 @@ in which case the display is closed after creating the figure
         threshold=0.5,
         colorbar=True,
         output_file=output_dir / "plot_surf_stat_map.png",
+        cmap="bwr",
     )
-
-    show()
 
 
 
@@ -442,9 +442,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 9.403 seconds)
+   **Total running time of the script:** (0 minutes 9.560 seconds)
 
-**Estimated memory usage:**  887 MB
+**Estimated memory usage:**  957 MB
 
 
 .. _sphx_glr_download_auto_examples_01_plotting_plot_surf_stat_map.py:

@@ -11,7 +11,7 @@
 <meta property="og:image" content="https://nilearn.github.io/_static/nilearn-logo.png" />
 <meta property="og:image:alt" content="Nilearn" />
 <meta name="description" content="Full step-by-step example of fitting a GLM to perform a first and second level analysis in a BIDS dataset and visualizing the results. Details about the BIDS standard can be consulted at https://bi..." />
-<link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Copying headers from input images with math_img" href="plot_copy_headers_math_img.html" /><link rel="prev" title="Massively univariate analysis of a calculation task from the Localizer dataset" href="plot_localizer_simple_analysis.html" />
+<link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Surface-based dataset first and second level analysis of a dataset" href="plot_surface_bids_analysis.html" /><link rel="prev" title="Copying headers from input images with math_img" href="plot_copy_headers_math_img.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
         <title>BIDS dataset first and second level analysis - Nilearn</title>
@@ -25,10 +25,10 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=07d12563" />
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css" />
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css" />
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/fontawesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/solid.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/brands.min.css" />
     
     
 
@@ -186,7 +186,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.10.5.dev261+g29917ce0d) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.10.4)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.10.5.dev279+gc39ca5ec2) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.10.4)</span></a></p> 
   </aside>
 </div>
 
@@ -344,8 +344,8 @@
 <li class="toctree-l2 current has-children"><a class="reference internal" href="index.html">Advanced statistical analysis of brain images</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Advanced statistical analysis of brain images</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="plot_ica_resting_state.html">Multivariate decompositions: Independent component analysis of fMRI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_localizer_simple_analysis.html">Massively univariate analysis of a calculation task from the Localizer dataset</a></li>
-<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">BIDS dataset first and second level analysis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_copy_headers_math_img.html">Copying headers from input images with <code class="docutils literal notranslate"><span class="pre">math_img</span></code></a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">BIDS dataset first and second level analysis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_surface_bids_analysis.html">Surface-based dataset first and second level analysis of a dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_neurovault_meta_analysis.html">NeuroVault meta-analysis of stop-go paradigm studies</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_age_group_prediction_cross_val.html">Functional connectivity predicts age group</a></li>
@@ -821,6 +821,11 @@ from the <a class="reference internal" href="../../glossary.html#term-BIDS"><spa
 Notice that in this case the preprocessed <a class="reference internal" href="../../glossary.html#term-BOLD"><span class="xref std std-term">bold</span></a>
 images were already normalized to the same <a class="reference internal" href="../../glossary.html#term-MNI"><span class="xref std std-term">MNI</span></a> space.</p></li>
 </ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We are only using a subset of participants from the dataset
+to lower the run time of the example.</p>
+</div>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">plotting</span>
 </pre></div>
 </div>
@@ -840,33 +845,55 @@ confounds.tsv files.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[get_dataset_dir] Dataset created in
 /home/runner/nilearn_data/fMRI-language-localizer-demo-dataset
 [fetch_single_file] Downloading data from https://osf.io/3dj2a/download ...
-[_chunk_report_] Downloaded 62234624 of 749503182 bytes (8.3%%,   11.1s
+[_chunk_report_] Downloaded 16834560 of 749503182 bytes (2.2%%,   44.5s
 remaining)
-[_chunk_report_] Downloaded 112041984 of 749503182 bytes (14.9%%,   11.4s
+[_chunk_report_] Downloaded 48455680 of 749503182 bytes (6.5%%,   29.5s
 remaining)
-[_chunk_report_] Downloaded 179544064 of 749503182 bytes (24.0%%,    9.6s
+[_chunk_report_] Downloaded 80117760 of 749503182 bytes (10.7%%,   25.5s
 remaining)
-[_chunk_report_] Downloaded 214917120 of 749503182 bytes (28.7%%,   10.0s
+[_chunk_report_] Downloaded 109748224 of 749503182 bytes (14.6%%,   23.6s
 remaining)
-[_chunk_report_] Downloaded 251060224 of 749503182 bytes (33.5%%,   10.0s
+[_chunk_report_] Downloaded 141369344 of 749503182 bytes (18.9%%,   21.8s
 remaining)
-[_chunk_report_] Downloaded 314138624 of 749503182 bytes (41.9%%,    8.3s
+[_chunk_report_] Downloaded 173015040 of 749503182 bytes (23.1%%,   20.3s
 remaining)
-[_chunk_report_] Downloaded 365330432 of 749503182 bytes (48.7%%,    7.4s
+[_chunk_report_] Downloaded 204685312 of 749503182 bytes (27.3%%,   18.9s
 remaining)
-[_chunk_report_] Downloaded 429572096 of 749503182 bytes (57.3%%,    6.0s
+[_chunk_report_] Downloaded 236281856 of 749503182 bytes (31.5%%,   17.6s
 remaining)
-[_chunk_report_] Downloaded 485244928 of 749503182 bytes (64.7%%,    4.9s
+[_chunk_report_] Downloaded 266723328 of 749503182 bytes (35.6%%,   16.5s
 remaining)
-[_chunk_report_] Downloaded 545636352 of 749503182 bytes (72.8%%,    3.7s
+[_chunk_report_] Downloaded 296984576 of 749503182 bytes (39.6%%,   15.4s
 remaining)
-[_chunk_report_] Downloaded 596459520 of 749503182 bytes (79.6%%,    2.8s
+[_chunk_report_] Downloaded 327426048 of 749503182 bytes (43.7%%,   14.3s
 remaining)
-[_chunk_report_] Downloaded 655966208 of 749503182 bytes (87.5%%,    1.7s
+[_chunk_report_] Downloaded 358449152 of 749503182 bytes (47.8%%,   13.2s
 remaining)
-[_chunk_report_] Downloaded 721707008 of 749503182 bytes (96.3%%,    0.5s
+[_chunk_report_] Downloaded 389799936 of 749503182 bytes (52.0%%,   12.1s
 remaining)
-[fetch_single_file]  ...done. (15 seconds, 0 min)
+[_chunk_report_] Downloaded 420970496 of 749503182 bytes (56.2%%,   11.0s
+remaining)
+[_chunk_report_] Downloaded 451911680 of 749503182 bytes (60.3%%,   10.0s
+remaining)
+[_chunk_report_] Downloaded 482975744 of 749503182 bytes (64.4%%,    8.9s
+remaining)
+[_chunk_report_] Downloaded 514490368 of 749503182 bytes (68.6%%,    7.8s
+remaining)
+[_chunk_report_] Downloaded 546168832 of 749503182 bytes (72.9%%,    6.8s
+remaining)
+[_chunk_report_] Downloaded 577871872 of 749503182 bytes (77.1%%,    5.7s
+remaining)
+[_chunk_report_] Downloaded 609517568 of 749503182 bytes (81.3%%,    4.6s
+remaining)
+[_chunk_report_] Downloaded 641114112 of 749503182 bytes (85.5%%,    3.6s
+remaining)
+[_chunk_report_] Downloaded 672251904 of 749503182 bytes (89.7%%,    2.6s
+remaining)
+[_chunk_report_] Downloaded 703332352 of 749503182 bytes (93.8%%,    1.5s
+remaining)
+[_chunk_report_] Downloaded 734371840 of 749503182 bytes (98.0%%,    0.5s
+remaining)
+[fetch_single_file]  ...done. (26 seconds, 0 min)
 
 [uncompress_file] Extracting data from
 /home/runner/nilearn_data/fMRI-language-localizer-demo-dataset/fMRI-language-loc
@@ -902,11 +929,16 @@ and the task_label as specified in the file names.</p>
     <a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">models_events</span></a><span class="p">,</span>
     <a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">models_confounds</span></a><span class="p">,</span>
 <span class="p">)</span> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.first_level.first_level_from_bids.html#nilearn.glm.first_level.first_level_from_bids" title="nilearn.glm.first_level.first_level_from_bids" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-function"><span class="n">first_level_from_bids</span></a><span class="p">(</span>
-    <a href="https://docs.python.org/3.9/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span><span class="o">.</span><span class="n">data_dir</span></a><span class="p">,</span> <a href="https://docs.python.org/3.9/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">task_label</span></a><span class="p">,</span> <span class="n">img_filters</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;desc&quot;</span><span class="p">,</span> <span class="s2">&quot;preproc&quot;</span><span class="p">)],</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">2</span>
+    <a href="https://docs.python.org/3.9/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span><span class="o">.</span><span class="n">data_dir</span></a><span class="p">,</span>
+    <a href="https://docs.python.org/3.9/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">task_label</span></a><span class="p">,</span>
+    <span class="n">img_filters</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;desc&quot;</span><span class="p">,</span> <span class="s2">&quot;preproc&quot;</span><span class="p">)],</span>
+    <span class="n">n_jobs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">space_label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">sub_labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;01&quot;</span><span class="p">,</span> <span class="s2">&quot;02&quot;</span><span class="p">,</span> <span class="s2">&quot;03&quot;</span><span class="p">,</span> <span class="s2">&quot;04&quot;</span><span class="p">],</span>  <span class="c1"># comment to run all subjects</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/nilearn/nilearn/examples/07_advanced/plot_bids_analysis.py:61: UserWarning:
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/nilearn/nilearn/examples/07_advanced/plot_bids_analysis.py:66: UserWarning:
 
 &#39;StartTime&#39; not found in file /home/runner/nilearn_data/fMRI-language-localizer-demo-dataset/derivatives/sub-01/func/sub-01_task-languagelocalizer_desc-preproc_bold.json.
 </pre></div>
@@ -961,9 +993,16 @@ Sum, subtraction and scalar multiplication are allowed.</p>
 </pre></div>
 </div>
 <p>Prepare figure for concurrent plot of individual maps.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <a href="https://docs.python.org/3.9/library/math.html#math.ceil" title="math.ceil" class="sphx-glr-backref-module-math sphx-glr-backref-type-py-function"><span class="n">ceil</span></a>
 
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">axes</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ncols</span></a> <span class="o">=</span> <span class="mi">3</span>
+<a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nrows</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.9/library/math.html#math.ceil" title="math.ceil" class="sphx-glr-backref-module-math sphx-glr-backref-type-py-function"><span class="n">ceil</span></a><span class="p">(</span><span class="nb">len</span><span class="p">(</span><a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">models</span></a><span class="p">)</span> <span class="o">/</span> <a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ncols</span></a><span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">axes</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">(</span><a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nrows</span></a><span class="o">=</span><a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">nrows</span></a><span class="p">,</span> <a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ncols</span></a><span class="o">=</span><a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ncols</span></a><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">))</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">axes</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.atleast_2d.html#numpy.atleast_2d" title="numpy.atleast_2d" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">axes</span></a><span class="p">)</span>
 <a href="https://docs.python.org/3.9/library/functions.html#zip" title="builtins.zip" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-function"><span class="n">model_and_args</span></a> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">models</span></a><span class="p">,</span> <a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">models_run_imgs</span></a><span class="p">,</span> <a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">models_events</span></a><span class="p">,</span> <a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">models_confounds</span></a><span class="p">)</span>
 <span class="k">for</span> <a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">midx</span></a><span class="p">,</span> <span class="p">(</span><a href="../../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model</span></a><span class="p">,</span> <a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">imgs</span></a><span class="p">,</span> <a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">events</span></a><span class="p">,</span> <a href="https://docs.python.org/3.9/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">confounds</span></a><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><a href="https://docs.python.org/3.9/library/functions.html#zip" title="builtins.zip" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-function"><span class="n">model_and_args</span></a><span class="p">):</span>
     <span class="c1"># fit the GLM</span>
@@ -975,9 +1014,10 @@ Sum, subtraction and scalar multiplication are allowed.</p>
         <span class="n">colorbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">threshold</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">p001_unc</span></a><span class="p">,</span>
         <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;sub-</span><span class="si">{</span><a href="https://docs.python.org/3.9/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">model</span><span class="o">.</span><span class="n">subject_label</span></a><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">axes</span></a><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">axes</span></a><span class="p">[</span><span class="nb">int</span><span class="p">(</span><a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">midx</span></a> <span class="o">/</span> <span class="mi">5</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">midx</span></a> <span class="o">%</span> <span class="mi">5</span><span class="p">)],</span>
+        <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">axes</span></a><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">axes</span></a><span class="p">[</span><span class="nb">int</span><span class="p">(</span><a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">midx</span></a> <span class="o">/</span> <a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ncols</span></a><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">midx</span></a> <span class="o">%</span> <a href="https://docs.python.org/3.9/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ncols</span></a><span class="p">)],</span>
         <span class="n">plot_abs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;bwr&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.suptitle.html#matplotlib.figure.Figure.suptitle" title="matplotlib.figure.Figure.suptitle" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span></a><span class="p">(</span><span class="s2">&quot;subjects z_map language network (unc p&lt;0.001)&quot;</span><span class="p">)</span>
 <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
@@ -1019,12 +1059,13 @@ language network.</p>
     <span class="n">plot_abs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span>
     <span class="n">figure</span><span class="o">=</span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="matplotlib.pyplot.figure" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;bwr&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_plot_bids_analysis_002.png" srcset="../../_images/sphx_glr_plot_bids_analysis_002.png" alt="plot bids analysis" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 20.316 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  1352 MB</p>
+<img src="../../_images/sphx_glr_plot_bids_analysis_002.png" srcset="../../_images/sphx_glr_plot_bids_analysis_002.png" alt="plot bids analysis" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 55.413 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  764 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-07-advanced-plot-bids-analysis-py">
 <div class="binder-badge docutils container">
 <a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/07_advanced/plot_bids_analysis.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo7.svg" style="width: 150px;" />
@@ -1049,23 +1090,23 @@ language network.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="plot_copy_headers_math_img.html">
+          <a class="next-page" href="plot_surface_bids_analysis.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Copying headers from input images with <code class="docutils literal notranslate"><span class="pre">math_img</span></code></div>
+                <div class="title">Surface-based dataset first and second level analysis of a dataset</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="plot_localizer_simple_analysis.html">
+          <a class="prev-page" href="plot_copy_headers_math_img.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Massively univariate analysis of a calculation task from the Localizer dataset</div>
+                <div class="title">Copying headers from input images with <code class="docutils literal notranslate"><span class="pre">math_img</span></code></div>
                 
               </div>
             </a>
@@ -1084,6 +1125,7 @@ language network.</p>
             <div class="icons">
               <a class="muted-link fa-brands fa-solid fa-github fa-2x" href="https://github.com/nilearn/nilearn" aria-label="GitHub"></a>
               <a class="muted-link fa-brands fa-solid fa-twitter fa-2x" href="https://twitter.com/nilearn" aria-label="Twitter"></a>
+              <a class="muted-link fa-brands fa-solid fa-bluesky fa-2x" href="https://bsky.app/profile/nilearn.bsky.social" aria-label="Bluesky"></a>
               <a class="muted-link fa-brands fa-solid fa-mastodon fa-2x" href="https://fosstodon.org/@nilearn" aria-label="Mastodon"></a>
               <a class="muted-link fa-brands fa-solid fa-discord fa-2x" href="https://discord.gg/SsQABEJHkZ" aria-label="Discord"></a>
               <a class="muted-link fa-brands fa-solid fa-youtube fa-2x" href="https://www.youtube.com/channel/UCU6BMAi2zOhNFnDkbdevmPw" aria-label="Youtube"></a>

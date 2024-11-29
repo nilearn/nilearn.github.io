@@ -37,14 +37,17 @@ A short demo of the surface images & maskers
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 11-59
+.. GENERATED FROM PYTHON SOURCE LINES 11-71
 
 .. code-block:: Python
 
     import matplotlib.pyplot as plt
     import numpy as np
 
-    from nilearn.datasets import load_nki
+    from nilearn.datasets import (
+        load_fsaverage_data,
+        load_nki,
+    )
     from nilearn.maskers import SurfaceMasker
     from nilearn.plotting import plot_matrix, plot_surf, plot_surf_roi, show
 
@@ -63,6 +66,9 @@ A short demo of the surface images & maskers
     views = ["lateral", "medial", "dorsal", "ventral", "anterior", "posterior"]
     hemispheres = ["left", "right"]
 
+    # for our plots we will be using the fsaverage sulcal data as background map
+    fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
+
     fig, axes = plt.subplots(
         len(views),
         len(hemispheres),
@@ -70,6 +76,9 @@ A short demo of the surface images & maskers
         figsize=(4 * len(hemispheres), 4),
     )
     axes = np.atleast_2d(axes)
+
+    vmin = min(min(x.ravel()) for x in mean_img.data.parts.values())
+    vmax = max(max(x.ravel()) for x in mean_img.data.parts.values())
 
     for view, ax_row in zip(views, axes):
         for ax, hemi in zip(ax_row, hemispheres):
@@ -84,6 +93,9 @@ A short demo of the surface images & maskers
                 cmap="bwr",
                 symmetric_cmap=True,
                 bg_on_data=True,
+                vmin=vmin,
+                vmax=vmax,
+                bg_map=fsaverage_sulcal,
             )
     fig.set_size_inches(6, 8)
 
@@ -105,19 +117,19 @@ A short demo of the surface images & maskers
     [get_dataset_dir] Dataset found in 
     /home/runner/nilearn_data/nki_enhanced_surface
     [load_nki] Loading subject 1 of 1.
-    NKI image: <SurfaceImage (895, 20484)>
+    NKI image: <SurfaceImage (20484, 895)>
     Masked data shape: (895, 20484)
-    Image mean: <SurfaceImage (1, 20484)>
+    Image mean: <SurfaceImage (20484, 1)>
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 60-62
+.. GENERATED FROM PYTHON SOURCE LINES 72-74
 
 Connectivity with a surface atlas and `SurfaceLabelsMasker`
 -----------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-132
+.. GENERATED FROM PYTHON SOURCE LINES 74-137
 
 .. code-block:: Python
 
@@ -125,7 +137,6 @@ Connectivity with a surface atlas and `SurfaceLabelsMasker`
     from nilearn.datasets import (
         fetch_atlas_surf_destrieux,
         load_fsaverage,
-        load_fsaverage_data,
     )
     from nilearn.maskers import SurfaceLabelsMasker
     from nilearn.surface import SurfaceImage
@@ -140,12 +151,6 @@ Connectivity with a surface atlas and `SurfaceLabelsMasker`
         },
     )
     label_names = [x.decode("utf-8") for x in destrieux.labels]
-
-    # for our plots we will be using the fsaverage sulcal data as background map
-    fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
-
-    img = load_nki()[0]
-    print(f"NKI image: {img}")
 
     fsaverage = load_fsaverage("fsaverage5")
     destrieux = fetch_atlas_surf_destrieux()
@@ -205,18 +210,14 @@ Connectivity with a surface atlas and `SurfaceLabelsMasker`
  .. code-block:: none
 
     [get_dataset_dir] Dataset found in /home/runner/nilearn_data/destrieux_surface
-    [get_dataset_dir] Dataset found in 
-    /home/runner/nilearn_data/nki_enhanced_surface
-    [load_nki] Loading subject 1 of 1.
-    NKI image: <SurfaceImage (895, 20484)>
     [get_dataset_dir] Dataset found in /home/runner/nilearn_data/destrieux_surface
-    Destrieux image: <SurfaceImage (1, 20484)>
+    Destrieux image: <SurfaceImage (20484,)>
     Masked data shape: (895, 75)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-138
+.. GENERATED FROM PYTHON SOURCE LINES 138-143
 
 .. code-block:: Python
 
@@ -237,24 +238,22 @@ Connectivity with a surface atlas and `SurfaceLabelsMasker`
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-143
+.. GENERATED FROM PYTHON SOURCE LINES 144-148
 
 Using the `Decoder`
 -------------------
 Now using the appropriate masker we can use a `Decoder` on surface data just
 as we do for volume images.
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-171
+.. GENERATED FROM PYTHON SOURCE LINES 148-174
 
 .. code-block:: Python
 
     from nilearn.decoding import Decoder
 
-    img = load_nki()[0]
-
     # create some random labels
     rng = np.random.RandomState(0)
-    y = rng.choice([0, 1], replace=True, size=img.shape[0])
+    y = rng.choice([0, 1], replace=True, size=img.shape[1])
 
     decoder = Decoder(
         mask=SurfaceMasker(),
@@ -289,9 +288,6 @@ as we do for volume images.
 
  .. code-block:: none
 
-    [get_dataset_dir] Dataset found in 
-    /home/runner/nilearn_data/nki_enhanced_surface
-    [load_nki] Loading subject 1 of 1.
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/decoding/decoder.py:733: UserWarning:
 
     Overriding provided-default estimator parameters with provided masker parameters :
@@ -328,19 +324,16 @@ as we do for volume images.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-174
+.. GENERATED FROM PYTHON SOURCE LINES 175-177
 
 Decoding with a scikit-learn `Pipeline`
 ---------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 174-203
+.. GENERATED FROM PYTHON SOURCE LINES 177-203
 
 .. code-block:: Python
 
     from sklearn import feature_selection, linear_model, pipeline, preprocessing
-
-    img = load_nki()[0]
-    y = rng.normal(size=img.shape[0])
 
     decoder = pipeline.make_pipeline(
         SurfaceMasker(),
@@ -357,7 +350,7 @@ Decoding with a scikit-learn `Pipeline`
     vmax = max(np.absolute(dp).max() for dp in coef_img.data.parts.values())
     plot_surf(
         surf_map=coef_img,
-        cmap="cold_hot",
+        cmap="bwr",
         vmin=-vmax,
         vmax=vmax,
         threshold=1e-6,
@@ -375,23 +368,15 @@ Decoding with a scikit-learn `Pipeline`
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    [get_dataset_dir] Dataset found in 
-    /home/runner/nilearn_data/nki_enhanced_surface
-    [load_nki] Loading subject 1 of 1.
-
 
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 30.653 seconds)
+   **Total running time of the script:** (0 minutes 26.802 seconds)
 
-**Estimated memory usage:**  3152 MB
+**Estimated memory usage:**  1514 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_surface_image_and_maskers.py:

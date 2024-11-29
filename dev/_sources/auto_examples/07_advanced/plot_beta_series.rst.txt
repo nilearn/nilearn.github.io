@@ -89,38 +89,27 @@ to build the LSS beta series.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-66
-
-.. code-block:: Python
-
-    from nilearn import image, plotting
-
-
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 67-71
+.. GENERATED FROM PYTHON SOURCE LINES 64-68
 
 Prepare data and analysis parameters
 ------------------------------------
 Download data in :term:`BIDS` format and event information for one subject,
 and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-96
+.. GENERATED FROM PYTHON SOURCE LINES 68-95
 
 .. code-block:: Python
 
     from nilearn.datasets import fetch_language_localizer_demo_dataset
     from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
+    from nilearn.plotting import plot_design_matrix, plot_stat_map, show
 
     data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
     models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
         dataset_path=data.data_dir,
         task_label="languagelocalizer",
+        space_label="",
         sub_labels=["01"],
         img_filters=[("desc", "preproc")],
         n_jobs=2,
@@ -148,7 +137,7 @@ and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 
     [get_dataset_dir] Dataset found in 
     /home/runner/nilearn_data/fMRI-language-localizer-demo-dataset
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_beta_series.py:76: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_beta_series.py:74: UserWarning:
 
     'StartTime' not found in file /home/runner/nilearn_data/fMRI-language-localizer-demo-dataset/derivatives/sub-01/func/sub-01_task-languagelocalizer_desc-preproc_bold.json.
 
@@ -156,7 +145,7 @@ and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-104
+.. GENERATED FROM PYTHON SOURCE LINES 96-103
 
 Define the standard model
 -------------------------
@@ -166,7 +155,7 @@ models.
 We will just use the one created by
 :func:`~nilearn.glm.first_level.first_level_from_bids`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-116
+.. GENERATED FROM PYTHON SOURCE LINES 103-115
 
 .. code-block:: Python
 
@@ -179,8 +168,8 @@ We will just use the one created by
     # The standard design matrix has one column for each condition, along with
     # columns for the confound regressors and drifts
     fig, ax = plt.subplots(figsize=(5, 10))
-    plotting.plot_design_matrix(standard_glm.design_matrices_[0], axes=ax)
-    fig.show()
+    plot_design_matrix(standard_glm.design_matrices_[0], axes=ax)
+    show()
 
 
 
@@ -200,7 +189,7 @@ We will just use the one created by
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-125
+.. GENERATED FROM PYTHON SOURCE LINES 116-124
 
 Define the LSA model
 --------------------
@@ -211,7 +200,7 @@ It's important to ensure that the original trial types can be inferred from
 the updated trial-wise trial types, in order to collect the resulting
 beta maps into condition-wise beta series.
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-146
+.. GENERATED FROM PYTHON SOURCE LINES 124-145
 
 .. code-block:: Python
 
@@ -233,8 +222,8 @@ beta maps into condition-wise beta series.
     lsa_glm.fit(fmri_file, lsa_events_df)
 
     fig, ax = plt.subplots(figsize=(10, 10))
-    plotting.plot_design_matrix(lsa_glm.design_matrices_[0], axes=ax)
-    fig.show()
+    plot_design_matrix(lsa_glm.design_matrices_[0], axes=ax)
+    show()
 
 
 
@@ -254,16 +243,17 @@ beta maps into condition-wise beta series.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 147-150
+.. GENERATED FROM PYTHON SOURCE LINES 146-149
 
 Aggregate beta maps from the LSA model based on condition
 `````````````````````````````````````````````````````````
 Collect the :term:`Parameter Estimate` maps
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-165
+.. GENERATED FROM PYTHON SOURCE LINES 149-165
 
 .. code-block:: Python
 
+    from nilearn.image import concat_imgs
 
     lsa_beta_maps = {cond: [] for cond in events_df["trial_type"].unique()}
     trialwise_conditions = lsa_events_df["trial_type"].unique()
@@ -276,7 +266,7 @@ Collect the :term:`Parameter Estimate` maps
     # We can concatenate the lists of 3D maps into a single 4D beta series for
     # each condition, if we want
     lsa_beta_maps = {
-        name: image.concat_imgs(maps) for name, maps in lsa_beta_maps.items()
+        name: concat_imgs(maps) for name, maps in lsa_beta_maps.items()
     }
 
 
@@ -371,7 +361,7 @@ and finally collect the targeted trial's beta map for the beta series.
     # We can concatenate the lists of 3D maps into a single 4D beta series for
     # each condition, if we want
     lss_beta_maps = {
-        name: image.concat_imgs(maps) for name, maps in lss_beta_maps.items()
+        name: concat_imgs(maps) for name, maps in lss_beta_maps.items()
     }
 
 
@@ -398,13 +388,13 @@ Show the design matrices for the first few trials
 
     fig, axes = plt.subplots(ncols=3, figsize=(20, 10))
     for i_trial in range(3):
-        plotting.plot_design_matrix(
+        plot_design_matrix(
             lss_design_matrices[i_trial],
             axes=axes[i_trial],
         )
         axes[i_trial].set_title(f"Trial {i_trial + 1}")
 
-    fig.show()
+    show()
 
 
 
@@ -443,10 +433,10 @@ Compare the three modeling approaches
     )
 
     for i_ax, _ in enumerate(axes):
-        plotting.plot_design_matrix(DESIGN_MATRICES[i_ax], axes=axes[i_ax])
+        plot_design_matrix(DESIGN_MATRICES[i_ax], axes=axes[i_ax])
         axes[i_ax].set_title(DM_TITLES[i_ax])
 
-    fig.show()
+    show()
 
 
 
@@ -490,7 +480,7 @@ This section is based on
 which goes into more detail about seed-to-voxel functional connectivity
 analyses.
 
-.. GENERATED FROM PYTHON SOURCE LINES 306-401
+.. GENERATED FROM PYTHON SOURCE LINES 306-403
 
 .. code-block:: Python
 
@@ -556,7 +546,7 @@ analyses.
     # Show both correlation maps
     fig, axes = plt.subplots(figsize=(10, 8), nrows=2)
 
-    display = plotting.plot_stat_map(
+    display = plot_stat_map(
         language_connectivity_img,
         threshold=0.5,
         vmax=1,
@@ -564,6 +554,7 @@ analyses.
         title="Language",
         figure=fig,
         axes=axes[0],
+        cmap="bwr",
     )
     display.add_markers(
         marker_coords=coords,
@@ -571,7 +562,7 @@ analyses.
         marker_size=300,
     )
 
-    display = plotting.plot_stat_map(
+    display = plot_stat_map(
         string_connectivity_img,
         threshold=0.5,
         vmax=1,
@@ -579,6 +570,7 @@ analyses.
         title="String",
         figure=fig,
         axes=axes[1],
+        cmap="bwr",
     )
     display.add_markers(
         marker_coords=coords,
@@ -587,7 +579,7 @@ analyses.
     )
     fig.suptitle("LSS Beta Series Functional Connectivity")
 
-    fig.show()
+    show()
 
 
 
@@ -607,7 +599,7 @@ analyses.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 402-406
+.. GENERATED FROM PYTHON SOURCE LINES 404-408
 
 References
 ----------
@@ -617,9 +609,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 22.527 seconds)
+   **Total running time of the script:** (2 minutes 21.495 seconds)
 
-**Estimated memory usage:**  680 MB
+**Estimated memory usage:**  679 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_beta_series.py:
