@@ -21,7 +21,20 @@
 A short demo of the surface images & maskers
 ============================================
 
-.. GENERATED FROM PYTHON SOURCE LINES 5-10
+This example shows some more 'advanced' features
+to work with surface images.
+
+This shows:
+
+-   how to use :class:`~nilearn.maskers.SurfaceMasker`
+    and to plot :class:`~nilearn.surface.SurfaceImage`
+
+-   how to use :class:`~nilearn.maskers.SurfaceLabelsMasker`
+    and to compute a connectome with surface data.
+
+-   how to use run some decoding directly on surface data.
+
+.. GENERATED FROM PYTHON SOURCE LINES 18-23
 
 .. code-block:: Python
 
@@ -37,7 +50,17 @@ A short demo of the surface images & maskers
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 11-71
+.. GENERATED FROM PYTHON SOURCE LINES 24-31
+
+Masking and plotting surface images
+-----------------------------------
+Here we load the NKI dataset
+as a list of :class:`~nilearn.surface.SurfaceImage`.
+Then we extract data with a masker and
+compute the mean image across time points for the first subject.
+We then plot the the mean image.
+
+.. GENERATED FROM PYTHON SOURCE LINES 31-103
 
 .. code-block:: Python
 
@@ -49,13 +72,13 @@ A short demo of the surface images & maskers
         load_nki,
     )
     from nilearn.maskers import SurfaceMasker
-    from nilearn.plotting import plot_matrix, plot_surf, plot_surf_roi, show
+    from nilearn.plotting import plot_matrix, plot_surf, show
 
-    img = load_nki()[0]
-    print(f"NKI image: {img}")
+    surf_img_nki = load_nki()[0]
+    print(f"NKI image: {surf_img_nki}")
 
     masker = SurfaceMasker()
-    masked_data = masker.fit_transform(img)
+    masked_data = masker.fit_transform(surf_img_nki)
     print(f"Masked data shape: {masked_data.shape}")
 
     mean_data = masked_data.mean(axis=0)
@@ -63,22 +86,34 @@ A short demo of the surface images & maskers
     print(f"Image mean: {mean_img}")
 
     # let's create a figure with all the views for both hemispheres
-    views = ["lateral", "medial", "dorsal", "ventral", "anterior", "posterior"]
-    hemispheres = ["left", "right"]
+    views = [
+        "lateral",
+        "medial",
+        "dorsal",
+        "ventral",
+        "anterior",
+        "posterior",
+    ]
+    hemispheres = [
+        "left",
+        "right",
+    ]
 
     # for our plots we will be using the fsaverage sulcal data as background map
     fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
 
     fig, axes = plt.subplots(
-        len(views),
-        len(hemispheres),
+        nrows=len(views),
+        ncols=len(hemispheres),
         subplot_kw={"projection": "3d"},
         figsize=(4 * len(hemispheres), 4),
     )
     axes = np.atleast_2d(axes)
 
-    vmin = min(min(x.ravel()) for x in mean_img.data.parts.values())
-    vmax = max(max(x.ravel()) for x in mean_img.data.parts.values())
+    # Let's ensure that we have the same range
+    # centered on 0 for all subplots.
+    vmax = max(np.absolute(hemi).max() for hemi in mean_img.data.parts.values())
+    vmin = -vmax
 
     for view, ax_row in zip(views, axes):
         for ax, hemi in zip(ax_row, hemispheres):
@@ -124,12 +159,17 @@ A short demo of the surface images & maskers
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-74
+.. GENERATED FROM PYTHON SOURCE LINES 104-111
 
-Connectivity with a surface atlas and `SurfaceLabelsMasker`
------------------------------------------------------------
+Connectivity with a surface atlas and SurfaceLabelsMasker
+---------------------------------------------------------
+Here we first get the mean time serie
+for each label of the destrieux atlas
+for our NKI data.
+We then compute and
+plot the connectome of these time series.
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-137
+.. GENERATED FROM PYTHON SOURCE LINES 111-144
 
 .. code-block:: Python
 
@@ -143,17 +183,9 @@ Connectivity with a surface atlas and `SurfaceLabelsMasker`
 
     fsaverage = load_fsaverage("fsaverage5")
     destrieux = fetch_atlas_surf_destrieux()
-    labels_img = SurfaceImage(
-        mesh=fsaverage["pial"],
-        data={
-            "left": destrieux["map_left"],
-            "right": destrieux["map_right"],
-        },
-    )
-    label_names = [x.decode("utf-8") for x in destrieux.labels]
 
-    fsaverage = load_fsaverage("fsaverage5")
-    destrieux = fetch_atlas_surf_destrieux()
+    # Let's create a surface image
+    # for this atlas.
     labels_img = SurfaceImage(
         mesh=fsaverage["pial"],
         data={
@@ -166,43 +198,16 @@ Connectivity with a surface atlas and `SurfaceLabelsMasker`
     # For convenience we decode them to string.
     label_names = [x.decode("utf-8") for x in destrieux.labels]
 
-    print(f"Destrieux image: {labels_img}")
-    plot_surf_roi(
-        roi_map=labels_img,
-        avg_method="median",
-        view="lateral",
-        bg_on_data=True,
-        bg_map=fsaverage_sulcal,
-        darkness=0.5,
-        title="Destrieux atlas",
-    )
+    labels_masker = SurfaceLabelsMasker(
+        labels_img=labels_img,
+        labels=label_names,
+    ).fit()
 
-    labels_masker = SurfaceLabelsMasker(labels_img, label_names).fit()
-
-    report = labels_masker.generate_report()
-    # This report can be viewed in a notebook
-    report
-
-    # We have several ways to access the report:
-    # report.open_in_browser()
-
-    masked_data = labels_masker.transform(img)
+    masked_data = labels_masker.transform(surf_img_nki)
     print(f"Masked data shape: {masked_data.shape}")
 
-    # or we can save as an html file
-    from pathlib import Path
-
-    output_dir = Path.cwd() / "results" / "plot_surface_image_and_maskers"
-    output_dir.mkdir(exist_ok=True, parents=True)
-    report.save_as_html(output_dir / "report.html")
 
 
-
-
-.. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_002.png
-   :alt: Destrieux atlas
-   :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_002.png
-   :class: sphx-glr-single-img
 
 
 .. rst-class:: sphx-glr-script-out
@@ -210,42 +215,59 @@ Connectivity with a surface atlas and `SurfaceLabelsMasker`
  .. code-block:: none
 
     [get_dataset_dir] Dataset found in /home/runner/nilearn_data/destrieux_surface
-    [get_dataset_dir] Dataset found in /home/runner/nilearn_data/destrieux_surface
-    Destrieux image: <SurfaceImage (20484,)>
     Masked data shape: (895, 75)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-143
+.. GENERATED FROM PYTHON SOURCE LINES 145-158
 
 .. code-block:: Python
 
-    connectome = ConnectivityMeasure(kind="correlation").fit([masked_data]).mean_
-    plot_matrix(connectome, labels=labels_masker.label_names_)
+    connectome_measure = ConnectivityMeasure(kind="correlation")
+    connectome = connectome_measure.fit([masked_data])
+    vmax = np.absolute(connectome.mean_).max()
+    vmin = -vmax
+    plot_matrix(
+        connectome.mean_,
+        labels=labels_masker.label_names_,
+        vmax=vmax,
+        vmin=vmin,
+    )
 
     show()
 
 
 
 
-.. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_003.png
+.. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_002.png
    :alt: plot surface image and maskers
-   :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_003.png
+   :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_002.png
    :class: sphx-glr-single-img
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-148
+.. GENERATED FROM PYTHON SOURCE LINES 159-174
 
 Using the `Decoder`
 -------------------
-Now using the appropriate masker we can use a `Decoder` on surface data just
-as we do for volume images.
+Now using the appropriate masker
+we can use a `Decoder` on surface data
+just as we do for volume images.
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-174
+.. note::
+
+  Here we are given dummy 0 or 1 labels
+  to each time point of the time series.
+  We then decode at each time point.
+  In this sense,
+  the results do not show anything meaningful
+  in a biological sense.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 174-205
 
 .. code-block:: Python
 
@@ -253,7 +275,12 @@ as we do for volume images.
 
     # create some random labels
     rng = np.random.RandomState(0)
-    y = rng.choice([0, 1], replace=True, size=img.shape[1])
+    n_time_points = surf_img_nki.shape[1]
+    y = rng.choice(
+        [0, 1],
+        replace=True,
+        size=n_time_points,
+    )
 
     decoder = Decoder(
         mask=SurfaceMasker(),
@@ -261,7 +288,7 @@ as we do for volume images.
         cv=3,
         screening_percentile=1,
     )
-    decoder.fit(img, y)
+    decoder.fit(surf_img_nki, y)
     print("CV scores:", decoder.cv_scores_)
 
     plot_surf(
@@ -278,9 +305,9 @@ as we do for volume images.
 
 
 
-.. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_004.png
+.. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_003.png
    :alt: plot surface image and maskers
-   :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_004.png
+   :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_003.png
    :class: sphx-glr-single-img
 
 
@@ -324,12 +351,12 @@ as we do for volume images.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 175-177
+.. GENERATED FROM PYTHON SOURCE LINES 206-208
 
 Decoding with a scikit-learn `Pipeline`
 ---------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 177-203
+.. GENERATED FROM PYTHON SOURCE LINES 208-235
 
 .. code-block:: Python
 
@@ -343,15 +370,16 @@ Decoding with a scikit-learn `Pipeline`
         ),
         linear_model.Ridge(),
     )
-    decoder.fit(img, y)
+    decoder.fit(surf_img_nki, y)
 
     coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
-    vmax = max(np.absolute(dp).max() for dp in coef_img.data.parts.values())
+    vmax = max(np.absolute(hemi).max() for hemi in coef_img.data.parts.values())
+    vmin = -vmax
     plot_surf(
         surf_map=coef_img,
         cmap="bwr",
-        vmin=-vmax,
+        vmin=vmin,
         vmax=vmax,
         threshold=1e-6,
         bg_map=fsaverage_sulcal,
@@ -362,9 +390,9 @@ Decoding with a scikit-learn `Pipeline`
 
 
 
-.. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_005.png
+.. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_004.png
    :alt: plot surface image and maskers
-   :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_005.png
+   :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_surface_image_and_maskers_004.png
    :class: sphx-glr-single-img
 
 
@@ -374,9 +402,9 @@ Decoding with a scikit-learn `Pipeline`
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 26.802 seconds)
+   **Total running time of the script:** (0 minutes 20.075 seconds)
 
-**Estimated memory usage:**  1514 MB
+**Estimated memory usage:**  1457 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_surface_image_and_maskers.py:
