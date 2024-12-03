@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_04_glm_first_level_plot_hrf.py>`
-        to download the full example code or to run this example in your browser via Binder
+        to download the full example code. or to run this example in your browser via Binder
 
 .. rst-class:: sphx-glr-example-title
 
@@ -45,15 +45,17 @@ timing issues.
 
 This example requires matplotlib and scipy.
 
-.. GENERATED FROM PYTHON SOURCE LINES 29-35
+.. GENERATED FROM PYTHON SOURCE LINES 29-37
 
 .. code-block:: Python
 
 
-    try:
-        import matplotlib.pyplot as plt
-    except ImportError:
-        raise RuntimeError("This script needs the matplotlib library")
+    from nilearn._utils.helpers import check_matplotlib
+
+    check_matplotlib()
+
+    import matplotlib.pyplot as plt
+    import numpy as np
 
 
 
@@ -62,7 +64,7 @@ This example requires matplotlib and scipy.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 36-41
+.. GENERATED FROM PYTHON SOURCE LINES 38-43
 
 Define stimulus parameters and response models
 ----------------------------------------------
@@ -70,12 +72,11 @@ Define stimulus parameters and response models
 To get an impulse response, we simulate a single event occurring at time t=0,
 with duration 1s.
 
-.. GENERATED FROM PYTHON SOURCE LINES 41-49
+.. GENERATED FROM PYTHON SOURCE LINES 43-50
 
 .. code-block:: Python
 
 
-    import numpy as np
 
     time_length = 30.0
     frame_times = np.linspace(0, time_length, 61)
@@ -89,11 +90,11 @@ with duration 1s.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 50-51
+.. GENERATED FROM PYTHON SOURCE LINES 51-52
 
 Make a time array of this condition for display:
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-54
+.. GENERATED FROM PYTHON SOURCE LINES 52-55
 
 .. code-block:: Python
 
@@ -107,36 +108,37 @@ Make a time array of this condition for display:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 55-57
+.. GENERATED FROM PYTHON SOURCE LINES 56-58
 
 Define custom response functions for MION. Custom response
 functions should at least take :term:`TR` and oversampling as arguments:
 
-.. GENERATED FROM PYTHON SOURCE LINES 57-118
+.. GENERATED FROM PYTHON SOURCE LINES 58-120
 
 .. code-block:: Python
 
     from scipy.stats import gamma
 
 
-    def mion_response_function(tr, oversampling=16, onset=0.0):
+    def mion_response_function(t_r, oversampling=16, onset=0.0):
         """Implement the MION response function model.
 
         Parameters
         ----------
-        tr: float
+        t_r : float
             scan repeat time, in seconds
-        oversampling: int, optional
+        oversampling : int, optional
             temporal oversampling factor
-        onset: float, optional
+        onset : float, optional
             hrf onset time, in seconds
 
         Returns
         -------
-        response_function: array of shape(length / tr * oversampling, dtype=float)
+        response_function :
+            array of shape(length / t_r * oversampling, dtype=float)
             response_function sampling on the oversampled time grid
         """
-        dt = tr / oversampling
+        dt = t_r / oversampling
         time_stamps = np.linspace(
             0, time_length, np.rint(time_length / dt).astype(int)
         )
@@ -153,25 +155,25 @@ functions should at least take :term:`TR` and oversampling as arguments:
         return response_function
 
 
-    def mion_time_derivative(tr, oversampling=16.0):
+    def mion_time_derivative(t_r, oversampling=16.0):
         """Implement the MION time derivative response function model.
 
         Parameters
         ----------
-        tr: float
+        t_r : float
             scan repeat time, in seconds
-        oversampling: int, optional
+        oversampling : int, optional
             temporal oversampling factor, optional
 
         Returns
         -------
-        drf: array of shape(time_length / tr * oversampling, dtype=float)
+        drf : array of shape(time_length / t_r * oversampling, dtype=float)
             derived_response_function sampling on the provided grid
         """
         do = 0.1
         drf = (
-            mion_response_function(tr, oversampling)
-            - mion_response_function(tr, oversampling, do)
+            mion_response_function(t_r, oversampling)
+            - mion_response_function(t_r, oversampling, do)
         ) / do
 
         return drf
@@ -184,11 +186,11 @@ functions should at least take :term:`TR` and oversampling as arguments:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-120
+.. GENERATED FROM PYTHON SOURCE LINES 121-122
 
 Define response function models to be displayed:
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-131
+.. GENERATED FROM PYTHON SOURCE LINES 122-133
 
 .. code-block:: Python
 
@@ -210,12 +212,12 @@ Define response function models to be displayed:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-134
+.. GENERATED FROM PYTHON SOURCE LINES 134-136
 
 Sample and plot response functions
 ----------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-169
+.. GENERATED FROM PYTHON SOURCE LINES 136-171
 
 .. code-block:: Python
 
@@ -269,9 +271,9 @@ Sample and plot response functions
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.778 seconds)
+   **Total running time of the script:** (0 minutes 2.044 seconds)
 
-**Estimated memory usage:**  9 MB
+**Estimated memory usage:**  146 MB
 
 
 .. _sphx_glr_download_auto_examples_04_glm_first_level_plot_hrf.py:
@@ -283,7 +285,7 @@ Sample and plot response functions
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.10.4?urlpath=lab/tree/notebooks/auto_examples/04_glm_first_level/plot_hrf.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.11.0?urlpath=lab/tree/notebooks/auto_examples/04_glm_first_level/plot_hrf.ipynb
         :alt: Launch binder
         :width: 150 px
 
@@ -294,6 +296,10 @@ Sample and plot response functions
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_hrf.py <plot_hrf.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_hrf.zip <plot_hrf.zip>`
 
 
 .. only:: html

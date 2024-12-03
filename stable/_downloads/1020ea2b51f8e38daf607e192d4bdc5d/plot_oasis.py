@@ -74,6 +74,8 @@ mask_img = resample_to_img(
     gm_mask,
     gray_matter_map_filenames[0],
     interpolation="nearest",
+    copy_header=True,
+    force_resample=True,
 )
 
 # %%
@@ -95,7 +97,7 @@ from matplotlib import pyplot as plt
 # %%
 # Let's plot the design matrix.
 fig, ax1 = plt.subplots(1, 1, figsize=(4, 8))
-ax = plotting.plot_design_matrix(design_matrix, ax=ax1)
+ax = plotting.plot_design_matrix(design_matrix, axes=ax1)
 ax.set_ylabel("maps")
 fig.suptitle("Second level design matrix")
 
@@ -105,7 +107,7 @@ fig.suptitle("Second level design matrix")
 from nilearn.glm.second_level import SecondLevelModel
 
 second_level_model = SecondLevelModel(
-    smoothing_fwhm=2.0, mask_img=mask_img, n_jobs=2
+    smoothing_fwhm=2.0, mask_img=mask_img, n_jobs=2, minimize_memory=False
 )
 second_level_model.fit(
     gray_matter_map_filenames,
@@ -175,14 +177,36 @@ report = make_glm_report(
     bg_img=icbm152_2009["t1"],
 )
 
+
 # %%
 # We have several ways to access the report:
-
 # report  # This report can be viewed in a notebook
 # report.open_in_browser()
 
 # or we can save as an html file
-# from pathlib import Path
-# output_dir = Path.cwd() / "results" / "plot_oasis"
-# output_dir.mkdir(exist_ok=True, parents=True)
-# report.save_as_html(output_dir / 'report.html')
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_oasis"
+output_dir.mkdir(exist_ok=True, parents=True)
+report.save_as_html(output_dir / "report.html")
+
+
+# %%
+# Saving model outputs to disk
+# ----------------------------
+
+# We can also save the model outputs to disk
+from nilearn.interfaces.bids import save_glm_to_bids
+
+save_glm_to_bids(
+    second_level_model,
+    contrasts=["age", "sex"],
+    out_dir=output_dir / "derivatives" / "nilearn_glm",
+    prefix="ageEffectOnGM",
+    bg_img=icbm152_2009["t1"],
+)
+
+# %%
+# View the generated files
+files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
+print("\n".join([str(x.relative_to(output_dir)) for x in files]))

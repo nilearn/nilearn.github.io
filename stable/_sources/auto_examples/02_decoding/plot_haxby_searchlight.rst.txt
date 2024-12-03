@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_02_decoding_plot_haxby_searchlight.py>`
-        to download the full example code or to run this example in your browser via Binder
+        to download the full example code. or to run this example in your browser via Binder
 
 .. rst-class:: sphx-glr-example-title
 
@@ -62,8 +62,9 @@ Load Haxby dataset
 
  .. code-block:: none
 
-    Anatomical nifti image (3D) is located at: /home/himanshu/nilearn_data/haxby2001/mask.nii.gz
-    Functional nifti image (4D) is located at: /home/himanshu/nilearn_data/haxby2001/subj2/bold.nii.gz
+    [get_dataset_dir] Dataset found in /home/remi/nilearn_data/haxby2001
+    Anatomical nifti image (3D) is located at: /home/remi/nilearn_data/haxby2001/mask.nii.gz
+    Functional nifti image (4D) is located at: /home/remi/nilearn_data/haxby2001/subj2/bold.nii.gz
 
 
 
@@ -124,7 +125,7 @@ Prepare masks
 
  .. code-block:: none
 
-    /home/himanshu/Desktop/nilearn_work/nilearn/examples/02_decoding/plot_haxby_searchlight.py:61: UserWarning:
+    /home/remi/github/nilearn/nilearn_doc_build/examples/02_decoding/plot_haxby_searchlight.py:61: UserWarning:
 
     Data array used to create a new image contains 64-bit ints. This is likely due to creating the array with numpy and passing `int` as the `dtype`. Many tools such as FSL and SPM cannot deal with int64 in Nifti images, so for compatibility the data has been converted to int32.
 
@@ -176,12 +177,13 @@ Searchlight computation
 
  .. code-block:: none
 
-    /home/himanshu/.local/miniconda3/envs/nilearnpy/lib/python3.12/site-packages/nilearn/image/resampling.py:492: UserWarning:
+    /home/remi/github/nilearn/nilearn_doc_build/.tox/doc/lib/python3.9/site-packages/nilearn/image/resampling.py:526: UserWarning:
 
     The provided image has no sform in its header. Please check the provided file. Results may not be as expected.
 
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   25.5s finished
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   34.5s remaining:    0.0s
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   34.5s finished
 
 
 .. raw:: html
@@ -592,13 +594,13 @@ Searchlight computation
       background-color: var(--sklearn-color-fitted-level-3);
     }
     </style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>SearchLight(cv=KFold(n_splits=4, random_state=None, shuffle=False),
-                mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x733231f66a50&gt;,
+                mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x740ced053100&gt;,
                 n_jobs=2,
-                process_mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x733231f66570&gt;,
+                process_mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x740d1ff6c4f0&gt;,
                 radius=5.6, verbose=1)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked><label for="sk-estimator-id-1" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;SearchLight<span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>SearchLight(cv=KFold(n_splits=4, random_state=None, shuffle=False),
-                mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x733231f66a50&gt;,
+                mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x740ced053100&gt;,
                 n_jobs=2,
-                process_mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x733231f66570&gt;,
+                process_mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x740d1ff6c4f0&gt;,
                 radius=5.6, verbose=1)</pre></div> </div></div></div></div>
     </div>
     <br />
@@ -606,12 +608,69 @@ Searchlight computation
 
 .. GENERATED FROM PYTHON SOURCE LINES 94-96
 
+Visualization
+-------------
+
+.. GENERATED FROM PYTHON SOURCE LINES 96-120
+
+.. code-block:: Python
+
+    from nilearn import image
+    from nilearn.plotting import plot_img, plot_stat_map, show
+
+    # After fitting the searchlight, we can access the searchlight scores
+    # as a NIfTI image using the `scores_img_` attribute.
+    scores_img = searchlight.scores_img_
+
+    # Use the :term:`fMRI` mean image as a surrogate of anatomical data
+    mean_fmri = image.mean_img(fmri_img, copy_header=True)
+
+    # Because scores are not a zero-center test statistics,
+    # we cannot use plot_stat_map
+    plot_img(
+        scores_img,
+        bg_img=mean_fmri,
+        title="Searchlight scores image",
+        display_mode="z",
+        cut_coords=[-9],
+        vmin=0.42,
+        cmap="hot",
+        threshold=0.2,
+        black_bg=True,
+    )
+
+
+
+
+.. image-sg:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
+   :alt: plot haxby searchlight
+   :srcset: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /home/remi/github/nilearn/nilearn_doc_build/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1523: MatplotlibDeprecationWarning:
+
+    Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+
+
+    <nilearn.plotting.displays._slicers.ZSlicer object at 0x740d1d57e9d0>
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 121-123
+
 F-scores computation
 --------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-115
+.. GENERATED FROM PYTHON SOURCE LINES 123-156
 
 .. code-block:: Python
+
+    from sklearn.feature_selection import f_classif
 
     from nilearn.maskers import NiftiMasker
 
@@ -625,51 +684,10 @@ F-scores computation
     )
     fmri_masked = nifti_masker.fit_transform(fmri_img)
 
-    from sklearn.feature_selection import f_classif
-
     _, p_values = f_classif(fmri_masked, y)
     p_values = -np.log10(p_values)
     p_values[p_values > 10] = 10
     p_unmasked = get_data(nifti_masker.inverse_transform(p_values))
-
-
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 116-119
-
-Visualization
--------------
-Use the :term:`fMRI` mean image as a surrogate of anatomical data
-
-.. GENERATED FROM PYTHON SOURCE LINES 119-155
-
-.. code-block:: Python
-
-    from nilearn import image
-
-    mean_fmri = image.mean_img(fmri_img)
-
-    from nilearn.plotting import plot_img, plot_stat_map, show
-
-    searchlight_img = new_img_like(mean_fmri, searchlight.scores_)
-
-    # Because scores are not a zero-center test statistics, we cannot use
-    # plot_stat_map
-    plot_img(
-        searchlight_img,
-        bg_img=mean_fmri,
-        title="Searchlight",
-        display_mode="z",
-        cut_coords=[-9],
-        vmin=0.42,
-        cmap="hot",
-        threshold=0.2,
-        black_bg=True,
-    )
 
     # F_score results
     p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
@@ -688,22 +706,19 @@ Use the :term:`fMRI` mean image as a surrogate of anatomical data
 
 
 
-.. rst-class:: sphx-glr-horizontal
+.. image-sg:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_002.png
+   :alt: plot haxby searchlight
+   :srcset: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_002.png
+   :class: sphx-glr-single-img
 
 
-    *
+.. rst-class:: sphx-glr-script-out
 
-      .. image-sg:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
-         :alt: plot haxby searchlight
-         :srcset: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
-         :class: sphx-glr-multi-img
+ .. code-block:: none
 
-    *
+    /home/remi/github/nilearn/nilearn_doc_build/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1523: MatplotlibDeprecationWarning:
 
-      .. image-sg:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_002.png
-         :alt: plot haxby searchlight
-         :srcset: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_002.png
-         :class: sphx-glr-multi-img
+    Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
 
 
 
@@ -712,9 +727,9 @@ Use the :term:`fMRI` mean image as a surrogate of anatomical data
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 35.690 seconds)
+   **Total running time of the script:** (0 minutes 51.318 seconds)
 
-**Estimated memory usage:**  916 MB
+**Estimated memory usage:**  1053 MB
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_haxby_searchlight.py:
@@ -726,7 +741,7 @@ Use the :term:`fMRI` mean image as a surrogate of anatomical data
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/02_decoding/plot_haxby_searchlight.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.11.0?urlpath=lab/tree/notebooks/auto_examples/02_decoding/plot_haxby_searchlight.ipynb
         :alt: Launch binder
         :width: 150 px
 
@@ -737,6 +752,10 @@ Use the :term:`fMRI` mean image as a surrogate of anatomical data
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_haxby_searchlight.py <plot_haxby_searchlight.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_haxby_searchlight.zip <plot_haxby_searchlight.zip>`
 
 
 .. only:: html

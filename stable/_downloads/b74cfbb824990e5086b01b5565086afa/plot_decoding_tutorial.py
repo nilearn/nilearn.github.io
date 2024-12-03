@@ -52,7 +52,7 @@ print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 from nilearn import plotting
 from nilearn.image import mean_img
 
-plotting.view_img(mean_img(fmri_filename), threshold=None)
+plotting.view_img(mean_img(fmri_filename, copy_header=True), threshold=None)
 
 # %%
 # Feature extraction: from :term:`fMRI` volumes to a data matrix
@@ -123,8 +123,7 @@ fmri_niimgs = index_img(fmri_filename, condition_mask)
 # %%
 # We apply the same mask to the targets
 conditions = conditions[condition_mask]
-# Convert to numpy array
-conditions = conditions.values
+conditions = conditions.to_numpy()
 print(conditions.shape)
 
 # %%
@@ -353,6 +352,9 @@ print(dummy_decoder.cv_scores_)
 # --------
 #
 # * The :ref:`section of the documentation on decoding <decoding>`
+#
+# * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_understand_decoder.py`
+#   For a more in-depth understanding of the :class:`nilearn.decoding.Decoder`
 #
 # * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
 #   For decoding without a precomputed mask

@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_07_advanced_plot_bids_analysis.py>`
-        to download the full example code or to run this example in your browser via Binder
+        to download the full example code. or to run this example in your browser via Binder
 
 .. rst-class:: sphx-glr-example-title
 
@@ -37,7 +37,12 @@ More specifically:
    Notice that in this case the preprocessed :term:`bold<BOLD>`
    images were already normalized to the same :term:`MNI` space.
 
-.. GENERATED FROM PYTHON SOURCE LINES 21-24
+.. note::
+
+      We are only using a subset of participants from the dataset
+      to lower the run time of the example.
+
+.. GENERATED FROM PYTHON SOURCE LINES 26-29
 
 .. code-block:: Python
 
@@ -51,7 +56,7 @@ More specifically:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 25-33
+.. GENERATED FROM PYTHON SOURCE LINES 30-38
 
 Fetch example :term:`BIDS` dataset
 ----------------------------------
@@ -62,7 +67,7 @@ subject folders only contain bold.json and events.tsv files, while the
 derivatives folder includes the preprocessed files preproc.nii and the
 confounds.tsv files.
 
-.. GENERATED FROM PYTHON SOURCE LINES 33-37
+.. GENERATED FROM PYTHON SOURCE LINES 38-42
 
 .. code-block:: Python
 
@@ -74,14 +79,20 @@ confounds.tsv files.
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [get_dataset_dir] Dataset found in /home/remi/nilearn_data/fMRI-language-localizer-demo-dataset
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-39
+
+.. GENERATED FROM PYTHON SOURCE LINES 43-44
 
 Here is the location of the dataset on disk.
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-41
+.. GENERATED FROM PYTHON SOURCE LINES 44-46
 
 .. code-block:: Python
 
@@ -95,12 +106,12 @@ Here is the location of the dataset on disk.
 
  .. code-block:: none
 
-    /home/himanshu/nilearn_data/fMRI-language-localizer-demo-dataset
+    /home/remi/nilearn_data/fMRI-language-localizer-demo-dataset
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 42-53
+.. GENERATED FROM PYTHON SOURCE LINES 47-58
 
 Obtain automatically FirstLevelModel objects and fit arguments
 --------------------------------------------------------------
@@ -114,7 +125,7 @@ in the :term:`BIDS` dataset.
 To get the first level models we only have to specify the dataset directory
 and the task_label as specified in the file names.
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-65
+.. GENERATED FROM PYTHON SOURCE LINES 58-75
 
 .. code-block:: Python
 
@@ -127,7 +138,12 @@ and the task_label as specified in the file names.
         models_events,
         models_confounds,
     ) = first_level_from_bids(
-        data.data_dir, task_label, img_filters=[("desc", "preproc")], n_jobs=2
+        data.data_dir,
+        task_label,
+        img_filters=[("desc", "preproc")],
+        n_jobs=2,
+        space_label="",
+        sub_labels=["01", "02", "03", "04"],  # comment to run all subjects
     )
 
 
@@ -138,24 +154,26 @@ and the task_label as specified in the file names.
 
  .. code-block:: none
 
-    /home/himanshu/Desktop/nilearn_work/nilearn/nilearn/glm/first_level/first_level.py:1374: UserWarning: 'StartTime' not found in file /home/himanshu/nilearn_data/fMRI-language-localizer-demo-dataset/derivatives/sub-01/func/sub-01_task-languagelocalizer_desc-preproc_bold.json.
-      StartTime = infer_slice_timing_start_time_from_dataset(
+    /home/remi/github/nilearn/nilearn_doc_build/examples/07_advanced/plot_bids_analysis.py:66: UserWarning:
+
+    'StartTime' not found in file /home/remi/nilearn_data/fMRI-language-localizer-demo-dataset/derivatives/sub-01/func/sub-01_task-languagelocalizer_desc-preproc_bold.json.
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-70
+
+.. GENERATED FROM PYTHON SOURCE LINES 76-80
 
 Quick sanity check on fit arguments
 -----------------------------------
 Additional checks or information extraction from pre-processed data can
 be made here.
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-73
+.. GENERATED FROM PYTHON SOURCE LINES 82-83
 
 We just expect one run_img per subject.
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-77
+.. GENERATED FROM PYTHON SOURCE LINES 83-87
 
 .. code-block:: Python
 
@@ -176,13 +194,13 @@ We just expect one run_img per subject.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 78-81
+.. GENERATED FROM PYTHON SOURCE LINES 88-91
 
 The only confounds stored are regressors obtained from motion correction. As
 we can verify from the column headers of the confounds table corresponding
 to the only run_img present.
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-83
+.. GENERATED FROM PYTHON SOURCE LINES 91-93
 
 .. code-block:: Python
 
@@ -201,13 +219,13 @@ to the only run_img present.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-87
+.. GENERATED FROM PYTHON SOURCE LINES 94-97
 
 During this acquisition the subject read blocks of sentences and
 consonant strings. So these are our only two conditions in events.
 We verify there are 12 blocks for each condition.
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-89
+.. GENERATED FROM PYTHON SOURCE LINES 97-99
 
 .. code-block:: Python
 
@@ -229,7 +247,7 @@ We verify there are 12 blocks for each condition.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 90-97
+.. GENERATED FROM PYTHON SOURCE LINES 100-107
 
 First level model estimation
 ----------------------------
@@ -239,11 +257,11 @@ Notice that we can define a :term:`contrast`
 using the names of the conditions specified in the events dataframe.
 Sum, subtraction and scalar multiplication are allowed.
 
-.. GENERATED FROM PYTHON SOURCE LINES 99-100
+.. GENERATED FROM PYTHON SOURCE LINES 109-110
 
 Set the threshold as the z-variate with an uncorrected p-value of 0.001.
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-104
+.. GENERATED FROM PYTHON SOURCE LINES 110-114
 
 .. code-block:: Python
 
@@ -258,17 +276,24 @@ Set the threshold as the z-variate with an uncorrected p-value of 0.001.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-106
+.. GENERATED FROM PYTHON SOURCE LINES 115-116
 
 Prepare figure for concurrent plot of individual maps.
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-127
+.. GENERATED FROM PYTHON SOURCE LINES 116-145
 
 .. code-block:: Python
 
-    import matplotlib.pyplot as plt
+    from math import ceil
 
-    fig, axes = plt.subplots(nrows=2, ncols=5, figsize=(8, 4.5))
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    ncols = 3
+    nrows = ceil(len(models) / ncols)
+
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(8, 4.5))
+    axes = np.atleast_2d(axes)
     model_and_args = zip(models, models_run_imgs, models_events, models_confounds)
     for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
         # fit the GLM
@@ -280,9 +305,10 @@ Prepare figure for concurrent plot of individual maps.
             colorbar=False,
             threshold=p001_unc,
             title=f"sub-{model.subject_label}",
-            axes=axes[int(midx / 5), int(midx % 5)],
+            axes=axes[int(midx / ncols), int(midx % ncols)],
             plot_abs=False,
             display_mode="x",
+            cmap="bwr",
         )
     fig.suptitle("subjects z_map language network (unc p<0.001)")
     plotting.show()
@@ -299,7 +325,7 @@ Prepare figure for concurrent plot of individual maps.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-134
+.. GENERATED FROM PYTHON SOURCE LINES 146-152
 
 Second level model estimation
 -----------------------------
@@ -308,7 +334,7 @@ to the SecondLevelModel object for estimation. We can do this because
 all subjects share a similar design matrix (same variables reflected in
 column names).
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-138
+.. GENERATED FROM PYTHON SOURCE LINES 152-156
 
 .. code-block:: Python
 
@@ -323,11 +349,11 @@ column names).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-140
+.. GENERATED FROM PYTHON SOURCE LINES 157-158
 
 Note that we apply a smoothing of 8mm.
 
-.. GENERATED FROM PYTHON SOURCE LINES 140-143
+.. GENERATED FROM PYTHON SOURCE LINES 158-161
 
 .. code-block:: Python
 
@@ -341,14 +367,14 @@ Note that we apply a smoothing of 8mm.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-148
+.. GENERATED FROM PYTHON SOURCE LINES 162-166
 
 Computing contrasts at the second level is as simple as at the first level.
 Since we are not providing confounders we are performing a one-sample test
 at the second level with the images determined by the specified first level
 contrast.
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-152
+.. GENERATED FROM PYTHON SOURCE LINES 166-170
 
 .. code-block:: Python
 
@@ -363,12 +389,12 @@ contrast.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 153-155
+.. GENERATED FROM PYTHON SOURCE LINES 171-173
 
 The group level :term:`contrast` reveals a left lateralized fronto-temporal
 language network.
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-165
+.. GENERATED FROM PYTHON SOURCE LINES 173-184
 
 .. code-block:: Python
 
@@ -380,6 +406,7 @@ language network.
         plot_abs=False,
         display_mode="x",
         figure=plt.figure(figsize=(5, 4)),
+        cmap="bwr",
     )
     plotting.show()
 
@@ -397,9 +424,9 @@ language network.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 2.618 seconds)
+   **Total running time of the script:** (0 minutes 44.991 seconds)
 
-**Estimated memory usage:**  1078 MB
+**Estimated memory usage:**  769 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_bids_analysis.py:
@@ -411,7 +438,7 @@ language network.
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.10.4?urlpath=lab/tree/notebooks/auto_examples/07_advanced/plot_bids_analysis.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.11.0?urlpath=lab/tree/notebooks/auto_examples/07_advanced/plot_bids_analysis.ipynb
         :alt: Launch binder
         :width: 150 px
 
@@ -422,6 +449,10 @@ language network.
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_bids_analysis.py <plot_bids_analysis.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_bids_analysis.zip <plot_bids_analysis.zip>`
 
 
 .. only:: html

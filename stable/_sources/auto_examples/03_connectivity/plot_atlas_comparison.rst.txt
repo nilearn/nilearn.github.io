@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_03_connectivity_plot_atlas_comparison.py>`
-        to download the full example code or to run this example in your browser via Binder
+        to download the full example code. or to run this example in your browser via Binder
 
 .. rst-class:: sphx-glr-example-title
 
@@ -69,7 +69,8 @@ Load atlases
 
  .. code-block:: none
 
-    Yeo atlas nifti image (3D) with 17 parcels and liberal mask  is located at: /home/himanshu/nilearn_data/yeo_2011/Yeo_JNeurophysiol11_MNI152/Yeo2011_17Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz
+    [get_dataset_dir] Dataset found in /home/remi/nilearn_data/yeo_2011
+    Yeo atlas nifti image (3D) with 17 parcels and liberal mask  is located at: /home/remi/nilearn_data/yeo_2011/Yeo_JNeurophysiol11_MNI152/Yeo2011_17Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz
 
 
 
@@ -103,8 +104,11 @@ Load functional data
 
  .. code-block:: none
 
-    Functional nifti images (4D, e.g., one subject) are located at : '/home/himanshu/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz'
-    Counfound csv files (of same subject) are located at : '/home/himanshu/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_desc-reducedConfounds_regressors.tsv'
+    [get_dataset_dir] Dataset found in /home/remi/nilearn_data/development_fmri
+    [get_dataset_dir] Dataset found in /home/remi/nilearn_data/development_fmri/development_fmri
+    [get_dataset_dir] Dataset found in /home/remi/nilearn_data/development_fmri/development_fmri
+    Functional nifti images (4D, e.g., one subject) are located at : '/home/remi/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz'
+    Counfound csv files (of same subject) are located at : '/home/remi/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_desc-reducedConfounds_regressors.tsv'
 
 
 
@@ -114,7 +118,7 @@ Load functional data
 Extract coordinates on Yeo atlas - parcellations
 ------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-104
+.. GENERATED FROM PYTHON SOURCE LINES 59-101
 
 .. code-block:: Python
 
@@ -128,14 +132,11 @@ Extract coordinates on Yeo atlas - parcellations
         standardize="zscore_sample",
     )
 
-    # useful for plotting connectivity interactions on glass brain
-    from nilearn import plotting
-
     # create masker using MultiNiftiLabelsMasker to extract functional data within
     # atlas parcels from multiple subjects using parallelization to speed up the
     # computation
     masker = MultiNiftiLabelsMasker(
-        labels_img=yeo["thick_17"],
+        labels_img=yeo["thick_17"],  # Both hemispheres
         standardize="zscore_sample",
         standardize_confounds="zscore_sample",
         memory="nilearn_cache",
@@ -152,15 +153,15 @@ Extract coordinates on Yeo atlas - parcellations
     # using connectome measure object
     mean_correlation_matrix = connectome_measure.mean_
 
+    # useful for plotting connectivity interactions on glass brain
+    from nilearn import plotting
+
     # grab center coordinates for atlas labels
     coordinates = plotting.find_parcellation_cut_coords(labels_img=yeo["thick_17"])
 
     # plot connectome with 80% edge strength in the connectivity
-    plotting.plot_connectome(
-        mean_correlation_matrix,
-        coordinates,
-        edge_threshold="80%",
-        title="Yeo Atlas 17 thick (func)",
+    left_connectome = plotting.plot_connectome(
+        mean_correlation_matrix, coordinates, edge_threshold="80%"
     )
 
 
@@ -172,16 +173,115 @@ Extract coordinates on Yeo atlas - parcellations
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    <nilearn.plotting.displays._projectors.OrthoProjector object at 0x7214efdef830>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-111
+.. GENERATED FROM PYTHON SOURCE LINES 102-107
+
+Note that the approach above will extract time series and compute a
+single connectivity matrix for both hemispheres. However, the connectome
+is plotted only for the left hemisphere. If your aim is to compute and plot
+hemisphere-wise connectivity, you can follow the example below.
+First, create a separate atlas image for each hemisphere:
+
+.. GENERATED FROM PYTHON SOURCE LINES 107-134
+
+.. code-block:: Python
+
+
+    import nibabel as nb
+    import numpy as np
+
+    from nilearn.image import get_data, new_img_like
+    from nilearn.image.resampling import coord_transform
+
+    # load the atlas image first
+    label_image = nb.load(yeo["thick_17"])
+
+    # extract the affine matrix of the image
+    labels_affine = label_image.affine
+
+    # generate image coordinates using affine
+    x, y, z = coord_transform(0, 0, 0, np.linalg.inv(labels_affine))
+
+    # generate an separate image for the left hemisphere
+    # left/right split is done along x-axis
+    left_hemi = get_data(label_image).copy()
+    left_hemi[: int(x)] = 0
+    label_image_left = new_img_like(label_image, left_hemi, labels_affine)
+
+    # same for the right hemisphere
+    right_hemi = get_data(label_image).copy()
+    right_hemi[int(x) :] = 0
+    label_image_right = new_img_like(label_image, right_hemi, labels_affine)
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 135-137
+
+Then, create a masker object, compute a connectivity matrix and
+plot the results for each hemisphere:
+
+.. GENERATED FROM PYTHON SOURCE LINES 137-163
+
+.. code-block:: Python
+
+
+    for hemi, img in zip(["right", "left"], [label_image_right, label_image_left]):
+        masker = MultiNiftiLabelsMasker(
+            labels_img=img,
+            standardize="zscore_sample",
+            standardize_confounds="zscore_sample",
+        )
+
+        time_series = masker.fit_transform(data.func, confounds=data.confounds)
+
+        correlation_matrices = connectome_measure.fit_transform(time_series)
+        mean_correlation_matrix = connectome_measure.mean_
+
+        coordinates = plotting.find_parcellation_cut_coords(
+            labels_img=img, label_hemisphere=hemi
+        )
+
+        plotting.plot_connectome(
+            mean_correlation_matrix,
+            coordinates,
+            edge_threshold="80%",
+            title=f"Yeo Atlas 17 thick (func) - {hemi}",
+        )
+
+    plotting.show()
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_002.png
+         :alt: plot atlas comparison
+         :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_002.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_003.png
+         :alt: plot atlas comparison
+         :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_003.png
+         :class: sphx-glr-multi-img
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 164-170
 
 Plot a directed connectome - asymmetric connectivity measure
 ------------------------------------------------------------
@@ -190,11 +290,10 @@ measure, which leads to an asymmetric connectivity matrix.
 The plot_connectome function accepts both symmetric and asymmetric
 matrices, but plot the latter as a directed graph.
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-143
+.. GENERATED FROM PYTHON SOURCE LINES 170-201
 
 .. code-block:: Python
 
-    import numpy as np
 
 
     # Define a custom function to compute lag correlation on the time series
@@ -234,16 +333,16 @@ matrices, but plot the latter as a directed graph.
 
     *
 
-      .. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_002.png
+      .. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_004.png
          :alt: plot atlas comparison
-         :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_002.png
+         :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_004.png
          :class: sphx-glr-multi-img
 
     *
 
-      .. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_003.png
+      .. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_005.png
          :alt: plot atlas comparison
-         :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_003.png
+         :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_005.png
          :class: sphx-glr-multi-img
 
 
@@ -251,18 +350,21 @@ matrices, but plot the latter as a directed graph.
 
  .. code-block:: none
 
-    /home/himanshu/Desktop/nilearn_work/nilearn/examples/03_connectivity/plot_atlas_comparison.py:136: UserWarning: 'adjacency_matrix' is not symmetric. A directed graph will be plotted.
-      plotting.plot_connectome(
+    /home/remi/github/nilearn/nilearn_doc_build/examples/03_connectivity/plot_atlas_comparison.py:194: UserWarning:
+
+    'adjacency_matrix' is not symmetric.
+    A directed graph will be plotted.
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-146
+
+.. GENERATED FROM PYTHON SOURCE LINES 202-204
 
 Load probabilistic atlases - extracting coordinates on brain maps
 -----------------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-152
+.. GENERATED FROM PYTHON SOURCE LINES 204-210
 
 .. code-block:: Python
 
@@ -276,15 +378,21 @@ Load probabilistic atlases - extracting coordinates on brain maps
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [get_dataset_dir] Dataset found in /home/remi/nilearn_data/difumo_atlases
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 153-155
+
+.. GENERATED FROM PYTHON SOURCE LINES 211-213
 
 Iterate over fetched atlases to extract coordinates - probabilistic
 -------------------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-191
+.. GENERATED FROM PYTHON SOURCE LINES 213-249
 
 .. code-block:: Python
 
@@ -327,9 +435,9 @@ Iterate over fetched atlases to extract coordinates - probabilistic
 
 
 
-.. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_004.png
+.. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_006.png
    :alt: plot atlas comparison
-   :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_004.png
+   :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_atlas_comparison_006.png
    :class: sphx-glr-single-img
 
 
@@ -337,8 +445,10 @@ Iterate over fetched atlases to extract coordinates - probabilistic
 
  .. code-block:: none
 
-    /home/himanshu/Desktop/nilearn_work/nilearn/nilearn/maskers/multi_nifti_maps_masker.py:224: UserWarning: memory_level is currently set to 0 but a Memory object has been provided. Setting memory_level to 1.
-      return self.transform_imgs(
+    /home/remi/github/nilearn/nilearn_doc_build/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/multi_nifti_maps_masker.py:225: UserWarning:
+
+    memory_level is currently set to 0 but a Memory object has been provided. Setting memory_level to 1.
+
 
 
 
@@ -346,9 +456,9 @@ Iterate over fetched atlases to extract coordinates - probabilistic
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 48.750 seconds)
+   **Total running time of the script:** (2 minutes 53.279 seconds)
 
-**Estimated memory usage:**  1815 MB
+**Estimated memory usage:**  2060 MB
 
 
 .. _sphx_glr_download_auto_examples_03_connectivity_plot_atlas_comparison.py:
@@ -360,7 +470,7 @@ Iterate over fetched atlases to extract coordinates - probabilistic
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.10.4?urlpath=lab/tree/notebooks/auto_examples/03_connectivity/plot_atlas_comparison.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.11.0?urlpath=lab/tree/notebooks/auto_examples/03_connectivity/plot_atlas_comparison.ipynb
         :alt: Launch binder
         :width: 150 px
 
@@ -371,6 +481,10 @@ Iterate over fetched atlases to extract coordinates - probabilistic
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_atlas_comparison.py <plot_atlas_comparison.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_atlas_comparison.zip <plot_atlas_comparison.zip>`
 
 
 .. only:: html

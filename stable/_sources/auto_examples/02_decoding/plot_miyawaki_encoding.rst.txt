@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_02_decoding_plot_miyawaki_encoding.py>`
-        to download the full example code or to run this example in your browser via Binder
+        to download the full example code. or to run this example in your browser via Binder
 
 .. rst-class:: sphx-glr-example-title
 
@@ -44,16 +44,33 @@ approach for the same dataset.
 
 .. include:: ../../../examples/masker_note.rst
 
-.. GENERATED FROM PYTHON SOURCE LINES 31-34
+.. GENERATED FROM PYTHON SOURCE LINES 29-36
+
+.. code-block:: Python
+
+
+    from nilearn._utils.helpers import check_matplotlib
+
+    check_matplotlib()
+
+    import matplotlib.pyplot as plt
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 37-40
 
 Loading the data
 ----------------
 Now we can load the data set:
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-39
+.. GENERATED FROM PYTHON SOURCE LINES 40-44
 
 .. code-block:: Python
-
 
     from nilearn.datasets import fetch_miyawaki2008
 
@@ -63,15 +80,21 @@ Now we can load the data set:
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [get_dataset_dir] Dataset found in /home/remi/nilearn_data/miyawaki2008
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-42
+
+.. GENERATED FROM PYTHON SOURCE LINES 45-47
 
 We only use the training data of this study,
 where random binary images were shown.
 
-.. GENERATED FROM PYTHON SOURCE LINES 42-47
+.. GENERATED FROM PYTHON SOURCE LINES 47-52
 
 .. code-block:: Python
 
@@ -87,12 +110,12 @@ where random binary images were shown.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 48-50
+.. GENERATED FROM PYTHON SOURCE LINES 53-55
 
 We can use :func:`nilearn.maskers.MultiNiftiMasker` to load the fMRI
 data, clean and mask it.
 
-.. GENERATED FROM PYTHON SOURCE LINES 50-78
+.. GENERATED FROM PYTHON SOURCE LINES 55-83
 
 .. code-block:: Python
 
@@ -110,37 +133,40 @@ data, clean and mask it.
     masker.fit()
     fmri_data = masker.transform(fmri_random_runs_filenames)
 
-    # shape of the binary (i.e. black and wihte values) image in pixels
+    # shape of the binary (i.e. black and white values) image in pixels
     stimulus_shape = (10, 10)
 
     # We load the visual stimuli from csv files
-    stimuli = []
-    for stimulus_run in stimuli_random_runs_filenames:
-        stimuli.append(
-            np.reshape(
-                np.loadtxt(stimulus_run, dtype=int, delimiter=","),
-                (-1,) + stimulus_shape,
-                order="F",
-            )
+    stimuli = [
+        np.reshape(
+            np.loadtxt(stimulus_run, dtype=int, delimiter=","),
+            (-1, *stimulus_shape),
+            order="F",
         )
+        for stimulus_run in stimuli_random_runs_filenames
+    ]
 
 
 
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [MultiNiftiMasker.fit] Resampling mask
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-80
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 84-85
 
 Let's take a look at some of these binary images:
 
-.. GENERATED FROM PYTHON SOURCE LINES 80-94
+.. GENERATED FROM PYTHON SOURCE LINES 85-96
 
 .. code-block:: Python
-
-
-    import pylab as plt
 
     plt.figure(figsize=(8, 4))
     plt.subplot(1, 2, 1)
@@ -165,12 +191,12 @@ Let's take a look at some of these binary images:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-97
+.. GENERATED FROM PYTHON SOURCE LINES 97-99
 
 We now stack the :term:`fMRI` and stimulus data and remove an offset in the
 beginning/end.
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-103
+.. GENERATED FROM PYTHON SOURCE LINES 99-105
 
 .. code-block:: Python
 
@@ -187,11 +213,11 @@ beginning/end.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-105
+.. GENERATED FROM PYTHON SOURCE LINES 106-107
 
 fmri_data is a matrix of *samples* x *voxels*
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-108
+.. GENERATED FROM PYTHON SOURCE LINES 107-110
 
 .. code-block:: Python
 
@@ -211,12 +237,12 @@ fmri_data is a matrix of *samples* x *voxels*
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 109-111
+.. GENERATED FROM PYTHON SOURCE LINES 111-113
 
 We flatten the last two dimensions of stimuli
 so it is a matrix of *samples* x *pixels*.
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-117
+.. GENERATED FROM PYTHON SOURCE LINES 113-119
 
 .. code-block:: Python
 
@@ -239,7 +265,7 @@ so it is a matrix of *samples* x *pixels*.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-125
+.. GENERATED FROM PYTHON SOURCE LINES 120-127
 
 Building the encoding models
 ----------------------------
@@ -249,14 +275,14 @@ For each voxel we fit an independent regression model,
 using the pixel-values of the visual stimuli to predict the neuronal
 activity in this voxel.
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-131
+.. GENERATED FROM PYTHON SOURCE LINES 129-133
 
 Using 10-fold cross-validation, we partition the data into 10 'folds'.
 We hold out each fold of the data for testing, then fit a ridge regression
 to the remaining 9/10 of the data, using stimuli as predictors
 and fmri_data as targets, and create predictions for the held-out 10th.
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-150
+.. GENERATED FROM PYTHON SOURCE LINES 133-152
 
 .. code-block:: Python
 
@@ -286,14 +312,14 @@ and fmri_data as targets, and create predictions for the held-out 10th.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-155
+.. GENERATED FROM PYTHON SOURCE LINES 153-157
 
 Mapping the encoding scores on the brain
 ----------------------------------------
 To plot the scores onto the brain, we create a Nifti1Image containing
 the scores and then threshold it:
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-169
+.. GENERATED FROM PYTHON SOURCE LINES 157-171
 
 .. code-block:: Python
 
@@ -307,7 +333,7 @@ the scores and then threshold it:
     score_map_img = masker.inverse_transform(cut_score)
 
     thresholded_score_map_img = threshold_img(
-        score_map_img, threshold=1e-6, copy=False
+        score_map_img, threshold=1e-6, copy=False, copy_header=True
     )
 
 
@@ -318,12 +344,12 @@ the scores and then threshold it:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 170-172
+.. GENERATED FROM PYTHON SOURCE LINES 172-174
 
 Plotting the statistical map on a background brain, we mark four voxels
 which we will inspect more closely later on.
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-212
+.. GENERATED FROM PYTHON SOURCE LINES 174-214
 
 .. code-block:: Python
 
@@ -376,10 +402,19 @@ which we will inspect more closely later on.
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /home/remi/github/nilearn/nilearn_doc_build/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1523: MatplotlibDeprecationWarning:
+
+    Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 213-225
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 215-227
 
 Estimating receptive fields
 ---------------------------
@@ -394,7 +429,7 @@ pixels, so we use `Lasso regression
 <https://en.wikipedia.org/wiki/Lasso_(statistics)>`_ to estimate a sparse
 set of regression coefficients.
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-305
+.. GENERATED FROM PYTHON SOURCE LINES 227-307
 
 .. code-block:: Python
 
@@ -492,11 +527,11 @@ set of regression coefficients.
  .. code-block:: none
 
 
-    <matplotlib.colorbar.Colorbar object at 0x7214d92d4a40>
+    <matplotlib.colorbar.Colorbar object at 0x740d1d6ddca0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 306-311
+.. GENERATED FROM PYTHON SOURCE LINES 308-313
 
 The receptive fields of the four voxels are not only close to each other,
 the relative location of the pixel each voxel is most sensitive to
@@ -504,7 +539,7 @@ roughly maps to the relative location of the voxels to each other.
 We can see a relationship between some voxel's receptive field and
 its location in the brain.
 
-.. GENERATED FROM PYTHON SOURCE LINES 313-317
+.. GENERATED FROM PYTHON SOURCE LINES 315-319
 
 References
 ----------
@@ -514,9 +549,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 19.237 seconds)
+   **Total running time of the script:** (0 minutes 27.199 seconds)
 
-**Estimated memory usage:**  1029 MB
+**Estimated memory usage:**  1204 MB
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_miyawaki_encoding.py:
@@ -528,7 +563,7 @@ References
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.10.4?urlpath=lab/tree/notebooks/auto_examples/02_decoding/plot_miyawaki_encoding.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.11.0?urlpath=lab/tree/notebooks/auto_examples/02_decoding/plot_miyawaki_encoding.ipynb
         :alt: Launch binder
         :width: 150 px
 
@@ -539,6 +574,10 @@ References
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_miyawaki_encoding.py <plot_miyawaki_encoding.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_miyawaki_encoding.zip <plot_miyawaki_encoding.zip>`
 
 
 .. only:: html

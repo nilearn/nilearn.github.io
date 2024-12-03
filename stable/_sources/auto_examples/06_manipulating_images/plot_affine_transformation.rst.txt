@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_06_manipulating_images_plot_affine_transformation.py>`
-        to download the full example code or to run this example in your browser via Binder
+        to download the full example code. or to run this example in your browser via Binder
 
 .. rst-class:: sphx-glr-example-title
 
@@ -80,7 +80,7 @@ bounding box shape).
 
 First make a simple synthetic image
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-96
+.. GENERATED FROM PYTHON SOURCE LINES 51-100
 
 .. code-block:: Python
 
@@ -88,18 +88,22 @@ First make a simple synthetic image
 
     grid = np.mgrid[0:192, 0:128]
     circle = (
-        np.sum((grid - np.array([32, 32])[:, np.newaxis, np.newaxis]) ** 2, axis=0)
+        np.sum(
+            (grid - np.array([32.0, 32.0])[:, np.newaxis, np.newaxis]) ** 2, axis=0
+        )
         < 256
     )
     diamond = (
         np.sum(
-            np.abs(grid - np.array([128, 80])[:, np.newaxis, np.newaxis]), axis=0
+            np.abs(grid - np.array([128.0, 80.0])[:, np.newaxis, np.newaxis]),
+            axis=0,
         )
         < 16
     )
     rectangle = (
         np.max(
-            np.abs(grid - np.array([64, 96])[:, np.newaxis, np.newaxis]), axis=0
+            np.abs(grid - np.array([64.0, 96.0])[:, np.newaxis, np.newaxis]),
+            axis=0,
         )
         < 16
     )
@@ -123,10 +127,10 @@ First make a simple synthetic image
     source_affine[:2, :2] = rotation_matrix * 2.0  # 2.0mm voxel size
 
     # We need to turn this data into a nibabel image
-    import nibabel
+    from nibabel import Nifti1Image
 
-    img = nibabel.Nifti1Image(
-        image[:, :, np.newaxis].astype("int32"), affine=source_affine
+    img = Nifti1Image(
+        image[:, :, np.newaxis].astype("float32"), affine=source_affine
     )
 
 
@@ -136,25 +140,33 @@ First make a simple synthetic image
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-98
+.. GENERATED FROM PYTHON SOURCE LINES 101-102
 
 Now resample the image
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-124
+.. GENERATED FROM PYTHON SOURCE LINES 102-140
 
 .. code-block:: Python
 
     from nilearn.image import resample_img
 
     img_in_mm_space = resample_img(
-        img, target_affine=np.eye(4), target_shape=(512, 512, 1)
+        img,
+        target_affine=np.eye(4),
+        target_shape=(512, 512, 1),
+        copy_header=True,
+        force_resample=True,
     )
 
     target_affine_3x3 = np.eye(3) * 2
     target_affine_4x4 = np.eye(4) * 2
     target_affine_4x4[3, 3] = 1.0
-    img_3d_affine = resample_img(img, target_affine=target_affine_3x3)
-    img_4d_affine = resample_img(img, target_affine=target_affine_4x4)
+    img_3d_affine = resample_img(
+        img, target_affine=target_affine_3x3, copy_header=True, force_resample=True
+    )
+    img_4d_affine = resample_img(
+        img, target_affine=target_affine_4x4, copy_header=True, force_resample=True
+    )
     target_affine_mm_space_offset_changed = np.eye(4)
     target_affine_mm_space_offset_changed[:3, 3] = img_3d_affine.affine[:3, 3]
 
@@ -162,37 +174,30 @@ Now resample the image
         img_3d_affine,
         target_affine=target_affine_mm_space_offset_changed,
         target_shape=(np.array(img_3d_affine.shape) * 2).astype(int),
+        copy_header=True,
+        force_resample=True,
     )
 
     img_4d_affine_in_mm_space = resample_img(
         img_4d_affine,
         target_affine=np.eye(4),
         target_shape=(np.array(img_4d_affine.shape) * 2).astype(int),
+        force_resample=True,
+        copy_header=True,
     )
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    /home/himanshu/Desktop/nilearn_work/nilearn/examples/06_manipulating_images/plot_affine_transformation.py:100: UserWarning: Casting data from int32 to float32
-      img_in_mm_space = resample_img(
-    /home/himanshu/Desktop/nilearn_work/nilearn/examples/06_manipulating_images/plot_affine_transformation.py:107: UserWarning: Casting data from int32 to float32
-      img_3d_affine = resample_img(img, target_affine=target_affine_3x3)
-    /home/himanshu/Desktop/nilearn_work/nilearn/examples/06_manipulating_images/plot_affine_transformation.py:108: UserWarning: Casting data from int32 to float32
-      img_4d_affine = resample_img(img, target_affine=target_affine_4x4)
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 125-126
+.. GENERATED FROM PYTHON SOURCE LINES 141-142
 
 Finally, visualize
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-152
+.. GENERATED FROM PYTHON SOURCE LINES 142-168
 
 .. code-block:: Python
 
@@ -263,9 +268,9 @@ Finally, visualize
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.058 seconds)
+   **Total running time of the script:** (0 minutes 2.097 seconds)
 
-**Estimated memory usage:**  9 MB
+**Estimated memory usage:**  146 MB
 
 
 .. _sphx_glr_download_auto_examples_06_manipulating_images_plot_affine_transformation.py:
@@ -277,7 +282,7 @@ Finally, visualize
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.10.4?urlpath=lab/tree/notebooks/auto_examples/06_manipulating_images/plot_affine_transformation.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.11.0?urlpath=lab/tree/notebooks/auto_examples/06_manipulating_images/plot_affine_transformation.ipynb
         :alt: Launch binder
         :width: 150 px
 
@@ -288,6 +293,10 @@ Finally, visualize
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_affine_transformation.py <plot_affine_transformation.py>`
+
+    .. container:: sphx-glr-download sphx-glr-download-zip
+
+      :download:`Download zipped: plot_affine_transformation.zip <plot_affine_transformation.zip>`
 
 
 .. only:: html
