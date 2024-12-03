@@ -73,19 +73,17 @@ Prepare the timing parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 46-48
+.. GENERATED FROM PYTHON SOURCE LINES 46-47
 
-Prepare the data.
-First, the volume-based :term:`fMRI` data.
+Fetch the data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 48-53
+.. GENERATED FROM PYTHON SOURCE LINES 47-51
 
 .. code-block:: Python
 
     from nilearn.datasets import fetch_localizer_first_level
 
     data = fetch_localizer_first_level()
-    fmri_img = data.epi_img
 
 
 
@@ -101,27 +99,7 @@ First, the volume-based :term:`fMRI` data.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-55
-
-Second, the experimental paradigm.
-
-.. GENERATED FROM PYTHON SOURCE LINES 55-60
-
-.. code-block:: Python
-
-    import pandas as pd
-
-    events_file = data.events
-    events = pd.read_table(events_file)
-
-
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 61-75
+.. GENERATED FROM PYTHON SOURCE LINES 52-66
 
 Project the :term:`fMRI` image to the surface
 ---------------------------------------------
@@ -138,7 +116,7 @@ that contains both the mesh
 (here we use the one from the fsaverage5 templates)
 and the BOLD data that we project on the surface.
 
-.. GENERATED FROM PYTHON SOURCE LINES 75-85
+.. GENERATED FROM PYTHON SOURCE LINES 66-76
 
 .. code-block:: Python
 
@@ -147,9 +125,9 @@ and the BOLD data that we project on the surface.
     from nilearn.surface import SurfaceImage
 
     fsaverage5 = load_fsaverage()
-    image = SurfaceImage.from_volume(
+    surface_image = SurfaceImage.from_volume(
         mesh=fsaverage5["pial"],
-        volume_img=fmri_img,
+        volume_img=data.epi_img,
     )
 
 
@@ -159,20 +137,20 @@ and the BOLD data that we project on the surface.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 86-96
+.. GENERATED FROM PYTHON SOURCE LINES 77-87
 
 Perform first level analysis
 ----------------------------
 
 We can now simply run a GLM by directly passing
-our :class:`nilearn.surface.SurfaceImage` instance
+our :class:`~nilearn.surface.SurfaceImage` instance
 as input to FirstLevelModel.fit
 
 Here we use an :term:`HRF` model
 containing the Glover model and its time derivative
 The drift model is implicitly a cosine basis with a period cutoff at 128s.
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-104
+.. GENERATED FROM PYTHON SOURCE LINES 87-95
 
 .. code-block:: Python
 
@@ -182,7 +160,7 @@ The drift model is implicitly a cosine basis with a period cutoff at 128s.
         t_r=t_r,
         slice_time_ref=slice_time_ref,
         hrf_model="glover + derivative",
-    ).fit(image, events)
+    ).fit(run_imgs=surface_image, events=data.events)
 
 
 
@@ -191,7 +169,7 @@ The drift model is implicitly a cosine basis with a period cutoff at 128s.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-112
+.. GENERATED FROM PYTHON SOURCE LINES 96-103
 
 Estimate contrasts
 ------------------
@@ -201,7 +179,7 @@ Specify the contrasts.
 For practical purpose, we first generate an identity matrix whose size is
 the number of columns of the design matrix.
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-117
+.. GENERATED FROM PYTHON SOURCE LINES 103-108
 
 .. code-block:: Python
 
@@ -217,11 +195,11 @@ the number of columns of the design matrix.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-119
+.. GENERATED FROM PYTHON SOURCE LINES 109-110
 
 At first, we create basic contrasts.
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-124
+.. GENERATED FROM PYTHON SOURCE LINES 110-115
 
 .. code-block:: Python
 
@@ -237,12 +215,12 @@ At first, we create basic contrasts.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-127
+.. GENERATED FROM PYTHON SOURCE LINES 116-118
 
 Next, we add some intermediate contrasts and
 one :term:`contrast` adding all conditions with some auditory parts.
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-153
+.. GENERATED FROM PYTHON SOURCE LINES 118-144
 
 .. code-block:: Python
 
@@ -279,22 +257,22 @@ one :term:`contrast` adding all conditions with some auditory parts.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-166
+.. GENERATED FROM PYTHON SOURCE LINES 145-157
 
 Finally, we create a dictionary of more relevant contrasts
 
-* 'left - right button press': probes motor activity
+* ``'left - right button press'``: probes motor activity
   in left versus right button presses.
-* 'audio - visual': probes the difference of activity between listening
+* ``'audio - visual'``: probes the difference of activity between listening
   to some content or reading the same type of content
   (instructions, stories).
-* 'computation - sentences': looks at the activity
+* ``'computation - sentences'``: looks at the activity
   when performing a mental computation task  versus simply reading sentences.
 
 Of course, we could define other contrasts,
 but we keep only 3 for simplicity.
 
-.. GENERATED FROM PYTHON SOURCE LINES 166-180
+.. GENERATED FROM PYTHON SOURCE LINES 157-171
 
 .. code-block:: Python
 
@@ -319,11 +297,11 @@ but we keep only 3 for simplicity.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 181-182
+.. GENERATED FROM PYTHON SOURCE LINES 172-173
 
 Let's estimate the contrasts by iterating over them.
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-210
+.. GENERATED FROM PYTHON SOURCE LINES 173-197
 
 .. code-block:: Python
 
@@ -332,7 +310,7 @@ Let's estimate the contrasts by iterating over them.
 
     fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
-    for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
+    for contrast_id, contrast_val in contrasts.items():
         # compute contrast-related statistics
         z_score = glm.compute_contrast(contrast_val, stat_type="t")
 
@@ -340,10 +318,6 @@ Let's estimate the contrasts by iterating over them.
         # together with a suitable background to give an impression
         # of the cortex folding.
         for hemi in ["left", "right"]:
-            print(
-                f"  Contrast {index + 1:1} out of {len(contrasts)}: "
-                f"{contrast_id}, {hemi} hemisphere"
-            )
             plot_surf_stat_map(
                 surf_mesh=fsaverage5["inflated"],
                 stat_map=z_score,
@@ -404,26 +378,15 @@ Let's estimate the contrasts by iterating over them.
          :class: sphx-glr-multi-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-      Contrast 1 out of 3: (left - right) button press, left hemisphere
-      Contrast 1 out of 3: (left - right) button press, right hemisphere
-      Contrast 2 out of 3: audio - visual, left hemisphere
-      Contrast 2 out of 3: audio - visual, right hemisphere
-      Contrast 3 out of 3: computation - sentences, left hemisphere
-      Contrast 3 out of 3: computation - sentences, right hemisphere
-
 
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 12.337 seconds)
+   **Total running time of the script:** (0 minutes 11.751 seconds)
 
-**Estimated memory usage:**  384 MB
+**Estimated memory usage:**  351 MB
 
 
 .. _sphx_glr_download_auto_examples_04_glm_first_level_plot_localizer_surface_analysis.py:
