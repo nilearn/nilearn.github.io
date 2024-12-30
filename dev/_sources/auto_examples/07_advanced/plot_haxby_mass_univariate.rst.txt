@@ -43,11 +43,12 @@ a few false negative.
 
     - Virgile Fritsch, Feb. 2014
 
-.. GENERATED FROM PYTHON SOURCE LINES 29-30
+.. GENERATED FROM PYTHON SOURCE LINES 29-31
 
 Load Haxby dataset
+------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 30-39
+.. GENERATED FROM PYTHON SOURCE LINES 31-40
 
 .. code-block:: Python
 
@@ -75,11 +76,12 @@ Load Haxby dataset
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-41
+.. GENERATED FROM PYTHON SOURCE LINES 41-43
 
 Restrict to faces and houses
+----------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 41-54
+.. GENERATED FROM PYTHON SOURCE LINES 43-56
 
 .. code-block:: Python
 
@@ -103,11 +105,12 @@ Restrict to faces and houses
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 55-56
+.. GENERATED FROM PYTHON SOURCE LINES 57-59
 
 Mask data
+---------
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-96
+.. GENERATED FROM PYTHON SOURCE LINES 59-99
 
 .. code-block:: Python
 
@@ -158,14 +161,15 @@ Mask data
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-101
+.. GENERATED FROM PYTHON SOURCE LINES 100-105
 
 Perform massively univariate analysis with permuted OLS
+-------------------------------------------------------
 
 We use a two-sided t-test to compute p-values, but we keep trace of the
 effect sign to add it back at the end and thus observe the signed effect
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-117
+.. GENERATED FROM PYTHON SOURCE LINES 105-121
 
 .. code-block:: Python
 
@@ -194,19 +198,19 @@ effect sign to add it back at the end and thus observe the signed effect
  .. code-block:: none
 
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    5.8s remaining:    0.0s
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    5.8s finished
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.2s remaining:    0.0s
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.3s finished
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-121
+.. GENERATED FROM PYTHON SOURCE LINES 122-125
 
 scikit-learn F-scores for comparison
 
 F-test does not allow to observe the effect sign (pure two-sided test)
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-136
+.. GENERATED FROM PYTHON SOURCE LINES 125-140
 
 .. code-block:: Python
 
@@ -232,15 +236,15 @@ F-test does not allow to observe the effect sign (pure two-sided test)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-138
+.. GENERATED FROM PYTHON SOURCE LINES 141-143
 
 Visualization
+-------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-194
+.. GENERATED FROM PYTHON SOURCE LINES 143-201
 
 .. code-block:: Python
 
-    import matplotlib.pyplot as plt
 
     from nilearn.image import get_data
 
@@ -252,15 +256,6 @@ Visualization
     vmax = min(signed_neg_log_pvals.max(), neg_log_pvals_bonferroni.max())
 
     # Plot thresholded p-values map corresponding to F-scores
-    display = plot_stat_map(
-        neg_log_pvals_bonferroni_unmasked,
-        mean_fmri_img,
-        threshold=threshold,
-        cmap=plt.cm.RdBu_r,
-        display_mode="z",
-        cut_coords=[-1],
-        vmax=vmax,
-    )
 
     neg_log_pvals_bonferroni_data = get_data(neg_log_pvals_bonferroni_unmasked)
     n_detections = (neg_log_pvals_bonferroni_data > threshold).sum()
@@ -271,25 +266,37 @@ Visualization
         f"\n{n_detections} detections"
     )
 
-    display.title(title, size=10)
-
-    # Plot permutation p-values map
     display = plot_stat_map(
-        signed_neg_log_pvals_unmasked,
+        neg_log_pvals_bonferroni_unmasked,
         mean_fmri_img,
         threshold=threshold,
-        cmap=plt.cm.RdBu_r,
         display_mode="z",
         cut_coords=[-1],
         vmax=vmax,
+        vmin=threshold,
+        cmap="inferno",
     )
 
+    display.title(title, size=10)
+
+    # Plot permutation p-values map
     n_detections = (np.abs(signed_neg_log_pvals) > threshold).sum()
     title = (
         "Negative $\\log_{10}$ p-values"
         "\n(Non-parametric two-sided test"
         "\n+ max-type correction)"
         f"\n{n_detections} detections"
+    )
+
+    display = plot_stat_map(
+        signed_neg_log_pvals_unmasked,
+        mean_fmri_img,
+        threshold=threshold,
+        display_mode="z",
+        cut_coords=[-1],
+        vmax=vmax,
+        vmin=threshold,
+        cmap="inferno",
     )
 
     display.title(title, size=10)
@@ -329,19 +336,19 @@ Visualization
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 195-199
+.. GENERATED FROM PYTHON SOURCE LINES 202-206
 
 References
 ----------
 
- .. footbibliography::
+.. footbibliography::
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 18.667 seconds)
+   **Total running time of the script:** (0 minutes 20.039 seconds)
 
-**Estimated memory usage:**  1083 MB
+**Estimated memory usage:**  1044 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_haxby_mass_univariate.py:

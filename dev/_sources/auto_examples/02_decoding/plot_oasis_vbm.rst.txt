@@ -80,7 +80,7 @@ ____
     from nilearn.image import get_data
     from nilearn.maskers import NiftiMasker
 
-    n_subjects = 100  # more subjects requires more memory
+    n_subjects = 200  # more subjects requires more memory
 
 
 
@@ -219,7 +219,7 @@ also want to set mask hyperparameter to be the mask we just obtained above.
  .. code-block:: none
 
     === DECODER ===
-    explained variance for the cross-validation: 10.670599
+    explained variance for the cross-validation: 11.774939
 
 
 
@@ -230,7 +230,7 @@ also want to set mask hyperparameter to be the mask we just obtained above.
 Visualization
 -------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 149-162
+.. GENERATED FROM PYTHON SOURCE LINES 149-166
 
 .. code-block:: Python
 
@@ -242,9 +242,13 @@ Visualization
     bg_filename = gray_matter_map_filenames[0]
     z_slice = 0
     display = plot_stat_map(
-        weight_img, bg_img=bg_filename, display_mode="z", cut_coords=[z_slice]
+        weight_img,
+        bg_img=bg_filename,
+        display_mode="z",
+        cut_coords=[z_slice],
+        title="SVM weights",
+        cmap="cold_hot",
     )
-    display.title("SVM weights")
     show()
 
 
@@ -268,12 +272,12 @@ Visualization
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-165
+.. GENERATED FROM PYTHON SOURCE LINES 167-169
 
 Visualize the quality of predictions
 ------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 165-182
+.. GENERATED FROM PYTHON SOURCE LINES 169-186
 
 .. code-block:: Python
 
@@ -303,7 +307,7 @@ Visualize the quality of predictions
     *
 
       .. image-sg:: /auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_002.png
-         :alt: Decoder: Mean Absolute Error 10.67 years
+         :alt: Decoder: Mean Absolute Error 11.77 years
          :srcset: /auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_002.png
          :class: sphx-glr-multi-img
 
@@ -320,16 +324,16 @@ Visualize the quality of predictions
  .. code-block:: none
 
 
-    <matplotlib.legend.Legend object at 0x7fa736f9ff10>
+    <matplotlib.legend.Legend object at 0x7f18fdaa26a0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 183-185
+.. GENERATED FROM PYTHON SOURCE LINES 187-189
 
 Inference with massively univariate model
 -----------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 185-230
+.. GENERATED FROM PYTHON SOURCE LINES 189-232
 
 .. code-block:: Python
 
@@ -357,24 +361,22 @@ Inference with massively univariate model
     # Show results
     threshold = -np.log10(0.1)  # 10% corrected
 
-    fig = plt.figure(figsize=(5.5, 7.5), facecolor="k")
+    n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
 
-    display = plot_stat_map(
+    title = (
+        "Negative $\\log_{10}$ p-values\n(Non-parametric + max-type correction)"
+        f"\n{int(n_detections)} detections"
+    )
+
+    plot_stat_map(
         signed_neg_log_pvals_unmasked,
         bg_img=bg_filename,
         threshold=threshold,
-        cmap=plt.cm.RdBu_r,
         display_mode="z",
         cut_coords=[z_slice],
-        figure=fig,
+        figure=plt.figure(figsize=(5.5, 7.5), facecolor="k"),
+        title=title,
     )
-    title = (
-        "Negative $\\log_{10}$ p-values\n(Non-parametric + max-type correction)"
-    )
-    display.title(title)
-
-    n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
-    print(f"\n{int(n_detections)} detections")
 
     show()
 
@@ -393,14 +395,12 @@ Inference with massively univariate model
 
     Massively univariate model
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   18.3s remaining:    0.0s
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   18.3s finished
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   33.6s remaining:    0.0s
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   33.6s finished
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1511: MatplotlibDeprecationWarning:
 
     Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
 
-
-    1975 detections
 
 
 
@@ -408,9 +408,9 @@ Inference with massively univariate model
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 53.879 seconds)
+   **Total running time of the script:** (1 minutes 41.249 seconds)
 
-**Estimated memory usage:**  2195 MB
+**Estimated memory usage:**  4357 MB
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_oasis_vbm.py:

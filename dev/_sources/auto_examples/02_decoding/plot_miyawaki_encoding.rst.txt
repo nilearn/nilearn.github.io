@@ -39,12 +39,14 @@ from the binary pixel-values of the presented images. Then we extract the
 receptive fields for a set of voxels to see which pixel location a
 :term:`voxel` is most sensitive to.
 
-See also :doc:`plot_miyawaki_reconstruction` for a decoding
-approach for the same dataset.
+.. seealso::
+
+    :doc:`plot_miyawaki_reconstruction` for a decoding approach
+    for the same dataset.
 
 .. include:: ../../../examples/masker_note.rst
 
-.. GENERATED FROM PYTHON SOURCE LINES 29-36
+.. GENERATED FROM PYTHON SOURCE LINES 31-38
 
 .. code-block:: Python
 
@@ -62,13 +64,13 @@ approach for the same dataset.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 37-40
+.. GENERATED FROM PYTHON SOURCE LINES 39-42
 
 Loading the data
 ----------------
 Now we can load the data set:
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-44
+.. GENERATED FROM PYTHON SOURCE LINES 42-46
 
 .. code-block:: Python
 
@@ -89,12 +91,12 @@ Now we can load the data set:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 45-47
+.. GENERATED FROM PYTHON SOURCE LINES 47-49
 
 We only use the training data of this study,
 where random binary images were shown.
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-52
+.. GENERATED FROM PYTHON SOURCE LINES 49-54
 
 .. code-block:: Python
 
@@ -110,12 +112,12 @@ where random binary images were shown.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-55
+.. GENERATED FROM PYTHON SOURCE LINES 55-57
 
 We can use :func:`~nilearn.maskers.MultiNiftiMasker` to load the fMRI
 data, clean and mask it.
 
-.. GENERATED FROM PYTHON SOURCE LINES 55-83
+.. GENERATED FROM PYTHON SOURCE LINES 57-85
 
 .. code-block:: Python
 
@@ -160,11 +162,11 @@ data, clean and mask it.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-85
+.. GENERATED FROM PYTHON SOURCE LINES 86-87
 
 Let's take a look at some of these binary images:
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-96
+.. GENERATED FROM PYTHON SOURCE LINES 87-98
 
 .. code-block:: Python
 
@@ -191,12 +193,12 @@ Let's take a look at some of these binary images:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-99
+.. GENERATED FROM PYTHON SOURCE LINES 99-101
 
 We now stack the :term:`fMRI` and stimulus data and remove an offset in the
 beginning/end.
 
-.. GENERATED FROM PYTHON SOURCE LINES 99-105
+.. GENERATED FROM PYTHON SOURCE LINES 101-107
 
 .. code-block:: Python
 
@@ -213,16 +215,16 @@ beginning/end.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-107
+.. GENERATED FROM PYTHON SOURCE LINES 108-109
 
 fmri_data is a matrix of *samples* x *voxels*
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-110
+.. GENERATED FROM PYTHON SOURCE LINES 109-112
 
 .. code-block:: Python
 
 
-    print(fmri_data.shape)
+    print(f"{fmri_data.shape=}")
 
 
 
@@ -232,17 +234,17 @@ fmri_data is a matrix of *samples* x *voxels*
 
  .. code-block:: none
 
-    (2860, 5438)
+    fmri_data.shape=(2860, 5438)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-113
+.. GENERATED FROM PYTHON SOURCE LINES 113-115
 
 We flatten the last two dimensions of stimuli
 so it is a matrix of *samples* x *pixels*.
 
-.. GENERATED FROM PYTHON SOURCE LINES 113-119
+.. GENERATED FROM PYTHON SOURCE LINES 115-121
 
 .. code-block:: Python
 
@@ -250,7 +252,7 @@ so it is a matrix of *samples* x *pixels*.
     # Flatten the stimuli
     stimuli = np.reshape(stimuli, (-1, stimulus_shape[0] * stimulus_shape[1]))
 
-    print(stimuli.shape)
+    print(f"{stimuli.shape=}")
 
 
 
@@ -260,12 +262,12 @@ so it is a matrix of *samples* x *pixels*.
 
  .. code-block:: none
 
-    (2860, 100)
+    stimuli.shape=(2860, 100)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-127
+.. GENERATED FROM PYTHON SOURCE LINES 122-129
 
 Building the encoding models
 ----------------------------
@@ -275,14 +277,14 @@ For each voxel we fit an independent regression model,
 using the pixel-values of the visual stimuli to predict the neuronal
 activity in this voxel.
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-133
+.. GENERATED FROM PYTHON SOURCE LINES 131-135
 
 Using 10-fold cross-validation, we partition the data into 10 'folds'.
 We hold out each fold of the data for testing, then fit a ridge regression
 to the remaining 9/10 of the data, using stimuli as predictors
 and fmri_data as targets, and create predictions for the held-out 10th.
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-152
+.. GENERATED FROM PYTHON SOURCE LINES 135-154
 
 .. code-block:: Python
 
@@ -312,14 +314,14 @@ and fmri_data as targets, and create predictions for the held-out 10th.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 153-157
+.. GENERATED FROM PYTHON SOURCE LINES 155-159
 
 Mapping the encoding scores on the brain
 ----------------------------------------
 To plot the scores onto the brain, we create a Nifti1Image containing
 the scores and then threshold it:
 
-.. GENERATED FROM PYTHON SOURCE LINES 157-171
+.. GENERATED FROM PYTHON SOURCE LINES 159-173
 
 .. code-block:: Python
 
@@ -344,17 +346,17 @@ the scores and then threshold it:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-174
+.. GENERATED FROM PYTHON SOURCE LINES 174-176
 
 Plotting the statistical map on a background brain, we mark four voxels
 which we will inspect more closely later on.
 
-.. GENERATED FROM PYTHON SOURCE LINES 174-214
+.. GENERATED FROM PYTHON SOURCE LINES 176-218
 
 .. code-block:: Python
 
     from nilearn.image import coord_transform
-    from nilearn.plotting import plot_stat_map
+    from nilearn.plotting import plot_stat_map, show
 
 
     def index_to_xy_coord(x, y, z=10):
@@ -372,6 +374,7 @@ which we will inspect more closely later on.
         display_mode="z",
         aspect=1.25,
         title="Explained variance per voxel",
+        cmap="inferno",
     )
 
     # creating a marker for each voxel and adding it to the statistical map
@@ -392,6 +395,7 @@ which we will inspect more closely later on.
     fig = plt.gcf()
     fig.set_size_inches(12, 12)
 
+    show()
 
 
 
@@ -414,7 +418,7 @@ which we will inspect more closely later on.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 215-227
+.. GENERATED FROM PYTHON SOURCE LINES 219-231
 
 Estimating receptive fields
 ---------------------------
@@ -429,7 +433,7 @@ pixels, so we use `Lasso regression
 <https://en.wikipedia.org/wiki/Lasso_(statistics)>`_ to estimate a sparse
 set of regression coefficients.
 
-.. GENERATED FROM PYTHON SOURCE LINES 227-307
+.. GENERATED FROM PYTHON SOURCE LINES 231-311
 
 .. code-block:: Python
 
@@ -527,11 +531,11 @@ set of regression coefficients.
  .. code-block:: none
 
 
-    <matplotlib.colorbar.Colorbar object at 0x7fa71c9fedc0>
+    <matplotlib.colorbar.Colorbar object at 0x7f18e27df5b0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 308-313
+.. GENERATED FROM PYTHON SOURCE LINES 312-317
 
 The receptive fields of the four voxels are not only close to each other,
 the relative location of the pixel each voxel is most sensitive to
@@ -539,19 +543,19 @@ roughly maps to the relative location of the voxels to each other.
 We can see a relationship between some voxel's receptive field and
 its location in the brain.
 
-.. GENERATED FROM PYTHON SOURCE LINES 315-319
+.. GENERATED FROM PYTHON SOURCE LINES 319-323
 
 References
 ----------
 
- .. footbibliography::
+.. footbibliography::
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 13.882 seconds)
+   **Total running time of the script:** (0 minutes 14.851 seconds)
 
-**Estimated memory usage:**  1171 MB
+**Estimated memory usage:**  1163 MB
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_miyawaki_encoding.py:
