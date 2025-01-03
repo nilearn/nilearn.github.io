@@ -1,0 +1,278 @@
+.. only:: html
+
+    .. note::
+        :class: sphx-glr-download-link-note
+
+        Click :ref:`here <sphx_glr_download_auto_examples_03_connectivity_plot_signal_extraction.py>`     to download the full example code or to run this example in your browser via Binder
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_auto_examples_03_connectivity_plot_signal_extraction.py:
+
+
+Extracting signals from a brain parcellation
+============================================
+
+Here we show how to extract signals from a brain parcellation and compute
+a correlation matrix.
+
+We also show the importance of defining good confounds signals: the
+first correlation matrix is computed after regressing out simple
+confounds signals: movement regressors, white matter and CSF signals, ...
+The second one is without any confounds: all regions are connected to
+each other.
+
+
+One reference that discusses the importance of confounds is `Varoquaux and
+Craddock, Learning and comparing functional connectomes across subjects,
+NeuroImage 2013
+<http://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+
+This is just a code example, see the :ref:`corresponding section in the
+documentation <parcellation_time_series>` for more.
+
+.. note::
+    This example needs SciPy >= 1.0.0 for the reordering of the matrix.
+
+Retrieve the atlas and the data
+--------------------------------
+
+
+.. code-block:: default
+
+    from nilearn import datasets
+
+    dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+    atlas_filename = dataset.maps
+    labels = dataset.labels
+
+    print('Atlas ROIs are located in nifti image (4D) at: %s' %
+          atlas_filename)  # 4D data
+
+    # One subject of brain development fmri data
+    data = datasets.fetch_development_fmri(n_subjects=1)
+    fmri_filenames = data.func[0]
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Atlas ROIs are located in nifti image (4D) at: /home/nicolas/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+
+
+
+
+Extract signals on a parcellation defined by labels
+-----------------------------------------------------
+Using the NiftiLabelsMasker
+
+
+.. code-block:: default
+
+    from nilearn.input_data import NiftiLabelsMasker
+    masker = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True,
+                               memory='nilearn_cache', verbose=5)
+
+    # Here we go from nifti files to the signal time series in a numpy
+    # array. Note how we give confounds to be regressed out during signal
+    # extraction
+    time_series = masker.fit_transform(fmri_filenames, confounds=data.confounds)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [NiftiLabelsMasker.fit_transform] loading data from /home/nicolas/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+    Resampling labels
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
+    filter_and_extract('/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
+    <nilearn.input_data.nifti_labels_masker._ExtractionFunctor object at 0x7f881367f460>, 
+    { 'background_label': 0,
+      'detrend': False,
+      'dtype': None,
+      'high_pass': None,
+      'high_variance_confounds': False,
+      'labels_img': '/home/nicolas/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz',
+      'low_pass': None,
+      'mask_img': None,
+      'smoothing_fwhm': None,
+      'standardize': True,
+      'standardize_confounds': True,
+      'strategy': 'mean',
+      't_r': None,
+      'target_affine': None,
+      'target_shape': None}, confounds=[ '/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_desc-reducedConfounds_regressors.tsv'], dtype=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=5)
+    [NiftiLabelsMasker.transform_single_imgs] Loading data from /home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz
+    [NiftiLabelsMasker.transform_single_imgs] Extracting region signals
+    [NiftiLabelsMasker.transform_single_imgs] Cleaning extracted signals
+    _______________________________________________filter_and_extract - 0.9s, 0.0min
+
+
+
+
+Compute and display a correlation matrix
+-----------------------------------------
+
+
+.. code-block:: default
+
+    from nilearn.connectome import ConnectivityMeasure
+    correlation_measure = ConnectivityMeasure(kind='correlation')
+    correlation_matrix = correlation_measure.fit_transform([time_series])[0]
+
+    # Plot the correlation matrix
+    import numpy as np
+    from nilearn import plotting
+    # Make a large figure
+    # Mask the main diagonal for visualization:
+    np.fill_diagonal(correlation_matrix, 0)
+    # The labels we have start with the background (0), hence we skip the
+    # first label
+    # matrices are ordered for block-like representation
+    plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
+                         vmax=0.8, vmin=-0.8, reorder=True)
+
+
+
+
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_signal_extraction_001.png
+    :alt: plot signal extraction
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/plotting/matrix_plotting.py:22: MatplotlibDeprecationWarning: 
+    The inverse_transformed function was deprecated in Matplotlib 3.3 and will be removed two minor releases later. Use transformed(transform.inverted()) instead.
+      ylabel_width = ax.yaxis.get_tightbbox(renderer).inverse_transformed(
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/plotting/matrix_plotting.py:30: MatplotlibDeprecationWarning: 
+    The inverse_transformed function was deprecated in Matplotlib 3.3 and will be removed two minor releases later. Use transformed(transform.inverted()) instead.
+      xlabel_height = ax.xaxis.get_tightbbox(renderer).inverse_transformed(
+
+    <matplotlib.image.AxesImage object at 0x7f881ff73790>
+
+
+
+Same thing without confounds, to stress the importance of confounds
+--------------------------------------------------------------------
+
+
+.. code-block:: default
+
+
+    time_series = masker.fit_transform(fmri_filenames)
+    # Note how we did not specify confounds above. This is bad!
+
+    correlation_matrix = correlation_measure.fit_transform([time_series])[0]
+
+    # Mask the main diagonal for visualization:
+    np.fill_diagonal(correlation_matrix, 0)
+
+    plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
+                         vmax=0.8, vmin=-0.8, title='No confounds', reorder=True)
+
+    plotting.show()
+
+
+
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_signal_extraction_002.png
+    :alt: plot signal extraction
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [NiftiLabelsMasker.fit_transform] loading data from /home/nicolas/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
+    filter_and_extract('/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
+    <nilearn.input_data.nifti_labels_masker._ExtractionFunctor object at 0x7f8823148e80>, 
+    { 'background_label': 0,
+      'detrend': False,
+      'dtype': None,
+      'high_pass': None,
+      'high_variance_confounds': False,
+      'labels_img': '/home/nicolas/nilearn_data/fsl/data/atlases/HarvardOxford/HarvardOxford-cort-maxprob-thr25-2mm.nii.gz',
+      'low_pass': None,
+      'mask_img': None,
+      'smoothing_fwhm': None,
+      'standardize': True,
+      'standardize_confounds': True,
+      'strategy': 'mean',
+      't_r': None,
+      'target_affine': None,
+      'target_shape': None}, confounds=None, dtype=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=5)
+    [NiftiLabelsMasker.transform_single_imgs] Loading data from /home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz
+    [NiftiLabelsMasker.transform_single_imgs] Extracting region signals
+    [NiftiLabelsMasker.transform_single_imgs] Cleaning extracted signals
+    _______________________________________________filter_and_extract - 0.9s, 0.0min
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/plotting/matrix_plotting.py:22: MatplotlibDeprecationWarning: 
+    The inverse_transformed function was deprecated in Matplotlib 3.3 and will be removed two minor releases later. Use transformed(transform.inverted()) instead.
+      ylabel_width = ax.yaxis.get_tightbbox(renderer).inverse_transformed(
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/plotting/matrix_plotting.py:30: MatplotlibDeprecationWarning: 
+    The inverse_transformed function was deprecated in Matplotlib 3.3 and will be removed two minor releases later. Use transformed(transform.inverted()) instead.
+      xlabel_height = ax.xaxis.get_tightbbox(renderer).inverse_transformed(
+
+
+
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  3.985 seconds)
+
+
+.. _sphx_glr_download_auto_examples_03_connectivity_plot_signal_extraction.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+  .. container:: binder-badge
+
+    .. image:: images/binder_badge_logo.svg
+      :target: https://mybinder.org/v2/gh/nilearn/nilearn.github.io/master?filepath=examples/auto_examples/03_connectivity/plot_signal_extraction.ipynb
+      :alt: Launch binder
+      :width: 150 px
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+     :download:`Download Python source code: plot_signal_extraction.py <plot_signal_extraction.py>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+     :download:`Download Jupyter notebook: plot_signal_extraction.ipynb <plot_signal_extraction.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_
