@@ -49,7 +49,7 @@ to plot the resulting statistical map on the pial surface.
 Retrieving the data
 -------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 32-78
+.. GENERATED FROM PYTHON SOURCE LINES 32-75
 
 .. code-block:: Python
 
@@ -85,9 +85,6 @@ Retrieving the data
             "right": destrieux.map_right,
         },
     )
-    # The labels are stored as bytes for the Destrieux atlas.
-    # For convenience we decode them to string.
-    labels = [x.decode("utf-8") for x in destrieux.labels]
 
     # The fsaverage meshes contains FileMesh objects:
     print(f"{fsaverage_meshes['pial'].parts['left']=}")
@@ -107,25 +104,25 @@ Retrieving the data
 
  .. code-block:: none
 
-    [get_dataset_dir] Dataset found in
+    [get_dataset_dir] Dataset found in 
     /home/runner/nilearn_data/nki_enhanced_surface
     [load_nki] Loading subject 1 of 1.
     [get_dataset_dir] Dataset found in /home/runner/nilearn_data/destrieux_surface
     fsaverage_meshes['pial'].parts['left']=<FileMesh with 10242 vertices and 20480 faces.>
     fsaverage_sulcal=<SurfaceImage (20484,)>
-    fsaverage_sulcal.mesh=<nilearn.surface.surface.PolyMesh object at 0x7f1c381db640>
+    fsaverage_sulcal.mesh=<nilearn.surface.surface.PolyMesh object at 0x7f636e06dd00>
     fsaverage_sulcal.data=<PolyData (20484,)>
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-82
+.. GENERATED FROM PYTHON SOURCE LINES 76-79
 
 Extracting the seed time series with masker
 -------------------------------------------
 We do this using the :class:`~nilearn.maskers.SurfaceLabelsMasker`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-106
+.. GENERATED FROM PYTHON SOURCE LINES 79-103
 
 .. code-block:: Python
 
@@ -135,7 +132,7 @@ We do this using the :class:`~nilearn.maskers.SurfaceLabelsMasker`.
 
     # Extract seed region via label
     name_seed_region = "G_cingul-Post-dorsal"
-    label_seed_region = labels.index(name_seed_region)
+    label_seed_region = destrieux.labels.index(name_seed_region)
 
     # Here we create a surface mask image
     # that has False for all vertices
@@ -160,14 +157,14 @@ We do this using the :class:`~nilearn.maskers.SurfaceLabelsMasker`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-111
+.. GENERATED FROM PYTHON SOURCE LINES 104-108
 
 Display ROI on surface
 ----------------------
 Before we go further,
 let's make sure we have selected the right regions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-130
+.. GENERATED FROM PYTHON SOURCE LINES 108-127
 
 .. code-block:: Python
 
@@ -202,14 +199,14 @@ let's make sure we have selected the right regions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-135
+.. GENERATED FROM PYTHON SOURCE LINES 128-132
 
 Using a flat :term:`mesh` can be useful
 in order to easily locate the area of interest on the cortex.
 To make this plot easier to read,
 we use the :term:`mesh` curvature as a background map.
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-158
+.. GENERATED FROM PYTHON SOURCE LINES 132-155
 
 .. code-block:: Python
 
@@ -248,7 +245,7 @@ we use the :term:`mesh` curvature as a background map.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-164
+.. GENERATED FROM PYTHON SOURCE LINES 156-161
 
 Calculating seed-based functional connectivity
 ----------------------------------------------
@@ -256,7 +253,7 @@ Calculate Pearson product-moment correlation coefficient
 between seed time series
 and timeseries of all cortical nodes.
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-196
+.. GENERATED FROM PYTHON SOURCE LINES 161-193
 
 .. code-block:: Python
 
@@ -273,8 +270,8 @@ and timeseries of all cortical nodes.
     # in unknown regions
     # and on the medial wall.
     excluded_labels = [
-        labels.index("Unknown"),
-        labels.index("Medial_wall"),
+        destrieux.labels.index("Unknown"),
+        destrieux.labels.index("Medial_wall"),
     ]
     is_excluded = np.isin(
         destrieux_atlas.data.parts[hemisphere],
@@ -299,13 +296,13 @@ and timeseries of all cortical nodes.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-200
+.. GENERATED FROM PYTHON SOURCE LINES 194-197
 
 Viewing results
 ---------------
 Display unthresholded stat map with a slightly dimmed background
 
-.. GENERATED FROM PYTHON SOURCE LINES 200-215
+.. GENERATED FROM PYTHON SOURCE LINES 197-212
 
 .. code-block:: Python
 
@@ -336,13 +333,13 @@ Display unthresholded stat map with a slightly dimmed background
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 216-219
+.. GENERATED FROM PYTHON SOURCE LINES 213-216
 
 Many different options are available for plotting,
 for example thresholding,
 or using custom colormaps
 
-.. GENERATED FROM PYTHON SOURCE LINES 219-233
+.. GENERATED FROM PYTHON SOURCE LINES 216-230
 
 .. code-block:: Python
 
@@ -372,7 +369,7 @@ or using custom colormaps
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 234-239
+.. GENERATED FROM PYTHON SOURCE LINES 231-236
 
 Here the surface is plotted in a lateral view without a background map.
 To capture 3D structure without depth information,
@@ -380,7 +377,7 @@ the default is to plot a half transparent surface.
 Note that you can also control the transparency
 with a background map using the alpha parameter.
 
-.. GENERATED FROM PYTHON SOURCE LINES 239-251
+.. GENERATED FROM PYTHON SOURCE LINES 236-248
 
 .. code-block:: Python
 
@@ -408,12 +405,12 @@ with a background map using the alpha parameter.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 252-254
+.. GENERATED FROM PYTHON SOURCE LINES 249-251
 
 The plots can be saved to file,
 in which case the display is closed after creating the figure
 
-.. GENERATED FROM PYTHON SOURCE LINES 254-272
+.. GENERATED FROM PYTHON SOURCE LINES 251-269
 
 .. code-block:: Python
 
@@ -448,7 +445,7 @@ in which case the display is closed after creating the figure
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 273-277
+.. GENERATED FROM PYTHON SOURCE LINES 270-274
 
 References
 ----------
@@ -458,7 +455,7 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 10.500 seconds)
+   **Total running time of the script:** (0 minutes 10.687 seconds)
 
 **Estimated memory usage:**  873 MB
 

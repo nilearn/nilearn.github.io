@@ -150,7 +150,7 @@ We then plot the the mean image.
 
  .. code-block:: none
 
-    [get_dataset_dir] Dataset found in
+    [get_dataset_dir] Dataset found in 
     /home/runner/nilearn_data/nki_enhanced_surface
     [load_nki] Loading subject 1 of 1.
     NKI image: <SurfaceImage (20484, 895)>
@@ -170,7 +170,7 @@ for our NKI data.
 We then compute and
 plot the connectome of these time series.
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-145
+.. GENERATED FROM PYTHON SOURCE LINES 112-141
 
 .. code-block:: Python
 
@@ -195,13 +195,9 @@ plot the connectome of these time series.
         },
     )
 
-    # The labels are stored as bytes for the Destrieux atlas.
-    # For convenience we decode them to string.
-    label_names = [x.decode("utf-8") for x in destrieux.labels]
-
     labels_masker = SurfaceLabelsMasker(
         labels_img=labels_img,
-        labels=label_names,
+        labels=destrieux.labels,
     ).fit()
 
     masked_data = labels_masker.transform(surf_img_nki)
@@ -221,17 +217,33 @@ plot the connectome of these time series.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-159
+.. GENERATED FROM PYTHON SOURCE LINES 142-144
+
+Plot connectivity matrix
+------------------------
+
+.. GENERATED FROM PYTHON SOURCE LINES 144-168
 
 .. code-block:: Python
 
     connectome_measure = ConnectivityMeasure(kind="correlation")
     connectome = connectome_measure.fit([masked_data])
+
     vmax = np.absolute(connectome.mean_).max()
     vmin = -vmax
+
+    # We only print every 3rd label
+    # for a more legible figure.
+    labels = []
+    for i, label in enumerate(labels_masker.label_names_):
+        if i % 3 == 1:
+            labels.append(label)
+        else:
+            labels.append("")
+
     plot_matrix(
         connectome.mean_,
-        labels=labels_masker.label_names_,
+        labels=labels,
         vmax=vmax,
         vmin=vmin,
     )
@@ -250,12 +262,12 @@ plot the connectome of these time series.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-175
+.. GENERATED FROM PYTHON SOURCE LINES 169-184
 
-Using the `Decoder`
--------------------
+Using the decoder
+-----------------
 Now using the appropriate masker
-we can use a `Decoder` on surface data
+we can use a ``Decoder`` on surface data
 just as we do for volume images.
 
 .. note::
@@ -268,7 +280,7 @@ just as we do for volume images.
   in a biological sense.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 175-206
+.. GENERATED FROM PYTHON SOURCE LINES 184-215
 
 .. code-block:: Python
 
@@ -352,12 +364,12 @@ just as we do for volume images.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 207-209
+.. GENERATED FROM PYTHON SOURCE LINES 216-218
 
 Decoding with a scikit-learn `Pipeline`
 ---------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 209-236
+.. GENERATED FROM PYTHON SOURCE LINES 218-245
 
 .. code-block:: Python
 
@@ -403,9 +415,9 @@ Decoding with a scikit-learn `Pipeline`
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 28.036 seconds)
+   **Total running time of the script:** (0 minutes 27.477 seconds)
 
-**Estimated memory usage:**  1560 MB
+**Estimated memory usage:**  1547 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_surface_image_and_maskers.py:

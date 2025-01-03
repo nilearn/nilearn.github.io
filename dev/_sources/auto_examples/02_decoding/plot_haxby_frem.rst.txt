@@ -37,43 +37,13 @@ To have more details, see: :ref:`frem`.
 Load the Haxby dataset
 ----------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 20-54
+.. GENERATED FROM PYTHON SOURCE LINES 20-24
 
 .. code-block:: Python
 
     from nilearn.datasets import fetch_haxby
 
     data_files = fetch_haxby()
-
-    # Load behavioral data
-    import pandas as pd
-
-    behavioral = pd.read_csv(data_files.session_target[0], sep=" ")
-
-    # Restrict to face, house, and chair conditions
-    conditions = behavioral["labels"]
-    condition_mask = conditions.isin(["face", "house", "chair"])
-
-    # Split data into train and test samples, using the chunks
-    condition_mask_train = (condition_mask) & (behavioral["chunks"] <= 6)
-    condition_mask_test = (condition_mask) & (behavioral["chunks"] > 6)
-
-    # Apply this sample mask to X (fMRI data) and y (behavioral labels)
-    # Because the data is in one single large 4D image, we need to use
-    # index_img to do the split easily
-    from nilearn.image import index_img
-
-    func_filenames = data_files.func[0]
-    X_train = index_img(func_filenames, condition_mask_train)
-    X_test = index_img(func_filenames, condition_mask_test)
-    y_train = conditions[condition_mask_train].to_numpy()
-    y_test = conditions[condition_mask_test].to_numpy()
-
-
-    # Compute the mean EPI to be used for the background of the plotting
-    from nilearn.image import mean_img
-
-    background_img = mean_img(func_filenames, copy_header=True)
 
 
 
@@ -88,19 +58,153 @@ Load the Haxby dataset
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 55-57
+.. GENERATED FROM PYTHON SOURCE LINES 25-26
+
+Load behavioral data
+
+.. GENERATED FROM PYTHON SOURCE LINES 26-30
+
+.. code-block:: Python
+
+    import pandas as pd
+
+    behavioral = pd.read_csv(data_files.session_target[0], sep=" ")
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 31-32
+
+Restrict to face, house, and chair conditions
+
+.. GENERATED FROM PYTHON SOURCE LINES 32-35
+
+.. code-block:: Python
+
+    conditions = behavioral["labels"]
+    condition_mask = conditions.isin(["face", "house", "chair"])
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 36-37
+
+Split data into train and test samples, using the chunks
+
+.. GENERATED FROM PYTHON SOURCE LINES 37-40
+
+.. code-block:: Python
+
+    condition_mask_train = (condition_mask) & (behavioral["chunks"] <= 6)
+    condition_mask_test = (condition_mask) & (behavioral["chunks"] > 6)
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 41-44
+
+Apply this sample mask to X (fMRI data) and y (behavioral labels)
+Because the data is in one single large 4D image, we need to use
+index_img to do the split easily
+
+.. GENERATED FROM PYTHON SOURCE LINES 44-53
+
+.. code-block:: Python
+
+    from nilearn.image import index_img
+
+    func_filenames = data_files.func[0]
+    X_train = index_img(func_filenames, condition_mask_train)
+    X_test = index_img(func_filenames, condition_mask_test)
+    y_train = conditions[condition_mask_train].to_numpy()
+    y_test = conditions[condition_mask_test].to_numpy()
+
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 54-55
+
+Compute the mean EPI to be used for the background of the plotting
+
+.. GENERATED FROM PYTHON SOURCE LINES 55-59
+
+.. code-block:: Python
+
+    from nilearn.image import mean_img
+
+    background_img = mean_img(func_filenames, copy_header=True)
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 60-62
 
 Fit FREM
 --------
 
-.. GENERATED FROM PYTHON SOURCE LINES 57-66
+.. GENERATED FROM PYTHON SOURCE LINES 62-64
 
 .. code-block:: Python
 
     from nilearn.decoding import FREMClassifier
 
-    decoder = FREMClassifier(cv=10, standardize="zscore_sample", n_jobs=2)
-    # Fit model on train data and predict on test data
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 65-66
+
+Restrict analysis to within the brain mask
+
+.. GENERATED FROM PYTHON SOURCE LINES 66-72
+
+.. code-block:: Python
+
+    mask = data_files.mask
+
+    decoder = FREMClassifier(
+        mask=mask, cv=10, standardize="zscore_sample", n_jobs=2, verbose=1
+    )
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 73-74
+
+Fit model on train data and predict on test data
+
+.. GENERATED FROM PYTHON SOURCE LINES 74-79
+
+.. code-block:: Python
+
     decoder.fit(X_train, y_train)
     y_pred = decoder.predict(X_test)
     accuracy = (y_pred == y_test).mean() * 100.0
@@ -114,21 +218,40 @@ Fit FREM
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/decoding/decoder.py:774: UserWarning:
+    [FREMClassifier.fit] Loading data from None
+    [FREMClassifier.fit] Resampling mask
+    [FREMClassifier.fit] Finished fit
+    [FREMClassifier.fit] Loading data from Nifti1Image(
+    shape=(40, 64, 64, 189),
+    affine=array([[  -3.5  ,    0.   ,    0.   ,   68.25 ],
+           [   0.   ,    3.75 ,    0.   , -118.125],
+           [   0.   ,    0.   ,    3.75 , -118.125],
+           [   0.   ,    0.   ,    0.   ,    1.   ]])
+    )
+    [FREMClassifier.fit] Extracting region signals
+    [FREMClassifier.fit] Cleaning extracted signals
+    [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
+    [Parallel(n_jobs=2)]: Done  30 out of  30 | elapsed:   21.8s finished
+    [FREMClassifier.predict] Loading data from Nifti1Image(
+    shape=(40, 64, 64, 135),
+    affine=array([[  -3.5  ,    0.   ,    0.   ,   68.25 ],
+           [   0.   ,    3.75 ,    0.   , -118.125],
+           [   0.   ,    0.   ,    3.75 , -118.125],
+           [   0.   ,    0.   ,    0.   ,    1.   ]])
+    )
+    [FREMClassifier.predict] Extracting region signals
+    [FREMClassifier.predict] Cleaning extracted signals
+    FREM classification accuracy : 60.7407%
 
-    Brain mask is bigger than the standard human brain. This object is probably not tuned to be used on such data.
-
-    FREM classification accuracy : 57.7778%
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 67-69
+.. GENERATED FROM PYTHON SOURCE LINES 80-82
 
 Plot confusion matrix
 ------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-97
+.. GENERATED FROM PYTHON SOURCE LINES 82-88
 
 .. code-block:: Python
 
@@ -138,14 +261,42 @@ Plot confusion matrix
 
     from nilearn.plotting import plot_matrix, plot_stat_map, show
 
-    # Calculate the confusion matrix
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 89-90
+
+Calculate the confusion matrix
+
+.. GENERATED FROM PYTHON SOURCE LINES 90-96
+
+.. code-block:: Python
+
     matrix = confusion_matrix(
         y_test,
         y_pred,
         normalize="true",
     )
 
-    # Plot the confusion matrix
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 97-98
+
+Plot the confusion matrix
+
+.. GENERATED FROM PYTHON SOURCE LINES 98-112
+
+.. code-block:: Python
+
     im = plot_matrix(
         matrix,
         labels=sorted(np.unique(y_test)),
@@ -172,12 +323,12 @@ Plot confusion matrix
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-100
+.. GENERATED FROM PYTHON SOURCE LINES 113-115
 
 Visualization of :term:`FREM` weights
 -------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-108
+.. GENERATED FROM PYTHON SOURCE LINES 115-123
 
 .. code-block:: Python
 
@@ -201,7 +352,7 @@ Visualization of :term:`FREM` weights
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 109-116
+.. GENERATED FROM PYTHON SOURCE LINES 124-131
 
 :term:`FREM` ensembling procedure
 yields an important improvement of decoding
@@ -211,7 +362,7 @@ even on heavier examples. Here we ensembled several instances of l2-SVC,
 but FREMClassifier also works with ridge or logistic.
 FREMRegressor object is also available to solve regression problems.
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-122
+.. GENERATED FROM PYTHON SOURCE LINES 133-137
 
 References
 ----------
@@ -221,7 +372,7 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 42.711 seconds)
+   **Total running time of the script:** (0 minutes 36.114 seconds)
 
 **Estimated memory usage:**  1016 MB
 
