@@ -1,0 +1,1061 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nilearn: Statistical Analysis for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-dataframe.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="9.2.1. Basic Atlas plotting" href="01_plotting/plot_atlas.html" />
+    <link rel="prev" title="9.1.4. A introduction tutorial to fMRI decoding" href="plot_decoding_tutorial.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
+<script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000);
+        $('.related-wrapper').css("position", "sticky");
+        $('.related-wrapper').css("top", 0);
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative");
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight();
+    var banner_width = $('#logo-banner').outerWidth();
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight());
+
+    updateTopMenuPosition(banner_height, width);
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth();
+        var menu_height = $('.related').outerHeight();
+        $('.related').css("width", banner_width);
+        $('.related-wrapper').css("height", menu_height);
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop();
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset;
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1;
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed");
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative");
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0;
+    current_section = 0;
+    $('a.internal').removeClass('active');
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        }
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        }
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active');
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var tocOffset = $('.related-wrapper').outerHeight();
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop;
+    sections = {};
+    url = document.URL.replace(/#.*$/, "");
+
+    // Grab positions of our sections
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
+    });
+
+    updateSideBarPosition(top, tocOffset, sections);
+
+    $(window).scroll(function(event) {
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight();
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+});
+</script>
+
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head><body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="../index.html">
+      <img src="../_static/nilearn-logo.png" alt="Nilearn logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="decoding/plot_haxby_anova_svm.html">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="../connectivity/parcellating.html">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="../decoding/searchlight.html">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="../connectivity/resting_state_networks.html">ICA</a></big>
+    </li>
+    <li>
+      <a href="../manipulating_images/data_preparation.html">Nifti IO</a>
+    </li>
+    <li>
+      <a href="../modules/reference.html#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nilearn:</h1>
+    <h2>Statistics for NeuroImaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div class="gcse-search" id="cse" style="width: 100%;"></div>
+    <script>
+      (function() {
+        var cx = '017289614950330089114:elrt9qoutrq';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
+    </script>
+  </div>
+</div>
+
+
+
+<div class=related-wrapper>
+    
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a></li>
+        <li class="right" >
+          <a href="01_plotting/plot_atlas.html" title="9.2.1. Basic Atlas plotting"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plot_decoding_tutorial.html" title="9.1.4. A introduction tutorial to fMRI decoding"
+             accesskey="P">previous</a> |</li>
+<li><a href="../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="index.html">Examples</a> |&nbsp;</li>
+<li><a href="../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../authors.html">About</a>|&nbsp;</li>
+<li><a href="../glossary.html">Glossary</a>|&nbsp;</li>
+<li><a href="../bibliography.html">Bibliography</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+          <li class="nav-item nav-item-1"><a href="../user_guide.html" >User guide: table of contents</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U"><span class="section-number">9. </span>Nilearn usage examples</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Nilearn: Statistical Analysis for NeuroImaging in Python</a></li> 
+      </ul>
+    </div>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-plot-single-subject-single-run-py"><span class="std std-ref">here</span></a>     to download the full example code or to run this example in your browser via Binder</p>
+</div>
+<div class="sphx-glr-example-title section" id="intro-to-glm-analysis-a-single-session-single-subject-fmri-dataset">
+<span id="sphx-glr-auto-examples-plot-single-subject-single-run-py"></span><h1><span class="section-number">9.1.5. </span>Intro to GLM Analysis: a single-session, single-subject fMRI dataset<a class="headerlink" href="#intro-to-glm-analysis-a-single-session-single-subject-fmri-dataset" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial, we use a General Linear Model (<a class="reference internal" href="../glossary.html#term-GLM"><span class="xref std std-term">GLM</span></a>) to compare the
+<a class="reference internal" href="../glossary.html#term-fMRI"><span class="xref std std-term">fMRI</span></a> signal during periods of auditory stimulation versus periods of rest.</p>
+<div class="contents local topic" id="contents">
+<p class="topic-title"><strong>Contents</strong></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#the-data" id="id1">The data</a></p></li>
+<li><p><a class="reference internal" href="#retrieving-the-data" id="id2">Retrieving the data</a></p></li>
+<li><p><a class="reference internal" href="#specifying-the-experimental-paradigm" id="id3">Specifying the experimental paradigm</a></p></li>
+<li><p><a class="reference internal" href="#performing-the-glm-analysis" id="id4">Performing the GLM analysis</a></p></li>
+<li><p><a class="reference internal" href="#detecting-voxels-with-significant-effects" id="id5">Detecting voxels with significant effects</a></p></li>
+<li><p><a class="reference internal" href="#plot-thresholded-z-scores-map" id="id6">Plot thresholded z scores map</a></p></li>
+<li><p><a class="reference internal" href="#performing-an-f-test" id="id7">Performing an F-test</a></p></li>
+</ul>
+</div>
+<p>The analyse described here is performed in the native space, directly on the
+original <a class="reference internal" href="../glossary.html#term-EPI"><span class="xref std std-term">EPI</span></a> scans without any spatial or temporal preprocessing.
+(More sensitive results would likely be obtained on the corrected,
+spatially normalized and smoothed images).</p>
+<div class="section" id="the-data">
+<h2><a class="toc-backref" href="#id1"><span class="section-number">9.1.5.1. </span>The data</a><a class="headerlink" href="#the-data" title="Permalink to this headline">¶</a></h2>
+<p>The dataset comes from an experiment conducted at the FIL by Geraint Rees
+under the direction of Karl Friston. It is provided by FIL methods
+group which develops the SPM software.</p>
+<p>According to SPM documentation, 96 scans were acquired (repetition time
+<a class="reference internal" href="../glossary.html#term-TR"><span class="xref std std-term">TR</span></a> = 7s) in one session. The paradigm consisted of alternating periods
+of stimulation and rest, lasting 42s each (that is, for 6 scans). The session
+started with a rest block.  Auditory stimulation consisted of bi-syllabic words
+presented binaurally at a rate of 60 per minute. The functional data starts at scan
+number 4, that is the image file <code class="docutils literal notranslate"><span class="pre">fM00223_004</span></code>.</p>
+<p>The whole brain <a class="reference internal" href="../glossary.html#term-BOLD"><span class="xref std std-term">BOLD</span></a>/<a class="reference internal" href="../glossary.html#term-EPI"><span class="xref std std-term">EPI</span></a> images were acquired on a 2T Siemens
+MAGNETOM Vision system. Each scan consisted of 64 contiguous slices (64x64x64
+3mm x 3mm x 3mm <a class="reference internal" href="../glossary.html#term-voxel"><span class="xref std std-term">voxels</span></a>). Acquisition of one scan took 6.05s, with the
+scan to scan repeat time (<a class="reference internal" href="../glossary.html#term-TR"><span class="xref std std-term">TR</span></a>) set arbitrarily to 7s.</p>
+<p>To run this example, you must launch IPython via <code class="docutils literal notranslate"><span class="pre">ipython</span>
+<span class="pre">--matplotlib</span></code> in a terminal, or use <code class="docutils literal notranslate"><span class="pre">jupyter-notebook</span></code>.</p>
+</div>
+<div class="section" id="retrieving-the-data">
+<h2><a class="toc-backref" href="#id2"><span class="section-number">9.1.5.2. </span>Retrieving the data</a><a class="headerlink" href="#retrieving-the-data" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In this tutorial, we load the data using a data downloading
+function. To input your own data, you will need to provide
+a list of paths to your own files in the <code class="docutils literal notranslate"><span class="pre">subject_data</span></code> variable.
+These should abide to the Brain Imaging Data Structure (<a class="reference internal" href="../glossary.html#term-BIDS"><span class="xref std std-term">BIDS</span></a>)
+organization.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.datasets</span> <span class="kn">import</span> <a href="../modules/generated/nilearn.datasets.fetch_spm_auditory.html#nilearn.datasets.fetch_spm_auditory" title="nilearn.datasets.fetch_spm_auditory" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">fetch_spm_auditory</span></a>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">subject_data</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.datasets.fetch_spm_auditory.html#nilearn.datasets.fetch_spm_auditory" title="nilearn.datasets.fetch_spm_auditory" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">fetch_spm_auditory</span></a><span class="p">()</span>
+<a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">subject_data</span><span class="o">.</span><span class="n">func</span></a>  <span class="c1"># print the list of names of functional images</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_004.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_005.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_006.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_007.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_008.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_009.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_010.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_011.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_012.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_013.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_014.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_015.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_016.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_017.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_018.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_019.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_020.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_021.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_022.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_023.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_024.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_025.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_026.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_027.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_028.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_029.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_030.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_031.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_032.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_033.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_034.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_035.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_036.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_037.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_038.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_039.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_040.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_041.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_042.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_043.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_044.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_045.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_046.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_047.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_048.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_049.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_050.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_051.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_052.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_053.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_054.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_055.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_056.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_057.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_058.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_059.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_060.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_061.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_062.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_063.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_064.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_065.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_066.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_067.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_068.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_069.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_070.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_071.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_072.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_073.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_074.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_075.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_076.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_077.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_078.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_079.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_080.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_081.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_082.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_083.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_084.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_085.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_086.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_087.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_088.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_089.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_090.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_091.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_092.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_093.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_094.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_095.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_096.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_097.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_098.img&#39;, &#39;/home/nicolas/nilearn_data/spm_auditory/sub001/fM00223/fM00223_099.img&#39;]
+</pre></div>
+</div>
+<p>We can display the first functional image and the subject’s anatomy:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">,</span> <a href="../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat" title="nilearn.plotting.plot_anat" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_anat</span></a><span class="p">,</span> <a href="../modules/generated/nilearn.plotting.plot_img.html#nilearn.plotting.plot_img" title="nilearn.plotting.plot_img" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_img</span></a>
+<a href="../modules/generated/nilearn.plotting.plot_img.html#nilearn.plotting.plot_img" title="nilearn.plotting.plot_img" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_img</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">subject_data</span><span class="o">.</span><span class="n">func</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<a href="../modules/generated/nilearn.plotting.plot_anat.html#nilearn.plotting.plot_anat" title="nilearn.plotting.plot_anat" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_anat</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">subject_data</span><span class="o">.</span><span class="n">anat</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="sphx-glr-horizontal">
+<li><img alt="plot single subject single run" class="sphx-glr-multi-img" src="../_images/sphx_glr_plot_single_subject_single_run_001.png" />
+</li>
+<li><img alt="plot single subject single run" class="sphx-glr-multi-img" src="../_images/sphx_glr_plot_single_subject_single_run_002.png" />
+</li>
+</ul>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays.OrthoSlicer object at 0x7fc6aad0c820&gt;
+</pre></div>
+</div>
+<p>Next, we concatenate all the 3D <a class="reference internal" href="../glossary.html#term-EPI"><span class="xref std std-term">EPI</span></a> image into a single 4D image,
+then we average them in order to create a background
+image that will be used to display the activations:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.image</span> <span class="kn">import</span> <a href="../modules/generated/nilearn.image.concat_imgs.html#nilearn.image.concat_imgs" title="nilearn.image.concat_imgs" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">concat_imgs</span></a><span class="p">,</span> <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.image.concat_imgs.html#nilearn.image.concat_imgs" title="nilearn.image.concat_imgs" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">concat_imgs</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">subject_data</span><span class="o">.</span><span class="n">func</span></a><span class="p">)</span>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a> <span class="o">=</span> <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="specifying-the-experimental-paradigm">
+<h2><a class="toc-backref" href="#id3"><span class="section-number">9.1.5.3. </span>Specifying the experimental paradigm</a><a class="headerlink" href="#specifying-the-experimental-paradigm" title="Permalink to this headline">¶</a></h2>
+<p>We must now provide a description of the experiment, that is, define the
+timing of the auditory stimulation and rest periods. This is typically
+provided in an events.tsv file. The path of this file is
+provided in the dataset.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">events</span></a> <span class="o">=</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_table.html#pandas.read_table" title="pandas.read_table" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-function"><span class="n">pd</span><span class="o">.</span><span class="n">read_table</span></a><span class="p">(</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">subject_data</span></a><span class="p">[</span><span class="s1">&#39;events&#39;</span><span class="p">])</span>
+<a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">events</span></a>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>onset</th>
+      <th>duration</th>
+      <th>trial_type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.0</td>
+      <td>42.0</td>
+      <td>rest</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>42.0</td>
+      <td>42.0</td>
+      <td>active</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>84.0</td>
+      <td>42.0</td>
+      <td>rest</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>126.0</td>
+      <td>42.0</td>
+      <td>active</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>168.0</td>
+      <td>42.0</td>
+      <td>rest</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>210.0</td>
+      <td>42.0</td>
+      <td>active</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>252.0</td>
+      <td>42.0</td>
+      <td>rest</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>294.0</td>
+      <td>42.0</td>
+      <td>active</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>336.0</td>
+      <td>42.0</td>
+      <td>rest</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>378.0</td>
+      <td>42.0</td>
+      <td>active</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>420.0</td>
+      <td>42.0</td>
+      <td>rest</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>462.0</td>
+      <td>42.0</td>
+      <td>active</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>504.0</td>
+      <td>42.0</td>
+      <td>rest</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>546.0</td>
+      <td>42.0</td>
+      <td>active</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>588.0</td>
+      <td>42.0</td>
+      <td>rest</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>630.0</td>
+      <td>42.0</td>
+      <td>active</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<br />
+<br /></div>
+<div class="section" id="performing-the-glm-analysis">
+<h2><a class="toc-backref" href="#id4"><span class="section-number">9.1.5.4. </span>Performing the GLM analysis</a><a class="headerlink" href="#performing-the-glm-analysis" title="Permalink to this headline">¶</a></h2>
+<p>It is now time to create and estimate a <code class="docutils literal notranslate"><span class="pre">FirstLevelModel</span></code> object, that will generate the <em>design matrix</em> using the  information provided by the <code class="docutils literal notranslate"><span class="pre">events</span></code> object.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.glm.first_level</span> <span class="kn">import</span> <a href="../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class"><span class="n">FirstLevelModel</span></a>
+</pre></div>
+</div>
+<p>Parameters of the first-level model</p>
+<ul class="simple">
+<li><p>t_r=7(s) is the time of repetition of acquisitions</p></li>
+<li><p>noise_model=’ar1’ specifies the noise covariance model: a lag-1 dependence</p></li>
+<li><p>standardize=False means that we do not want to rescale the time series to mean 0, variance 1</p></li>
+<li><p>hrf_model=’spm’ means that we rely on the SPM “canonical hrf” model (without time or dispersion derivatives)</p></li>
+<li><p>drift_model=’cosine’ means that we model the signal drifts as slow oscillating time functions</p></li>
+<li><p>high_pass=0.01(Hz) defines the cutoff frequency (inverse of the time period).</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_glm</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class"><span class="n">FirstLevelModel</span></a><span class="p">(</span><span class="n">t_r</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+                           <span class="n">noise_model</span><span class="o">=</span><span class="s1">&#39;ar1&#39;</span><span class="p">,</span>
+                           <span class="n">standardize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                           <span class="n">hrf_model</span><span class="o">=</span><span class="s1">&#39;spm&#39;</span><span class="p">,</span>
+                           <span class="n">drift_model</span><span class="o">=</span><span class="s1">&#39;cosine&#39;</span><span class="p">,</span>
+                           <span class="n">high_pass</span><span class="o">=.</span><span class="mi">01</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now that we have specified the model, we can run it on the <a class="reference internal" href="../glossary.html#term-fMRI"><span class="xref std std-term">fMRI</span></a> image</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel" title="nilearn.glm.first_level.FirstLevelModel" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_glm</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel.fit" title="nilearn.glm.first_level.FirstLevelModel.fit" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-method"><span class="n">fmri_glm</span><span class="o">.</span><span class="n">fit</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">events</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<p>One can inspect the design matrix (rows represent time, and
+columns contain the predictors).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrix</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_glm</span><span class="o">.</span><span class="n">design_matrices_</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Formally, we have taken the first design matrix, because the model is
+implictily meant to for multiple runs.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../modules/generated/nilearn.plotting.plot_design_matrix.html#nilearn.plotting.plot_design_matrix" title="nilearn.plotting.plot_design_matrix" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_design_matrix</span></a>
+<a href="../modules/generated/nilearn.plotting.plot_design_matrix.html#nilearn.plotting.plot_design_matrix" title="nilearn.plotting.plot_design_matrix" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_design_matrix</span></a><span class="p">(</span><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrix</span></a><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="plot single subject single run" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_single_subject_single_run_003.png" />
+<p>Save the design matrix image to disk
+first create a directory where you want to write the images</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">outdir</span></a> <span class="o">=</span> <span class="s1">&#39;results&#39;</span>
+<span class="k">if</span> <span class="ow">not</span> <a href="https://docs.python.org/3.8/library/os.path.html#os.path.exists" title="os.path.exists" class="sphx-glr-backref-module-os-path sphx-glr-backref-type-py-function"><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">outdir</span></a><span class="p">):</span>
+    <a href="https://docs.python.org/3.8/library/os.html#os.mkdir" title="os.mkdir" class="sphx-glr-backref-module-os sphx-glr-backref-type-py-function"><span class="n">os</span><span class="o">.</span><span class="n">mkdir</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">outdir</span></a><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <a href="https://docs.python.org/3.8/library/os.path.html#os.path.join" title="os.path.join" class="sphx-glr-backref-module-os-path sphx-glr-backref-type-py-function"><span class="n">join</span></a>
+<a href="../modules/generated/nilearn.plotting.plot_design_matrix.html#nilearn.plotting.plot_design_matrix" title="nilearn.plotting.plot_design_matrix" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_design_matrix</span></a><span class="p">(</span>
+    <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrix</span></a><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><a href="https://docs.python.org/3.8/library/os.path.html#os.path.join" title="os.path.join" class="sphx-glr-backref-module-os-path sphx-glr-backref-type-py-function"><span class="n">join</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">outdir</span></a><span class="p">,</span> <span class="s1">&#39;design_matrix.png&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The first column contains the expected response profile of regions which are
+sensitive to the auditory stimulation.
+Let’s plot this first column</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html#matplotlib.pyplot.plot" title="matplotlib.pyplot.plot" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span></a><span class="p">(</span><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrix</span></a><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">])</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.xlabel.html#matplotlib.pyplot.xlabel" title="matplotlib.pyplot.xlabel" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span></a><span class="p">(</span><span class="s1">&#39;scan&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.title.html#matplotlib.pyplot.title" title="matplotlib.pyplot.title" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">title</span></a><span class="p">(</span><span class="s1">&#39;Expected Auditory Response&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="Expected Auditory Response" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_single_subject_single_run_004.png" />
+</div>
+<div class="section" id="detecting-voxels-with-significant-effects">
+<h2><a class="toc-backref" href="#id5"><span class="section-number">9.1.5.5. </span>Detecting voxels with significant effects</a><a class="headerlink" href="#detecting-voxels-with-significant-effects" title="Permalink to this headline">¶</a></h2>
+<p>To access the estimated coefficients (Betas of the <a class="reference internal" href="../glossary.html#term-GLM"><span class="xref std std-term">GLM</span></a> model), we
+created <a class="reference internal" href="../glossary.html#term-contrast"><span class="xref std std-term">contrast</span></a> with a single ‘1’ in each of the columns: The role
+of the <a class="reference internal" href="../glossary.html#term-contrast"><span class="xref std std-term">contrast</span></a> is to select some columns of the model –and
+potentially weight them– to study the associated statistics. So in
+a nutshell, a contrast is a weighted combination of the estimated
+effects.  Here we can define canonical contrasts that just consider
+the two effects in isolation —let’s call them “conditions”—
+then a <a class="reference internal" href="../glossary.html#term-contrast"><span class="xref std std-term">contrast</span></a> that makes the difference between these conditions.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">array</span></a>
+<a href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">conditions</span></a> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;active&#39;</span><span class="p">:</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">array</span></a><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span>
+                     <span class="mf">0.</span><span class="p">]),</span>
+    <span class="s1">&#39;rest&#39;</span><span class="p">:</span>   <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="numpy.array" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">array</span></a><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span>
+                     <span class="mf">0.</span><span class="p">]),</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>We can then compare the two conditions ‘active’ and ‘rest’ by
+defining the corresponding <a class="reference internal" href="../glossary.html#term-contrast"><span class="xref std std-term">contrast</span></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">active_minus_rest</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">conditions</span></a><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">]</span> <span class="o">-</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">conditions</span></a><span class="p">[</span><span class="s1">&#39;rest&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Let’s look at it: plot the coefficients of the <a class="reference internal" href="../glossary.html#term-contrast"><span class="xref std std-term">contrast</span></a>, indexed by
+the names of the columns of the design matrix.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <a href="../modules/generated/nilearn.plotting.plot_contrast_matrix.html#nilearn.plotting.plot_contrast_matrix" title="nilearn.plotting.plot_contrast_matrix" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_contrast_matrix</span></a>
+<a href="../modules/generated/nilearn.plotting.plot_contrast_matrix.html#nilearn.plotting.plot_contrast_matrix" title="nilearn.plotting.plot_contrast_matrix" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_contrast_matrix</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">active_minus_rest</span></a><span class="p">,</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrix</span></a><span class="o">=</span><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrix</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="plot single subject single run" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_single_subject_single_run_005.png" />
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;AxesSubplot:label=&#39;conditions&#39;&gt;
+</pre></div>
+</div>
+<p>Below, we compute the estimated effect. It is in <a class="reference internal" href="../glossary.html#term-BOLD"><span class="xref std std-term">BOLD</span></a> signal unit,
+but has no statistical guarantees, because it does not take into
+account the associated variance.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">eff_map</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel.compute_contrast" title="nilearn.glm.first_level.FirstLevelModel.compute_contrast" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-method"><span class="n">fmri_glm</span><span class="o">.</span><span class="n">compute_contrast</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">active_minus_rest</span></a><span class="p">,</span>
+                                    <span class="n">output_type</span><span class="o">=</span><span class="s1">&#39;effect_size&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In order to get statistical significance, we form a t-statistic, and
+directly convert it into z-scale. The z-scale means that the values
+are scaled to match a standard Gaussian distribution (mean=0,
+variance=1), across voxels, if there were no effects in the data.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel.compute_contrast" title="nilearn.glm.first_level.FirstLevelModel.compute_contrast" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-method"><span class="n">fmri_glm</span><span class="o">.</span><span class="n">compute_contrast</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">active_minus_rest</span></a><span class="p">,</span>
+                                  <span class="n">output_type</span><span class="o">=</span><span class="s1">&#39;z_score&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="plot-thresholded-z-scores-map">
+<h2><a class="toc-backref" href="#id6"><span class="section-number">9.1.5.6. </span>Plot thresholded z scores map</a><a class="headerlink" href="#plot-thresholded-z-scores-map" title="Permalink to this headline">¶</a></h2>
+<p>We display it on top of the average
+functional image of the series (could be the anatomical image of the
+subject).  We use arbitrarily a threshold of 3.0 in z-scale. We’ll
+see later how to use corrected thresholds. We will show 3
+axial views, with display_mode=’z’ and cut_coords=3.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+              <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">black_bg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Active minus Rest (Z&gt;3)&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="plot single subject single run" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_single_subject_single_run_006.png" />
+<p>Statistical significance testing. One should worry about the
+statistical validity of the procedure: here we used an arbitrary
+threshold of 3.0 but the threshold should provide some guarantees on
+the risk of false detections (aka type-1 errors in statistics).
+One suggestion is to control the false positive rate (<a class="reference internal" href="../glossary.html#term-FPR-correction"><span class="xref std std-term">fpr</span></a>, denoted by
+alpha) at a certain level, e.g. 0.001: this means that there is 0.1% chance
+of declaring an inactive <a class="reference internal" href="../glossary.html#term-voxel"><span class="xref std std-term">voxel</span></a>, active.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.glm</span> <span class="kn">import</span> <a href="../modules/generated/nilearn.glm.threshold_stats_img.html#nilearn.glm.threshold_stats_img" title="nilearn.glm.threshold_stats_img" class="sphx-glr-backref-module-nilearn-glm sphx-glr-backref-type-py-function"><span class="n">threshold_stats_img</span></a>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">_</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.glm.threshold_stats_img.html#nilearn.glm.threshold_stats_img" title="nilearn.glm.threshold_stats_img" class="sphx-glr-backref-module-nilearn-glm sphx-glr-backref-type-py-function"><span class="n">threshold_stats_img</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">001</span><span class="p">,</span> <span class="n">height_control</span><span class="o">=</span><span class="s1">&#39;fpr&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Uncorrected p&lt;0.001 threshold: </span><span class="si">%.3f</span><span class="s1">&#39;</span> <span class="o">%</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="p">)</span>
+<a href="../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="p">,</span>
+              <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">black_bg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Active minus Rest (p&lt;0.001)&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="plot single subject single run" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_single_subject_single_run_007.png" />
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Uncorrected p&lt;0.001 threshold: 3.291
+</pre></div>
+</div>
+<p>The problem is that with this you expect 0.001 * n_voxels to show up
+while they’re not active — tens to hundreds of voxels. A more
+conservative solution is to control the family wise error rate,
+i.e. the probability of making only one false detection, say at
+5%. For that we use the so-called Bonferroni correction.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">_</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.glm.threshold_stats_img.html#nilearn.glm.threshold_stats_img" title="nilearn.glm.threshold_stats_img" class="sphx-glr-backref-module-nilearn-glm sphx-glr-backref-type-py-function"><span class="n">threshold_stats_img</span></a><span class="p">(</span>
+    <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">05</span><span class="p">,</span> <span class="n">height_control</span><span class="o">=</span><span class="s1">&#39;bonferroni&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Bonferroni-corrected, p&lt;0.05 threshold: </span><span class="si">%.3f</span><span class="s1">&#39;</span> <span class="o">%</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="p">)</span>
+<a href="../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="p">,</span>
+              <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">black_bg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Active minus Rest (p&lt;0.05, corrected)&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="plot single subject single run" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_single_subject_single_run_008.png" />
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Bonferroni-corrected, p&lt;0.05 threshold: 4.934
+</pre></div>
+</div>
+<p>This is quite conservative indeed!  A popular alternative is to
+control the expected proportion of
+false discoveries among detections. This is called the False
+discovery rate.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">_</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.glm.threshold_stats_img.html#nilearn.glm.threshold_stats_img" title="nilearn.glm.threshold_stats_img" class="sphx-glr-backref-module-nilearn-glm sphx-glr-backref-type-py-function"><span class="n">threshold_stats_img</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">05</span><span class="p">,</span> <span class="n">height_control</span><span class="o">=</span><span class="s1">&#39;fdr&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;False Discovery rate = 0.05 threshold: </span><span class="si">%.3f</span><span class="s1">&#39;</span> <span class="o">%</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="p">)</span>
+<a href="../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="p">,</span>
+              <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">black_bg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Active minus Rest (fdr=0.05)&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="plot single subject single run" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_single_subject_single_run_009.png" />
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>False Discovery rate = 0.05 threshold: 2.904
+</pre></div>
+</div>
+<p>Finally people like to discard isolated voxels (aka “small
+clusters”) from these images. It is possible to generate a
+thresholded map with small clusters removed by providing a
+cluster_threshold argument. Here clusters smaller than 10 voxels
+will be discarded.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">clean_map</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.glm.threshold_stats_img.html#nilearn.glm.threshold_stats_img" title="nilearn.glm.threshold_stats_img" class="sphx-glr-backref-module-nilearn-glm sphx-glr-backref-type-py-function"><span class="n">threshold_stats_img</span></a><span class="p">(</span>
+    <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">05</span><span class="p">,</span> <span class="n">height_control</span><span class="o">=</span><span class="s1">&#39;fdr&#39;</span><span class="p">,</span> <span class="n">cluster_threshold</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a href="../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">clean_map</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="p">,</span>
+              <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">black_bg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Active minus Rest (fdr=0.05), clusters &gt; 10 voxels&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="plot single subject single run" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_single_subject_single_run_010.png" />
+<p>We can save the effect and zscore maps to the disk.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.filebasedimages.html#nibabel.filebasedimages.FileBasedImage.to_filename" title="nibabel.filebasedimages.FileBasedImage.to_filename" class="sphx-glr-backref-module-nibabel-filebasedimages sphx-glr-backref-type-py-method"><span class="n">z_map</span><span class="o">.</span><span class="n">to_filename</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/os.path.html#os.path.join" title="os.path.join" class="sphx-glr-backref-module-os-path sphx-glr-backref-type-py-function"><span class="n">join</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">outdir</span></a><span class="p">,</span> <span class="s1">&#39;active_vs_rest_z_map.nii.gz&#39;</span><span class="p">))</span>
+<a href="https://nipy.org/nibabel/reference/nibabel.filebasedimages.html#nibabel.filebasedimages.FileBasedImage.to_filename" title="nibabel.filebasedimages.FileBasedImage.to_filename" class="sphx-glr-backref-module-nibabel-filebasedimages sphx-glr-backref-type-py-method"><span class="n">eff_map</span><span class="o">.</span><span class="n">to_filename</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/os.path.html#os.path.join" title="os.path.join" class="sphx-glr-backref-module-os-path sphx-glr-backref-type-py-function"><span class="n">join</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">outdir</span></a><span class="p">,</span> <span class="s1">&#39;active_vs_rest_eff_map.nii.gz&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>We can furthermore extract and report the found positions in a table.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.reporting</span> <span class="kn">import</span> <a href="../modules/generated/nilearn.reporting.get_clusters_table.html#nilearn.reporting.get_clusters_table" title="nilearn.reporting.get_clusters_table" class="sphx-glr-backref-module-nilearn-reporting sphx-glr-backref-type-py-function"><span class="n">get_clusters_table</span></a>
+<a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">table</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.reporting.get_clusters_table.html#nilearn.reporting.get_clusters_table" title="nilearn.reporting.get_clusters_table" class="sphx-glr-backref-module-nilearn-reporting sphx-glr-backref-type-py-function"><span class="n">get_clusters_table</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">stat_threshold</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="p">,</span>
+                           <span class="n">cluster_threshold</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">table</span></a>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Cluster ID</th>
+      <th>X</th>
+      <th>Y</th>
+      <th>Z</th>
+      <th>Peak Stat</th>
+      <th>Cluster Size (mm3)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>-60.0</td>
+      <td>-6.0</td>
+      <td>42.0</td>
+      <td>9.811979</td>
+      <td>4050</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1a</td>
+      <td>-63.0</td>
+      <td>6.0</td>
+      <td>36.0</td>
+      <td>8.601922</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1b</td>
+      <td>-63.0</td>
+      <td>0.0</td>
+      <td>42.0</td>
+      <td>8.435063</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1c</td>
+      <td>-48.0</td>
+      <td>-15.0</td>
+      <td>39.0</td>
+      <td>8.364058</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2</td>
+      <td>60.0</td>
+      <td>0.0</td>
+      <td>36.0</td>
+      <td>9.605128</td>
+      <td>1512</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>2a</td>
+      <td>45.0</td>
+      <td>-12.0</td>
+      <td>42.0</td>
+      <td>7.590200</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>3</td>
+      <td>63.0</td>
+      <td>12.0</td>
+      <td>27.0</td>
+      <td>8.253889</td>
+      <td>972</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>3a</td>
+      <td>51.0</td>
+      <td>3.0</td>
+      <td>30.0</td>
+      <td>6.968355</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>3b</td>
+      <td>54.0</td>
+      <td>9.0</td>
+      <td>39.0</td>
+      <td>3.565609</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>4</td>
+      <td>36.0</td>
+      <td>-3.0</td>
+      <td>15.0</td>
+      <td>8.087451</td>
+      <td>1188</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>5</td>
+      <td>-63.0</td>
+      <td>-18.0</td>
+      <td>27.0</td>
+      <td>5.807510</td>
+      <td>594</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>5a</td>
+      <td>-63.0</td>
+      <td>-21.0</td>
+      <td>42.0</td>
+      <td>5.646352</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>5b</td>
+      <td>-60.0</td>
+      <td>-21.0</td>
+      <td>33.0</td>
+      <td>5.416271</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>6</td>
+      <td>45.0</td>
+      <td>-18.0</td>
+      <td>57.0</td>
+      <td>5.710963</td>
+      <td>702</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>6a</td>
+      <td>36.0</td>
+      <td>-12.0</td>
+      <td>57.0</td>
+      <td>5.633746</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>6b</td>
+      <td>30.0</td>
+      <td>-9.0</td>
+      <td>66.0</td>
+      <td>4.796135</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>6c</td>
+      <td>36.0</td>
+      <td>-15.0</td>
+      <td>69.0</td>
+      <td>4.254544</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>7</td>
+      <td>-12.0</td>
+      <td>-15.0</td>
+      <td>93.0</td>
+      <td>5.522477</td>
+      <td>621</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>7a</td>
+      <td>-6.0</td>
+      <td>-15.0</td>
+      <td>99.0</td>
+      <td>4.713852</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>7b</td>
+      <td>-3.0</td>
+      <td>-18.0</td>
+      <td>90.0</td>
+      <td>4.270733</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>7c</td>
+      <td>-18.0</td>
+      <td>-12.0</td>
+      <td>96.0</td>
+      <td>4.085568</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>8</td>
+      <td>-24.0</td>
+      <td>-24.0</td>
+      <td>90.0</td>
+      <td>5.331806</td>
+      <td>648</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>8a</td>
+      <td>-36.0</td>
+      <td>-24.0</td>
+      <td>90.0</td>
+      <td>4.700088</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>8b</td>
+      <td>-12.0</td>
+      <td>-24.0</td>
+      <td>90.0</td>
+      <td>4.037845</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>8c</td>
+      <td>-36.0</td>
+      <td>-24.0</td>
+      <td>84.0</td>
+      <td>3.527477</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>9</td>
+      <td>-15.0</td>
+      <td>-60.0</td>
+      <td>66.0</td>
+      <td>4.835099</td>
+      <td>837</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>9a</td>
+      <td>-15.0</td>
+      <td>-60.0</td>
+      <td>57.0</td>
+      <td>4.615642</td>
+      <td></td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>9b</td>
+      <td>-6.0</td>
+      <td>-63.0</td>
+      <td>63.0</td>
+      <td>4.091568</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<br />
+<br /><p>This table can be saved for future use.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_csv.html#pandas.DataFrame.to_csv" title="pandas.DataFrame.to_csv" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-method"><span class="n">table</span><span class="o">.</span><span class="n">to_csv</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/os.path.html#os.path.join" title="os.path.join" class="sphx-glr-backref-module-os-path sphx-glr-backref-type-py-function"><span class="n">join</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">outdir</span></a><span class="p">,</span> <span class="s1">&#39;table.csv&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="performing-an-f-test">
+<h2><a class="toc-backref" href="#id7"><span class="section-number">9.1.5.7. </span>Performing an F-test</a><a class="headerlink" href="#performing-an-f-test" title="Permalink to this headline">¶</a></h2>
+<p>“active vs rest” is a typical t test: condition versus
+baseline. Another popular type of test is an F test in which one
+seeks whether a certain combination of conditions (possibly two-,
+three- or higher-dimensional) explains a significant proportion of
+the signal.  Here one might for instance test which voxels are well
+explained by the combination of the active and rest condition.</p>
+<p>Specify the contrast and compute the corresponding map. Actually, the
+contrast specification is done exactly the same way as for t-
+contrasts.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">effects_of_interest</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.vstack.html#numpy.vstack" title="numpy.vstack" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">vstack</span></a><span class="p">((</span><a href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">conditions</span></a><span class="p">[</span><span class="s1">&#39;active&#39;</span><span class="p">],</span> <a href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">conditions</span></a><span class="p">[</span><span class="s1">&#39;rest&#39;</span><span class="p">]))</span>
+<a href="../modules/generated/nilearn.plotting.plot_contrast_matrix.html#nilearn.plotting.plot_contrast_matrix" title="nilearn.plotting.plot_contrast_matrix" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_contrast_matrix</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">effects_of_interest</span></a><span class="p">,</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrix</span></a><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.glm.first_level.FirstLevelModel.html#nilearn.glm.first_level.FirstLevelModel.compute_contrast" title="nilearn.glm.first_level.FirstLevelModel.compute_contrast" class="sphx-glr-backref-module-nilearn-glm-first_level sphx-glr-backref-type-py-method"><span class="n">fmri_glm</span><span class="o">.</span><span class="n">compute_contrast</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">effects_of_interest</span></a><span class="p">,</span>
+                                  <span class="n">output_type</span><span class="o">=</span><span class="s1">&#39;z_score&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="plot single subject single run" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_single_subject_single_run_011.png" />
+<p>Note that the statistic has been converted to a z-variable, which
+makes it easier to represent it.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">clean_map</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a> <span class="o">=</span> <a href="../modules/generated/nilearn.glm.threshold_stats_img.html#nilearn.glm.threshold_stats_img" title="nilearn.glm.threshold_stats_img" class="sphx-glr-backref-module-nilearn-glm sphx-glr-backref-type-py-function"><span class="n">threshold_stats_img</span></a><span class="p">(</span>
+    <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">05</span><span class="p">,</span> <span class="n">height_control</span><span class="o">=</span><span class="s1">&#39;fdr&#39;</span><span class="p">,</span> <span class="n">cluster_threshold</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<a href="../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">clean_map</span></a><span class="p">,</span> <span class="n">bg_img</span><span class="o">=</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">threshold</span></a><span class="p">,</span>
+              <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">black_bg</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+              <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Effects of interest (fdr=0.05), clusters &gt; 10 voxels&#39;</span><span class="p">)</span>
+<a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="plot single subject single run" class="sphx-glr-single-img" src="../_images/sphx_glr_plot_single_subject_single_run_012.png" />
+<p>Oops, there is a lot of non-neural signal in there (ventricles, arteries)…</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  15.969 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-plot-single-subject-single-run-py">
+<div class="binder-badge docutils container">
+<a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn.github.io/main?filepath=examples/auto_examples/plot_single_subject_single_run.ipynb"><img alt="Launch binder" src="../_images/binder_badge_logo7.svg" width="150px" /></a>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/593fcdf77cf39140983790cf19e64dfb/plot_single_subject_single_run.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_single_subject_single_run.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../_downloads/c44c7add38a6f4ca8bb0eefc388e4dde/plot_single_subject_single_run.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_single_subject_single_run.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="../authors.html#citing">citing the
+                    papers</a>.</p></li>
+  </ul>
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">9.1.5. Intro to GLM Analysis: a single-session, single-subject fMRI dataset</a><ul>
+<li><a class="reference internal" href="#the-data">9.1.5.1. The data</a></li>
+<li><a class="reference internal" href="#retrieving-the-data">9.1.5.2. Retrieving the data</a></li>
+<li><a class="reference internal" href="#specifying-the-experimental-paradigm">9.1.5.3. Specifying the experimental paradigm</a></li>
+<li><a class="reference internal" href="#performing-the-glm-analysis">9.1.5.4. Performing the GLM analysis</a></li>
+<li><a class="reference internal" href="#detecting-voxels-with-significant-effects">9.1.5.5. Detecting voxels with significant effects</a></li>
+<li><a class="reference internal" href="#plot-thresholded-z-scores-map">9.1.5.6. Plot thresholded z scores map</a></li>
+<li><a class="reference internal" href="#performing-an-f-test">9.1.5.7. Performing an F-test</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plot_decoding_tutorial.html"
+                        title="previous chapter"><span class="section-number">9.1.4. </span>A introduction tutorial to fMRI decoding</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="01_plotting/plot_atlas.html"
+                        title="next chapter"><span class="section-number">9.2.1. </span>Basic Atlas plotting</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+            &copy; The nilearn developers 2010-2021.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.0.2.
+        <span style="padding-left: 5ex;">
+          <a href="../_sources/auto_examples/plot_single_subject_single_run.rst.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>

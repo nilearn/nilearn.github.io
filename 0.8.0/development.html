@@ -1,0 +1,725 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nilearn: Statistical Analysis for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css" />
+    <link rel="stylesheet" type="text/css" href="_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="_static/gallery-dataframe.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Glossary" href="glossary.html" />
+    <link rel="prev" title="0.8.0" href="whats_new.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
+<script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000);
+        $('.related-wrapper').css("position", "sticky");
+        $('.related-wrapper').css("top", 0);
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative");
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight();
+    var banner_width = $('#logo-banner').outerWidth();
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight());
+
+    updateTopMenuPosition(banner_height, width);
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth();
+        var menu_height = $('.related').outerHeight();
+        $('.related').css("width", banner_width);
+        $('.related-wrapper').css("height", menu_height);
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop();
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset;
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1;
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed");
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative");
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0;
+    current_section = 0;
+    $('a.internal').removeClass('active');
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        }
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        }
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active');
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var tocOffset = $('.related-wrapper').outerHeight();
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop;
+    sections = {};
+    url = document.URL.replace(/#.*$/, "");
+
+    // Grab positions of our sections
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
+    });
+
+    updateSideBarPosition(top, tocOffset, sections);
+
+    $(window).scroll(function(event) {
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight();
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+});
+</script>
+
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head><body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="index.html">
+      <img src="_static/nilearn-logo.png" alt="Nilearn logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="auto_examples/decoding/plot_haxby_anova_svm.html">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="connectivity/parcellating.html">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="decoding/searchlight.html">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="connectivity/resting_state_networks.html">ICA</a></big>
+    </li>
+    <li>
+      <a href="manipulating_images/data_preparation.html">Nifti IO</a>
+    </li>
+    <li>
+      <a href="modules/reference.html#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nilearn:</h1>
+    <h2>Statistics for NeuroImaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div class="gcse-search" id="cse" style="width: 100%;"></div>
+    <script>
+      (function() {
+        var cx = '017289614950330089114:elrt9qoutrq';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
+    </script>
+  </div>
+</div>
+
+
+
+<div class=related-wrapper>
+    
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a></li>
+        <li class="right" >
+          <a href="glossary.html" title="Glossary"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="whats_new.html" title="0.8.0"
+             accesskey="P">previous</a> |</li>
+<li><a href="index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="auto_examples/index.html">Examples</a> |&nbsp;</li>
+<li><a href="modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="authors.html">About</a>|&nbsp;</li>
+<li><a href="glossary.html">Glossary</a>|&nbsp;</li>
+<li><a href="bibliography.html">Bibliography</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+        <li class="nav-item nav-item-this"><a href="">Nilearn: Statistical Analysis for NeuroImaging in Python</a></li> 
+      </ul>
+    </div>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="nilearn-development-process">
+<h1>Nilearn development process<a class="headerlink" href="#nilearn-development-process" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#how-to-help" id="id1">How to help?</a></p></li>
+<li><p><a class="reference internal" href="#how-do-we-decide-what-codes-goes-in" id="id2">How do we decide what codes goes in?</a></p>
+<ul>
+<li><p><a class="reference internal" href="#scope-of-the-project" id="id3">Scope of the project</a></p></li>
+<li><p><a class="reference internal" href="#how-to-contribute-a-feature" id="id4">How to contribute a feature</a></p></li>
+<li><p><a class="reference internal" href="#who-makes-decisions" id="id5">Who makes decisions</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#how-to-contribute-to-nilearn" id="id6">How to contribute to nilearn</a></p>
+<ul>
+<li><p><a class="reference internal" href="#opening-an-issue" id="id7">Opening an issue</a></p></li>
+<li><p><a class="reference internal" href="#pull-requests" id="id8">Pull Requests</a></p></li>
+<li><p><a class="reference internal" href="#retrieving-the-latest-code" id="id9">Retrieving the latest code</a></p></li>
+<li><p><a class="reference internal" href="#installing-the-latest-code" id="id10">Installing the latest code</a></p></li>
+<li><p><a class="reference internal" href="#coding-guidelines" id="id11">Coding guidelines</a></p></li>
+<li><p><a class="reference internal" href="#contributing-to-the-documentation" id="id12">Contributing to the documentation</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#how-to-make-a-release" id="id13">How to make a release?</a></p>
+<ul>
+<li><p><a class="reference internal" href="#prepare-the-release" id="id14">Prepare the release</a></p></li>
+<li><p><a class="reference internal" href="#build-the-distributions-and-upload-them-to-pypi" id="id15">Build the distributions and upload them to Pypi</a></p></li>
+<li><p><a class="reference internal" href="#build-and-deploy-the-documentation" id="id16">Build and deploy the documentation</a></p></li>
+<li><p><a class="reference internal" href="#post-release" id="id17">Post-release</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="how-to-help">
+<h2><a class="toc-backref" href="#id1">How to help?</a><a class="headerlink" href="#how-to-help" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>You are new to python and you don’t know how to do xy</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Create a question on <a class="reference external" href="https://neurostars.org/">neurostars</a></p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>If you discovered a bug, but don’t know how to fix it</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Create <a class="reference external" href="https://github.com/nilearn/nilearn/issues">an issue</a></p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>If you discovered a bug and know how to fix it, but don’t know how to
+get your code onto github (ie, you have some Python experience but have
+never have used git/github, or have never written tests)</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Learn git and github: <a class="reference external" href="http://try.github.io/">http://try.github.io/</a></p></li>
+<li><p>Learn what tests are how to run them locally
+(<a class="reference external" href="https://docs.pytest.org">https://docs.pytest.org</a>)</p></li>
+<li><p>Learn how to write doc/examples and build them locally
+<a class="reference external" href="https://sphinx-gallery.github.io/">https://sphinx-gallery.github.io/</a></p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>You want to contribute code</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>See below</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="how-do-we-decide-what-codes-goes-in">
+<h2><a class="toc-backref" href="#id2">How do we decide what codes goes in?</a><a class="headerlink" href="#how-do-we-decide-what-codes-goes-in" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="scope-of-the-project">
+<h3><a class="toc-backref" href="#id3">Scope of the project</a><a class="headerlink" href="#scope-of-the-project" title="Permalink to this headline">¶</a></h3>
+<p>Nilearn strives to develop open and powerful statistical analysis of
+brain volumes (as produced by multiple modalities: MRI, PET, and others).
+Its focus is to reach end users of the methods (as opposed to methods
+developers).</p>
+<p>Nilearn targets ease of use, but as Python code. In other words, we will
+not add graphical user interfaces, but we want our code to be as easy to
+understand as possible, with easy prototyping and debugging, even for
+beginners in Python.</p>
+<p>We are parsimonious in the way we add features to the project, as it
+puts on weight. Criteria include:</p>
+<ul class="simple">
+<li><p>It must be in the scope of the project</p></li>
+<li><p>It must correspond to an established practice (typically as used in
+scientific publications)</p></li>
+<li><p>It must have a concrete use case that can be demo-ed simply with nilearn:
+an example, on real data, understandable by end-users.</p></li>
+</ul>
+<p>Part of the decision will also be about weighing the benefits (i.e., new
+features or ease of use for the users) with the cost (i.e., complexity of
+the code, runtime of the examples).</p>
+<p>In practice:</p>
+<ul class="simple">
+<li><p>The new feature must be demoed in an example in a way that shows its
+benefit to new users.</p></li>
+<li><p>Because our infrastructure is limited, running all the examples must
+lead to downloading a limited amount of data (gigabytes) and execute
+in a reasonable amount of time (a few hours)</p></li>
+<li><p>The new feature must be thoroughly tested (it should not decrease
+code coverage)</p></li>
+<li><p>The new feature may not introduce a new dependency</p></li>
+</ul>
+<p>Special cases:</p>
+<ul class="simple">
+<li><p>A downloader for a new atlas: we are currently being very lenient for this:
+if the atlas is published and can be used in an example, we will accept
+the pull request (but see below for specifics).</p></li>
+<li><p>A downloader for a new dataset: the larger the dataset is, the less
+likely we are to consider including it. Datasets are meant to demo and
+teach features, rather than be the basis of research.</p></li>
+</ul>
+</div>
+<div class="section" id="how-to-contribute-a-feature">
+<h3><a class="toc-backref" href="#id4">How to contribute a feature</a><a class="headerlink" href="#how-to-contribute-a-feature" title="Permalink to this headline">¶</a></h3>
+<p>To contribute a feature, first create an issue, in order to discuss
+whether the feature can be included or not, and the specifications of
+this feature. Once agreed on the feature, send us a pull request.</p>
+<p>There are specific guidelines about how to write code for the project.
+They can be found in the contributors guide, below.</p>
+<div class="section" id="special-case-how-to-contribute-a-dataset-fetcher">
+<h4>Special case: How to contribute a dataset fetcher<a class="headerlink" href="#special-case-how-to-contribute-a-dataset-fetcher" title="Permalink to this headline">¶</a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">nilearn.datasets</span></code> package provides functions to download some
+neuroimaging datasets, such as <code class="docutils literal notranslate"><span class="pre">fetch_haxby</span></code> or
+<code class="docutils literal notranslate"><span class="pre">fetch_atlas_harvard_oxford</span></code>. The goal is not to provide a comprehensive
+collection of downloaders for the most widely used datasets, and this would be
+outside the scope of this project. Rather, this package downloads data that is
+required to showcase nilearn features in the example gallery.</p>
+<p>Downloading data takes time and large datasets slow down the build of the
+example gallery. Moreover, downloads can fail for reasons we do not control,
+such as a web service that is temporarily unavailable. This is frustrating for
+users and a major issue for continuous integration (new code cannot be merged
+unless the examples run successfully on the CI infrastructure). Finally,
+datasets or the APIs that provide them sometimes change, in which case the
+downloader needs to be adapted.</p>
+<p>As for any contributed feature, before starting working on a new downloader,
+we recommend opening an issue to discuss whether it is necessary or if existing
+downloaders could be used instead.</p>
+<p>To add a new fetcher, <code class="docutils literal notranslate"><span class="pre">nilearn.datasets.utils</span></code> provides some helper functions,
+such as <code class="docutils literal notranslate"><span class="pre">get_dataset_dir</span></code> to find a directory where the dataset is or will be
+stored according to the user’s configuration, or <code class="docutils literal notranslate"><span class="pre">_fetch_files</span></code> to load files
+from the disk or download them if they are missing.</p>
+<p>The new fetcher, as any other function, also needs to be tested (in the relevant
+submodule of <code class="docutils literal notranslate"><span class="pre">nilearn.datasets.tests</span></code>). When the tests run, the fetcher does
+not have access to the network and will not actually download files. This is to
+avoid spurious failures due to unavailable network or servers, and to avoid
+slowing down the tests with long downloads.
+The functions from the standard library and the <code class="docutils literal notranslate"><span class="pre">requests</span></code> library that
+nilearn uses to download files are mocked: they are replaced with dummy
+functions that return fake data.</p>
+<p>Exactly what fake data is returned can be configured through the object
+returned by the <code class="docutils literal notranslate"><span class="pre">request_mocker</span></code> pytest fixture, defined in
+<code class="docutils literal notranslate"><span class="pre">nilearn.datasets._testing</span></code>. The docstrings of this module and the <code class="docutils literal notranslate"><span class="pre">Sender</span></code>
+class it contains provide information on how to write a test using this fixture.
+Existing tests can also serve as examples.</p>
+</div>
+<div class="section" id="special-case-how-to-contribute-an-atlas">
+<h4>Special case: How to contribute an atlas<a class="headerlink" href="#special-case-how-to-contribute-an-atlas" title="Permalink to this headline">¶</a></h4>
+<p>We want atlases in nilearn to be internally consistent. Specifically,
+your atlas object should have three attributes (as with the existing
+atlases):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">description</span></code> (bytes): A text description of the atlas. This should be
+brief but thorough, describing the source (paper), relevant information
+related to its construction (modality, dataset, method), and if there are
+more than one maps, a description of each map.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">labels</span></code> (list): a list of string labels corresponding to each atlas
+label, in the same (numerical) order as the atlas labels</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">maps</span></code> (list or string): the path to the nifti image, or a list of paths</p></li>
+</ul>
+<p>In addition, the atlas will need to be called by a fetcher. For example, see <a class="reference external" href="https://github.com/nilearn/nilearn/blob/main/nilearn/datasets/atlas.py">here</a>.</p>
+<p>Finally, as with other features, please provide a test for your atlas.
+Examples can be found <a class="reference external" href="https://github.com/nilearn/nilearn/blob/main/nilearn/datasets/tests/test_atlas.py">here</a></p>
+</div>
+</div>
+<div class="section" id="who-makes-decisions">
+<h3><a class="toc-backref" href="#id5">Who makes decisions</a><a class="headerlink" href="#who-makes-decisions" title="Permalink to this headline">¶</a></h3>
+<p>We strongly aim to be a community oriented project where decisions are
+made based on consensus according to the criteria described above.
+Decisions are made public, through discussion on issues and pull requests
+in Github.</p>
+<p>The decisions are made by the core-contributors, ie people with write
+access to the repository, as listed <a class="reference internal" href="authors.html#core-devs"><span class="std std-ref">here</span></a></p>
+<p>If there are open questions, final decisions are made by the Temporary
+Benevolent Dictator, currently Gaël Varoquaux.</p>
+</div>
+</div>
+<div class="section" id="how-to-contribute-to-nilearn">
+<span id="contributing"></span><h2><a class="toc-backref" href="#id6">How to contribute to nilearn</a><a class="headerlink" href="#how-to-contribute-to-nilearn" title="Permalink to this headline">¶</a></h2>
+<p>This project is a community effort, and everyone is welcome to
+contribute.</p>
+<p>The project is hosted on <a class="reference external" href="https://github.com/nilearn/nilearn">https://github.com/nilearn/nilearn</a></p>
+<p>The best way to contribute and to help the project is to start working on known
+issues.
+See <a class="reference external" href="https://github.com/nilearn/nilearn/labels/Good%20first%20issue">Good first issues</a> to get
+started.
+If the issue is not already assigned to someone, you can request it by commenting “take”. This will automatically assign you the issue.</p>
+<p>If an issue does not already exist for a potential contribution, we ask that
+you first open an <a class="reference external" href="https://github.com/nilearn/nilearn/issues">issue</a> before
+sending a <a class="reference internal" href="#pull-request"><span class="std std-ref">Pull Requests</span></a>.</p>
+<div class="section" id="opening-an-issue">
+<h3><a class="toc-backref" href="#id7">Opening an issue</a><a class="headerlink" href="#opening-an-issue" title="Permalink to this headline">¶</a></h3>
+<p>Nilearn uses issues for tracking bugs, requesting potential features, and
+holding project discussions.</p>
+<p>Core developers can assign labels on issues, such as:</p>
+<ul class="simple">
+<li><p><img alt="Discussion" src="https://img.shields.io/badge/-Discussion-bfe5bf.svg" /> These issues discuss ongoing discussions on the project where community feedback is requested.</p></li>
+<li><p><img alt="Enhancement" src="https://img.shields.io/badge/-Enhancement-fbca04.svg" /> These issues discuss potential enhancements or additions to the project.</p></li>
+<li><p><img alt="Bug" src="https://img.shields.io/badge/-Bug-fc2929.svg" /> These issues detail known bugs in the Nilearn code base.</p></li>
+</ul>
+</div>
+<div class="section" id="pull-requests">
+<span id="pull-request"></span><h3><a class="toc-backref" href="#id8">Pull Requests</a><a class="headerlink" href="#pull-requests" title="Permalink to this headline">¶</a></h3>
+<p>We welcome pull requests from all community members.
+We follow the same conventions as scikit-learn. You can find the recommended process to submit code in the
+<a class="reference external" href="https://scikit-learn.org/stable/developers/contributing.html#contributing-code">scikit-learn guide to contributing code</a>.</p>
+</div>
+<div class="section" id="retrieving-the-latest-code">
+<span id="git-repo"></span><h3><a class="toc-backref" href="#id9">Retrieving the latest code</a><a class="headerlink" href="#retrieving-the-latest-code" title="Permalink to this headline">¶</a></h3>
+<p>We use <a class="reference external" href="http://git-scm.com/">Git</a> for version control and
+<a class="reference external" href="https://github.com/">GitHub</a> for hosting our main repository. If you are
+new on GitHub and don’t know how to work with it, please first
+have a look at <a class="reference external" href="https://try.github.io/">this</a> to get the basics.</p>
+<p>You can check out the latest sources with the command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">nilearn</span><span class="o">/</span><span class="n">nilearn</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>or if you have write privileges:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="n">nilearn</span><span class="o">/</span><span class="n">nilearn</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="installing-the-latest-code">
+<h3><a class="toc-backref" href="#id10">Installing the latest code</a><a class="headerlink" href="#installing-the-latest-code" title="Permalink to this headline">¶</a></h3>
+<p>In order to ensure that any code changes are reflected in your installation, navigate to your cloned Nilearn base directory and install using the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="coding-guidelines">
+<h3><a class="toc-backref" href="#id11">Coding guidelines</a><a class="headerlink" href="#coding-guidelines" title="Permalink to this headline">¶</a></h3>
+<p>Nilearn follows the coding conventions used by scikit-learn. <a class="reference external" href="http://scikit-learn.org/stable/developers/contributing.html#coding-guidelines">Please read them</a>
+before you start implementing your changes.</p>
+</div>
+<div class="section" id="contributing-to-the-documentation">
+<h3><a class="toc-backref" href="#id12">Contributing to the documentation</a><a class="headerlink" href="#contributing-to-the-documentation" title="Permalink to this headline">¶</a></h3>
+<p>To build our documentation, we are using <a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/quickstart.html">sphinx</a> for the main documentation and <a class="reference external" href="https://sphinx-gallery.github.io/stable/index.html">sphinx-gallery</a> for the example tutorials.
+If you want to make changes to the example tutorials, please do the following :</p>
+<ol class="arabic">
+<li><p>First, ensure that you have installed sphinx and sphinx-gallery. You can install the requirements using <code class="docutils literal notranslate"><span class="pre">nilearn/requirements-build-docs.txt</span></code>.</p></li>
+<li><p>Fork the Nilearn repository and clone your fork.</p></li>
+<li><p>Then go to <code class="docutils literal notranslate"><span class="pre">nilearn/examples</span></code></p></li>
+<li><p>Make your changes using <a class="reference external" href="https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html">reStructuredText files</a></p></li>
+<li><p>You can now go to <cite>nilearn/doc</cite> and build the examples locally:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">html</span><span class="o">-</span><span class="n">strict</span>
+</pre></div>
+</div>
+<p>or, if you do not have make install (for instance under Windows):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">sphinx</span> <span class="o">-</span><span class="n">b</span> <span class="n">html</span> <span class="o">-</span><span class="n">d</span> <span class="n">_build</span><span class="o">/</span><span class="n">doctrees</span> <span class="o">.</span> <span class="n">_build</span><span class="o">/</span><span class="n">html</span>
+</pre></div>
+</div>
+</li>
+<li><p>Visually review the output in <code class="docutils literal notranslate"><span class="pre">nilearn/doc/_build/html/auto_examples/</span></code>. If all looks well and there were no errors, commit and push the changes.</p></li>
+<li><p>You can now open a Pull Request from Nilearn’s Pull Request page.</p></li>
+</ol>
+<p>For more details about the Fork Clone Push worksflow, read here &lt;<a class="reference external" href="https://guides.github.com/activities/forking/">https://guides.github.com/activities/forking/</a>&gt;_</p>
+<p>TIPS : To reduce building time, we suggest you to use the <code class="docutils literal notranslate"><span class="pre">filename_pattern</span></code> to build just one specific file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">sphinx</span> <span class="o">-</span><span class="n">D</span> <span class="n">sphinx_gallery_conf</span><span class="o">.</span><span class="n">filename_pattern</span><span class="o">=</span><span class="n">plot_decoding_tutorial</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">b</span> <span class="n">html</span> <span class="o">-</span><span class="n">d</span> <span class="n">_build</span><span class="o">/</span><span class="n">doctrees</span> <span class="o">.</span> <span class="n">_build</span><span class="o">/</span><span class="n">html</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="how-to-make-a-release">
+<h2><a class="toc-backref" href="#id13">How to make a release?</a><a class="headerlink" href="#how-to-make-a-release" title="Permalink to this headline">¶</a></h2>
+<p>This section describes how to make a new release of Nilearn. It is targeted to the specific case of Nilearn although it contains generic steps for packaging and distributing projects. More detailed information can be found on <a class="reference external" href="https://packaging.python.org/guides/distributing-packages-using-setuptools/#id70">packaging.python.org</a>.</p>
+<p>We assume that we are in a clean state where all the Pull Requests (PR) that we wish to include in the new release have been merged.
+For example, make sure all deprecations that are supposed to be removed with this new version have been addressed. Furthermore, if this new release comes with dependency version bumps (Python, Numpy…), make sure to implement and test these changes beforehand. Ideally, these would have been done before such as to update the code base if necessary. Finally, make sure the documentation can be built correctly.</p>
+<div class="section" id="prepare-the-release">
+<h3><a class="toc-backref" href="#id14">Prepare the release</a><a class="headerlink" href="#prepare-the-release" title="Permalink to this headline">¶</a></h3>
+<p>Switch to a new branch locally:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git checkout -b REL-x.y.z
+</pre></div>
+</div>
+<p>First we need to prepare the release by updating the file <cite>nilearn/doc/whats_new.rst</cite> to make sure all the new features, enhancements, and bug fixes are included in their respective sections.
+We also need to write a “Highlights” section promoting the most important additions that come with this new release, and add the version tag just above the corresponding title:</p>
+<div class="highlight-RST notranslate"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="nt">_vx.y.z:</span>
+
+<span class="gh">x.y.z</span>
+<span class="gh">=====</span>
+<span class="gs">**Released MONTH YEAR**</span>
+
+<span class="gh">HIGHLIGHTS</span>
+<span class="gh">----------</span>
+
+<span class="m">-</span> Nilearn now includes functionality A
+<span class="m">-</span> ...
+</pre></div>
+</div>
+<p>Next, we need to bump the version number of Nilearn by updating the file <cite>nilearn/version.py</cite> with the new version number, that is edit the line:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">__version__</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">dev</span>
+</pre></div>
+</div>
+<p>to be:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">__version__</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">z</span>
+</pre></div>
+</div>
+<p>We also need to update the website news section by editing the file <cite>nilearn/doc/themes/nilearn/layout.html</cite>. The news section typically contains links to the last 3 releases that should look like:</p>
+<div class="highlight-html notranslate"><div class="highlight"><pre><span></span><span class="p">&lt;</span><span class="nt">h4</span><span class="p">&gt;</span> News <span class="p">&lt;/</span><span class="nt">h4</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">ul</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">p</span><span class="p">&gt;&lt;</span><span class="nt">strong</span><span class="p">&gt;</span>November 2020<span class="p">&lt;/</span><span class="nt">strong</span><span class="p">&gt;</span>:
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;whats_new.html#v0-7-0&quot;</span><span class="p">&gt;</span>Nilearn 0.7.0 released<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">p</span><span class="p">&gt;&lt;</span><span class="nt">strong</span><span class="p">&gt;</span>February 2020<span class="p">&lt;/</span><span class="nt">strong</span><span class="p">&gt;</span>:
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;whats_new.html#v0-6-2&quot;</span><span class="p">&gt;</span>Nilearn 0.6.2 released<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">li</span><span class="p">&gt;&lt;</span><span class="nt">p</span><span class="p">&gt;&lt;</span><span class="nt">strong</span><span class="p">&gt;</span>January 2020<span class="p">&lt;/</span><span class="nt">strong</span><span class="p">&gt;</span>:
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;whats_new.html#v0-6-1&quot;</span><span class="p">&gt;</span>Nilearn 0.6.1 released<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+        <span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;&lt;/</span><span class="nt">li</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">ul</span><span class="p">&gt;</span>
+</pre></div>
+</div>
+<p>Here, we should remove the last entry and add the new release on top of the list.</p>
+<p>In addition, we can have a look at <cite>MANIFEST.in</cite> to check that all additional files that we want to be included or excluded from the release are indicated. Normally we shouldn’t have to touch this file.</p>
+<p>Add these changes and submit a PR:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git add doc/whats_new.rst nilearn/version.py
+git commit -m <span class="s2">&quot;REL x.y.z&quot;</span>
+git push origin REL-x.y.z
+</pre></div>
+</div>
+<p>Once the PR has been reviewed and merged, pull from main and tag the merge commit:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git checkout main
+git pull upstream main
+git tag x.y.z
+git push upstream --tags
+</pre></div>
+</div>
+</div>
+<div class="section" id="build-the-distributions-and-upload-them-to-pypi">
+<h3><a class="toc-backref" href="#id15">Build the distributions and upload them to Pypi</a><a class="headerlink" href="#build-the-distributions-and-upload-them-to-pypi" title="Permalink to this headline">¶</a></h3>
+<p>First of all we should make sure we don’t include files that shouldn’t be present:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git checkout x.y.z
+</pre></div>
+</div>
+<p>If the workspace contains a <cite>dist</cite> folder, make sure to clean it:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rm -r dist
+</pre></div>
+</div>
+<p>In order to build the binary wheel files, we need to install <a class="reference external" href="https://pypi.org/project/wheel/">wheel</a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install wheel
+</pre></div>
+</div>
+<p>And, in order to upload to <cite>Pypi</cite>, we will use <a class="reference external" href="https://pypi.org/project/twine/">twine</a> that you can also install with <cite>pip</cite>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install twine
+</pre></div>
+</div>
+<p>Build the source and binary distributions:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python setup.py sdist bdist_wheel
+</pre></div>
+</div>
+<p>This should add two files to the <cite>dist</cite> subfolder:</p>
+<ul class="simple">
+<li><p>one for the source distribution that should look like <cite>PACKAGENAME-VERSION.tar.gz</cite></p></li>
+<li><p>one for the built distribution that should look like <cite>PACKAGENAME-PACKAGEVERSION-PYTHONVERSION-PYTHONCVERSION-PLATFORM.whl</cite></p></li>
+</ul>
+<p>Optionally, we can run some basic checks with <cite>twine</cite>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>twine check dist/*
+</pre></div>
+</div>
+<p>We are now ready to upload to <cite>Pypi</cite>. Note that you will need to have an account on Pypi (you can create one <a class="reference external" href="https://pypi.org/account/register/">here</a>), and be added to the maintainers of <a class="reference external" href="https://pypi.org/project/nilearn/">Nilearn</a>. If you satisfy these conditions, you should be able to run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>twine upload dist/*
+</pre></div>
+</div>
+<p>Once the upload is completed, make sure everything looks good on <a class="reference external" href="https://pypi.org/project/nilearn/">Pypi</a>. Otherwise you will probably have to fix the issue and start over a new release with the patch number incremented.</p>
+<p>At this point, we need to upload the binaries to GitHub and link them to the tag. To do so, go to the <a class="reference external" href="https://github.com/nilearn/nilearn/tags">Nilearn GitHub page</a> under the “Releases” tab, and edit the <cite>x.y.z</cite> tag by providing a description, and upload the distributions we just created (you can just drag and drop the files).</p>
+</div>
+<div class="section" id="build-and-deploy-the-documentation">
+<h3><a class="toc-backref" href="#id16">Build and deploy the documentation</a><a class="headerlink" href="#build-and-deploy-the-documentation" title="Permalink to this headline">¶</a></h3>
+<p>We now need to update the documentation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> doc
+make install
+</pre></div>
+</div>
+<p>This will build the documentation (beware, this is time consuming…) and push it to the <a class="reference external" href="https://github.com/nilearn/nilearn.github.io">GitHub pages repo</a>.</p>
+</div>
+<div class="section" id="post-release">
+<h3><a class="toc-backref" href="#id17">Post-release</a><a class="headerlink" href="#post-release" title="Permalink to this headline">¶</a></h3>
+<p>At this point, the release has been made. We can now update the file <cite>nilearn/version.py</cite> and update the version number by increasing the patch number and appending <cite>.dev</cite>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">__version__</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="p">(</span><span class="n">z</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dev</span>
+</pre></div>
+</div>
+<p>We can also update the file <cite>doc/whats_new.rst</cite> by adding a title and the usual <cite>New</cite>, <cite>Enhancements</cite>, and <cite>Bug Fixes</cite> sections for the version currently under developement:</p>
+<div class="highlight-RST notranslate"><div class="highlight"><pre><span></span><span class="gh">x.y.z+1.dev</span>
+<span class="gh">=========</span>
+
+<span class="gh">NEW</span>
+<span class="gh">---</span>
+
+<span class="gh">Fixes</span>
+<span class="gh">-----</span>
+
+<span class="gh">Enhancements</span>
+<span class="gh">------------</span>
+
+<span class="p">..</span> <span class="nt">_vx.y.z:</span>
+
+<span class="gh">x.y.z</span>
+<span class="gh">=====</span>
+<span class="cp">...</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="authors.html#citing">citing the
+                    papers</a>.</p></li>
+  </ul>
+
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Nilearn development process</a><ul>
+<li><a class="reference internal" href="#how-to-help">How to help?</a></li>
+<li><a class="reference internal" href="#how-do-we-decide-what-codes-goes-in">How do we decide what codes goes in?</a><ul>
+<li><a class="reference internal" href="#scope-of-the-project">Scope of the project</a></li>
+<li><a class="reference internal" href="#how-to-contribute-a-feature">How to contribute a feature</a><ul>
+<li><a class="reference internal" href="#special-case-how-to-contribute-a-dataset-fetcher">Special case: How to contribute a dataset fetcher</a></li>
+<li><a class="reference internal" href="#special-case-how-to-contribute-an-atlas">Special case: How to contribute an atlas</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#who-makes-decisions">Who makes decisions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-to-contribute-to-nilearn">How to contribute to nilearn</a><ul>
+<li><a class="reference internal" href="#opening-an-issue">Opening an issue</a></li>
+<li><a class="reference internal" href="#pull-requests">Pull Requests</a></li>
+<li><a class="reference internal" href="#retrieving-the-latest-code">Retrieving the latest code</a></li>
+<li><a class="reference internal" href="#installing-the-latest-code">Installing the latest code</a></li>
+<li><a class="reference internal" href="#coding-guidelines">Coding guidelines</a></li>
+<li><a class="reference internal" href="#contributing-to-the-documentation">Contributing to the documentation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-to-make-a-release">How to make a release?</a><ul>
+<li><a class="reference internal" href="#prepare-the-release">Prepare the release</a></li>
+<li><a class="reference internal" href="#build-the-distributions-and-upload-them-to-pypi">Build the distributions and upload them to Pypi</a></li>
+<li><a class="reference internal" href="#build-and-deploy-the-documentation">Build and deploy the documentation</a></li>
+<li><a class="reference internal" href="#post-release">Post-release</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="whats_new.html"
+                        title="previous chapter">0.8.0</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="glossary.html"
+                        title="next chapter">Glossary</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+            &copy; The nilearn developers 2010-2021.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.0.2.
+        <span style="padding-left: 5ex;">
+          <a href="_sources/development.rst.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>

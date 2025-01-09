@@ -1,0 +1,554 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nilearn: Statistical Analysis for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/gallery-dataframe.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6.3. From neuroimaging volumes to data matrices: the masker objects" href="masker_objects.html" />
+    <link rel="prev" title="6.1. Input and output: neuroimaging data representation" href="input_output.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
+<script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000);
+        $('.related-wrapper').css("position", "sticky");
+        $('.related-wrapper').css("top", 0);
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative");
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight();
+    var banner_width = $('#logo-banner').outerWidth();
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight());
+
+    updateTopMenuPosition(banner_height, width);
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth();
+        var menu_height = $('.related').outerHeight();
+        $('.related').css("width", banner_width);
+        $('.related-wrapper').css("height", menu_height);
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop();
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset;
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1;
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed");
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative");
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0;
+    current_section = 0;
+    $('a.internal').removeClass('active');
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        }
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        }
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active');
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var tocOffset = $('.related-wrapper').outerHeight();
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop;
+    sections = {};
+    url = document.URL.replace(/#.*$/, "");
+
+    // Grab positions of our sections
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
+    });
+
+    updateSideBarPosition(top, tocOffset, sections);
+
+    $(window).scroll(function(event) {
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight();
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+});
+</script>
+
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head><body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="../index.html">
+      <img src="../_static/nilearn-logo.png" alt="Nilearn logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="../auto_examples/decoding/plot_haxby_anova_svm.html">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="../connectivity/parcellating.html">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="../decoding/searchlight.html">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="../connectivity/resting_state_networks.html">ICA</a></big>
+    </li>
+    <li>
+      <a href="data_preparation.html">Nifti IO</a>
+    </li>
+    <li>
+      <a href="../modules/reference.html#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nilearn:</h1>
+    <h2>Statistics for NeuroImaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div class="gcse-search" id="cse" style="width: 100%;"></div>
+    <script>
+      (function() {
+        var cx = '017289614950330089114:elrt9qoutrq';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
+    </script>
+  </div>
+</div>
+
+
+
+<div class=related-wrapper>
+    
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a></li>
+        <li class="right" >
+          <a href="masker_objects.html" title="6.3. From neuroimaging volumes to data matrices: the masker objects"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="input_output.html" title="6.1. Input and output: neuroimaging data representation"
+             accesskey="P">previous</a> |</li>
+<li><a href="../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="../auto_examples/index.html">Examples</a> |&nbsp;</li>
+<li><a href="../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../authors.html">About</a>|&nbsp;</li>
+<li><a href="../glossary.html">Glossary</a>|&nbsp;</li>
+<li><a href="../bibliography.html">Bibliography</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+          <li class="nav-item nav-item-1"><a href="../user_guide.html" >User guide: table of contents</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U"><span class="section-number">6. </span>Manipulation brain volumes with nilearn</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Nilearn: Statistical Analysis for NeuroImaging in Python</a></li> 
+      </ul>
+    </div>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="manipulating-images-resampling-smoothing-masking-rois">
+<span id="data-manipulation"></span><h1><span class="section-number">6.2. </span>Manipulating images: resampling, smoothing, masking, ROIs…<a class="headerlink" href="#manipulating-images-resampling-smoothing-masking-rois" title="Permalink to this headline">¶</a></h1>
+<p>This chapter discusses how nilearn can be used to do simple operations on
+brain images.</p>
+<div class="contents local topic" id="chapter-contents">
+<p class="topic-title"><strong>Chapter contents</strong></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#functions-for-data-preparation-and-image-transformation" id="id1">Functions for data preparation and image transformation</a></p></li>
+<li><p><a class="reference internal" href="#resampling-images" id="id2">Resampling images</a></p></li>
+<li><p><a class="reference internal" href="#accessing-individual-volumes-in-4d-images" id="id3">Accessing individual volumes in 4D images</a></p></li>
+<li><p><a class="reference internal" href="#computing-and-applying-spatial-masks" id="id4">Computing and applying spatial masks</a></p></li>
+<li><p><a class="reference internal" href="#image-operations-creating-a-roi-mask-manually" id="id5">Image operations: creating a ROI mask manually</a></p></li>
+</ul>
+</div>
+<div class="section" id="functions-for-data-preparation-and-image-transformation">
+<span id="preprocessing-functions"></span><h2><a class="toc-backref" href="#id1"><span class="section-number">6.2.1. </span>Functions for data preparation and image transformation</a><a class="headerlink" href="#functions-for-data-preparation-and-image-transformation" title="Permalink to this headline">¶</a></h2>
+<p>Nilearn comes with many simple functions for simple data preparation and
+transformation. Note that if you want to perform these operations while
+loading the data into a data matrix, most are also integrated in the
+<a class="reference internal" href="masker_objects.html#masker-objects"><span class="std std-ref">masker objects</span></a>.</p>
+<ul>
+<li><p>Computing the mean of images (along the time/4th dimension):
+<a class="reference internal" href="../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img" title="nilearn.image.mean_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.mean_img</span></code></a></p></li>
+<li><p>Applying numpy functions on an image or a list of images:
+<a class="reference internal" href="../modules/generated/nilearn.image.math_img.html#nilearn.image.math_img" title="nilearn.image.math_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.math_img</span></code></a></p></li>
+<li><p>Swapping voxels of both hemisphere (e.g., useful to homogenize masks
+inter-hemispherically):
+<a class="reference internal" href="../modules/generated/nilearn.image.swap_img_hemispheres.html#nilearn.image.swap_img_hemispheres" title="nilearn.image.swap_img_hemispheres"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.swap_img_hemispheres</span></code></a></p></li>
+<li><p>Smoothing: <a class="reference internal" href="../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="nilearn.image.smooth_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.smooth_img</span></code></a></p></li>
+<li><p>Cleaning signals (e.g., linear detrending, standardization,
+confound removal, low/high pass filtering):
+<a class="reference internal" href="../modules/generated/nilearn.image.clean_img.html#nilearn.image.clean_img" title="nilearn.image.clean_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.clean_img</span></code></a></p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>To apply this cleaning on signal matrices rather than images:
+<a class="reference internal" href="../modules/generated/nilearn.signal.clean.html#nilearn.signal.clean" title="nilearn.signal.clean"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.signal.clean</span></code></a></p>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="resampling-images">
+<span id="resampling"></span><h2><a class="toc-backref" href="#id2"><span class="section-number">6.2.2. </span>Resampling images</a><a class="headerlink" href="#resampling-images" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="resampling-one-image-to-match-another-one">
+<h3><span class="section-number">6.2.2.1. </span>Resampling one image to match another one<a class="headerlink" href="#resampling-one-image-to-match-another-one" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="../modules/generated/nilearn.image.resample_to_img.html#nilearn.image.resample_to_img" title="nilearn.image.resample_to_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.resample_to_img</span></code></a> resamples an image to a reference
+image.</p>
+<div class="topic">
+<p class="topic-title"><strong>Example</strong></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../auto_examples/06_manipulating_images/plot_resample_to_template.html#sphx-glr-auto-examples-06-manipulating-images-plot-resample-to-template-py"><span class="std std-ref">Resample an image to a template</span></a></p></li>
+</ul>
+</div>
+<a class="reference external image-reference" href="../auto_examples/06_manipulating_images/plot_resample_to_template.html"><img alt="../_images/sphx_glr_plot_resample_to_template_001.png" src="../_images/sphx_glr_plot_resample_to_template_001.png" style="width: 45%;" /></a>
+<a class="reference external image-reference" href="../auto_examples/06_manipulating_images/plot_resample_to_template.html"><img alt="../_images/sphx_glr_plot_resample_to_template_002.png" src="../_images/sphx_glr_plot_resample_to_template_002.png" style="width: 45%;" /></a>
+<p>This can be useful to display two images as overlays in some
+viewers (e.g., FSLView) that require all images to be on the same grid.</p>
+</div>
+<div class="section" id="resampling-to-a-specific-target-affine-shape-or-resolution">
+<h3><span class="section-number">6.2.2.2. </span>Resampling to a specific target affine, shape, or resolution<a class="headerlink" href="#resampling-to-a-specific-target-affine-shape-or-resolution" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="../modules/generated/nilearn.image.resample_img.html#nilearn.image.resample_img" title="nilearn.image.resample_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.resample_img</span></code></a> specifies the resampling in terms of
+the <cite>target_affine</cite> to match the spatial configuration defined by the new
+affine.</p>
+<p>Additionally, a <cite>target_shape</cite> can be used to resize images
+(i.e., cropping or padding with zeros) to match an expected data
+image dimensions (shape composed of x, y, and z).</p>
+<p>Resampling can be useful to downsample images to increase processing
+speed and lower memory consumption.</p>
+<p>On an advanced note, automatic computation of offset and bounding box
+can be performed by specifying a 3x3 matrix instead of the 4x4 affine.
+In this case, nilearn computes automatically the translation part
+of the transformation matrix (i.e., affine).</p>
+<a class="reference external image-reference" href="../auto_examples/06_manipulating_images/plot_affine_transformation.html"><img alt="../_images/sphx_glr_plot_affine_transformation_002.png" src="../_images/sphx_glr_plot_affine_transformation_002.png" style="width: 30%;" /></a>
+<a class="reference external image-reference" href="../auto_examples/06_manipulating_images/plot_affine_transformation.html"><img alt="../_images/sphx_glr_plot_affine_transformation_004.png" src="../_images/sphx_glr_plot_affine_transformation_004.png" style="width: 30%;" /></a>
+<a class="reference external image-reference" href="../auto_examples/06_manipulating_images/plot_affine_transformation.html"><img alt="../_images/sphx_glr_plot_affine_transformation_003.png" src="../_images/sphx_glr_plot_affine_transformation_003.png" style="width: 30%;" /></a>
+<div class="topic">
+<p class="topic-title"><strong>Special case: resampling to a given voxel size</strong></p>
+<p>Specifying a 3x3 matrix that is diagonal as a target_affine fixes the
+voxel size. For instance to resample to 3x3x3 mm voxels:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target_affine</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../auto_examples/06_manipulating_images/plot_affine_transformation.html#sphx-glr-auto-examples-06-manipulating-images-plot-affine-transformation-py"><span class="std std-ref">An example illustrating affine transforms on data and bounding boxes</span></a></p>
+</div>
+</div>
+</div>
+<div class="section" id="accessing-individual-volumes-in-4d-images">
+<h2><a class="toc-backref" href="#id3"><span class="section-number">6.2.3. </span>Accessing individual volumes in 4D images</a><a class="headerlink" href="#accessing-individual-volumes-in-4d-images" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../modules/generated/nilearn.image.index_img.html#nilearn.image.index_img" title="nilearn.image.index_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.index_img</span></code></a>: selects one or more volumes in a 4D
+image.</p></li>
+<li><p><a class="reference internal" href="../modules/generated/nilearn.image.iter_img.html#nilearn.image.iter_img" title="nilearn.image.iter_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.iter_img</span></code></a>: loops over all the volumes of a 4D
+image.</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../modules/generated/nilearn.image.concat_imgs.html#nilearn.image.concat_imgs" title="nilearn.image.concat_imgs"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.concat_imgs</span></code></a>: merge multiple 3D (or 4D) images
+into one 4D image by concatenation along the 4th (time) axis</p></li>
+<li><p><a class="reference internal" href="../modules/generated/nilearn.image.load_img.html#nilearn.image.load_img" title="nilearn.image.load_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.load_img</span></code></a>: load an image into memory. The
+benefit of this function is that it will convert various
+representations, such as filename, list of filenames, wildcards,
+list of in-memory objects, to an in-memory NiftiImage.</p></li>
+<li><p><a class="reference internal" href="../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.new_img_like</span></code></a>: given data in a numpy array,
+creates a new image using an existing reference image for the
+metadata.</p></li>
+</ul>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<div class="topic">
+<p class="topic-title"><strong>Examples</strong></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../auto_examples/plot_3d_and_4d_niimg.html#sphx-glr-auto-examples-plot-3d-and-4d-niimg-py"><span class="std std-ref">3D and 4D niimgs: handling and visualizing</span></a></p></li>
+<li><p><a class="reference internal" href="../auto_examples/01_plotting/plot_overlay.html#sphx-glr-auto-examples-01-plotting-plot-overlay-py"><span class="std std-ref">Visualizing a probablistic atlas: the default mode in the MSDL atlas</span></a></p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="computing-and-applying-spatial-masks">
+<span id="computing-and-applying-mask"></span><h2><a class="toc-backref" href="#id4"><span class="section-number">6.2.4. </span>Computing and applying spatial masks</a><a class="headerlink" href="#computing-and-applying-spatial-masks" title="Permalink to this headline">¶</a></h2>
+<p>Relevant functions:</p>
+<ul class="simple">
+<li><p>compute a mask from EPI images: <a class="reference internal" href="../modules/generated/nilearn.masking.compute_epi_mask.html#nilearn.masking.compute_epi_mask" title="nilearn.masking.compute_epi_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.compute_epi_mask</span></code></a></p></li>
+<li><p>compute a grey-matter mask using the MNI template:
+<a class="reference internal" href="../modules/generated/nilearn.masking.compute_brain_mask.html#nilearn.masking.compute_brain_mask" title="nilearn.masking.compute_brain_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.compute_brain_mask</span></code></a>.</p></li>
+<li><p>compute a mask from images with a flat background:
+<a class="reference internal" href="../modules/generated/nilearn.masking.compute_background_mask.html#nilearn.masking.compute_background_mask" title="nilearn.masking.compute_background_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.compute_background_mask</span></code></a></p></li>
+<li><p>compute for multiple sessions/subjects:
+<a class="reference internal" href="../modules/generated/nilearn.masking.compute_multi_epi_mask.html#nilearn.masking.compute_multi_epi_mask" title="nilearn.masking.compute_multi_epi_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.compute_multi_epi_mask</span></code></a>
+<a class="reference internal" href="../modules/generated/nilearn.masking.compute_multi_background_mask.html#nilearn.masking.compute_multi_background_mask" title="nilearn.masking.compute_multi_background_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.compute_multi_background_mask</span></code></a></p></li>
+<li><p>apply: <a class="reference internal" href="../modules/generated/nilearn.masking.apply_mask.html#nilearn.masking.apply_mask" title="nilearn.masking.apply_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.apply_mask</span></code></a></p></li>
+<li><p>intersect several masks (useful for multi sessions/subjects): <a class="reference internal" href="../modules/generated/nilearn.masking.intersect_masks.html#nilearn.masking.intersect_masks" title="nilearn.masking.intersect_masks"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.intersect_masks</span></code></a></p></li>
+<li><p>unmasking: <a class="reference internal" href="../modules/generated/nilearn.masking.unmask.html#nilearn.masking.unmask" title="nilearn.masking.unmask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.unmask</span></code></a></p></li>
+</ul>
+<div class="section" id="extracting-a-brain-mask">
+<h3><span class="section-number">6.2.4.1. </span>Extracting a brain mask<a class="headerlink" href="#extracting-a-brain-mask" title="Permalink to this headline">¶</a></h3>
+<p>If we do not have a spatial mask of the target regions, a brain mask
+can be computed from the data:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../modules/generated/nilearn.masking.compute_background_mask.html#nilearn.masking.compute_background_mask" title="nilearn.masking.compute_background_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.compute_background_mask</span></code></a> for brain images where
+the brain stands out of a constant background. This is typically the
+case when working on statistic maps output after a brain extraction</p></li>
+<li><p><a class="reference internal" href="../modules/generated/nilearn.masking.compute_epi_mask.html#nilearn.masking.compute_epi_mask" title="nilearn.masking.compute_epi_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.compute_epi_mask</span></code></a> for EPI images</p></li>
+<li><p><a class="reference internal" href="../modules/generated/nilearn.masking.compute_brain_mask.html#nilearn.masking.compute_brain_mask" title="nilearn.masking.compute_brain_mask"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.masking.compute_brain_mask</span></code></a> to compute a
+whole-brain mask using the MNI template.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.masking</span> <span class="kn">import</span> <span class="n">compute_epi_mask</span>
+<span class="n">mask_img</span> <span class="o">=</span> <span class="n">compute_epi_mask</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
+
+<span class="c1"># Visualize it as an ROI</span>
+<span class="kn">from</span> <span class="nn">nilearn.plotting</span> <span class="kn">import</span> <span class="n">plot_roi</span>
+<span class="n">plot_roi</span><span class="p">(</span><span class="n">mask_img</span><span class="p">,</span> <span class="n">mean_haxby</span><span class="p">)</span>
+
+<span class="c1">##############################################################################</span>
+</pre></div>
+</div>
+<div class="figure align-default">
+<a class="reference external image-reference" href="../auto_examples/01_plotting/plot_visualization.html"><img alt="../_images/sphx_glr_plot_visualization_002.png" src="../_images/sphx_glr_plot_visualization_002.png" style="width: 330.0px; height: 130.0px;" /></a>
+</div>
+</div>
+<div class="section" id="masking-data-from-4d-nifti-images-to-2d-data-arrays">
+<span id="mask-4d-2-3d"></span><h3><span class="section-number">6.2.4.2. </span>Masking data: from 4D Nifti images to 2D data arrays<a class="headerlink" href="#masking-data-from-4d-nifti-images-to-2d-data-arrays" title="Permalink to this headline">¶</a></h3>
+<p>fMRI data is usually represented as a 4D block of data: 3 spatial
+dimensions and one time dimension. In practice, we are usually
+interested in working on the voxel time-series in the
+brain. It is thus convenient to apply a brain mask in order to convert the
+4D brain images representation into a restructured 2D data representation,
+<cite>voxel</cite> <strong>x</strong> <cite>time</cite>, as depicted below:</p>
+<a class="reference internal image-reference" href="../_images/masking.jpg"><img alt="../_images/masking.jpg" class="align-center" src="../_images/masking.jpg" style="width: 100%;" /></a>
+<p>Note that in an analysis pipeline, this operation is best done using the
+<a class="reference internal" href="masker_objects.html#masker-objects"><span class="std std-ref">masker objects</span></a>. For completeness, we give the code to
+do it manually below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ----------------------------------------------------------</span>
+<span class="kn">from</span> <span class="nn">nilearn.masking</span> <span class="kn">import</span> <span class="n">apply_mask</span>
+<span class="n">masked_data</span> <span class="o">=</span> <span class="n">apply_mask</span><span class="p">(</span><span class="n">func_filename</span><span class="p">,</span> <span class="n">mask_img</span><span class="p">)</span>
+
+<span class="c1"># masked_data shape is (timepoints, voxels). We can plot the first 150</span>
+<span class="c1"># timepoints from two voxels</span>
+
+<span class="c1"># And now plot a few of these</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">masked_data</span><span class="p">[:</span><span class="mi">150</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time [TRs]&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Intensity&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">bottom</span><span class="o">=.</span><span class="mi">12</span><span class="p">,</span> <span class="n">top</span><span class="o">=.</span><span class="mi">95</span><span class="p">,</span> <span class="n">right</span><span class="o">=.</span><span class="mi">95</span><span class="p">,</span> <span class="n">left</span><span class="o">=.</span><span class="mi">12</span><span class="p">)</span>
+
+<span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="figure align-center">
+<a class="reference external image-reference" href="../auto_examples/01_plotting/plot_visualization.html"><img alt="../_images/sphx_glr_plot_visualization_003.png" src="../_images/sphx_glr_plot_visualization_003.png" style="width: 280.0px; height: 200.0px;" /></a>
+</div>
+</div>
+</div>
+<div class="section" id="image-operations-creating-a-roi-mask-manually">
+<h2><a class="toc-backref" href="#id5"><span class="section-number">6.2.5. </span>Image operations: creating a ROI mask manually</a><a class="headerlink" href="#image-operations-creating-a-roi-mask-manually" title="Permalink to this headline">¶</a></h2>
+<p>A region of interest (ROI) mask can be computed for instance with a
+statistical test. This requires a chain of image
+operations on the input data. Here is a possible recipe for computing an
+ROI mask:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>Smoothing</strong>: Before a statistical test, it is often useful to smooth the image a bit
+using <a class="reference internal" href="../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="nilearn.image.smooth_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.smooth_img</span></code></a>, typically fwhm=6 for
+fMRI.</p></li>
+<li><p><strong>Selecting voxels</strong>: Given the smoothed data, we can select voxels
+with a statistical test (eg opposing face and house experimental
+conditions), for instance with a simple Student’s t-test using scipy
+function <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html#scipy.stats.ttest_ind" title="(in SciPy v1.6.3)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.stats.ttest_ind</span></code></a>.</p></li>
+<li><p><strong>Thresholding</strong>: Then we need threshold the statistical map to have
+better representation of voxels of interest.</p></li>
+<li><p><strong>Mask intersection and dilation</strong>: Post-processing the results with
+simple morphological operations, mask intersection and dilation.</p>
+<ul>
+<li><p>we can use another mask, such as a grey-matter mask, to select
+only the voxels which are common in both masks.</p></li>
+<li><p>we can do <a class="reference external" href="http://en.wikipedia.org/wiki/Dilation_(morphology)">morphological dilation</a> to achieve
+more compact blobs with more regular boundaries. The function is
+used from <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.binary_dilation.html#scipy.ndimage.binary_dilation" title="(in SciPy v1.6.3)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.ndimage.binary_dilation</span></code></a>.</p></li>
+</ul>
+</li>
+<li><p><strong>Extracting connected components</strong>: We end with splitting the connected
+ROIs into two separate regions (ROIs), one in each hemisphere. The
+function <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.label.html#scipy.ndimage.label" title="(in SciPy v1.6.3)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.ndimage.label</span></code></a> from the scipy library is used.</p></li>
+<li><p><strong>Saving the result</strong>: The final voxel mask is saved to disk using
+the ‘to_filename’ method of the image object.
+(or <strong>nibabel.save</strong>).</p></li>
+</ul>
+</div></blockquote>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>For extracting connected components:</p>
+<ul class="simple">
+<li><p>A function <a class="reference internal" href="../modules/generated/nilearn.regions.connected_regions.html#nilearn.regions.connected_regions" title="nilearn.regions.connected_regions"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.regions.connected_regions</span></code></a> can be used readily
+on probabilistic atlas Nifti-like images whereas</p></li>
+<li><p>A function <a class="reference internal" href="../modules/generated/nilearn.regions.connected_label_regions.html#nilearn.regions.connected_label_regions" title="nilearn.regions.connected_label_regions"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.regions.connected_label_regions</span></code></a> can be used on
+atlases denoted as labels. For instance, atlases labelled using KMeans.</p></li>
+</ul>
+</div>
+<div class="topic">
+<p class="topic-title"><strong>Code</strong></p>
+<p>A complete script of above steps with full description can be found <a class="reference internal" href="../auto_examples/06_manipulating_images/plot_roi_extraction.html#sphx-glr-auto-examples-06-manipulating-images-plot-roi-extraction-py"><span class="std std-ref">here</span></a>.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../auto_examples/06_manipulating_images/plot_extract_rois_smith_atlas.html#sphx-glr-auto-examples-06-manipulating-images-plot-extract-rois-smith-atlas-py"><span class="std std-ref">Automatic region extraction on 4D atlas images</span></a>.</p></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="../authors.html#citing">citing the
+                    papers</a>.</p></li>
+  </ul>
+
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">6.2. Manipulating images: resampling, smoothing, masking, ROIs…</a><ul>
+<li><a class="reference internal" href="#functions-for-data-preparation-and-image-transformation">6.2.1. Functions for data preparation and image transformation</a></li>
+<li><a class="reference internal" href="#resampling-images">6.2.2. Resampling images</a><ul>
+<li><a class="reference internal" href="#resampling-one-image-to-match-another-one">6.2.2.1. Resampling one image to match another one</a></li>
+<li><a class="reference internal" href="#resampling-to-a-specific-target-affine-shape-or-resolution">6.2.2.2. Resampling to a specific target affine, shape, or resolution</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#accessing-individual-volumes-in-4d-images">6.2.3. Accessing individual volumes in 4D images</a></li>
+<li><a class="reference internal" href="#computing-and-applying-spatial-masks">6.2.4. Computing and applying spatial masks</a><ul>
+<li><a class="reference internal" href="#extracting-a-brain-mask">6.2.4.1. Extracting a brain mask</a></li>
+<li><a class="reference internal" href="#masking-data-from-4d-nifti-images-to-2d-data-arrays">6.2.4.2. Masking data: from 4D Nifti images to 2D data arrays</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#image-operations-creating-a-roi-mask-manually">6.2.5. Image operations: creating a ROI mask manually</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="input_output.html"
+                        title="previous chapter"><span class="section-number">6.1. </span>Input and output: neuroimaging data representation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="masker_objects.html"
+                        title="next chapter"><span class="section-number">6.3. </span>From neuroimaging volumes to data matrices: the masker objects</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+            &copy; The nilearn developers 2010-2021.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.0.2.
+        <span style="padding-left: 5ex;">
+          <a href="../_sources/manipulating_images/manipulating_images.rst.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>
