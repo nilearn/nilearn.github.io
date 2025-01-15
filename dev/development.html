@@ -186,7 +186,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.11.2.dev50+gbc4070b49) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.11.1)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.11.2.dev71+gd52c31f79) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.11.1)</span></a></p> 
   </aside>
 </div>
 
@@ -345,10 +345,10 @@
 <li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_ica_resting_state.html">Multivariate decompositions: Independent component analysis of fMRI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_localizer_simple_analysis.html">Massively univariate analysis of a calculation task from the Localizer dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_copy_headers_math_img.html">Copying headers from input images with <code class="docutils literal notranslate"><span class="pre">math_img</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_surface_bids_analysis.html">Surface-based dataset first and second level analysis of a dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_bids_analysis.html">BIDS dataset first and second level analysis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_neurovault_meta_analysis.html">NeuroVault meta-analysis of stop-go paradigm studies</a></li>
 <li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_age_group_prediction_cross_val.html">Functional connectivity predicts age group</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_surface_bids_analysis.html">Surface-based dataset first and second level analysis of a dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_localizer_mass_univariate_methods.html">Massively univariate analysis of a motor task from the Localizer dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_ica_neurovault.html">NeuroVault cross-study ICA maps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_surface_image_and_maskers.html">A short demo of the surface images &amp; maskers</a></li>
@@ -1589,17 +1589,36 @@ plot_decoding_tutorial.py<span class="w"> </span>-b<span class="w"> </span>html<
 <h2>Additional cases<a class="headerlink" href="#additional-cases" title="Link to this heading">¶</a></h2>
 <section id="how-to-contribute-an-atlas">
 <h3>How to contribute an atlas<a class="headerlink" href="#how-to-contribute-an-atlas" title="Link to this heading">¶</a></h3>
-<p>We want atlases in nilearn to be internally consistent. Specifically,
-your atlas object should have three attributes (as with the existing
-atlases):</p>
+<p>We want atlases in Nilearn to be internally consistent.
+Specifically, your atlas object:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">description</span></code> (bytes): A text description of the atlas. This should be
-brief but thorough, describing the source (paper), relevant information
-related to its construction (modality, dataset, method), and, if there is
-more than one map, a description of each map.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">labels</span></code> (list): a list of string labels corresponding to each atlas
-label, in the same (numerical) order as the atlas labels</p></li>
+<li><p>should be a Scikit-learn <code class="docutils literal notranslate"><span class="pre">Bunch</span></code></p></li>
+<li><p>MUST have at least the following 4 attributes (as with the existing atlases):</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">description</span></code> (str): A text description of the atlas.
+This should be brief but thorough,
+describing the source (paper),
+relevant information related to its construction (modality, dataset, method),
+and, if there is more than one map, a description of each map.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">maps</span></code> (list or string): the path to the nifti image, or a list of paths</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">atlas_type</span></code>: must be either <code class="docutils literal notranslate"><span class="pre">deterministic</span></code> or <code class="docutils literal notranslate"><span class="pre">probabilistic</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">labels</span></code> (list): a list of string labels corresponding to each atlas label,
+in the same (numerical) order as the atlas labels</p></li>
+</ul>
+</li>
+</ul>
+<p>Deterministic atlases must also include:</p>
+<ul class="simple">
+<li><p>a look up table (<code class="docutils literal notranslate"><span class="pre">lut</span></code>) attribute:</p>
+<ul>
+<li><p>providing the mapping between the values in the atlas image
+and the name to the region of interest they define.</p></li>
+<li><p>that complies with the
+<a class="reference external" href="https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels">dseg.tsv format from BIDS</a></p></li>
+<li><p>can be validated by the function <code class="docutils literal notranslate"><span class="pre">nilearn.datasets.atlas._check_look_up_table</span></code>
+in strict mode.</p></li>
+</ul>
+</li>
 </ul>
 <p>In addition, the atlas will need to be called by a fetcher.
 For example, see <a class="extlink-nilearn-gh reference external" href="https://github.com/nilearn/nilearn/blob/main/nilearn/datasets/atlas.py">here</a>.</p>
