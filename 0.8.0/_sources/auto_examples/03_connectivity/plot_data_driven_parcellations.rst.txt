@@ -1,0 +1,659 @@
+.. only:: html
+
+    .. note::
+        :class: sphx-glr-download-link-note
+
+        Click :ref:`here <sphx_glr_download_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`     to download the full example code or to run this example in your browser via Binder
+    .. rst-class:: sphx-glr-example-title
+
+    .. _sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py:
+
+
+Clustering methods to learn a brain parcellation from fMRI
+==========================================================
+
+We use spatially-constrained Ward-clustering, KMeans, and Recursive Neighbor
+Agglomeration (ReNA) to create a set of parcels.
+
+In a high dimensional regime, these methods can be interesting
+to create a 'compressed' representation of the data, replacing the data
+in the fMRI images by mean signals on the parcellation, which can
+subsequently be used for statistical analysis or machine learning.
+
+Also, these methods can be used to learn functional connectomes
+and subsequently for classification tasks.
+
+References
+----------
+
+Which clustering method to use, an empirical comparison can be found in this
+paper
+
+    * Bertrand Thirion, Gael Varoquaux, Elvis Dohmatob, Jean-Baptiste Poline.
+      `Which fMRI clustering gives good brain parcellations ?
+      <https://doi.org/10.3389/fnins.2014.00167>`_ Frontiers in Neuroscience,
+      2014.
+
+This parcellation may be useful in a supervised learning, see for
+instance
+
+    * Vincent Michel, Alexandre Gramfort, Gael Varoquaux, Evelyn Eger,
+      Christine Keribin, Bertrand Thirion. `A supervised clustering approach
+      for fMRI-based inference of brain states.
+      <http://dx.doi.org/10.1016/j.patcog.2011.04.006>`_.
+      Pattern Recognition, Elsevier, 2011.
+
+The big picture discussion corresponding to this example can be found
+in the documentation section :ref:`parcellating_brain`.
+
+Download a brain development fmri dataset and turn it to a data matrix
+-----------------------------------------------------------------------
+
+We download one subject of the movie watching dataset from Internet
+
+
+.. code-block:: default
+
+
+    from nilearn import datasets
+    dataset = datasets.fetch_development_fmri(n_subjects=1)
+
+    # print basic information on the dataset
+    print('First subject functional nifti image (4D) is at: %s' %
+          dataset.func[0])  # 4D data
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    First subject functional nifti image (4D) is at: /home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz
+
+
+
+
+Brain parcellations with Ward Clustering
+----------------------------------------
+
+Transforming list of images to data matrix and build brain parcellations,
+all can be done at once using `Parcellations` object.
+
+
+.. code-block:: default
+
+
+    from nilearn.regions import Parcellations
+
+    # Computing ward for the first time, will be long... This can be seen by
+    # measuring using time
+    import time
+    start = time.time()
+
+    # Agglomerative Clustering: ward
+
+    # We build parameters of our own for this object. Parameters related to
+    # masking, caching and defining number of clusters and specific parcellations
+    # method.
+    ward = Parcellations(method='ward', n_parcels=1000,
+                         standardize=False, smoothing_fwhm=2.,
+                         memory='nilearn_cache', memory_level=1,
+                         verbose=1)
+    # Call fit on functional dataset: single subject (less samples).
+    ward.fit(dataset.func)
+    print("Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start))
+
+    # We compute now ward clustering with 2000 clusters and compare
+    # time with 1000 clusters. To see the benefits of caching for second time.
+
+    # We initialize class again with n_parcels=2000 this time.
+    start = time.time()
+    ward = Parcellations(method='ward', n_parcels=2000,
+                         standardize=False, smoothing_fwhm=2.,
+                         memory='nilearn_cache', memory_level=1,
+                         verbose=1)
+    ward.fit(dataset.func)
+    print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [MultiNiftiMasker.fit] Loading data from [/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz]
+    [MultiNiftiMasker.fit] Computing mask
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/_utils/cache_mixin.py:303: UserWarning: memory_level is currently set to 0 but a Memory object has been provided. Setting memory_level to 1.
+      warnings.warn("memory_level is currently set to 0 but "
+    [MultiNiftiMasker.transform] Resampling mask
+    [Parcellations] Loading data
+    [MultiNiftiMasker.transform_single_imgs] Loading data from Nifti1Image('/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz')
+    [MultiNiftiMasker.transform_single_imgs] Smoothing images
+    [MultiNiftiMasker.transform_single_imgs] Extracting region signals
+    [MultiNiftiMasker.transform_single_imgs] Cleaning extracted signals
+    [Parcellations] computing ward
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.regions.parcellations._estimator_fit...
+    _estimator_fit(array([[ 0.000343, ..., -0.003525],
+           ...,
+           [ 0.00572 , ...,  0.000926]]), 
+    AgglomerativeClustering(connectivity=<24256x24256 sparse matrix of type '<class 'numpy.int64'>'
+            with 162682 stored elements in COOrdinate format>,
+                            memory=Memory(location=nilearn_cache/joblib),
+                            n_clusters=1000))
+    ________________________________________________________________________________
+    [Memory] Calling sklearn.cluster._agglomerative.ward_tree...
+    ward_tree(array([[ 0.000343, ...,  0.00572 ],
+           ...,
+           [-0.003525, ...,  0.000926]]), connectivity=<24256x24256 sparse matrix of type '<class 'numpy.int64'>'
+            with 162682 stored elements in COOrdinate format>, n_clusters=1000, return_distance=False)
+    ________________________________________________________ward_tree - 2.8s, 0.0min
+    ____________________________________________________estimator_fit - 3.1s, 0.1min
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/image/image.py:1054: FutureWarning: The parameter "sessions" will be removed in 0.9.0 release of Nilearn. Please use the parameter "runs" instead.
+      data = signal.clean(
+    Ward agglomeration 1000 clusters: 9.72s
+    [MultiNiftiMasker.fit] Loading data from [/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz]
+    [MultiNiftiMasker.fit] Computing mask
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/_utils/cache_mixin.py:303: UserWarning: memory_level is currently set to 0 but a Memory object has been provided. Setting memory_level to 1.
+      warnings.warn("memory_level is currently set to 0 but "
+    [MultiNiftiMasker.transform] Resampling mask
+    [Parcellations] Loading data
+    [Parcellations] computing ward
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.regions.parcellations._estimator_fit...
+    _estimator_fit(array([[ 0.000343, ..., -0.003525],
+           ...,
+           [ 0.00572 , ...,  0.000926]]), 
+    AgglomerativeClustering(connectivity=<24256x24256 sparse matrix of type '<class 'numpy.int64'>'
+            with 162682 stored elements in COOrdinate format>,
+                            memory=Memory(location=nilearn_cache/joblib),
+                            n_clusters=2000))
+    ________________________________________________________________________________
+    [Memory] Calling sklearn.cluster._agglomerative.ward_tree...
+    ward_tree(array([[ 0.000343, ...,  0.00572 ],
+           ...,
+           [-0.003525, ...,  0.000926]]), connectivity=<24256x24256 sparse matrix of type '<class 'numpy.int64'>'
+            with 162682 stored elements in COOrdinate format>, n_clusters=2000, return_distance=False)
+    ________________________________________________________ward_tree - 2.7s, 0.0min
+    ____________________________________________________estimator_fit - 2.9s, 0.0min
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/image/image.py:1054: FutureWarning: The parameter "sessions" will be removed in 0.9.0 release of Nilearn. Please use the parameter "runs" instead.
+      data = signal.clean(
+    Ward agglomeration 2000 clusters: 7.26s
+
+
+
+
+Visualize: Brain parcellations (Ward)
+.....................................
+
+First, we display the parcellations of the brain image stored in attribute
+`labels_img_`
+
+
+.. code-block:: default
+
+    ward_labels_img = ward.labels_img_
+
+    # Now, ward_labels_img are Nifti1Image object, it can be saved to file
+    # with the following code:
+    ward_labels_img.to_filename('ward_parcellation.nii.gz')
+
+    from nilearn import plotting
+    from nilearn.image import mean_img, index_img
+
+    first_plot = plotting.plot_roi(ward_labels_img, title="Ward parcellation",
+                                   display_mode='xz')
+
+    # Grab cut coordinates from this plot to use as a common for all plots
+    cut_coords = first_plot.cut_coords
+
+
+
+
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_001.png
+    :alt: plot data driven parcellations
+    :class: sphx-glr-single-img
+
+
+
+
+
+Compressed representation of Ward clustering
+............................................
+
+Second, we illustrate the effect that the clustering has on the signal.
+We show the original data, and the approximation provided by the
+clustering by averaging the signal on each parcel.
+
+
+.. code-block:: default
+
+
+    # Grab number of voxels from attribute mask image (mask_img_).
+    import numpy as np
+    from nilearn.image import get_data
+    original_voxels = np.sum(get_data(ward.mask_img_))
+
+    # Compute mean over time on the functional image to use the mean
+    # image for compressed representation comparisons
+    mean_func_img = mean_img(dataset.func[0])
+
+    # Compute common vmin and vmax
+    vmin = np.min(get_data(mean_func_img))
+    vmax = np.max(get_data(mean_func_img))
+
+    plotting.plot_epi(mean_func_img, cut_coords=cut_coords,
+                      title='Original (%i voxels)' % original_voxels,
+                      vmax=vmax, vmin=vmin, display_mode='xz')
+
+    # A reduced dataset can be created by taking the parcel-level average:
+    # Note that Parcellation objects with any method have the opportunity to
+    # use a `transform` call that modifies input features. Here it reduces their
+    # dimension. Note that we `fit` before calling a `transform` so that average
+    # signals can be created on the brain parcellations with fit call.
+    fmri_reduced = ward.transform(dataset.func)
+
+    # Display the corresponding data compressed using the parcellation using
+    # parcels=2000.
+    fmri_compressed = ward.inverse_transform(fmri_reduced)
+
+    plotting.plot_epi(index_img(fmri_compressed, 0),
+                      cut_coords=cut_coords,
+                      title='Ward compressed representation (2000 parcels)',
+                      vmin=vmin, vmax=vmax, display_mode='xz')
+    # As you can see below, this approximation is almost good, although there
+    # are only 2000 parcels, instead of the original 60000 voxels
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_002.png
+          :alt: plot data driven parcellations
+          :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_003.png
+          :alt: plot data driven parcellations
+          :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [Parcellations.transform] loading data from Nifti1Image('ward_parcellation.nii.gz')
+    [Parcellations.transform] loading data from Nifti1Image(
+    shape=(50, 59, 50),
+    affine=array([[   4.,    0.,    0.,  -96.],
+           [   0.,    4.,    0., -132.],
+           [   0.,    0.,    4.,  -78.],
+           [   0.,    0.,    0.,    1.]])
+    )
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.input_data.base_masker.filter_and_extract...
+    filter_and_extract(<nibabel.nifti1.Nifti1Image object at 0x7fc6a8005730>, <nilearn.input_data.nifti_labels_masker._ExtractionFunctor object at 0x7fc6a2d17430>, 
+    { 'background_label': 0,
+      'detrend': False,
+      'dtype': None,
+      'high_pass': None,
+      'high_variance_confounds': False,
+      'labels': None,
+      'labels_img': <nibabel.nifti1.Nifti1Image object at 0x7fc6a80057c0>,
+      'low_pass': None,
+      'mask_img': <nibabel.nifti1.Nifti1Image object at 0x7fc6a8005d60>,
+      'reports': True,
+      'smoothing_fwhm': 2.0,
+      'standardize': False,
+      'standardize_confounds': True,
+      'strategy': 'mean',
+      't_r': None,
+      'target_affine': None,
+      'target_shape': None}, confounds=None, sample_mask=None, dtype=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1)
+    [NiftiLabelsMasker.transform_single_imgs] Loading data from Nifti1Image('/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz')
+    [NiftiLabelsMasker.transform_single_imgs] Smoothing images
+    [NiftiLabelsMasker.transform_single_imgs] Extracting region signals
+    [NiftiLabelsMasker.transform_single_imgs] Cleaning extracted signals
+    _______________________________________________filter_and_extract - 2.3s, 0.0min
+
+    <nilearn.plotting.displays.XZSlicer object at 0x7fc6a2ff4160>
+
+
+
+Brain parcellations with KMeans Clustering
+------------------------------------------
+
+We use the same approach as with building parcellations using Ward
+clustering. But, in the range of a small number of clusters,
+it is most likely that we want to use standardization. Indeed with
+standardization and smoothing, the clusters will form as regions.
+
+
+.. code-block:: default
+
+
+    # class/functions can be used here as they are already imported above.
+
+    # This object uses method='kmeans' for KMeans clustering with 10mm smoothing
+    # and standardization ON
+    start = time.time()
+    kmeans = Parcellations(method='kmeans', n_parcels=50,
+                           standardize=True, smoothing_fwhm=10.,
+                           memory='nilearn_cache', memory_level=1,
+                           verbose=1)
+    # Call fit on functional dataset: single subject (less samples)
+    kmeans.fit(dataset.func)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [MultiNiftiMasker.fit] Loading data from [/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz]
+    [MultiNiftiMasker.fit] Computing mask
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/_utils/cache_mixin.py:303: UserWarning: memory_level is currently set to 0 but a Memory object has been provided. Setting memory_level to 1.
+      warnings.warn("memory_level is currently set to 0 but "
+    [MultiNiftiMasker.transform] Resampling mask
+    [Parcellations] Loading data
+    [MultiNiftiMasker.transform_single_imgs] Loading data from Nifti1Image('/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz')
+    [MultiNiftiMasker.transform_single_imgs] Smoothing images
+    [MultiNiftiMasker.transform_single_imgs] Extracting region signals
+    [MultiNiftiMasker.transform_single_imgs] Cleaning extracted signals
+    [Parcellations] computing kmeans
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.regions.parcellations._estimator_fit...
+    _estimator_fit(array([[-0.005347, ..., -0.012091],
+           ...,
+           [-0.002248, ..., -0.005051]]), 
+    MiniBatchKMeans(n_clusters=50, random_state=0))
+    ____________________________________________________estimator_fit - 0.9s, 0.0min
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/image/image.py:1054: FutureWarning: The parameter "sessions" will be removed in 0.9.0 release of Nilearn. Please use the parameter "runs" instead.
+      data = signal.clean(
+
+    Parcellations(memory=Memory(location=nilearn_cache/joblib), memory_level=1,
+                  method='kmeans', smoothing_fwhm=10.0, standardize=True)
+
+
+
+Visualize: Brain parcellations (KMeans)
+.......................................
+
+Grab parcellations of brain image stored in attribute `labels_img_`
+
+
+.. code-block:: default
+
+    kmeans_labels_img = kmeans.labels_img_
+
+    plotting.plot_roi(kmeans_labels_img, mean_func_img,
+                      title="KMeans parcellation",
+                      display_mode='xz')
+
+    # kmeans_labels_img is a Nifti1Image object, it can be saved to file with
+    # the following code:
+    kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
+
+
+
+
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_004.png
+    :alt: plot data driven parcellations
+    :class: sphx-glr-single-img
+
+
+
+
+
+Brain parcellations with ReNA Clustering
+----------------------------------------
+
+One interesting algorithmic property of ReNA (see References) is that
+it is very fast for a large number of parcels (notably faster than Ward).
+As before, the parcellation is done with a Parcellations object.
+The spatial constraints are implemented inside the Parcellations object.
+
+References
+..........
+
+More about ReNA clustering algorithm in the original paper
+
+    * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "Recursive
+      Nearest Agglomeration (ReNA): Fast Clustering for Approximation of
+      Structured Signals," in IEEE Transactions on Pattern Analysis and
+      Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
+      https://hal.archives-ouvertes.fr/hal-01366651/
+
+
+.. code-block:: default
+
+    start = time.time()
+    rena = Parcellations(method='rena', n_parcels=5000, standardize=False,
+                         smoothing_fwhm=2., scaling=True)
+
+    rena.fit_transform(dataset.func)
+    print("ReNA 5000 clusters: %.2fs" % (time.time() - start))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [MultiNiftiMasker.fit] Loading data from [/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz]
+    [MultiNiftiMasker.fit] Computing mask
+    [MultiNiftiMasker.transform] Resampling mask
+    [Parcellations] Loading data
+    [MultiNiftiMasker.transform_single_imgs] Loading data from Nifti1Image('/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz')
+    [MultiNiftiMasker.transform_single_imgs] Smoothing images
+    [MultiNiftiMasker.transform_single_imgs] Extracting region signals
+    [MultiNiftiMasker.transform_single_imgs] Cleaning extracted signals
+    [Parcellations] computing rena
+    /home/nicolas/GitRepos/nilearn-fork/nilearn/image/image.py:1054: FutureWarning: The parameter "sessions" will be removed in 0.9.0 release of Nilearn. Please use the parameter "runs" instead.
+      data = signal.clean(
+    [Parcellations.fit_transform] loading data from Nifti1Image(
+    shape=(50, 59, 50),
+    affine=array([[   4.,    0.,    0.,  -96.],
+           [   0.,    4.,    0., -132.],
+           [   0.,    0.,    4.,  -78.],
+           [   0.,    0.,    0.,    1.]])
+    )
+    [Parcellations.fit_transform] loading data from Nifti1Image(
+    shape=(50, 59, 50),
+    affine=array([[   4.,    0.,    0.,  -96.],
+           [   0.,    4.,    0., -132.],
+           [   0.,    0.,    4.,  -78.],
+           [   0.,    0.,    0.,    1.]])
+    )
+    [NiftiLabelsMasker.transform_single_imgs] Loading data from Nifti1Image('/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz')
+    [NiftiLabelsMasker.transform_single_imgs] Smoothing images
+    [NiftiLabelsMasker.transform_single_imgs] Extracting region signals
+    [NiftiLabelsMasker.transform_single_imgs] Cleaning extracted signals
+    ReNA 5000 clusters: 8.87s
+
+
+
+
+Visualize: Brain parcellations (ReNA)
+.....................................
+
+First, we display the parcellations of the brain image stored in attribute
+`labels_img_`
+
+
+.. code-block:: default
+
+    rena_labels_img = rena.labels_img_
+
+    # Now, rena_labels_img are Nifti1Image object, it can be saved to file
+    # with the following code:
+    rena_labels_img.to_filename('rena_parcellation.nii.gz')
+
+    plotting.plot_roi(ward_labels_img, title="ReNA parcellation",
+                      display_mode='xz', cut_coords=cut_coords)
+
+
+
+
+.. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_005.png
+    :alt: plot data driven parcellations
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+    <nilearn.plotting.displays.XZSlicer object at 0x7fc6a2ff4670>
+
+
+
+Compressed representation of ReNA clustering
+............................................
+
+We illustrate the effect that the clustering has on the signal.
+We show the original data, and the approximation provided by
+the clustering by averaging the signal on each parcel.
+
+We can then compare the results with the compressed representation
+obtained with Ward.
+
+
+.. code-block:: default
+
+
+    # Display the original data
+    plotting.plot_epi(mean_func_img, cut_coords=cut_coords,
+                      title='Original (%i voxels)' % original_voxels,
+                      vmax=vmax, vmin=vmin, display_mode='xz')
+
+    # A reduced data can be created by taking the parcel-level average:
+    # Note that, as many scikit-learn objects, the ReNA object exposes
+    # a transform method that modifies input features. Here it reduces their
+    # dimension.
+    # However, the data are in one single large 4D image, we need to use
+    # index_img to do the split easily:
+    fmri_reduced_rena = rena.transform(dataset.func)
+
+    # Display the corresponding data compression using the parcellation
+    compressed_img_rena = rena.inverse_transform(fmri_reduced_rena)
+
+    plotting.plot_epi(index_img(compressed_img_rena, 0), cut_coords=cut_coords,
+                      title='ReNA compressed representation (5000 parcels)',
+                      vmin=vmin, vmax=vmax, display_mode='xz')
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_006.png
+          :alt: plot data driven parcellations
+          :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_007.png
+          :alt: plot data driven parcellations
+          :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [Parcellations.transform] loading data from Nifti1Image('rena_parcellation.nii.gz')
+    [Parcellations.transform] loading data from Nifti1Image(
+    shape=(50, 59, 50),
+    affine=array([[   4.,    0.,    0.,  -96.],
+           [   0.,    4.,    0., -132.],
+           [   0.,    0.,    4.,  -78.],
+           [   0.,    0.,    0.,    1.]])
+    )
+    [NiftiLabelsMasker.transform_single_imgs] Loading data from Nifti1Image('/home/nicolas/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz')
+    [NiftiLabelsMasker.transform_single_imgs] Smoothing images
+    [NiftiLabelsMasker.transform_single_imgs] Extracting region signals
+    [NiftiLabelsMasker.transform_single_imgs] Cleaning extracted signals
+
+    <nilearn.plotting.displays.XZSlicer object at 0x7fc6a2d17d90>
+
+
+
+Even if the compressed signal is relatively close
+to the original signal, we can notice that Ward Clustering
+gives a slightly more accurate compressed representation.
+However, as said in the previous section, the computation time is
+reduced which could still make ReNA more relevant than Ward in
+some cases.
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  43.445 seconds)
+
+
+.. _sphx_glr_download_auto_examples_03_connectivity_plot_data_driven_parcellations.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+  .. container:: binder-badge
+
+    .. image:: images/binder_badge_logo.svg
+      :target: https://mybinder.org/v2/gh/nilearn/nilearn.github.io/main?filepath=examples/auto_examples/03_connectivity/plot_data_driven_parcellations.ipynb
+      :alt: Launch binder
+      :width: 150 px
+
+
+  .. container:: sphx-glr-download sphx-glr-download-python
+
+     :download:`Download Python source code: plot_data_driven_parcellations.py <plot_data_driven_parcellations.py>`
+
+
+
+  .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+     :download:`Download Jupyter notebook: plot_data_driven_parcellations.ipynb <plot_data_driven_parcellations.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

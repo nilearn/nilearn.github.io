@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nilearn: Statistical Analysis for NeuroImaging in Python &#8212; Machine learning for NeuroImaging</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/nature.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/gallery-dataframe.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/copybutton.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="9.6.3. Statistical testing of a second-level analysis" href="plot_thresholding.html" />
+    <link rel="prev" title="9.6.1. Example of second level design matrix" href="plot_second_level_design_matrix.html" />
+<meta content="True" name="HandheldFriendly">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<meta name="keywords" content="nilearn, neuroimaging, python, neuroscience, machinelearning">
+
+
+<script type="text/javascript">
+function updateTopMenuPosition(height, width) {
+    if($(window).scrollTop() > height && $(window).outerWidth() > 1024) {
+        //begin to scroll
+        $('.related-wrapper').css("z-index", 1000);
+        $('.related-wrapper').css("position", "sticky");
+        $('.related-wrapper').css("top", 0);
+        $('.related-wrapper').css("width", width)
+    } else {
+        //lock it back into place
+        $('.related-wrapper').css("position", "relative");
+        $('.related-wrapper').css("top", 0)
+    }
+}
+
+$(function() {
+    var banner_height = $('#logo-banner').outerHeight();
+    var banner_width = $('#logo-banner').outerWidth();
+    var width = $('.related-wrapper').css("height", $('.related').outerHeight());
+
+    updateTopMenuPosition(banner_height, width);
+
+    $(window).scroll(function(event) {
+        updateTopMenuPosition(banner_height, width)
+    });
+
+    $(window).resize(function(event) {
+        var banner_width = $('#logo-banner').outerWidth();
+        var menu_height = $('.related').outerHeight();
+        $('.related').css("width", banner_width);
+        $('.related-wrapper').css("height", menu_height);
+        updateTopMenuPosition(banner_height, width)
+    })
+});
+</script>
+<script type="text/javascript">
+function updateSideBarPosition(top, offset, sections) {
+    var pos = $(window).scrollTop();
+    // Lock the table of content to a fixed position once we scroll enough
+    var topShift = 2 * offset;
+    if(pos > top + topShift + 1) {
+        // begin to scroll with sticky menu bar
+        var topShift = -topShift + 1;
+        if ($(window).outerWidth() < 1024) {
+            // compensate top menu that disappears
+            topShift -= offset + 1
+        }
+        $('.sphinxsidebarwrapper').css("position", "fixed");
+        $('.sphinxsidebarwrapper').css("top", topShift)
+    }
+    else {
+        //lock it back into place
+        $('.sphinxsidebarwrapper').css("position", "relative");
+        $('.sphinxsidebarwrapper').css("top",0)
+    }
+
+    // Highlight the current section
+    i = 0;
+    current_section = 0;
+    $('a.internal').removeClass('active');
+    for(i in sections) {
+        if(sections[i] > pos) {
+            break
+        }
+        if($('a.internal[href$="' + i + '"]').is(':visible')){
+            current_section = i
+        }
+    }
+    $('a.internal[href$="' + current_section + '"]').addClass('active');
+    $('a.internal[href$="' + current_section + '"]').parent().addClass('active')
+}
+
+$(function () {
+    // Lock the table of content to a fixed position once we scroll enough
+    var tocOffset = $('.related-wrapper').outerHeight();
+    var marginTop = parseFloat($('.sphinxsidebarwrapper').css('margin-top').replace(/auto/, 0));
+    var top = $('.sphinxsidebarwrapper').offset().top - marginTop;
+    sections = {};
+    url = document.URL.replace(/#.*$/, "");
+
+    // Grab positions of our sections
+    $('.headerlink').each(function(){
+        sections[this.href.replace(url, '')] = $(this).offset().top - 50
+    });
+
+    updateSideBarPosition(top, tocOffset, sections);
+
+    $(window).scroll(function(event) {
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+
+    $(window).resize(function(event) {
+        tocOffset = $('.related-wrapper').outerHeight();
+        updateSideBarPosition(top, tocOffset, sections)
+    });
+});
+</script>
+
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-41920728-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+  </head><body>
+<div id="logo-banner">
+  <div class="logo">
+    <a href="../../index.html">
+      <img src="../../_static/nilearn-logo.png" alt="Nilearn logo"  border="0" />
+    </a>
+  </div>
+  <!-- A tag cloud to make it easy for people to find what they are
+                         looking for -->
+ <div class="tags">
+  <ul>
+    <li>
+      <big><a href="../decoding/plot_haxby_anova_svm.html">SVM</a></big>
+    </li>
+    <li>
+      <small><a href="../../connectivity/parcellating.html">Ward
+          clustering</a></small>
+    </li>
+    <li>
+      <a href="../../decoding/searchlight.html">Searchlight</a>
+    </li>
+    <li>
+      <big><a href="../../connectivity/resting_state_networks.html">ICA</a></big>
+    </li>
+    <li>
+      <a href="../../manipulating_images/data_preparation.html">Nifti IO</a>
+    </li>
+    <li>
+      <a href="../../modules/reference.html#module-nilearn.datasets">Datasets</a>
+    </li>
+  </ul>
+ </div>
+
+  <div class="banner">
+    <h1>Nilearn:</h1>
+    <h2>Statistics for NeuroImaging in Python</h2>
+  </div>
+  <div class="search_form">
+    <div class="gcse-search" id="cse" style="width: 100%;"></div>
+    <script>
+      (function() {
+        var cx = '017289614950330089114:elrt9qoutrq';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
+    </script>
+  </div>
+</div>
+
+
+
+<div class=related-wrapper>
+    
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a></li>
+        <li class="right" >
+          <a href="plot_thresholding.html" title="9.6.3. Statistical testing of a second-level analysis"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plot_second_level_design_matrix.html" title="9.6.1. Example of second level design matrix"
+             accesskey="P">previous</a> |</li>
+<li><a href="../../index.html">Nilearn Home</a> |&nbsp;</li>
+<li><a href="../../user_guide.html">User Guide</a> |&nbsp;</li>
+<li><a href="../index.html">Examples</a> |&nbsp;</li>
+<li><a href="../../modules/reference.html">Reference</a> |&nbsp;</li>
+<li id="navbar-about"><a href="../../authors.html">About</a>|&nbsp;</li>
+<li><a href="../../glossary.html">Glossary</a>|&nbsp;</li>
+<li><a href="../../bibliography.html">Bibliography</a>|&nbsp;</li>
+<li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
+
+          <li class="nav-item nav-item-1"><a href="../../user_guide.html" >User guide: table of contents</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U"><span class="section-number">9. </span>Nilearn usage examples</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Nilearn: Statistical Analysis for NeuroImaging in Python</a></li> 
+      </ul>
+    </div>
+</div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-auto-examples-05-glm-second-level-plot-proportion-activated-voxels-py"><span class="std std-ref">here</span></a>     to download the full example code or to run this example in your browser via Binder</p>
+</div>
+<div class="sphx-glr-example-title section" id="second-level-fmri-model-true-positive-proportion-in-clusters">
+<span id="sphx-glr-auto-examples-05-glm-second-level-plot-proportion-activated-voxels-py"></span><h1><span class="section-number">9.6.2. </span>Second-level fMRI model: true positive proportion in clusters<a class="headerlink" href="#second-level-fmri-model-true-positive-proportion-in-clusters" title="Permalink to this headline">¶</a></h1>
+<p>This script showcases the so-called “All resolution inference” procedure, in
+which the proportion of true discoveries in arbitrary clusters is estimated.
+The clusters can be defined from the input image, i.e. in a circular way, as
+the error control accounts for arbitrary cluster selection.</p>
+<p>Rosenblatt JD, Finos L, Weeda WD, Solari A, Goeman JJ. All-Resolutions
+Inference for brain imaging. Neuroimage. 2018 Nov 1;181:786-796. doi:
+10.1016/j.neuroimage.2018.07.060</p>
+<div class="section" id="fetch-dataset">
+<h2><span class="section-number">9.6.2.1. </span>Fetch dataset<a class="headerlink" href="#fetch-dataset" title="Permalink to this headline">¶</a></h2>
+<p>We download a list of left vs right button press contrasts from a
+localizer dataset. Note that we fetch individual t-maps that represent the
+BOLD activity estimate divided by the uncertainty about this estimate.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.datasets</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.datasets.fetch_localizer_contrasts.html#nilearn.datasets.fetch_localizer_contrasts" title="nilearn.datasets.fetch_localizer_contrasts" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">fetch_localizer_contrasts</span></a>
+<a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_subjects</span></a> <span class="o">=</span> <span class="mi">16</span>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">data</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_localizer_contrasts.html#nilearn.datasets.fetch_localizer_contrasts" title="nilearn.datasets.fetch_localizer_contrasts" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">fetch_localizer_contrasts</span></a><span class="p">([</span><span class="s2">&quot;left vs right button press&quot;</span><span class="p">],</span> <a href="https://docs.python.org/3.8/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_subjects</span></a><span class="p">,</span>
+                                 <span class="n">get_tmaps</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">nilearn</span> <span class="kn">import</span> <span class="n">plotting</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/nicolas/anaconda3/envs/nilearn/lib/python3.8/site-packages/numpy/lib/npyio.py:2405: VisibleDeprecationWarning: Reading unicode strings without specifying the encoding argument is deprecated. Set the encoding, use None for the system default.
+  output = genfromtxt(fname, **kwargs)
+</pre></div>
+</div>
+</div>
+<div class="section" id="estimate-second-level-model">
+<h2><span class="section-number">9.6.2.2. </span>Estimate second level model<a class="headerlink" href="#estimate-second-level-model" title="Permalink to this headline">¶</a></h2>
+<p>We define the input maps and the design matrix for the second level model
+and fit it.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">second_level_input</span></a> <span class="o">=</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-function"><span class="n">data</span></a><span class="p">[</span><span class="s1">&#39;cmaps&#39;</span><span class="p">]</span>
+<a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrix</span></a> <span class="o">=</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class"><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span></a><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">second_level_input</span></a><span class="p">),</span>
+                             <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;intercept&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Model specification and fit</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nilearn.glm.second_level</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.glm.second_level.SecondLevelModel.html#nilearn.glm.second_level.SecondLevelModel" title="nilearn.glm.second_level.SecondLevelModel" class="sphx-glr-backref-module-nilearn-glm-second_level sphx-glr-backref-type-py-class"><span class="n">SecondLevelModel</span></a>
+<a href="../../modules/generated/nilearn.glm.second_level.SecondLevelModel.html#nilearn.glm.second_level.SecondLevelModel" title="nilearn.glm.second_level.SecondLevelModel" class="sphx-glr-backref-module-nilearn-glm-second_level sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">second_level_model</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.second_level.SecondLevelModel.html#nilearn.glm.second_level.SecondLevelModel" title="nilearn.glm.second_level.SecondLevelModel" class="sphx-glr-backref-module-nilearn-glm-second_level sphx-glr-backref-type-py-class"><span class="n">SecondLevelModel</span></a><span class="p">(</span><span class="n">smoothing_fwhm</span><span class="o">=</span><span class="mf">8.0</span><span class="p">)</span>
+<a href="../../modules/generated/nilearn.glm.second_level.SecondLevelModel.html#nilearn.glm.second_level.SecondLevelModel" title="nilearn.glm.second_level.SecondLevelModel" class="sphx-glr-backref-module-nilearn-glm-second_level sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">second_level_model</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.second_level.SecondLevelModel.html#nilearn.glm.second_level.SecondLevelModel.fit" title="nilearn.glm.second_level.SecondLevelModel.fit" class="sphx-glr-backref-module-nilearn-glm-second_level sphx-glr-backref-type-py-method"><span class="n">second_level_model</span><span class="o">.</span><span class="n">fit</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">second_level_input</span></a><span class="p">,</span>
+                                            <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrix</span></a><span class="o">=</span><a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">design_matrix</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<p>To estimate the contrast is very simple. We can just provide the column
+name of the design matrix.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.second_level.SecondLevelModel.html#nilearn.glm.second_level.SecondLevelModel.compute_contrast" title="nilearn.glm.second_level.SecondLevelModel.compute_contrast" class="sphx-glr-backref-module-nilearn-glm-second_level sphx-glr-backref-type-py-method"><span class="n">second_level_model</span><span class="o">.</span><span class="n">compute_contrast</span></a><span class="p">(</span><span class="n">output_type</span><span class="o">=</span><span class="s1">&#39;z_score&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We threshold the second level contrast at uncorrected p &lt; 0.001 and plot</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
+<a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">p_val</span></a> <span class="o">=</span> <span class="mf">0.001</span>
+<a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">p001_uncorrected</span></a> <span class="o">=</span> <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.rv_continuous.isf.html#scipy.stats.rv_continuous.isf" title="scipy.stats.rv_continuous.isf" class="sphx-glr-backref-module-scipy-stats sphx-glr-backref-type-py-method"><span class="n">norm</span><span class="o">.</span><span class="n">isf</span></a><span class="p">(</span><a href="https://docs.python.org/3.8/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">p_val</span></a><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">nilearn.glm</span> <span class="kn">import</span> <a href="../../modules/generated/nilearn.glm.cluster_level_inference.html#nilearn.glm.cluster_level_inference" title="nilearn.glm.cluster_level_inference" class="sphx-glr-backref-module-nilearn-glm sphx-glr-backref-type-py-function"><span class="n">cluster_level_inference</span></a>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">proportion_true_discoveries_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.glm.cluster_level_inference.html#nilearn.glm.cluster_level_inference" title="nilearn.glm.cluster_level_inference" class="sphx-glr-backref-module-nilearn-glm sphx-glr-backref-type-py-function"><span class="n">cluster_level_inference</span></a><span class="p">(</span>
+    <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">05</span><span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span>
+    <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">proportion_true_discoveries_img</span></a><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+    <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;group left-right button press, proportion true positives&#39;</span><span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">plot_stat_map</span></a><span class="p">(</span>
+    <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">z_map</span></a><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float64" title="numpy.float64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">p001_uncorrected</span></a><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s1">&#39;z&#39;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">&#39;group left-right button press (uncorrected p &lt; 0.001)&#39;</span><span class="p">)</span>
+
+
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plotting</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+</pre></div>
+</div>
+<ul class="sphx-glr-horizontal">
+<li><img alt="plot proportion activated voxels" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_proportion_activated_voxels_001.png" />
+</li>
+<li><img alt="plot proportion activated voxels" class="sphx-glr-multi-img" src="../../_images/sphx_glr_plot_proportion_activated_voxels_002.png" />
+</li>
+</ul>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  5.114 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-05-glm-second-level-plot-proportion-activated-voxels-py">
+<div class="binder-badge docutils container">
+<a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn.github.io/main?filepath=examples/auto_examples/05_glm_second_level/plot_proportion_activated_voxels.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo4.svg" width="150px" /></a>
+</div>
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/7ac40e1148813e3b5c7de187825d7b69/plot_proportion_activated_voxels.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">plot_proportion_activated_voxels.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/6668c251641a58d69491a18b92a831bb/plot_proportion_activated_voxels.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">plot_proportion_activated_voxels.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+
+
+<h4> Giving credit </h4>
+  <ul class="simple">
+    <li><p>Please consider <a href="../../authors.html#citing">citing the
+                    papers</a>.</p></li>
+  </ul>
+
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">9.6.2. Second-level fMRI model: true positive proportion in clusters</a><ul>
+<li><a class="reference internal" href="#fetch-dataset">9.6.2.1. Fetch dataset</a></li>
+<li><a class="reference internal" href="#estimate-second-level-model">9.6.2.2. Estimate second level model</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plot_second_level_design_matrix.html"
+                        title="previous chapter"><span class="section-number">9.6.1. </span>Example of second level design matrix</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plot_thresholding.html"
+                        title="next chapter"><span class="section-number">9.6.3. </span>Statistical testing of a second-level analysis</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+
+    <div class="footer">
+            &copy; The nilearn developers 2010-2021.
+          Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 4.0.2.
+        <span style="padding-left: 5ex;">
+          <a href="../../_sources/auto_examples/05_glm_second_level/plot_proportion_activated_voxels.rst.txt"
+        	 rel="nofollow">Show this page source</a>
+        </span>
+    </div>
+  </body>
+</html>
