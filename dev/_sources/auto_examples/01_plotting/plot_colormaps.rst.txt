@@ -18,48 +18,99 @@
 .. _sphx_glr_auto_examples_01_plotting_plot_colormaps.py:
 
 
-Matplotlib colormaps in Nilearn
-===============================
+Colormaps in Nilearn
+====================
 
-Visualize HCP connectome workbench color maps shipped with Nilearn
-which can be used for plotting brain images on surface.
+Here we show some of the colormaps that ship with Nilearn
+(some adapted from the HCP connectome workbench color maps).
 
-See :ref:`surface-plotting` for surface plotting details.
+This example show also some of the pros and cons of some of those maps.
 
-.. GENERATED FROM PYTHON SOURCE LINES 12-14
-
-Plot color maps
----------------
-
-.. GENERATED FROM PYTHON SOURCE LINES 14-34
+.. GENERATED FROM PYTHON SOURCE LINES 10-18
 
 .. code-block:: Python
 
+
+    import matplotlib.pyplot as plt
     import numpy as np
 
     from nilearn.plotting import show
     from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 
-    nmaps = len(nilearn_cmaps)
-    a = np.outer(np.arange(0, 1, 0.01), np.ones(10))
 
-    # Initialize the figure
-    import matplotlib.pyplot as plt
 
-    plt.figure(figsize=(10, 4.2))
-    plt.subplots_adjust(top=0.4, bottom=0.05, left=0.01, right=0.99)
 
-    for index, cmap in enumerate(nilearn_cmaps):
-        plt.subplot(1, nmaps + 1, index + 1)
-        plt.imshow(a, cmap=nilearn_cmaps[cmap])
-        plt.axis("off")
-        plt.title(cmap, fontsize=10, va="bottom", rotation=90)
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 19-21
+
+Let's create a function to help us plot all the colormaps with their names.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 21-55
+
+.. code-block:: Python
+
+    def plot_color_gradients(color_maps):
+        """Create figure and adjust figure height to number of colormaps.
+
+        Adapted from the matplolib documentation.
+        """
+        gradient = np.linspace(0, 1, 256)
+        gradient = np.vstack((gradient, gradient))
+
+        color_map_names = sorted(color_maps)
+
+        nrows = len(color_map_names)
+        figh = 0.3 + 0.2 + (nrows + (nrows - 1) * 0.1) * 0.22
+        fig, axs = plt.subplots(nrows=nrows + 1, figsize=(15, figh))
+        fig.subplots_adjust(
+            top=1 - 0.3 / figh, bottom=0.2 / figh, left=0.22, right=0.99
+        )
+
+        for ax, name in zip(axs, color_map_names):
+            ax.imshow(gradient, aspect="auto", cmap=name)
+            ax.text(
+                -0.01,
+                0.5,
+                name,
+                va="center",
+                ha="right",
+                fontsize=12,
+                transform=ax.transAxes,
+            )
+
+        # Turn off *all* ticks & spines, not just the ones with colormaps.
+        for ax in axs:
+            ax.set_axis_off()
+
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 56-58
+
+Plot matplotlib color maps
+--------------------------
+
+.. GENERATED FROM PYTHON SOURCE LINES 58-60
+
+.. code-block:: Python
+
+    plot_color_gradients(nilearn_cmaps)
 
 
 
 
 .. image-sg:: /auto_examples/01_plotting/images/sphx_glr_plot_colormaps_001.png
-   :alt: cold_hot, cold_hot_r, cold_white_hot, cold_white_hot_r, brown_blue, brown_blue_r, cyan_copper, cyan_copper_r, cyan_orange, cyan_orange_r, blue_red, blue_red_r, brown_cyan, brown_cyan_r, purple_green, purple_green_r, purple_blue, purple_blue_r, blue_orange, blue_orange_r, black_blue, black_blue_r, black_purple, black_purple_r, black_pink, black_pink_r, black_green, black_green_r, black_red, black_red_r, ocean_hot, ocean_hot_r, hot_white_bone, hot_white_bone_r, hot_black_bone, hot_black_bone_r, bwr, bwr_r, red_transparent, red_transparent_full_alpha_range, green_transparent, green_transparent_full_alpha_range, blue_transparent, blue_transparent_full_alpha_range, roy_big_bl, videen_style
+   :alt: plot colormaps
    :srcset: /auto_examples/01_plotting/images/sphx_glr_plot_colormaps_001.png
    :class: sphx-glr-single-img
 
@@ -67,31 +118,24 @@ Plot color maps
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 35-37
+.. GENERATED FROM PYTHON SOURCE LINES 61-63
 
 Plot matplotlib color maps
 --------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 37-56
+.. GENERATED FROM PYTHON SOURCE LINES 63-75
 
 .. code-block:: Python
 
 
-    plt.figure(figsize=(10, 5))
-    plt.subplots_adjust(top=0.8, bottom=0.05, left=0.01, right=0.99)
     deprecated_cmaps = ["Vega10", "Vega20", "Vega20b", "Vega20c", "spectral"]
     m_cmaps = [
         m
         for m in plt.cm.datad
         if not m.endswith("_r") and m not in deprecated_cmaps
     ]
-    m_cmaps.sort()
 
-    for index, cmap in enumerate(m_cmaps):
-        plt.subplot(1, len(m_cmaps) + 1, index + 1)
-        plt.imshow(a, cmap=plt.get_cmap(cmap), aspect="auto")
-        plt.axis("off")
-        plt.title(cmap, fontsize=10, va="bottom", rotation=90)
+    plot_color_gradients(m_cmaps)
 
     show()
 
@@ -99,9 +143,68 @@ Plot matplotlib color maps
 
 
 .. image-sg:: /auto_examples/01_plotting/images/sphx_glr_plot_colormaps_002.png
-   :alt: Accent, Blues, BrBG, BuGn, BuPu, CMRmap, Dark2, GnBu, Greens, Greys, OrRd, Oranges, PRGn, Paired, Pastel1, Pastel2, PiYG, PuBu, PuBuGn, PuOr, PuRd, Purples, RdBu, RdGy, RdPu, RdYlBu, RdYlGn, Reds, Set1, Set2, Set3, Spectral, Wistia, YlGn, YlGnBu, YlOrBr, YlOrRd, afmhot, autumn, binary, bone, brg, bwr, cool, coolwarm, copper, cubehelix, flag, gist_earth, gist_gray, gist_heat, gist_ncar, gist_rainbow, gist_stern, gist_yarg, gnuplot, gnuplot2, gray, hot, hsv, jet, nipy_spectral, ocean, pink, prism, rainbow, seismic, spring, summer, tab10, tab20, tab20b, tab20c, terrain, winter
+   :alt: plot colormaps
    :srcset: /auto_examples/01_plotting/images/sphx_glr_plot_colormaps_002.png
    :class: sphx-glr-single-img
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 76-93
+
+Choosing colormaps
+------------------
+Some of the `cyclic colormaps <https://matplotlib.org/stable/users/explain/colors/colormaps.html#cyclic>`_
+shipped with nilearn (like ``"cold_hot"``) will have the same values
+for very large and very small values,
+making it hard to distinguish 'activations' from 'deactivations'.
+
+In this case, you may want to use
+a proper `diverging colormaps <https://matplotlib.org/stable/users/explain/colors/colormaps.html#diverging>`_
+(like ``"RdBu_r"``, the default for many Nilearn plotting functions).
+
+Whatever colormap you choose,
+we recommend you check that it is perceptually uniform
+(equal steps in data are perceived as equal steps in the color space)
+(see `the matplotlib documentation <https://matplotlib.org/stable/users/explain/colors/colormaps.html#lightness-of-matplotlib-colormaps>`
+for more information).
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 93-104
+
+.. code-block:: Python
+
+
+    from nilearn.datasets import load_sample_motor_activation_image
+    from nilearn.plotting import plot_stat_map
+
+    stat_map = load_sample_motor_activation_image()
+
+    plot_stat_map(stat_map, cmap="RdBu_r", threshold=6, title="diverging colormap")
+    plot_stat_map(stat_map, cmap="cold_hot", threshold=6, title="cyclic colormap")
+
+    show()
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /auto_examples/01_plotting/images/sphx_glr_plot_colormaps_003.png
+         :alt: plot colormaps
+         :srcset: /auto_examples/01_plotting/images/sphx_glr_plot_colormaps_003.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/01_plotting/images/sphx_glr_plot_colormaps_004.png
+         :alt: plot colormaps
+         :srcset: /auto_examples/01_plotting/images/sphx_glr_plot_colormaps_004.png
+         :class: sphx-glr-multi-img
 
 
 
@@ -110,9 +213,9 @@ Plot matplotlib color maps
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.211 seconds)
+   **Total running time of the script:** (0 minutes 5.135 seconds)
 
-**Estimated memory usage:**  114 MB
+**Estimated memory usage:**  123 MB
 
 
 .. _sphx_glr_download_auto_examples_01_plotting_plot_colormaps.py:
@@ -124,7 +227,7 @@ Plot matplotlib color maps
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/01_plotting/plot_colormaps.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.12.0?urlpath=lab/tree/notebooks/auto_examples/01_plotting/plot_colormaps.ipynb
         :alt: Launch binder
         :width: 150 px
 

@@ -31,7 +31,7 @@ This example use the resting state time series
 of a single subject's left hemisphere
 the :ref:`nki_dataset`.
 
-The :ref:`destrieux_atlas` in fsaverage5 space
+The :ref:`destrieux_2009_atlas` in fsaverage5 space
 is used to select a seed region in the posterior cingulate cortex.
 
 The :func:`~nilearn.plotting.plot_surf_stat_map` function is used
@@ -107,10 +107,10 @@ Retrieving the data
 
  .. code-block:: none
 
-    [get_dataset_dir] Dataset found in 
-    /home/runner/nilearn_data/nki_enhanced_surface
+    [load_nki] Dataset found in /home/runner/nilearn_data/nki_enhanced_surface
     [load_nki] Loading subject 1 of 1.
-    [get_dataset_dir] Dataset found in /home/runner/nilearn_data/destrieux_surface
+    [fetch_atlas_surf_destrieux] Dataset found in 
+    /home/runner/nilearn_data/destrieux_surface
     /home/runner/work/nilearn/nilearn/examples/01_plotting/plot_surf_stat_map.py:56: UserWarning: 
     The following regions are present in the atlas look-up table,
     but missing from the atlas image:
@@ -129,7 +129,7 @@ Retrieving the data
       destrieux = fetch_atlas_surf_destrieux()
     fsaverage_meshes['pial'].parts['left']=<FileMesh with 10242 vertices and 20480 faces.>
     fsaverage_sulcal=<SurfaceImage (20484,)>
-    fsaverage_sulcal.mesh=<nilearn.surface.surface.PolyMesh object at 0x7fc1ee7c4910>
+    fsaverage_sulcal.mesh=<nilearn.surface.surface.PolyMesh object at 0x7f6679f96880>
     fsaverage_sulcal.data=<PolyData (20484,)>
 
 
@@ -183,7 +183,7 @@ Display ROI on surface
 Before we go further,
 let's make sure we have selected the right regions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-130
+.. GENERATED FROM PYTHON SOURCE LINES 111-132
 
 .. code-block:: Python
 
@@ -202,6 +202,8 @@ let's make sure we have selected the right regions.
         bg_map=fsaverage_sulcal,
         bg_on_data=True,
         title="PCC Seed",
+        colorbar=False,
+        darkness=None,
     )
 
     show()
@@ -218,14 +220,14 @@ let's make sure we have selected the right regions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-135
+.. GENERATED FROM PYTHON SOURCE LINES 133-137
 
 Using a flat :term:`mesh` can be useful
 in order to easily locate the area of interest on the cortex.
 To make this plot easier to read,
 we use the :term:`mesh` curvature as a background map.
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-158
+.. GENERATED FROM PYTHON SOURCE LINES 137-162
 
 .. code-block:: Python
 
@@ -248,6 +250,8 @@ we use the :term:`mesh` curvature as a background map.
         bg_map=fsaverage_sulcal,
         bg_on_data=True,
         title="PCC Seed on flat map",
+        colorbar=False,
+        darkness=None,
     )
 
     show()
@@ -264,7 +268,7 @@ we use the :term:`mesh` curvature as a background map.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-164
+.. GENERATED FROM PYTHON SOURCE LINES 163-168
 
 Calculating seed-based functional connectivity
 ----------------------------------------------
@@ -272,22 +276,50 @@ Calculate Pearson product-moment correlation coefficient
 between seed time series
 and timeseries of all cortical nodes.
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-196
+.. GENERATED FROM PYTHON SOURCE LINES 168-170
 
 .. code-block:: Python
 
     from scipy.stats import pearsonr
 
-    # Let's in initialize the data
-    # we will use to create our results image.
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 171-173
+
+Let's in initialize the data
+we will use to create our results image.
+
+.. GENERATED FROM PYTHON SOURCE LINES 173-178
+
+.. code-block:: Python
+
     results = {}
     for hemi, mesh in surf_img_nki.mesh.parts.items():
         n_vertices = mesh.n_vertices
         results[hemi] = np.zeros(n_vertices)
 
-    # Let's avoid computing results
-    # in unknown regions
-    # and on the medial wall.
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 179-182
+
+Let's avoid computing results
+in unknown regions
+and on the medial wall.
+
+.. GENERATED FROM PYTHON SOURCE LINES 182-202
+
+.. code-block:: Python
+
     excluded_labels = [
         destrieux.labels.index("Unknown"),
         destrieux.labels.index("Medial_wall"),
@@ -315,13 +347,13 @@ and timeseries of all cortical nodes.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-200
+.. GENERATED FROM PYTHON SOURCE LINES 203-206
 
 Viewing results
 ---------------
 Display unthresholded stat map with a slightly dimmed background
 
-.. GENERATED FROM PYTHON SOURCE LINES 200-215
+.. GENERATED FROM PYTHON SOURCE LINES 206-220
 
 .. code-block:: Python
 
@@ -331,11 +363,10 @@ Display unthresholded stat map with a slightly dimmed background
         stat_map=stat_map_surf,
         hemi=hemisphere,
         view="medial",
-        colorbar=True,
         bg_map=fsaverage_sulcal,
         bg_on_data=True,
-        darkness=0.3,
         title="Correlation map",
+        darkness=None,
     )
 
     show()
@@ -352,13 +383,13 @@ Display unthresholded stat map with a slightly dimmed background
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 216-219
+.. GENERATED FROM PYTHON SOURCE LINES 221-224
 
 Many different options are available for plotting,
 for example thresholding,
 or using custom colormaps
 
-.. GENERATED FROM PYTHON SOURCE LINES 219-233
+.. GENERATED FROM PYTHON SOURCE LINES 224-238
 
 .. code-block:: Python
 
@@ -366,12 +397,12 @@ or using custom colormaps
         stat_map=stat_map_surf,
         hemi=hemisphere,
         view="medial",
-        colorbar=True,
         bg_map=fsaverage_sulcal,
         bg_on_data=True,
         cmap="bwr",
         threshold=0.5,
         title="Threshold and colormap",
+        darkness=None,
     )
 
     show()
@@ -388,7 +419,7 @@ or using custom colormaps
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 234-239
+.. GENERATED FROM PYTHON SOURCE LINES 239-244
 
 Here the surface is plotted in a lateral view without a background map.
 To capture 3D structure without depth information,
@@ -396,7 +427,7 @@ the default is to plot a half transparent surface.
 Note that you can also control the transparency
 with a background map using the alpha parameter.
 
-.. GENERATED FROM PYTHON SOURCE LINES 239-251
+.. GENERATED FROM PYTHON SOURCE LINES 244-256
 
 .. code-block:: Python
 
@@ -404,10 +435,10 @@ with a background map using the alpha parameter.
         stat_map=stat_map_surf,
         hemi=hemisphere,
         view="lateral",
-        colorbar=True,
         cmap="bwr",
         threshold=0.5,
         title="Plotting without background",
+        darkness=None,
     )
 
     show()
@@ -424,12 +455,12 @@ with a background map using the alpha parameter.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 252-254
+.. GENERATED FROM PYTHON SOURCE LINES 257-259
 
 The plots can be saved to file,
 in which case the display is closed after creating the figure
 
-.. GENERATED FROM PYTHON SOURCE LINES 254-272
+.. GENERATED FROM PYTHON SOURCE LINES 259-277
 
 .. code-block:: Python
 
@@ -446,9 +477,9 @@ in which case the display is closed after creating the figure
         bg_map=fsaverage_sulcal,
         bg_on_data=True,
         threshold=0.5,
-        colorbar=True,
         output_file=output_dir / "plot_surf_stat_map.png",
         cmap="bwr",
+        darkness=None,
     )
 
 
@@ -464,7 +495,7 @@ in which case the display is closed after creating the figure
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 273-277
+.. GENERATED FROM PYTHON SOURCE LINES 278-282
 
 References
 ----------
@@ -474,9 +505,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 10.730 seconds)
+   **Total running time of the script:** (0 minutes 12.895 seconds)
 
-**Estimated memory usage:**  871 MB
+**Estimated memory usage:**  908 MB
 
 
 .. _sphx_glr_download_auto_examples_01_plotting_plot_surf_stat_map.py:
@@ -488,7 +519,7 @@ References
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/01_plotting/plot_surf_stat_map.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.12.0?urlpath=lab/tree/notebooks/auto_examples/01_plotting/plot_surf_stat_map.ipynb
         :alt: Launch binder
         :width: 150 px
 

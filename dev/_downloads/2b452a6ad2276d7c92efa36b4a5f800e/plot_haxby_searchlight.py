@@ -16,11 +16,11 @@ the :term:`fMRI` (see the generated figures).
 # ------------------
 import pandas as pd
 
-from nilearn import datasets
+from nilearn.datasets import fetch_haxby
 from nilearn.image import get_data, load_img, new_img_like
 
 # We fetch 2nd subject from haxby datasets (which is default)
-haxby_dataset = datasets.fetch_haxby()
+haxby_dataset = fetch_haxby()
 
 # print basic information on the dataset
 print(f"Anatomical nifti image (3D) is located at: {haxby_dataset.mask}")
@@ -63,23 +63,27 @@ process_mask_img = new_img_like(mask_img, process_mask)
 # %%
 # Searchlight computation
 # -----------------------
-
 # Make processing parallel
-# /!\ As each thread will print its progress, n_jobs > 1 could mess up the
+#
+# .. warning::
+#
+#     As each thread will print its progress, n_jobs > 1 could mess up the
 #     information output.
 n_jobs = 2
 
+# %%
 # Define the cross-validation scheme used for validation.
 # Here we use a KFold cross-validation on the run, which corresponds to
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
 # set once and the others as learning sets
+#
+# The radius is the one of the Searchlight sphere that will scan the volume
 from sklearn.model_selection import KFold
-
-cv = KFold(n_splits=4)
 
 import nilearn.decoding
 
-# The radius is the one of the Searchlight sphere that will scan the volume
+cv = KFold(n_splits=4)
+
 searchlight = nilearn.decoding.SearchLight(
     mask_img,
     process_mask_img=process_mask_img,
@@ -93,18 +97,22 @@ searchlight.fit(fmri_img, y)
 # %%
 # Visualization
 # -------------
-from nilearn import image
-from nilearn.plotting import plot_img, plot_stat_map, show
-
+# %%
 # After fitting the searchlight, we can access the searchlight scores
 # as a NIfTI image using the `scores_img_` attribute.
 scores_img = searchlight.scores_img_
 
+# %%
 # Use the :term:`fMRI` mean image as a surrogate of anatomical data
-mean_fmri = image.mean_img(fmri_img, copy_header=True)
+from nilearn.image import mean_img
 
+mean_fmri = mean_img(fmri_img, copy_header=True)
+
+# %%
 # Because scores are not a zero-center test statistics,
 # we cannot use plot_stat_map
+from nilearn.plotting import plot_img, plot_stat_map, show
+
 plot_img(
     scores_img,
     bg_img=mean_fmri,

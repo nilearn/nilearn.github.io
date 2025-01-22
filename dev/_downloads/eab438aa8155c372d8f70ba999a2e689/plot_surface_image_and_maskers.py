@@ -38,6 +38,7 @@ from nilearn.datasets import (
     load_fsaverage_data,
     load_nki,
 )
+from nilearn.image import threshold_img
 from nilearn.maskers import SurfaceMasker
 from nilearn.plotting import plot_matrix, plot_surf, show
 
@@ -52,19 +53,25 @@ mean_data = masked_data.mean(axis=0)
 mean_img = masker.inverse_transform(mean_data)
 print(f"Image mean: {mean_img}")
 
-# let's create a figure with all the views for both hemispheres
+# %%
+# let's create a figure with several views for both hemispheres
 views = [
     "lateral",
-    "medial",
     "dorsal",
-    "ventral",
-    "anterior",
-    "posterior",
 ]
 hemispheres = ["left", "right", "both"]
 
+# %%
 # for our plots we will be using the fsaverage sulcal data as background map
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
+
+mean_img = threshold_img(mean_img, threshold=1e-08, copy=False, two_sided=True)
+
+# %%
+# Let's ensure that we have the same range
+# centered on 0 for all subplots.
+vmax = max(np.absolute(hemi).max() for hemi in mean_img.data.parts.values())
+vmin = -vmax
 
 fig, axes = plt.subplots(
     nrows=len(views),
@@ -73,11 +80,6 @@ fig, axes = plt.subplots(
     figsize=(4 * len(hemispheres), 4),
 )
 axes = np.atleast_2d(axes)
-
-# Let's ensure that we have the same range
-# centered on 0 for all subplots.
-vmax = max(np.absolute(hemi).max() for hemi in mean_img.data.parts.values())
-vmin = -vmax
 
 for view, ax_row in zip(views, axes):
     for ax, hemi in zip(ax_row, hemispheres):
@@ -91,14 +93,15 @@ for view, ax_row in zip(views, axes):
             view=view,
             figure=fig,
             axes=ax,
-            title=f"mean image - {hemi} - {view}",
+            title=f"{hemi} - {view}",
             colorbar=False,
-            symmetric_cmap=True,
+            symmetric_cmap=None,
             bg_on_data=True,
             vmin=vmin,
             vmax=vmax,
             bg_map=fsaverage_sulcal,
             cmap="seismic",
+            darkness=None,
         )
 fig.set_size_inches(12, 8)
 
@@ -123,6 +126,7 @@ from nilearn.surface import SurfaceImage
 fsaverage = load_fsaverage("fsaverage5")
 destrieux = fetch_atlas_surf_destrieux()
 
+# %%
 # Let's create a surface image
 # for this atlas.
 labels_img = SurfaceImage(
@@ -135,7 +139,7 @@ labels_img = SurfaceImage(
 
 labels_masker = SurfaceLabelsMasker(
     labels_img=labels_img,
-    labels=destrieux.labels,
+    lut=destrieux.lut,
 ).fit()
 
 masked_data = labels_masker.transform(surf_img_nki)
@@ -144,16 +148,19 @@ print(f"Masked data shape: {masked_data.shape}")
 # %%
 # Plot connectivity matrix
 # ------------------------
-connectome_measure = ConnectivityMeasure(kind="correlation")
+connectome_measure = ConnectivityMeasure(
+    kind="correlation", standardize="zscore_sample"
+)
 connectome = connectome_measure.fit([masked_data])
 
 vmax = np.absolute(connectome.mean_).max()
 vmin = -vmax
 
+# %%
 # We only print every 3rd label
 # for a more legible figure.
 labels = []
-for i, label in enumerate(labels_masker.label_names_):
+for i, label in enumerate(labels_masker.region_names_.values()):
     if i % 3 == 1:
         labels.append(label)
     else:
@@ -209,9 +216,9 @@ plot_surf(
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    colorbar=True,
     cmap="inferno",
     vmin=0,
+    darkness=None,
 )
 show()
 
@@ -233,15 +240,14 @@ decoder.fit(surf_img_nki, y)
 coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
 vmax = max(np.absolute(hemi).max() for hemi in coef_img.data.parts.values())
-vmin = -vmax
 plot_surf(
     surf_map=coef_img,
     cmap="RdBu_r",
-    vmin=vmin,
+    vmin=-vmax,
     vmax=vmax,
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    colorbar=True,
+    darkness=None,
 )
 show()

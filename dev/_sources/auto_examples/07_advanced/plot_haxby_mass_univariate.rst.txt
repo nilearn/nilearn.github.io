@@ -38,17 +38,12 @@ a few false negative.
 
 .. include:: ../../../examples/masker_note.rst
 
-..
-    Original authors:
-
-    - Virgile Fritsch, Feb. 2014
-
-.. GENERATED FROM PYTHON SOURCE LINES 29-31
+.. GENERATED FROM PYTHON SOURCE LINES 24-26
 
 Load Haxby dataset
 ------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 31-40
+.. GENERATED FROM PYTHON SOURCE LINES 26-35
 
 .. code-block:: Python
 
@@ -69,19 +64,19 @@ Load Haxby dataset
 
  .. code-block:: none
 
-    [get_dataset_dir] Dataset found in /home/runner/nilearn_data/haxby2001
+    [fetch_haxby] Dataset found in /home/runner/nilearn_data/haxby2001
     Mask nifti image (3D) is located at: /home/runner/nilearn_data/haxby2001/mask.nii.gz
     Functional nifti image (4D) is located at: /home/runner/nilearn_data/haxby2001/subj2/bold.nii.gz
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 41-43
+.. GENERATED FROM PYTHON SOURCE LINES 36-38
 
 Restrict to faces and houses
 ----------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 43-56
+.. GENERATED FROM PYTHON SOURCE LINES 38-51
 
 .. code-block:: Python
 
@@ -105,12 +100,12 @@ Restrict to faces and houses
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 57-59
+.. GENERATED FROM PYTHON SOURCE LINES 52-54
 
 Mask data
 ---------
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-99
+.. GENERATED FROM PYTHON SOURCE LINES 54-94
 
 .. code-block:: Python
 
@@ -161,7 +156,7 @@ Mask data
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-105
+.. GENERATED FROM PYTHON SOURCE LINES 95-100
 
 Perform massively univariate analysis with permuted OLS
 -------------------------------------------------------
@@ -169,21 +164,24 @@ Perform massively univariate analysis with permuted OLS
 We use a two-sided t-test to compute p-values, but we keep trace of the
 effect sign to add it back at the end and thus observe the signed effect
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-121
+.. GENERATED FROM PYTHON SOURCE LINES 100-119
 
 .. code-block:: Python
 
     from nilearn.mass_univariate import permuted_ols
 
     # Note that an intercept as a covariate is used by default
-    neg_log_pvals, t_scores_original_data, _ = permuted_ols(
+    output = permuted_ols(
         grouped_conditions_encoded,
         grouped_fmri_masked,
         n_perm=10000,
         two_sided_test=True,
         verbose=1,  # display progress bar
         n_jobs=2,  # can be changed to use more CPUs
+        output_type="dict",
     )
+    neg_log_pvals = output["logp_max_t"]
+    t_scores_original_data = output["t"]
     signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
     signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
         signed_neg_log_pvals
@@ -198,19 +196,19 @@ effect sign to add it back at the end and thus observe the signed effect
  .. code-block:: none
 
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.2s remaining:    0.0s
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.2s finished
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.0s remaining:    0.0s
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.0s finished
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 122-125
+.. GENERATED FROM PYTHON SOURCE LINES 120-123
 
 scikit-learn F-scores for comparison
 
 F-test does not allow to observe the effect sign (pure two-sided test)
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-140
+.. GENERATED FROM PYTHON SOURCE LINES 123-138
 
 .. code-block:: Python
 
@@ -236,12 +234,12 @@ F-test does not allow to observe the effect sign (pure two-sided test)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 141-143
+.. GENERATED FROM PYTHON SOURCE LINES 139-141
 
 Visualization
 -------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-201
+.. GENERATED FROM PYTHON SOURCE LINES 141-199
 
 .. code-block:: Python
 
@@ -328,13 +326,13 @@ Visualization
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1509: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1674: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
       ax = fh.add_axes(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 202-206
+.. GENERATED FROM PYTHON SOURCE LINES 200-204
 
 References
 ----------
@@ -344,9 +342,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 18.792 seconds)
+   **Total running time of the script:** (0 minutes 18.726 seconds)
 
-**Estimated memory usage:**  1046 MB
+**Estimated memory usage:**  1016 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_haxby_mass_univariate.py:
@@ -358,7 +356,7 @@ References
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/07_advanced/plot_haxby_mass_univariate.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.12.0?urlpath=lab/tree/notebooks/auto_examples/07_advanced/plot_haxby_mass_univariate.ipynb
         :alt: Launch binder
         :width: 150 px
 

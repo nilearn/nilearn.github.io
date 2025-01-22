@@ -67,15 +67,7 @@ ____
 
 .. include:: ../../../examples/masker_note.rst
 
-..
-    Original authors:
-
-    - Elvis Dhomatob, Apr. 2014
-    - Virgile Fritsch, Apr 2014
-    - Gael Varoquaux, Apr 2014
-    - Andres Hoyos-Idrobo, Apr 2017
-
-.. GENERATED FROM PYTHON SOURCE LINES 62-70
+.. GENERATED FROM PYTHON SOURCE LINES 53-61
 
 .. code-block:: Python
 
@@ -94,12 +86,12 @@ ____
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-73
+.. GENERATED FROM PYTHON SOURCE LINES 62-64
 
 Load Oasis dataset
 ------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-94
+.. GENERATED FROM PYTHON SOURCE LINES 64-85
 
 .. code-block:: Python
 
@@ -132,19 +124,19 @@ Load Oasis dataset
 
  .. code-block:: none
 
-    [get_dataset_dir] Dataset found in /home/runner/nilearn_data/oasis1
+    [fetch_oasis_vbm] Dataset found in /home/runner/nilearn_data/oasis1
     First gray-matter anatomy image (3D) is located at: /home/runner/nilearn_data/oasis1/OAS1_0001_MR1/mwrc1OAS1_0001_MR1_mpr_anon_fslswapdim_bet.nii.gz
     First white-matter anatomy image (3D) is located at: /home/runner/nilearn_data/oasis1/OAS1_0001_MR1/mwrc2OAS1_0001_MR1_mpr_anon_fslswapdim_bet.nii.gz
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-97
+.. GENERATED FROM PYTHON SOURCE LINES 86-88
 
 Preprocess data
 ---------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-113
+.. GENERATED FROM PYTHON SOURCE LINES 88-104
 
 .. code-block:: Python
 
@@ -171,7 +163,7 @@ Preprocess data
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-125
+.. GENERATED FROM PYTHON SOURCE LINES 105-116
 
 Prediction pipeline with :term:`ANOVA` and SVR using
 :class:`~nilearn.decoding.DecoderRegressor` Object
@@ -185,7 +177,7 @@ To save time (because these are anat images with many voxels), we include
 only the 1-percent voxels most correlated with the age variable to fit. We
 also want to set mask hyperparameter to be the mask we just obtained above.
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-151
+.. GENERATED FROM PYTHON SOURCE LINES 116-142
 
 .. code-block:: Python
 
@@ -230,12 +222,12 @@ also want to set mask hyperparameter to be the mask we just obtained above.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 152-154
+.. GENERATED FROM PYTHON SOURCE LINES 143-145
 
 Visualization
 -------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-171
+.. GENERATED FROM PYTHON SOURCE LINES 145-162
 
 .. code-block:: Python
 
@@ -269,18 +261,18 @@ Visualization
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1509: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1674: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
       ax = fh.add_axes(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-174
+.. GENERATED FROM PYTHON SOURCE LINES 163-165
 
 Visualize the quality of predictions
 ------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 174-191
+.. GENERATED FROM PYTHON SOURCE LINES 165-182
 
 .. code-block:: Python
 
@@ -327,16 +319,16 @@ Visualize the quality of predictions
  .. code-block:: none
 
 
-    <matplotlib.legend.Legend object at 0x7fc1d36188b0>
+    <matplotlib.legend.Legend object at 0x7f667a02cac0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 192-194
+.. GENERATED FROM PYTHON SOURCE LINES 183-185
 
 Inference with massively univariate model
 -----------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 194-237
+.. GENERATED FROM PYTHON SOURCE LINES 185-231
 
 .. code-block:: Python
 
@@ -349,13 +341,16 @@ Inference with massively univariate model
     from nilearn.mass_univariate import permuted_ols
 
     # This can be changed to use more CPUs.
-    neg_log_pvals, t_scores_original_data, _ = permuted_ols(
+    output = permuted_ols(
         age,
         data,  # + intercept as a covariate by default
         n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
         verbose=1,  # display progress bar
         n_jobs=2,
+        output_type="dict",
     )
+    neg_log_pvals = output["logp_max_t"]
+    t_scores_original_data = output["t"]
     signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
     signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
         variance_threshold.inverse_transform(signed_neg_log_pvals)
@@ -398,9 +393,9 @@ Inference with massively univariate model
 
     Massively univariate model
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   30.3s remaining:    0.0s
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   30.3s finished
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1509: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   31.3s remaining:    0.0s
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   31.3s finished
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1674: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
       ax = fh.add_axes(
 
 
@@ -409,9 +404,9 @@ Inference with massively univariate model
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 24.066 seconds)
+   **Total running time of the script:** (1 minutes 25.927 seconds)
 
-**Estimated memory usage:**  4385 MB
+**Estimated memory usage:**  4373 MB
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_oasis_vbm.py:
@@ -423,7 +418,7 @@ Inference with massively univariate model
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/02_decoding/plot_oasis_vbm.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.12.0?urlpath=lab/tree/notebooks/auto_examples/02_decoding/plot_oasis_vbm.ipynb
         :alt: Launch binder
         :width: 150 px
 

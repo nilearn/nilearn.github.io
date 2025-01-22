@@ -70,9 +70,9 @@ fig = plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"],
     hemi=hemi,
     title="Surface with matplotlib",
-    colorbar=True,
     threshold=1.0,
     bg_map=curv_sign,
+    darkness=None,
 )
 fig.show()
 
@@ -96,11 +96,11 @@ figure = plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"],
     hemi=hemi,
     title=f"Surface with {engine}",
-    colorbar=True,
     threshold=1.0,
     bg_map=curv_sign,
     bg_on_data=True,
     engine=engine,  # Specify the plotting engine here
+    darkness=None,
 )
 
 # Uncomment the line below
@@ -183,10 +183,10 @@ figure = plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"],
     hemi=hemi,
     title="ROI outlines on surface",
-    colorbar=True,
     threshold=1.0,
     bg_map=fsaverage_sulcal,
     engine=engine,
+    darkness=None,
 )
 if engine == "matplotlib":
     plot_surf_contours(
@@ -240,10 +240,10 @@ plot_surf_stat_map(
     stat_map=big_img,
     surf_mesh=big_fsaverage_meshes["inflated"],
     hemi=hemi,
-    colorbar=True,
     title="Surface fine mesh",
     threshold=1.0,
     bg_map=big_fsaverage_sulcal,
+    darkness=None,
 )
 show()
 
@@ -264,9 +264,10 @@ plot_img_on_surf(
     stat_map=stat_img,
     views=["lateral", "medial"],
     hemispheres=["left", "right"],
-    colorbar=True,
     title="multiple views of the 3D volume",
     bg_on_data=True,
+    darkness=None,
+    symmetric_cmap=None,
 )
 show()
 
@@ -287,6 +288,7 @@ view = view_surf(
     bg_map=fsaverage_sulcal,
     hemi=hemi,
     title="3D visualization in a web browser",
+    darkness=None,
 )
 
 # In a Jupyter notebook, if ``view`` is the output of a cell,
@@ -298,7 +300,7 @@ view
 # :func:`~nilearn.plotting.view_img_on_surf`:
 from nilearn.plotting import view_img_on_surf
 
-view = view_img_on_surf(stat_img, threshold="90%")
+view = view_img_on_surf(stat_img, threshold="90%", darkness=None)
 
 view
 # view.open_in_browser()
@@ -324,10 +326,11 @@ view = view_img_on_surf(
     vol_to_surf_kwargs={
         "n_samples": 1,
         "radius": 0.0,
-        "interpolation": "nearest",
+        "interpolation": "nearest_most_frequent",
     },
     symmetric_cmap=False,
     colorbar=False,
+    darkness=None,
 )
 
 view

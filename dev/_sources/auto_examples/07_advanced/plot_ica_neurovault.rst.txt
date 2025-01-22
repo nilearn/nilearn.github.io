@@ -30,15 +30,10 @@ documentation for more details.
 
 .. include:: ../../../examples/masker_note.rst
 
-..
-    Original authors:
-
-    - Ben Cipollini
-
-    Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
+..  Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
     https://github.com/NeuroVault/neurovault_analysis
 
-.. GENERATED FROM PYTHON SOURCE LINES 23-33
+.. GENERATED FROM PYTHON SOURCE LINES 18-28
 
 .. code-block:: Python
 
@@ -47,10 +42,10 @@ documentation for more details.
     from scipy import stats
     from sklearn.decomposition import FastICA
 
-    from nilearn import plotting
     from nilearn.datasets import fetch_neurovault, load_mni152_brain_mask
     from nilearn.image import smooth_img
     from nilearn.maskers import NiftiMasker
+    from nilearn.plotting import plot_stat_map, show
 
 
 
@@ -59,12 +54,12 @@ documentation for more details.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-36
+.. GENERATED FROM PYTHON SOURCE LINES 29-31
 
 Get image and term data
 -----------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 36-63
+.. GENERATED FROM PYTHON SOURCE LINES 31-60
 
 .. code-block:: Python
 
@@ -77,7 +72,9 @@ Get image and term data
         "if you haven't downloaded any Neurovault data before "
         "this will take several minutes."
     )
-    nv_data = fetch_neurovault(max_images=30, fetch_neurosynth_words=True)
+    nv_data = fetch_neurovault(
+        max_images=30, fetch_neurosynth_words=True, timeout=30.0
+    )
 
     images = nv_data["images"]
     term_weights = nv_data["word_frequencies"]
@@ -104,81 +101,33 @@ Get image and term data
  .. code-block:: none
 
     Fetching Neurovault images; if you haven't downloaded any Neurovault data before this will take several minutes.
-    [get_dataset_dir] Dataset found in /home/runner/nilearn_data/neurovault
+    [fetch_neurovault] Dataset found in /home/runner/nilearn_data/neurovault
     [fetch_neurovault] Reading local neurovault data.
-    [fetch_neurovault] Downloading file: 
-    https://neurosynth.org/api/decode/?neurovault=10426
-    [fetch_neurovault] Download succeeded, downloaded to: 
-    /home/runner/nilearn_data/neurovault/collection_658/neurosynth_words_for_image_1
-    0426.json
-    [fetch_neurovault] Already fetched 1 image
-    [fetch_neurovault] Downloading file: 
-    https://neurosynth.org/api/decode/?neurovault=3042
-    [fetch_neurovault] Download succeeded, downloaded to: 
-    /home/runner/nilearn_data/neurovault/collection_98/neurosynth_words_for_image_30
-    42.json
-    [fetch_neurovault] Already fetched 2 images
     [fetch_neurovault] Downloading file: 
     https://neurosynth.org/api/decode/?neurovault=32980
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1952/neurosynth_words_for_image_
     32980.json
-    [fetch_neurovault] Already fetched 3 images
-    [fetch_neurovault] Downloading file: 
-    https://neurosynth.org/api/decode/?neurovault=2675
-    [fetch_neurovault] Download succeeded, downloaded to: 
-    /home/runner/nilearn_data/neurovault/collection_413/neurosynth_words_for_image_2
-    675.json
-    [fetch_neurovault] Already fetched 4 images
-    [fetch_neurovault] Downloading file: 
-    https://neurosynth.org/api/decode/?neurovault=2676
-    [fetch_neurovault] Download succeeded, downloaded to: 
-    /home/runner/nilearn_data/neurovault/collection_413/neurosynth_words_for_image_2
-    676.json
-    [fetch_neurovault] Already fetched 5 images
-    [fetch_neurovault] Downloading file: 
-    https://neurosynth.org/api/decode/?neurovault=2818
-    [fetch_neurovault] Download succeeded, downloaded to: 
-    /home/runner/nilearn_data/neurovault/collection_423/neurosynth_words_for_image_2
-    818.json
-    [fetch_neurovault] Already fetched 6 images
-    [fetch_neurovault] Downloading file: 
-    https://neurosynth.org/api/decode/?neurovault=2834
-    [fetch_neurovault] Download succeeded, downloaded to: 
-    /home/runner/nilearn_data/neurovault/collection_423/neurosynth_words_for_image_2
-    834.json
-    [fetch_neurovault] Already fetched 7 images
-    [fetch_neurovault] Downloading file: 
-    https://neurosynth.org/api/decode/?neurovault=151
-    [fetch_neurovault] Download succeeded, downloaded to: 
-    /home/runner/nilearn_data/neurovault/collection_42/neurosynth_words_for_image_15
-    1.json
-    [fetch_neurovault] Already fetched 8 images
-    [fetch_neurovault] Downloading file: 
-    https://neurosynth.org/api/decode/?neurovault=3041
-    [fetch_neurovault] Download succeeded, downloaded to: 
-    /home/runner/nilearn_data/neurovault/collection_42/neurosynth_words_for_image_30
-    41.json
-    [fetch_neurovault] Already fetched 9 images
-    [fetch_neurovault] 9 images found on local disk.
-    [memory_usage] Reading server neurovault data.
-    [<module>] Scroll collections: getting new batch: 
-    https://neurovault.org/api/collections/?limit=100&offset=0
-    [<module>] Scroll collections: batch size: 100
-    [fetch_neurovault] Scroll images from collection 921: getting new batch: 
-    https://neurovault.org/api/collections/921/images/?limit=100&offset=0
+    [fetch_neurovault] Already fetched 1 image
+    [fetch_neurovault] 1 image found on local disk.
+    [fetch_neurovault] Reading server neurovault data.
+    [fetch_neurovault] Scroll collections: getting new batch:
+            https://neurovault.org/api/collections/?limit=100&offset=0
+    [fetch_neurovault] Scroll collections: batch size: 100
+    [fetch_neurovault] Scroll images from collection 921: getting new batch:
+            https://neurovault.org/api/collections/921/images/?limit=100&offset=0
     [fetch_neurovault] Scroll images from collection 921: batch size: 1
     [fetch_neurovault] On neurovault.org: no image matched query in collection 921
-    [fetch_neurovault] Scroll images from collection 440: getting new batch: 
-    https://neurovault.org/api/collections/440/images/?limit=100&offset=0
+    [fetch_neurovault] Scroll images from collection 440: getting new batch:
+            https://neurovault.org/api/collections/440/images/?limit=100&offset=0
     [fetch_neurovault] Scroll images from collection 440: batch size: 2
     [fetch_neurovault] On neurovault.org: no image matched query in collection 440
-    [fetch_neurovault] Scroll images from collection 496: getting new batch: 
-    https://neurovault.org/api/collections/496/images/?limit=100&offset=0
+    [fetch_neurovault] Scroll images from collection 496: getting new batch:
+            https://neurovault.org/api/collections/496/images/?limit=100&offset=0
     [fetch_neurovault] Scroll images from collection 496: batch size: 1
     [fetch_neurovault] On neurovault.org: no image matched query in collection 496
-    [fetch_neurovault] Scroll images from collection 4008: getting new batch: 
-    https://neurovault.org/api/collections/4008/images/?limit=100&offset=0
+    [fetch_neurovault] Scroll images from collection 4008: getting new batch:
+            https://neurovault.org/api/collections/4008/images/?limit=100&offset=0
     [fetch_neurovault] Scroll images from collection 4008: batch size: 1
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/4008/spmT_0001.nii.gz
@@ -189,14 +138,14 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_4008/neurosynth_words_for_image_
     65426.json
-    [fetch_neurovault] Already fetched 10 images
+    [fetch_neurovault] Already fetched 2 images
     [fetch_neurovault] On neurovault.org: 1 image matched query in collection 4008
-    [fetch_neurovault] Scroll images from collection 4: getting new batch: 
-    https://neurovault.org/api/collections/4/images/?limit=100&offset=0
+    [fetch_neurovault] Scroll images from collection 4: getting new batch:
+            https://neurovault.org/api/collections/4/images/?limit=100&offset=0
     [fetch_neurovault] Scroll images from collection 4: batch size: 1
     [fetch_neurovault] On neurovault.org: no image matched query in collection 4
-    [fetch_neurovault] Scroll images from collection 79: getting new batch: 
-    https://neurovault.org/api/collections/79/images/?limit=100&offset=0
+    [fetch_neurovault] Scroll images from collection 79: getting new batch:
+            https://neurovault.org/api/collections/79/images/?limit=100&offset=0
     [fetch_neurovault] Scroll images from collection 79: batch size: 5
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/79/neurosynth_spectral_01.nii.gz
@@ -207,7 +156,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_79/neurosynth_words_for_image_11
     020.json
-    [fetch_neurovault] Already fetched 11 images
+    [fetch_neurovault] Already fetched 3 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/79/neurosynth_spectral_01_1.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -217,10 +166,10 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_79/neurosynth_words_for_image_11
     021.json
-    [fetch_neurovault] Already fetched 12 images
+    [fetch_neurovault] Already fetched 4 images
     [fetch_neurovault] On neurovault.org: 2 images matched query in collection 79
-    [fetch_neurovault] Scroll images from collection 1257: getting new batch: 
-    https://neurovault.org/api/collections/1257/images/?limit=100&offset=0
+    [fetch_neurovault] Scroll images from collection 1257: getting new batch:
+            https://neurovault.org/api/collections/1257/images/?limit=100&offset=0
     [fetch_neurovault] Scroll images from collection 1257: batch size: 100
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/abstract_knowledge_regparam.nii.gz
@@ -231,7 +180,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17327.json
-    [fetch_neurovault] Already fetched 13 images
+    [fetch_neurovault] Already fetched 5 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/acoustic_processing_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -241,7 +190,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17328.json
-    [fetch_neurovault] Already fetched 14 images
+    [fetch_neurovault] Already fetched 6 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/action_perception_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -251,7 +200,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17329.json
-    [fetch_neurovault] Already fetched 15 images
+    [fetch_neurovault] Already fetched 7 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/action_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -261,7 +210,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17330.json
-    [fetch_neurovault] Already fetched 16 images
+    [fetch_neurovault] Already fetched 8 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/activation_level_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -271,7 +220,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17331.json
-    [fetch_neurovault] Already fetched 17 images
+    [fetch_neurovault] Already fetched 9 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/activation_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -281,7 +230,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17332.json
-    [fetch_neurovault] Already fetched 18 images
+    [fetch_neurovault] Already fetched 10 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/active_maintenance_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -291,7 +240,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17333.json
-    [fetch_neurovault] Already fetched 19 images
+    [fetch_neurovault] Already fetched 11 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/active_retrieval_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -301,7 +250,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17334.json
-    [fetch_neurovault] Already fetched 20 images
+    [fetch_neurovault] Already fetched 12 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/acuity_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -311,7 +260,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17335.json
-    [fetch_neurovault] Already fetched 21 images
+    [fetch_neurovault] Already fetched 13 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/adaptation_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -321,7 +270,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17336.json
-    [fetch_neurovault] Already fetched 22 images
+    [fetch_neurovault] Already fetched 14 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/adaptive_control_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -331,7 +280,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17337.json
-    [fetch_neurovault] Already fetched 23 images
+    [fetch_neurovault] Already fetched 15 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/addiction_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -341,7 +290,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17338.json
-    [fetch_neurovault] Already fetched 24 images
+    [fetch_neurovault] Already fetched 16 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/affect_perception_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -351,7 +300,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17339.json
-    [fetch_neurovault] Already fetched 25 images
+    [fetch_neurovault] Already fetched 17 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/affect_recognition_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -361,7 +310,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17340.json
-    [fetch_neurovault] Already fetched 26 images
+    [fetch_neurovault] Already fetched 18 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/agency_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -371,7 +320,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17341.json
-    [fetch_neurovault] Already fetched 27 images
+    [fetch_neurovault] Already fetched 19 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/agreeableness_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -381,7 +330,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17342.json
-    [fetch_neurovault] Already fetched 28 images
+    [fetch_neurovault] Already fetched 20 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/altruism_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -391,7 +340,7 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17343.json
-    [fetch_neurovault] Already fetched 29 images
+    [fetch_neurovault] Already fetched 21 images
     [fetch_neurovault] Downloading file: 
     http://neurovault.org/media/images/1257/altruistic_motivation_regparam.nii.gz
     [fetch_neurovault] Download succeeded, downloaded to: 
@@ -401,33 +350,112 @@ Get image and term data
     [fetch_neurovault] Download succeeded, downloaded to: 
     /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
     17344.json
+    [fetch_neurovault] Already fetched 22 images
+    [fetch_neurovault] Downloading file: 
+    http://neurovault.org/media/images/1257/alveolar_regparam.nii.gz
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/image_17345.nii.gz
+    [fetch_neurovault] Downloading file: 
+    https://neurosynth.org/api/decode/?neurovault=17345
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
+    17345.json
+    [fetch_neurovault] Already fetched 23 images
+    [fetch_neurovault] Downloading file: 
+    http://neurovault.org/media/images/1257/amodal_representation_regparam.nii.gz
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/image_17346.nii.gz
+    [fetch_neurovault] Downloading file: 
+    https://neurosynth.org/api/decode/?neurovault=17346
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
+    17346.json
+    [fetch_neurovault] Already fetched 24 images
+    [fetch_neurovault] Downloading file: 
+    http://neurovault.org/media/images/1257/analogical_reasoning_regparam.nii.gz
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/image_17347.nii.gz
+    [fetch_neurovault] Downloading file: 
+    https://neurosynth.org/api/decode/?neurovault=17347
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
+    17347.json
+    [fetch_neurovault] Already fetched 25 images
+    [fetch_neurovault] Downloading file: 
+    http://neurovault.org/media/images/1257/analogy_regparam.nii.gz
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/image_17348.nii.gz
+    [fetch_neurovault] Downloading file: 
+    https://neurosynth.org/api/decode/?neurovault=17348
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
+    17348.json
+    [fetch_neurovault] Already fetched 26 images
+    [fetch_neurovault] Downloading file: 
+    http://neurovault.org/media/images/1257/anchoring_regparam.nii.gz
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/image_17349.nii.gz
+    [fetch_neurovault] Downloading file: 
+    https://neurosynth.org/api/decode/?neurovault=17349
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
+    17349.json
+    [fetch_neurovault] Already fetched 27 images
+    [fetch_neurovault] Downloading file: 
+    http://neurovault.org/media/images/1257/anhedonia_regparam.nii.gz
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/image_17350.nii.gz
+    [fetch_neurovault] Downloading file: 
+    https://neurosynth.org/api/decode/?neurovault=17350
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
+    17350.json
+    [fetch_neurovault] Already fetched 28 images
+    [fetch_neurovault] Downloading file: 
+    http://neurovault.org/media/images/1257/animacy_decision_regparam.nii.gz
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/image_17351.nii.gz
+    [fetch_neurovault] Downloading file: 
+    https://neurosynth.org/api/decode/?neurovault=17351
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
+    17351.json
+    [fetch_neurovault] Already fetched 29 images
+    [fetch_neurovault] Downloading file: 
+    http://neurovault.org/media/images/1257/animacy_perception_regparam.nii.gz
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/image_17352.nii.gz
+    [fetch_neurovault] Downloading file: 
+    https://neurosynth.org/api/decode/?neurovault=17352
+    [fetch_neurovault] Download succeeded, downloaded to: 
+    /home/runner/nilearn_data/neurovault/collection_1257/neurosynth_words_for_image_
+    17352.json
     [fetch_neurovault] Already fetched 30 images
-    [neurosynth_words_vectorized] Computing word features.
-    [neurosynth_words_vectorized] Computing word features done; vocabulary size: 
-    1307
+    [fetch_neurovault] Computing word features.
+    [fetch_neurovault] Computing word features done; vocabulary size: 1307
 
     Top 10 neurosynth terms from downloaded images:
 
-    superior temporal
-    auditory
-    task
-    planum temporale
-    temporale
-    planum
-    superior
-    anterior insula
     parietal
-    posterior superior
+    motor
+    premotor
+    tasks
+    movements
+    intraparietal
+    intraparietal sulcus
+    task
+    premotor cortex
+    phonological
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-66
+.. GENERATED FROM PYTHON SOURCE LINES 61-63
 
 Reshape and mask images
 -----------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-98
+.. GENERATED FROM PYTHON SOURCE LINES 63-95
 
 .. code-block:: Python
 
@@ -474,103 +502,103 @@ Reshape and mask images
 
     Reshaping and masking images.
 
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/nifti_masker.py:122: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
-      warnings.warn(
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:779: UserWarning: imgs are being resampled to the mask_img resolution. This process is memory intensive. You might want to provide a target_affine that is equal to the affine of the imgs or resample the mask beforehand to save memory and computation time.
+      output = self.func(*args, **kwargs)
     [NiftiMasker.wrapped] Resampling images
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 99-101
+.. GENERATED FROM PYTHON SOURCE LINES 96-98
 
 Run :term:`ICA` and map components to terms
 -------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-113
+.. GENERATED FROM PYTHON SOURCE LINES 98-110
 
 .. code-block:: Python
 
@@ -600,12 +628,12 @@ Run :term:`ICA` and map components to terms
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-116
+.. GENERATED FROM PYTHON SOURCE LINES 111-113
 
 Generate figures
 ----------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 116-134
+.. GENERATED FROM PYTHON SOURCE LINES 113-129
 
 .. code-block:: Python
 
@@ -623,9 +651,7 @@ Generate figures
         important_terms = vocabulary[np.argsort(ic_terms)[-3:]]
         title = f"IC{int(index)}  {', '.join(important_terms[::-1])}"
 
-        plotting.plot_stat_map(
-            ic_img, threshold=ic_threshold, colorbar=False, title=title
-        )
+        plot_stat_map(ic_img, threshold=ic_threshold, colorbar=False, title=title)
 
 
 
@@ -693,19 +719,19 @@ Generate figures
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-138
+.. GENERATED FROM PYTHON SOURCE LINES 130-133
 
 As we can see, some of the components capture cognitive or neurological
 maps, while other capture noise in the database. More data, better
 filtering, and better cognitive labels would give better maps
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-141
+.. GENERATED FROM PYTHON SOURCE LINES 133-136
 
 .. code-block:: Python
 
 
     # Done.
-    plotting.show()
+    show()
 
 
 
@@ -716,9 +742,9 @@ filtering, and better cognitive labels would give better maps
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 17.569 seconds)
+   **Total running time of the script:** (1 minutes 4.766 seconds)
 
-**Estimated memory usage:**  107 MB
+**Estimated memory usage:**  132 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_ica_neurovault.py:
@@ -730,7 +756,7 @@ filtering, and better cognitive labels would give better maps
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/07_advanced/plot_ica_neurovault.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.12.0?urlpath=lab/tree/notebooks/auto_examples/07_advanced/plot_ica_neurovault.ipynb
         :alt: Launch binder
         :width: 150 px
 

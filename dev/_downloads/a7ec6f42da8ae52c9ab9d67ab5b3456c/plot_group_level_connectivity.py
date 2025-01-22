@@ -19,7 +19,8 @@ for a careful study.
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 30 subjects from the dataset, to save computation time.
-from nilearn import datasets, plotting
+from nilearn import datasets
+from nilearn.plotting import plot_connectome, plot_matrix, show
 
 development_dataset = datasets.fetch_development_fmri(n_subjects=30)
 
@@ -51,24 +52,24 @@ masker = NiftiMapsMasker(
     memory="nilearn_cache",
     memory_level=1,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
-).fit()
+    standardize_confounds=True,
+)
 
 # %%
 # Then we compute region signals and extract useful phenotypic information.
 children = []
 pooled_subjects = []
 groups = []  # child or adult
-for func_file, confound_file, phenotypic in zip(
+for func_file, confound_file, phenotype in zip(
     development_dataset.func,
     development_dataset.confounds,
-    development_dataset.phenotypic,
+    development_dataset.phenotypic["Child_Adult"],
 ):
-    time_series = masker.transform(func_file, confounds=confound_file)
+    time_series = masker.fit_transform(func_file, confounds=confound_file)
     pooled_subjects.append(time_series)
-    if phenotypic["Child_Adult"] == "child":
+    if phenotype == "child":
         children.append(time_series)
-    groups.append(phenotypic["Child_Adult"])
+    groups.append(phenotype)
 
 print(f"Data has {len(children)} children.")
 
@@ -110,10 +111,9 @@ from matplotlib import pyplot as plt
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 vmax = np.absolute(correlation_matrices).max()
 for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
-    plotting.plot_matrix(
+    plot_matrix(
         matrix,
         tri="lower",
-        colorbar=True,
         axes=ax,
         title=f"correlation, child {i}",
         vmax=vmax,
@@ -124,7 +124,7 @@ for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
 
 # %%
 # Now we display as a connectome the mean correlation matrix over all children.
-plotting.plot_connectome(
+plot_connectome(
     mean_correlation_matrix,
     msdl_coords,
     title="mean correlation over all children",
@@ -149,17 +149,16 @@ partial_correlation_matrices = partial_correlation_measure.fit_transform(
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 vmax = np.absolute(partial_correlation_matrices).max()
 for i, (matrix, ax) in enumerate(zip(partial_correlation_matrices, axes)):
-    plotting.plot_matrix(
+    plot_matrix(
         matrix,
         tri="lower",
-        colorbar=True,
         axes=ax,
         title=f"partial correlation, child {i}",
         vmax=vmax,
         vmin=-vmax,
     )
 # %%
-plotting.plot_connectome(
+plot_connectome(
     partial_correlation_measure.mean_,
     msdl_coords,
     title="mean partial correlation over all children",
@@ -190,10 +189,9 @@ tangent_matrices = tangent_measure.fit_transform(children)
 # coefficients can not be interpreted as anticorrelated regions.
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
-    plotting.plot_matrix(
+    plot_matrix(
         matrix,
         tri="lower",
-        colorbar=True,
         axes=ax,
         title=f"tangent offset, child {i}",
     )
@@ -270,7 +268,7 @@ plt.xlabel("Classification accuracy\n(red line = chance level)")
 # across many cohorts and clinical questions,
 # the tangent kind should be preferred.
 
-plotting.show()
+show()
 
 # %%
 # References

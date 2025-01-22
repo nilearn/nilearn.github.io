@@ -47,7 +47,7 @@ documentation <parcellation_time_series>` for more.
 Retrieve the atlas and the data
 -------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 31-44
+.. GENERATED FROM PYTHON SOURCE LINES 31-45
 
 .. code-block:: Python
 
@@ -56,6 +56,7 @@ Retrieve the atlas and the data
     dataset = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
     atlas_filename = dataset.maps
     labels = dataset.labels
+    look_up_table = dataset.lut
 
     print(f"Atlas ROIs are located in nifti image (4D) at: {atlas_filename}")
 
@@ -72,7 +73,7 @@ Retrieve the atlas and the data
 
  .. code-block:: none
 
-    [get_dataset_dir] Dataset found in /home/runner/nilearn_data/fsl
+    [fetch_atlas_harvard_oxford] Dataset found in /home/runner/nilearn_data/fsl
     Atlas ROIs are located in nifti image (4D) at: 
     <class 'nibabel.nifti1.Nifti1Image'>
     data shape (91, 109, 91)
@@ -127,22 +128,23 @@ Retrieve the atlas and the data
     intent_name     : b''
     magic           : b'n+1'
 
-    [get_dataset_dir] Dataset found in /home/runner/nilearn_data/development_fmri
-    [get_dataset_dir] Dataset found in 
+    [fetch_development_fmri] Dataset found in 
+    /home/runner/nilearn_data/development_fmri
+    [fetch_development_fmri] Dataset found in 
     /home/runner/nilearn_data/development_fmri/development_fmri
-    [get_dataset_dir] Dataset found in 
+    [fetch_development_fmri] Dataset found in 
     /home/runner/nilearn_data/development_fmri/development_fmri
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 45-48
+.. GENERATED FROM PYTHON SOURCE LINES 46-49
 
 Extract signals on a :term:`parcellation` defined by labels
 -----------------------------------------------------------
 Using the NiftiLabelsMasker
 
-.. GENERATED FROM PYTHON SOURCE LINES 48-63
+.. GENERATED FROM PYTHON SOURCE LINES 49-65
 
 .. code-block:: Python
 
@@ -150,8 +152,9 @@ Using the NiftiLabelsMasker
 
     masker = NiftiLabelsMasker(
         labels_img=atlas_filename,
+        lut=look_up_table,
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
+        standardize_confounds=True,
         memory="nilearn_cache",
         verbose=5,
     )
@@ -180,8 +183,9 @@ Using the NiftiLabelsMasker
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
     filter_and_extract('/home/runner/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_labels_masker._ExtractionFunctor object at 0x7fc1d8133c70>, 
+    <nilearn.maskers.nifti_labels_masker._ExtractionFunctor object at 0x7f6677e313d0>, 
     { 'background_label': 0,
+      'clean_args': None,
       'clean_kwargs': {},
       'cmap': 'CMRmap_r',
       'detrend': False,
@@ -190,17 +194,15 @@ Using the NiftiLabelsMasker
       'high_variance_confounds': False,
       'keep_masked_labels': True,
       'labels': None,
-      'labels_img': <nibabel.nifti1.Nifti1Image object at 0x7fc1d80cc370>,
+      'labels_img': <nibabel.nifti1.Nifti1Image object at 0x7f662f609b80>,
       'low_pass': None,
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': 'zscore_sample',
-      'strategy': 'mean',
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, dtype=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=5)
+      'lut':     index                                               name
+    0       0                                         Background
+    1       1                                       Frontal Pole
+    2       2                                     Insular Cortex
+    3       3                             Superior Frontal Gyrus
+    4       4                               Middle Frontal Gyrus
+    5..., confounds=[ '/home/runner/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, dtype=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=5)
     [NiftiLabelsMasker.wrapped] Loading data from 
     /home/runner/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pi
     xar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz
@@ -211,12 +213,12 @@ Using the NiftiLabelsMasker
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-66
+.. GENERATED FROM PYTHON SOURCE LINES 66-68
 
 Compute and display a correlation matrix
 ----------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-95
+.. GENERATED FROM PYTHON SOURCE LINES 68-97
 
 .. code-block:: Python
 
@@ -263,11 +265,11 @@ Compute and display a correlation matrix
  .. code-block:: none
 
 
-    <matplotlib.image.AxesImage object at 0x7fc1d81b8fd0>
+    <matplotlib.image.AxesImage object at 0x7f66784fffa0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-102
+.. GENERATED FROM PYTHON SOURCE LINES 98-104
 
 Extract signals and compute a connectivity matrix without confounds removal
 ---------------------------------------------------------------------------
@@ -276,7 +278,7 @@ matrix presentation, let's look into the impact of confounds to :term:`fMRI`
 signal and functional connectivity. Firstly let's find out what a functional
 connectivity matrix looks like without confound removal.
 
-.. GENERATED FROM PYTHON SOURCE LINES 102-120
+.. GENERATED FROM PYTHON SOURCE LINES 104-122
 
 .. code-block:: Python
 
@@ -318,11 +320,13 @@ connectivity matrix looks like without confound removal.
            [   0.,    0.,    2.,  -72.],
            [   0.,    0.,    0.,    1.]])
     )
+    [NiftiLabelsMasker.wrapped] Resampling labels
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
     filter_and_extract('/home/runner/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_labels_masker._ExtractionFunctor object at 0x7fc1d8182730>, 
+    <nilearn.maskers.nifti_labels_masker._ExtractionFunctor object at 0x7f666a173730>, 
     { 'background_label': 0,
+      'clean_args': None,
       'clean_kwargs': {},
       'cmap': 'CMRmap_r',
       'detrend': False,
@@ -331,17 +335,15 @@ connectivity matrix looks like without confound removal.
       'high_variance_confounds': False,
       'keep_masked_labels': True,
       'labels': None,
-      'labels_img': <nibabel.nifti1.Nifti1Image object at 0x7fc1d80cc370>,
+      'labels_img': <nibabel.nifti1.Nifti1Image object at 0x7f662f609b80>,
       'low_pass': None,
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': 'zscore_sample',
-      'strategy': 'mean',
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, confounds=None, sample_mask=None, dtype=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=5)
+      'lut':     index                                               name
+    0       0                                         Background
+    1       1                                       Frontal Pole
+    2       2                                     Insular Cortex
+    3       3                             Superior Frontal Gyrus
+    4       4                               Middle Frontal Gyrus
+    5..., confounds=None, sample_mask=None, dtype=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=5)
     [NiftiLabelsMasker.wrapped] Loading data from 
     /home/runner/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pi
     xar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz
@@ -349,11 +351,11 @@ connectivity matrix looks like without confound removal.
     [NiftiLabelsMasker.wrapped] Cleaning extracted signals
     _______________________________________________filter_and_extract - 0.7s, 0.0min
 
-    <matplotlib.image.AxesImage object at 0x7fc1f76d3310>
+    <matplotlib.image.AxesImage object at 0x7f664bc13d00>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-135
+.. GENERATED FROM PYTHON SOURCE LINES 123-137
 
 Load confounds from file using a flexible strategy with fmriprep interface
 --------------------------------------------------------------------------
@@ -370,7 +372,7 @@ generated by :term:`fMRIPrep`.
 Let's try a simple strategy removing motion, white matter signal,
 cerebrospinal fluid signal with high-pass filtering.
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-166
+.. GENERATED FROM PYTHON SOURCE LINES 137-168
 
 .. code-block:: Python
 
@@ -429,11 +431,13 @@ cerebrospinal fluid signal with high-pass filtering.
            [   0.,    0.,    2.,  -72.],
            [   0.,    0.,    0.,    1.]])
     )
+    [NiftiLabelsMasker.wrapped] Resampling labels
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
     filter_and_extract('/home/runner/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_labels_masker._ExtractionFunctor object at 0x7fc1f76b5100>, 
+    <nilearn.maskers.nifti_labels_masker._ExtractionFunctor object at 0x7f662d55bfd0>, 
     { 'background_label': 0,
+      'clean_args': None,
       'clean_kwargs': {},
       'cmap': 'CMRmap_r',
       'detrend': False,
@@ -442,17 +446,15 @@ cerebrospinal fluid signal with high-pass filtering.
       'high_variance_confounds': False,
       'keep_masked_labels': True,
       'labels': None,
-      'labels_img': <nibabel.nifti1.Nifti1Image object at 0x7fc1d80cc370>,
+      'labels_img': <nibabel.nifti1.Nifti1Image object at 0x7f662f609b80>,
       'low_pass': None,
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': 'zscore_sample',
-      'strategy': 'mean',
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, confounds=[      cosine00  cosine01  cosine02  ...   trans_y   trans_z  white_matter
+      'lut':     index                                               name
+    0       0                                         Background
+    1       1                                       Frontal Pole
+    2       2                                     Insular Cortex
+    3       3                             Superior Frontal Gyrus
+    4       4                               Middle Frontal Gyrus
+    5..., confounds=[      cosine00  cosine01  cosine02  ...   trans_y   trans_z  white_matter
     0    0.109104  0.109090  0.109066  ... -0.026078  0.055006     -0.876886
     1    0.109066  0.108937  0.108723  ... -0.027587  0.049458     -1.418909
     2    0.108990  0.108632  0.108038  ... -0.019085  0.075787     -1.540842
@@ -473,11 +475,11 @@ cerebrospinal fluid signal with high-pass filtering.
     [NiftiLabelsMasker.wrapped] Cleaning extracted signals
     _______________________________________________filter_and_extract - 0.7s, 0.0min
 
-    <matplotlib.image.AxesImage object at 0x7fc1dd874e80>
+    <matplotlib.image.AxesImage object at 0x7f6679f6cf10>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-178
+.. GENERATED FROM PYTHON SOURCE LINES 169-180
 
 Motion-based scrubbing
 ----------------------
@@ -491,7 +493,7 @@ datasets with too many high motion subjects.
 On top of the simple strategy above, let's add scrubbing to our
 strategy.
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-214
+.. GENERATED FROM PYTHON SOURCE LINES 180-216
 
 .. code-block:: Python
 
@@ -556,11 +558,13 @@ strategy.
            [   0.,    0.,    2.,  -72.],
            [   0.,    0.,    0.,    1.]])
     )
+    [NiftiLabelsMasker.wrapped] Resampling labels
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
     filter_and_extract('/home/runner/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_labels_masker._ExtractionFunctor object at 0x7fc1d8206d00>, 
+    <nilearn.maskers.nifti_labels_masker._ExtractionFunctor object at 0x7f664ea57040>, 
     { 'background_label': 0,
+      'clean_args': None,
       'clean_kwargs': {},
       'cmap': 'CMRmap_r',
       'detrend': False,
@@ -569,17 +573,15 @@ strategy.
       'high_variance_confounds': False,
       'keep_masked_labels': True,
       'labels': None,
-      'labels_img': <nibabel.nifti1.Nifti1Image object at 0x7fc1d80cc370>,
+      'labels_img': <nibabel.nifti1.Nifti1Image object at 0x7f662f609b80>,
       'low_pass': None,
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': 'zscore_sample',
-      'strategy': 'mean',
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, confounds=[      cosine00  cosine01  cosine02  ...   trans_y   trans_z  white_matter
+      'lut':     index                                               name
+    0       0                                         Background
+    1       1                                       Frontal Pole
+    2       2                                     Insular Cortex
+    3       3                             Superior Frontal Gyrus
+    4       4                               Middle Frontal Gyrus
+    5..., confounds=[      cosine00  cosine01  cosine02  ...   trans_y   trans_z  white_matter
     0    0.108440  0.106895  0.110644  ... -0.026366  0.054759     -0.878390
     1    0.108401  0.106742  0.110301  ... -0.027876  0.049211     -1.420413
     2    0.108325  0.106438  0.109616  ... -0.019374  0.075540     -1.542346
@@ -598,13 +600,13 @@ strategy.
     xar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz
     [NiftiLabelsMasker.wrapped] Extracting region signals
     [NiftiLabelsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.8s, 0.0min
+    _______________________________________________filter_and_extract - 0.7s, 0.0min
 
-    <matplotlib.image.AxesImage object at 0x7fc1f774a6a0>
+    <matplotlib.image.AxesImage object at 0x7f665258afa0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 215-222
+.. GENERATED FROM PYTHON SOURCE LINES 217-224
 
 The impact of global signal removal
 -----------------------------------
@@ -614,7 +616,7 @@ degrees of freedom. The downside is that one cannot get insight into variance
 explained by certain sources of noise. Now let's add global signal to the
 simple strategy and see its impact.
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-251
+.. GENERATED FROM PYTHON SOURCE LINES 224-253
 
 .. code-block:: Python
 
@@ -672,11 +674,13 @@ simple strategy and see its impact.
            [   0.,    0.,    2.,  -72.],
            [   0.,    0.,    0.,    1.]])
     )
+    [NiftiLabelsMasker.wrapped] Resampling labels
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
     filter_and_extract('/home/runner/nilearn_data/development_fmri/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_labels_masker._ExtractionFunctor object at 0x7fc1dd7e1760>, 
+    <nilearn.maskers.nifti_labels_masker._ExtractionFunctor object at 0x7f664b8b7d30>, 
     { 'background_label': 0,
+      'clean_args': None,
       'clean_kwargs': {},
       'cmap': 'CMRmap_r',
       'detrend': False,
@@ -685,17 +689,15 @@ simple strategy and see its impact.
       'high_variance_confounds': False,
       'keep_masked_labels': True,
       'labels': None,
-      'labels_img': <nibabel.nifti1.Nifti1Image object at 0x7fc1d80cc370>,
+      'labels_img': <nibabel.nifti1.Nifti1Image object at 0x7f662f609b80>,
       'low_pass': None,
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': 'zscore_sample',
-      'strategy': 'mean',
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, confounds=[      cosine00  cosine01  cosine02  ...   trans_y   trans_z  white_matter
+      'lut':     index                                               name
+    0       0                                         Background
+    1       1                                       Frontal Pole
+    2       2                                     Insular Cortex
+    3       3                             Superior Frontal Gyrus
+    4       4                               Middle Frontal Gyrus
+    5..., confounds=[      cosine00  cosine01  cosine02  ...   trans_y   trans_z  white_matter
     0    0.109104  0.109090  0.109066  ... -0.026078  0.055006     -0.876886
     1    0.109066  0.108937  0.108723  ... -0.027587  0.049458     -1.418909
     2    0.108990  0.108632  0.108038  ... -0.019085  0.075787     -1.540842
@@ -714,13 +716,13 @@ simple strategy and see its impact.
     xar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz
     [NiftiLabelsMasker.wrapped] Extracting region signals
     [NiftiLabelsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.8s, 0.0min
+    _______________________________________________filter_and_extract - 0.7s, 0.0min
 
-    <matplotlib.image.AxesImage object at 0x7fc1a7759f40>
+    <matplotlib.image.AxesImage object at 0x7f6679cc1370>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 252-262
+.. GENERATED FROM PYTHON SOURCE LINES 254-264
 
 Using predefined strategies
 ---------------------------
@@ -733,7 +735,7 @@ benchmarks studies (:footcite:t:`Ciric2017`, :footcite:t:`Parker2018`):
 The following examples shows how to use the `simple` strategy and overwrite
 the motion default to basic.
 
-.. GENERATED FROM PYTHON SOURCE LINES 262-314
+.. GENERATED FROM PYTHON SOURCE LINES 264-316
 
 .. code-block:: Python
 
@@ -821,7 +823,8 @@ the motion default to basic.
            [   0.,    0.,    2.,  -72.],
            [   0.,    0.,    0.,    1.]])
     )
-    [Memory]9.5s, 0.2min    : Loading filter_and_extract...
+    [NiftiLabelsMasker.wrapped] Resampling labels
+    [Memory]12.4s, 0.2min   : Loading filter_and_extract...
     __________________________________filter_and_extract cache loaded - 0.0s, 0.0min
     [NiftiLabelsMasker.wrapped] loading data from Nifti1Image(
     shape=(91, 109, 91),
@@ -830,13 +833,14 @@ the motion default to basic.
            [   0.,    0.,    2.,  -72.],
            [   0.,    0.,    0.,    1.]])
     )
-    [Memory]10.1s, 0.2min   : Loading filter_and_extract...
+    [NiftiLabelsMasker.wrapped] Resampling labels
+    [Memory]13.5s, 0.2min   : Loading filter_and_extract...
     __________________________________filter_and_extract cache loaded - 0.0s, 0.0min
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 315-319
+.. GENERATED FROM PYTHON SOURCE LINES 317-321
 
 References
 ----------
@@ -846,9 +850,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 12.481 seconds)
+   **Total running time of the script:** (0 minutes 15.738 seconds)
 
-**Estimated memory usage:**  674 MB
+**Estimated memory usage:**  822 MB
 
 
 .. _sphx_glr_download_auto_examples_03_connectivity_plot_signal_extraction.py:
@@ -860,7 +864,7 @@ References
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/03_connectivity/plot_signal_extraction.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.12.0?urlpath=lab/tree/notebooks/auto_examples/03_connectivity/plot_signal_extraction.ipynb
         :alt: Launch binder
         :width: 150 px
 

@@ -17,11 +17,6 @@ More specifically:
 3. Fit a second level model on the fitted first level models.
    Notice that in this case the preprocessed :term:`bold<BOLD>`
    images were already normalized to the same :term:`MNI` space.
-
-.. note::
-
-      We are only using a subset of participants from the dataset
-      to lower the run time of the example.
 """
 
 from nilearn import plotting
@@ -69,7 +64,6 @@ task_label = "languagelocalizer"
     img_filters=[("desc", "preproc")],
     n_jobs=2,
     space_label="",
-    sub_labels=["01", "02", "05", "08"],  # comment to run all subjects
     smoothing_fwhm=8,
 )
 
@@ -122,7 +116,7 @@ import numpy as np
 ncols = 2
 nrows = ceil(len(models) / ncols)
 
-fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(8, 4.5))
+fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(10, 12))
 axes = np.atleast_2d(axes)
 model_and_args = zip(models, models_run_imgs, models_events, models_confounds)
 for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
@@ -132,11 +126,11 @@ for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
     zmap = model.compute_contrast("language-string")
     plotting.plot_glass_brain(
         zmap,
-        colorbar=True,
         threshold=p001_unc,
         title=f"sub-{model.subject_label}",
         axes=axes[int(midx / ncols), int(midx % ncols)],
         plot_abs=False,
+        colorbar=True,
         display_mode="x",
         vmin=-12,
         vmax=12,
@@ -174,7 +168,6 @@ zmap = second_level_model.compute_contrast(
 # language network.
 plotting.plot_glass_brain(
     zmap,
-    colorbar=True,
     threshold=p001_unc,
     title="Group language network (unc p<0.001)",
     plot_abs=False,
@@ -182,3 +175,26 @@ plotting.plot_glass_brain(
     figure=plt.figure(figsize=(5, 4)),
 )
 plotting.show()
+
+# %%
+# Generate and save the GLM report at the group level.
+report_slm = second_level_model.generate_report(
+    contrasts="intercept",
+    first_level_contrast="language-string",
+    threshold=p001_unc,
+    display_mode="x",
+)
+
+# %%
+# View the GLM report at the group level.
+report_slm
+
+# %%
+# Or in a separate browser window
+# report_slm.open_in_browser()
+
+# %%
+# Save the report to disk
+output_dir = Path.cwd() / "results" / "plot_bids_analysis"
+output_dir.mkdir(exist_ok=True, parents=True)
+report_slm.save_as_html(output_dir / "report_slm.html")
