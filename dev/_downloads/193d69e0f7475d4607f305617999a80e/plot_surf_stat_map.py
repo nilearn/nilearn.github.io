@@ -12,7 +12,7 @@ This example use the resting state time series
 of a single subject's left hemisphere
 the :ref:`nki_dataset`.
 
-The :ref:`destrieux_atlas` in fsaverage5 space
+The :ref:`destrieux_2009_atlas` in fsaverage5 space
 is used to select a seed region in the posterior cingulate cortex.
 
 The :func:`~nilearn.plotting.plot_surf_stat_map` function is used
@@ -123,6 +123,8 @@ plot_surf_roi(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     title="PCC Seed",
+    colorbar=False,
+    darkness=None,
 )
 
 show()
@@ -151,6 +153,8 @@ plot_surf_roi(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     title="PCC Seed on flat map",
+    colorbar=False,
+    darkness=None,
 )
 
 show()
@@ -163,6 +167,7 @@ show()
 # and timeseries of all cortical nodes.
 from scipy.stats import pearsonr
 
+# %%
 # Let's in initialize the data
 # we will use to create our results image.
 results = {}
@@ -170,6 +175,7 @@ for hemi, mesh in surf_img_nki.mesh.parts.items():
     n_vertices = mesh.n_vertices
     results[hemi] = np.zeros(n_vertices)
 
+# %%
 # Let's avoid computing results
 # in unknown regions
 # and on the medial wall.
@@ -203,11 +209,10 @@ plot_surf_stat_map(
     stat_map=stat_map_surf,
     hemi=hemisphere,
     view="medial",
-    colorbar=True,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    darkness=0.3,
     title="Correlation map",
+    darkness=None,
 )
 
 show()
@@ -220,12 +225,12 @@ plot_surf_stat_map(
     stat_map=stat_map_surf,
     hemi=hemisphere,
     view="medial",
-    colorbar=True,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     cmap="bwr",
     threshold=0.5,
     title="Threshold and colormap",
+    darkness=None,
 )
 
 show()
@@ -240,10 +245,10 @@ plot_surf_stat_map(
     stat_map=stat_map_surf,
     hemi=hemisphere,
     view="lateral",
-    colorbar=True,
     cmap="bwr",
     threshold=0.5,
     title="Plotting without background",
+    darkness=None,
 )
 
 show()
@@ -264,9 +269,9 @@ plot_surf_stat_map(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     threshold=0.5,
-    colorbar=True,
     output_file=output_dir / "plot_surf_stat_map.png",
     cmap="bwr",
+    darkness=None,
 )
 
 # %%

@@ -46,28 +46,26 @@ Note that more power would be obtained from using a larger sample of subjects.
 
     For more information
     see the :ref:`dataset description <oasis_maps>`.
-..
-    Original authors:
 
-    - Bertrand Thirion, <bertrand.thirion@inria.fr>, July 2018
-    - Elvis Dhomatob, Apr. 2014
-    - Virgile Fritsch, Apr 2014
-    - Gael Varoquaux, Apr 2014
-
-.. GENERATED FROM PYTHON SOURCE LINES 41-43
+.. GENERATED FROM PYTHON SOURCE LINES 33-35
 
 Load Oasis dataset
 ------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 43-53
+.. GENERATED FROM PYTHON SOURCE LINES 35-50
 
 .. code-block:: Python
 
-    from nilearn import datasets, plotting
+    from nilearn.datasets import (
+        fetch_icbm152_2009,
+        fetch_icbm152_brain_gm_mask,
+        fetch_oasis_vbm,
+    )
+    from nilearn.plotting import plot_design_matrix, plot_stat_map
 
     n_subjects = 100  # more subjects requires more memory
 
-    oasis_dataset = datasets.fetch_oasis_vbm(
+    oasis_dataset = fetch_oasis_vbm(
         n_subjects=n_subjects,
     )
     gray_matter_map_filenames = oasis_dataset.gray_matter_maps
@@ -81,16 +79,16 @@ Load Oasis dataset
 
  .. code-block:: none
 
-    [get_dataset_dir] Dataset found in /home/runner/nilearn_data/oasis1
+    [fetch_oasis_vbm] Dataset found in /home/runner/nilearn_data/oasis1
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-55
+.. GENERATED FROM PYTHON SOURCE LINES 51-52
 
 Sex is encoded as 'M' or 'F'. Hence, we make it a binary variable.
 
-.. GENERATED FROM PYTHON SOURCE LINES 55-57
+.. GENERATED FROM PYTHON SOURCE LINES 52-54
 
 .. code-block:: Python
 
@@ -103,11 +101,11 @@ Sex is encoded as 'M' or 'F'. Hence, we make it a binary variable.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-59
+.. GENERATED FROM PYTHON SOURCE LINES 55-56
 
 Print basic information on the dataset.
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-68
+.. GENERATED FROM PYTHON SOURCE LINES 56-65
 
 .. code-block:: Python
 
@@ -134,15 +132,15 @@ Print basic information on the dataset.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-70
+.. GENERATED FROM PYTHON SOURCE LINES 66-67
 
 Get a mask image: A mask of the cortex of the ICBM template.
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-72
+.. GENERATED FROM PYTHON SOURCE LINES 67-69
 
 .. code-block:: Python
 
-    gm_mask = datasets.fetch_icbm152_brain_gm_mask()
+    gm_mask = fetch_icbm152_brain_gm_mask()
 
 
 
@@ -152,16 +150,17 @@ Get a mask image: A mask of the cortex of the ICBM template.
 
  .. code-block:: none
 
-    [get_dataset_dir] Dataset found in /home/runner/nilearn_data/icbm152_2009
+    [fetch_icbm152_brain_gm_mask] Dataset found in 
+    /home/runner/nilearn_data/icbm152_2009
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-74
+.. GENERATED FROM PYTHON SOURCE LINES 70-71
 
 Resample the mask, since this mask has a different resolution.
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-84
+.. GENERATED FROM PYTHON SOURCE LINES 71-81
 
 .. code-block:: Python
 
@@ -182,14 +181,14 @@ Resample the mask, since this mask has a different resolution.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-89
+.. GENERATED FROM PYTHON SOURCE LINES 82-86
 
 Analyze data
 ------------
 First, we create an adequate design matrix with three columns: 'age', 'sex',
 and 'intercept'.
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-100
+.. GENERATED FROM PYTHON SOURCE LINES 86-97
 
 .. code-block:: Python
 
@@ -211,16 +210,16 @@ and 'intercept'.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-102
+.. GENERATED FROM PYTHON SOURCE LINES 98-99
 
 Let's plot the design matrix.
 
-.. GENERATED FROM PYTHON SOURCE LINES 102-107
+.. GENERATED FROM PYTHON SOURCE LINES 99-104
 
 .. code-block:: Python
 
     fig, ax1 = plt.subplots(1, 1, figsize=(4, 8))
-    ax = plotting.plot_design_matrix(design_matrix, axes=ax1)
+    ax = plot_design_matrix(design_matrix, axes=ax1)
     ax.set_ylabel("maps")
     fig.suptitle("Second level design matrix")
 
@@ -242,19 +241,23 @@ Let's plot the design matrix.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-110
+.. GENERATED FROM PYTHON SOURCE LINES 105-107
 
 Next, we specify and fit the second-level model when loading the data and
 also smooth a little bit to improve statistical behavior.
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-120
+.. GENERATED FROM PYTHON SOURCE LINES 107-121
 
 .. code-block:: Python
 
     from nilearn.glm.second_level import SecondLevelModel
 
     second_level_model = SecondLevelModel(
-        smoothing_fwhm=2.0, mask_img=mask_img, n_jobs=2, minimize_memory=False
+        smoothing_fwhm=2.0,
+        mask_img=mask_img,
+        n_jobs=2,
+        minimize_memory=False,
+        verbose=1,
     )
     second_level_model.fit(
         gray_matter_map_filenames,
@@ -265,11 +268,38 @@ also smooth a little bit to improve statistical behavior.
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [SecondLevelModel.fit] Fitting second level model. Take a deep breath.
+    [SecondLevelModel.fit] Loading data from Nifti1Image(
+    shape=(91, 109, 91),
+    affine=array([[  -2.,    0.,    0.,   90.],
+           [   0.,    2.,    0., -126.],
+           [   0.,    0.,    2.,  -72.],
+           [   0.,    0.,    0.,    1.]])
+    )
+    [SecondLevelModel.fit] loading mask from Nifti1Image(
+    shape=(91, 109, 91),
+    affine=array([[  -2.,    0.,    0.,   90.],
+           [   0.,    2.,    0., -126.],
+           [   0.,    0.,    2.,  -72.],
+           [   0.,    0.,    0.,    1.]])
+    )
+    /home/runner/work/nilearn/nilearn/examples/05_glm_second_level/plot_oasis.py:116: UserWarning: [NiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
+      second_level_model.fit(
+    [SecondLevelModel.fit] Resampling mask
+    [SecondLevelModel.fit] Finished fit
+    [SecondLevelModel.fit] 
+    Computation of second level model done in 0.29 seconds.
+
+
 
 .. raw:: html
 
     <div class="output_subarea output_html rendered_html output_result">
-    <style>#sk-container-id-7 {
+    <style>#sk-container-id-12 {
       /* Definition of color scheme common for light and dark mode */
       --sklearn-color-text: black;
       --sklearn-color-line: gray;
@@ -299,15 +329,15 @@ also smooth a little bit to improve statistical behavior.
       }
     }
 
-    #sk-container-id-7 {
+    #sk-container-id-12 {
       color: var(--sklearn-color-text);
     }
 
-    #sk-container-id-7 pre {
+    #sk-container-id-12 pre {
       padding: 0;
     }
 
-    #sk-container-id-7 input.sk-hidden--visually {
+    #sk-container-id-12 input.sk-hidden--visually {
       border: 0;
       clip: rect(1px 1px 1px 1px);
       clip: rect(1px, 1px, 1px, 1px);
@@ -319,7 +349,7 @@ also smooth a little bit to improve statistical behavior.
       width: 1px;
     }
 
-    #sk-container-id-7 div.sk-dashed-wrapped {
+    #sk-container-id-12 div.sk-dashed-wrapped {
       border: 1px dashed var(--sklearn-color-line);
       margin: 0 0.4em 0.5em 0.4em;
       box-sizing: border-box;
@@ -327,7 +357,7 @@ also smooth a little bit to improve statistical behavior.
       background-color: var(--sklearn-color-background);
     }
 
-    #sk-container-id-7 div.sk-container {
+    #sk-container-id-12 div.sk-container {
       /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
          but bootstrap.min.css set `[hidden] { display: none !important; }`
          so we also need the `!important` here to be able to override the
@@ -337,7 +367,7 @@ also smooth a little bit to improve statistical behavior.
       position: relative;
     }
 
-    #sk-container-id-7 div.sk-text-repr-fallback {
+    #sk-container-id-12 div.sk-text-repr-fallback {
       display: none;
     }
 
@@ -353,14 +383,14 @@ also smooth a little bit to improve statistical behavior.
 
     /* Parallel-specific style estimator block */
 
-    #sk-container-id-7 div.sk-parallel-item::after {
+    #sk-container-id-12 div.sk-parallel-item::after {
       content: "";
       width: 100%;
       border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
       flex-grow: 1;
     }
 
-    #sk-container-id-7 div.sk-parallel {
+    #sk-container-id-12 div.sk-parallel {
       display: flex;
       align-items: stretch;
       justify-content: center;
@@ -368,28 +398,28 @@ also smooth a little bit to improve statistical behavior.
       position: relative;
     }
 
-    #sk-container-id-7 div.sk-parallel-item {
+    #sk-container-id-12 div.sk-parallel-item {
       display: flex;
       flex-direction: column;
     }
 
-    #sk-container-id-7 div.sk-parallel-item:first-child::after {
+    #sk-container-id-12 div.sk-parallel-item:first-child::after {
       align-self: flex-end;
       width: 50%;
     }
 
-    #sk-container-id-7 div.sk-parallel-item:last-child::after {
+    #sk-container-id-12 div.sk-parallel-item:last-child::after {
       align-self: flex-start;
       width: 50%;
     }
 
-    #sk-container-id-7 div.sk-parallel-item:only-child::after {
+    #sk-container-id-12 div.sk-parallel-item:only-child::after {
       width: 0;
     }
 
     /* Serial-specific style estimator block */
 
-    #sk-container-id-7 div.sk-serial {
+    #sk-container-id-12 div.sk-serial {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -407,14 +437,14 @@ also smooth a little bit to improve statistical behavior.
 
     /* Pipeline and ColumnTransformer style (default) */
 
-    #sk-container-id-7 div.sk-toggleable {
+    #sk-container-id-12 div.sk-toggleable {
       /* Default theme specific background. It is overwritten whether we have a
       specific estimator or a Pipeline/ColumnTransformer */
       background-color: var(--sklearn-color-background);
     }
 
     /* Toggleable label */
-    #sk-container-id-7 label.sk-toggleable__label {
+    #sk-container-id-12 label.sk-toggleable__label {
       cursor: pointer;
       display: block;
       width: 100%;
@@ -424,7 +454,7 @@ also smooth a little bit to improve statistical behavior.
       text-align: center;
     }
 
-    #sk-container-id-7 label.sk-toggleable__label-arrow:before {
+    #sk-container-id-12 label.sk-toggleable__label-arrow:before {
       /* Arrow on the left of the label */
       content: "▸";
       float: left;
@@ -432,13 +462,13 @@ also smooth a little bit to improve statistical behavior.
       color: var(--sklearn-color-icon);
     }
 
-    #sk-container-id-7 label.sk-toggleable__label-arrow:hover:before {
+    #sk-container-id-12 label.sk-toggleable__label-arrow:hover:before {
       color: var(--sklearn-color-text);
     }
 
     /* Toggleable content - dropdown */
 
-    #sk-container-id-7 div.sk-toggleable__content {
+    #sk-container-id-12 div.sk-toggleable__content {
       max-height: 0;
       max-width: 0;
       overflow: hidden;
@@ -447,12 +477,12 @@ also smooth a little bit to improve statistical behavior.
       background-color: var(--sklearn-color-unfitted-level-0);
     }
 
-    #sk-container-id-7 div.sk-toggleable__content.fitted {
+    #sk-container-id-12 div.sk-toggleable__content.fitted {
       /* fitted */
       background-color: var(--sklearn-color-fitted-level-0);
     }
 
-    #sk-container-id-7 div.sk-toggleable__content pre {
+    #sk-container-id-12 div.sk-toggleable__content pre {
       margin: 0.2em;
       border-radius: 0.25em;
       color: var(--sklearn-color-text);
@@ -460,79 +490,79 @@ also smooth a little bit to improve statistical behavior.
       background-color: var(--sklearn-color-unfitted-level-0);
     }
 
-    #sk-container-id-7 div.sk-toggleable__content.fitted pre {
+    #sk-container-id-12 div.sk-toggleable__content.fitted pre {
       /* unfitted */
       background-color: var(--sklearn-color-fitted-level-0);
     }
 
-    #sk-container-id-7 input.sk-toggleable__control:checked~div.sk-toggleable__content {
+    #sk-container-id-12 input.sk-toggleable__control:checked~div.sk-toggleable__content {
       /* Expand drop-down */
       max-height: 200px;
       max-width: 100%;
       overflow: auto;
     }
 
-    #sk-container-id-7 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
+    #sk-container-id-12 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
       content: "▾";
     }
 
     /* Pipeline/ColumnTransformer-specific style */
 
-    #sk-container-id-7 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
+    #sk-container-id-12 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
       color: var(--sklearn-color-text);
       background-color: var(--sklearn-color-unfitted-level-2);
     }
 
-    #sk-container-id-7 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+    #sk-container-id-12 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
       background-color: var(--sklearn-color-fitted-level-2);
     }
 
     /* Estimator-specific style */
 
     /* Colorize estimator box */
-    #sk-container-id-7 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
+    #sk-container-id-12 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
       /* unfitted */
       background-color: var(--sklearn-color-unfitted-level-2);
     }
 
-    #sk-container-id-7 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+    #sk-container-id-12 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
       /* fitted */
       background-color: var(--sklearn-color-fitted-level-2);
     }
 
-    #sk-container-id-7 div.sk-label label.sk-toggleable__label,
-    #sk-container-id-7 div.sk-label label {
+    #sk-container-id-12 div.sk-label label.sk-toggleable__label,
+    #sk-container-id-12 div.sk-label label {
       /* The background is the default theme color */
       color: var(--sklearn-color-text-on-default-background);
     }
 
     /* On hover, darken the color of the background */
-    #sk-container-id-7 div.sk-label:hover label.sk-toggleable__label {
+    #sk-container-id-12 div.sk-label:hover label.sk-toggleable__label {
       color: var(--sklearn-color-text);
       background-color: var(--sklearn-color-unfitted-level-2);
     }
 
     /* Label box, darken color on hover, fitted */
-    #sk-container-id-7 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
+    #sk-container-id-12 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
       color: var(--sklearn-color-text);
       background-color: var(--sklearn-color-fitted-level-2);
     }
 
     /* Estimator label */
 
-    #sk-container-id-7 div.sk-label label {
+    #sk-container-id-12 div.sk-label label {
       font-family: monospace;
       font-weight: bold;
       display: inline-block;
       line-height: 1.2em;
     }
 
-    #sk-container-id-7 div.sk-label-container {
+    #sk-container-id-12 div.sk-label-container {
       text-align: center;
     }
 
     /* Estimator-specific */
-    #sk-container-id-7 div.sk-estimator {
+    #sk-container-id-12 div.sk-estimator {
       font-family: monospace;
       border: 1px dotted var(--sklearn-color-border-box);
       border-radius: 0.25em;
@@ -542,18 +572,18 @@ also smooth a little bit to improve statistical behavior.
       background-color: var(--sklearn-color-unfitted-level-0);
     }
 
-    #sk-container-id-7 div.sk-estimator.fitted {
+    #sk-container-id-12 div.sk-estimator.fitted {
       /* fitted */
       background-color: var(--sklearn-color-fitted-level-0);
     }
 
     /* on hover */
-    #sk-container-id-7 div.sk-estimator:hover {
+    #sk-container-id-12 div.sk-estimator:hover {
       /* unfitted */
       background-color: var(--sklearn-color-unfitted-level-2);
     }
 
-    #sk-container-id-7 div.sk-estimator.fitted:hover {
+    #sk-container-id-12 div.sk-estimator.fitted:hover {
       /* fitted */
       background-color: var(--sklearn-color-fitted-level-2);
     }
@@ -640,7 +670,7 @@ also smooth a little bit to improve statistical behavior.
 
     /* "?"-specific style due to the `<a>` HTML tag */
 
-    #sk-container-id-7 a.estimator_doc_link {
+    #sk-container-id-12 a.estimator_doc_link {
       float: right;
       font-size: 1rem;
       line-height: 1em;
@@ -655,39 +685,35 @@ also smooth a little bit to improve statistical behavior.
       border: var(--sklearn-color-unfitted-level-1) 1pt solid;
     }
 
-    #sk-container-id-7 a.estimator_doc_link.fitted {
+    #sk-container-id-12 a.estimator_doc_link.fitted {
       /* fitted */
       border: var(--sklearn-color-fitted-level-1) 1pt solid;
       color: var(--sklearn-color-fitted-level-1);
     }
 
     /* On hover */
-    #sk-container-id-7 a.estimator_doc_link:hover {
+    #sk-container-id-12 a.estimator_doc_link:hover {
       /* unfitted */
       background-color: var(--sklearn-color-unfitted-level-3);
       color: var(--sklearn-color-background);
       text-decoration: none;
     }
 
-    #sk-container-id-7 a.estimator_doc_link.fitted:hover {
+    #sk-container-id-12 a.estimator_doc_link.fitted:hover {
       /* fitted */
       background-color: var(--sklearn-color-fitted-level-3);
     }
-    </style><div id="sk-container-id-7" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>SecondLevelModel(mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x7fc1d49999a0&gt;,
-                     memory=Memory(location=None), minimize_memory=False, n_jobs=2,
-                     smoothing_fwhm=2.0)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" checked><label for="sk-estimator-id-7" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;SecondLevelModel<span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>SecondLevelModel(mask_img=&lt;nibabel.nifti1.Nifti1Image object at 0x7fc1d49999a0&gt;,
-                     memory=Memory(location=None), minimize_memory=False, n_jobs=2,
-                     smoothing_fwhm=2.0)</pre></div> </div></div></div></div>
+    </style><div id="sk-container-id-12" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>Second Level Model</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-12" type="checkbox" checked><label for="sk-estimator-id-12" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;SecondLevelModel<span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>Second Level Model</pre></div> </div></div></div></div>
     </div>
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-123
+.. GENERATED FROM PYTHON SOURCE LINES 122-124
 
 Estimating the :term:`contrast` is very simple.
 We can just provide the column name of the design matrix.
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-128
+.. GENERATED FROM PYTHON SOURCE LINES 124-129
 
 .. code-block:: Python
 
@@ -700,34 +726,51 @@ We can just provide the column name of the design matrix.
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [SecondLevelModel.compute_contrast] Loading data from Nifti1Image(
+    shape=(91, 109, 91, 100),
+    affine=array([[  -2.,    0.,    0.,   90.],
+           [   0.,    2.,    0., -126.],
+           [   0.,    0.,    2.,  -72.],
+           [   0.,    0.,    0.,    1.]])
+    )
+    [SecondLevelModel.compute_contrast] Smoothing images
+    [SecondLevelModel.compute_contrast] Extracting region signals
+    [SecondLevelModel.compute_contrast] Cleaning extracted signals
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-131
 
+.. GENERATED FROM PYTHON SOURCE LINES 130-134
+
+View results
+------------
 We threshold the second level :term:`contrast`
 at FDR-corrected p < 0.05 and plot it.
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-148
+.. GENERATED FROM PYTHON SOURCE LINES 134-151
 
 .. code-block:: Python
 
     from nilearn.glm import threshold_stats_img
+    from nilearn.plotting import show
 
     _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
     print(f"The FDR=.05-corrected threshold is: {threshold:03g}")
 
     fig = plt.figure(figsize=(5, 3))
-    display = plotting.plot_stat_map(
+    display = plot_stat_map(
         z_map,
         threshold=threshold,
-        colorbar=True,
         display_mode="z",
         cut_coords=[-4, 26],
         figure=fig,
     )
     fig.suptitle("age effect on gray matter density (FDR = .05)")
-    plotting.show()
+    show()
 
 
 
@@ -747,12 +790,12 @@ at FDR-corrected p < 0.05 and plot it.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 149-151
+.. GENERATED FROM PYTHON SOURCE LINES 152-154
 
 We can also study the effect of sex by computing the contrast, thresholding
 it and plot the resulting map.
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-163
+.. GENERATED FROM PYTHON SOURCE LINES 154-166
 
 .. code-block:: Python
 
@@ -761,12 +804,12 @@ it and plot the resulting map.
         output_type="z_score",
     )
     _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
-    plotting.plot_stat_map(
+    plot_stat_map(
         z_map,
         threshold=threshold,
-        colorbar=True,
         title="sex effect on gray matter density (FDR = .05)",
     )
+    show()
 
 
 
@@ -781,151 +824,135 @@ it and plot the resulting map.
 
  .. code-block:: none
 
+    [SecondLevelModel.compute_contrast] Loading data from Nifti1Image(
+    shape=(91, 109, 91, 100),
+    affine=array([[  -2.,    0.,    0.,   90.],
+           [   0.,    2.,    0., -126.],
+           [   0.,    0.,    2.,  -72.],
+           [   0.,    0.,    0.,    1.]])
+    )
+    [SecondLevelModel.compute_contrast] Smoothing images
+    [SecondLevelModel.compute_contrast] Extracting region signals
+    [SecondLevelModel.compute_contrast] Cleaning extracted signals
 
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7fc1b50f1940>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-166
+.. GENERATED FROM PYTHON SOURCE LINES 167-169
 
 Note that there does not seem to be any significant effect of sex on
 gray matter density on that dataset.
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-174
-
-Generating a report
--------------------
-It can be useful to quickly generate a portable, ready-to-view report with
-most of the pertinent information.
-This is easy to do if you have a fitted model and the list of contrasts,
-which we do here.
-
-.. GENERATED FROM PYTHON SOURCE LINES 174-184
-
-.. code-block:: Python
-
-    from nilearn.reporting import make_glm_report
-
-    icbm152_2009 = datasets.fetch_icbm152_2009()
-    report = make_glm_report(
-        model=second_level_model,
-        contrasts=["age", "sex"],
-        bg_img=icbm152_2009["t1"],
-    )
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    [get_dataset_dir] Dataset found in /home/runner/nilearn_data/icbm152_2009
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/reporting/utils.py:21: UserWarning: constrained_layout not applied.  At least one axes collapsed to zero width or height.
-      fig.savefig(
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 185-188
-
-We have several ways to access the report:
-report  # This report can be viewed in a notebook
-report.open_in_browser()
-
-.. GENERATED FROM PYTHON SOURCE LINES 188-197
-
-.. code-block:: Python
-
-
-    # or we can save as an html file
-    from pathlib import Path
-
-    output_dir = Path.cwd() / "results" / "plot_oasis"
-    output_dir.mkdir(exist_ok=True, parents=True)
-    report.save_as_html(output_dir / "report.html")
-
-
-
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 198-200
+.. GENERATED FROM PYTHON SOURCE LINES 171-179
 
 Saving model outputs to disk
 ----------------------------
+It can be useful to quickly generate a portable, ready-to-view report with
+most of the pertinent information.
+We can do this by saving the output of the GLM to disk
+including an HTML report.
+This is easy to do if you have a fitted model and the list of contrasts,
+which we do here.
 
-.. GENERATED FROM PYTHON SOURCE LINES 200-212
+.. GENERATED FROM PYTHON SOURCE LINES 179-198
 
 .. code-block:: Python
 
+    from pathlib import Path
 
-    # We can also save the model outputs to disk
     from nilearn.interfaces.bids import save_glm_to_bids
 
-    save_glm_to_bids(
+    output_dir = Path.cwd() / "results" / "plot_oasis"
+    output_dir.mkdir(exist_ok=True, parents=True)
+
+    icbm152_2009 = fetch_icbm152_2009()
+
+    second_level_model = save_glm_to_bids(
         second_level_model,
         contrasts=["age", "sex"],
         out_dir=output_dir / "derivatives" / "nilearn_glm",
         prefix="ageEffectOnGM",
         bg_img=icbm152_2009["t1"],
+        alpha=0.05,
+        height_control="fdr",
     )
 
 
 
-
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image-sg:: /auto_examples/05_glm_second_level/images/sphx_glr_plot_oasis_004.png
-         :alt: plot oasis
-         :srcset: /auto_examples/05_glm_second_level/images/sphx_glr_plot_oasis_004.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/05_glm_second_level/images/sphx_glr_plot_oasis_005.png
-         :alt: plot oasis
-         :srcset: /auto_examples/05_glm_second_level/images/sphx_glr_plot_oasis_005.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/05_glm_second_level/images/sphx_glr_plot_oasis_006.png
-         :alt: plot oasis
-         :srcset: /auto_examples/05_glm_second_level/images/sphx_glr_plot_oasis_006.png
-         :class: sphx-glr-multi-img
 
 
 .. rst-class:: sphx-glr-script-out
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/interfaces/bids/glm.py:349: UserWarning: constrained_layout not applied.  At least one axes collapsed to zero width or height.
-      contrast_plot.figure.savefig(constrast_fig_file)
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/reporting/utils.py:21: UserWarning: constrained_layout not applied.  At least one axes collapsed to zero width or height.
-      fig.savefig(
+    [fetch_icbm152_2009] Dataset found in /home/runner/nilearn_data/icbm152_2009
+    [save_glm_to_bids] Saving mask...
+    [save_glm_to_bids] Generating design matrices figures...
+    [save_glm_to_bids] Generating contrast matrices figures...
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/_utils/plotting.py:154: UserWarning: constrained_layout not applied.  At least one axes collapsed to zero width or height.
+      contrast_plot.figure.savefig(output["dir"] / contrast_fig)
+    [save_glm_to_bids] Saving contrast-level statistical maps...
+    [SecondLevelModel.compute_contrast] Loading data from Nifti1Image(
+    shape=(91, 109, 91, 100),
+    affine=array([[  -2.,    0.,    0.,   90.],
+           [   0.,    2.,    0., -126.],
+           [   0.,    0.,    2.,  -72.],
+           [   0.,    0.,    0.,    1.]])
+    )
+    [SecondLevelModel.compute_contrast] Smoothing images
+    [SecondLevelModel.compute_contrast] Extracting region signals
+    [SecondLevelModel.compute_contrast] Cleaning extracted signals
+    [SecondLevelModel.compute_contrast] Loading data from Nifti1Image(
+    shape=(91, 109, 91, 100),
+    affine=array([[  -2.,    0.,    0.,   90.],
+           [   0.,    2.,    0., -126.],
+           [   0.,    0.,    2.,  -72.],
+           [   0.,    0.,    0.,    1.]])
+    )
+    [SecondLevelModel.compute_contrast] Smoothing images
+    [SecondLevelModel.compute_contrast] Extracting region signals
+    [SecondLevelModel.compute_contrast] Cleaning extracted signals
+    /home/runner/work/nilearn/nilearn/examples/05_glm_second_level/plot_oasis.py:188: UserWarning: The given float value must not exceed 2.75855356998246e-06. But, you have given threshold=inf.
+      second_level_model = save_glm_to_bids(
+    /home/runner/work/nilearn/nilearn/examples/05_glm_second_level/plot_oasis.py:188: UserWarning: The given float value must not exceed 0.0. But, you have given threshold=inf.
+      second_level_model = save_glm_to_bids(
+    /home/runner/work/nilearn/nilearn/examples/05_glm_second_level/plot_oasis.py:188: UserWarning: Attention: No clusters with stat higher than inf
+      second_level_model = save_glm_to_bids(
+    /home/runner/work/nilearn/nilearn/examples/05_glm_second_level/plot_oasis.py:188: UserWarning: The given float value must not exceed 0.00743128949229107. But, you have given threshold=inf.
+      second_level_model = save_glm_to_bids(
+    /home/runner/work/nilearn/nilearn/examples/05_glm_second_level/plot_oasis.py:188: UserWarning: The given float value must not exceed 0.0. But, you have given threshold=inf.
+      second_level_model = save_glm_to_bids(
+    /home/runner/work/nilearn/nilearn/examples/05_glm_second_level/plot_oasis.py:188: UserWarning: Attention: No clusters with stat higher than inf
+      second_level_model = save_glm_to_bids(
+    [save_glm_to_bids] Saving model level statistical maps...
+    [save_glm_to_bids] Generating HTML...
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 213-214
+.. GENERATED FROM PYTHON SOURCE LINES 199-200
 
 View the generated files
 
-.. GENERATED FROM PYTHON SOURCE LINES 214-216
+.. GENERATED FROM PYTHON SOURCE LINES 200-215
 
 .. code-block:: Python
 
     files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
     print("\n".join([str(x.relative_to(output_dir)) for x in files]))
+
+    #  %%
+    # Generate a report and view it.
+    # If no new contrast is passed to ``generate_report``,
+    # the results saved to disk will be reused to generate the report.
+
+    report = second_level_model.generate_report(
+        bg_img=icbm152_2009["t1"],
+        plot_type="glass",
+        alpha=0.05,
+        height_control=None,
+    )
+    report.save_as_html(output_dir / "report.html")
 
 
 
@@ -936,24 +963,33 @@ View the generated files
 
     derivatives/nilearn_glm/dataset_description.json
     derivatives/nilearn_glm/group
-    derivatives/nilearn_glm/group/ageEffectOnGM_contrast-age_design.svg
+    derivatives/nilearn_glm/group/ageEffectOnGM_contrast-age_clusters.json
+    derivatives/nilearn_glm/group/ageEffectOnGM_contrast-age_clusters.tsv
+    derivatives/nilearn_glm/group/ageEffectOnGM_contrast-age_design.png
     derivatives/nilearn_glm/group/ageEffectOnGM_contrast-age_stat-effect_statmap.nii.gz
     derivatives/nilearn_glm/group/ageEffectOnGM_contrast-age_stat-p_statmap.nii.gz
     derivatives/nilearn_glm/group/ageEffectOnGM_contrast-age_stat-t_statmap.nii.gz
     derivatives/nilearn_glm/group/ageEffectOnGM_contrast-age_stat-variance_statmap.nii.gz
     derivatives/nilearn_glm/group/ageEffectOnGM_contrast-age_stat-z_statmap.nii.gz
-    derivatives/nilearn_glm/group/ageEffectOnGM_contrast-sex_design.svg
+    derivatives/nilearn_glm/group/ageEffectOnGM_contrast-sex_clusters.json
+    derivatives/nilearn_glm/group/ageEffectOnGM_contrast-sex_clusters.tsv
+    derivatives/nilearn_glm/group/ageEffectOnGM_contrast-sex_design.png
     derivatives/nilearn_glm/group/ageEffectOnGM_contrast-sex_stat-effect_statmap.nii.gz
     derivatives/nilearn_glm/group/ageEffectOnGM_contrast-sex_stat-p_statmap.nii.gz
     derivatives/nilearn_glm/group/ageEffectOnGM_contrast-sex_stat-t_statmap.nii.gz
     derivatives/nilearn_glm/group/ageEffectOnGM_contrast-sex_stat-variance_statmap.nii.gz
     derivatives/nilearn_glm/group/ageEffectOnGM_contrast-sex_stat-z_statmap.nii.gz
-    derivatives/nilearn_glm/group/ageEffectOnGM_design.svg
+    derivatives/nilearn_glm/group/ageEffectOnGM_corrdesign.png
+    derivatives/nilearn_glm/group/ageEffectOnGM_design.png
     derivatives/nilearn_glm/group/ageEffectOnGM_design.tsv
+    derivatives/nilearn_glm/group/ageEffectOnGM_mask.nii.gz
     derivatives/nilearn_glm/group/ageEffectOnGM_report.html
     derivatives/nilearn_glm/group/ageEffectOnGM_stat-errorts_statmap.nii.gz
     derivatives/nilearn_glm/group/ageEffectOnGM_stat-rsquared_statmap.nii.gz
     derivatives/nilearn_glm/group/ageEffectOnGM_statmap.json
+    [SecondLevelModel.generate_report] Generating contrast-level figures...
+    [SecondLevelModel.generate_report] Generating design matrices figures...
+    [SecondLevelModel.generate_report] Generating contrast matrices figures...
 
 
 
@@ -961,9 +997,9 @@ View the generated files
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (3 minutes 31.035 seconds)
+   **Total running time of the script:** (3 minutes 13.736 seconds)
 
-**Estimated memory usage:**  2345 MB
+**Estimated memory usage:**  1686 MB
 
 
 .. _sphx_glr_download_auto_examples_05_glm_second_level_plot_oasis.py:
@@ -975,7 +1011,7 @@ View the generated files
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/05_glm_second_level/plot_oasis.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.12.0?urlpath=lab/tree/notebooks/auto_examples/05_glm_second_level/plot_oasis.ipynb
         :alt: Launch binder
         :width: 150 px
 

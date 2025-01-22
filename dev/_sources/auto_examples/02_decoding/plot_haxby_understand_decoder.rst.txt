@@ -88,7 +88,7 @@ Load the Haxby dataset
 
  .. code-block:: none
 
-    [get_dataset_dir] Dataset found in /home/runner/nilearn_data/haxby2001
+    [fetch_haxby] Dataset found in /home/runner/nilearn_data/haxby2001
     8 labels to predict (y): ['bottle' 'cat' 'chair' 'face' 'house' 'scissors' 'scrambledpix' 'shoe']
     fMRI data shape (X): (40, 64, 64, 864)
     Runs (groups): [ 0  1  2  3  4  5  6  7  8  9 10 11]
@@ -256,7 +256,7 @@ classification problem of predicting the label "bottle" vs. all other labels
 and so on. Later we will train a classifier for each row and calculate the
 AU-ROC score for each row.
 
-.. GENERATED FROM PYTHON SOURCE LINES 175-198
+.. GENERATED FROM PYTHON SOURCE LINES 175-196
 
 Feature selection
 -----------------
@@ -273,45 +273,30 @@ by default. This selection threshold can be changed using the
 These 20 percentile voxels are with respect to the volume of the standard
 MNI152 brain template. Furthermore, if the provided mask image has less
 voxels than the selected percentile, all voxels in the mask are used.
-This is done via the ``adjust_screening_percentile`` function.
 
 Also note that these top 20 percentile voxels are selected based on training
 set and then these selected voxels are picked for the test set too for each
 train-test split.
 
-So let's define a feature selector for later use in our Scikit-Learn decoding
-pipeline.
+For simplicity we will just keep all (100 percentile) voxels in this example.
 
-.. GENERATED FROM PYTHON SOURCE LINES 198-210
+.. GENERATED FROM PYTHON SOURCE LINES 196-201
 
 .. code-block:: Python
 
-
-    from nilearn._utils.param_validation import adjust_screening_percentile
-    from nilearn.image import load_img
-
-    mask_vt_loaded = load_img(mask_vt)
-    screen_percent = adjust_screening_percentile(20, mask_vt_loaded)
-    print(f"Adjusted screening percentile: {screen_percent}")
-
     from sklearn.feature_selection import SelectPercentile, f_classif
 
-    feature_selector = SelectPercentile(f_classif, percentile=int(screen_percent))
+    screening_percentile = 100
+    feature_selector = SelectPercentile(f_classif, percentile=screening_percentile)
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Adjusted screening percentile: 100.0
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 211-236
+.. GENERATED FROM PYTHON SOURCE LINES 202-227
 
 Hyperparameter optimization
 ---------------------------
@@ -339,7 +324,7 @@ For simplicity, let's use Scikit-Learn's
 grid (via ``Cs`` parameter) as used in Nilearn's
 :class:`~nilearn.decoding.Decoder`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 236-246
+.. GENERATED FROM PYTHON SOURCE LINES 227-237
 
 .. code-block:: Python
 
@@ -360,7 +345,7 @@ grid (via ``Cs`` parameter) as used in Nilearn's
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 247-255
+.. GENERATED FROM PYTHON SOURCE LINES 238-246
 
 Train and cross-validate via an Scikit-Learn pipeline
 -----------------------------------------------------
@@ -371,7 +356,7 @@ cross-validation scheme by default in cases where groups are defined. In our
 example a group is a run, so we will use Scikit-Learn's
 :class:`~sklearn.model_selection.LeaveOneGroupOut`
 
-.. GENERATED FROM PYTHON SOURCE LINES 255-293
+.. GENERATED FROM PYTHON SOURCE LINES 246-284
 
 .. code-block:: Python
 
@@ -426,7 +411,7 @@ example a group is a run, so we will use Scikit-Learn's
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 294-300
+.. GENERATED FROM PYTHON SOURCE LINES 285-291
 
 Decode via the :class:`~nilearn.decoding.Decoder`
 -------------------------------------------------
@@ -435,7 +420,7 @@ All these steps can be done in a few lines and made faster via parallel
 processing using the ``n_jobs`` parameter in
 :class:`~nilearn.decoding.Decoder`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 300-315
+.. GENERATED FROM PYTHON SOURCE LINES 291-306
 
 .. code-block:: Python
 
@@ -448,7 +433,7 @@ processing using the ``n_jobs`` parameter in
         standardize="zscore_sample",
         n_jobs=n_labels,
         cv=logo_cv,
-        screening_percentile=20,
+        screening_percentile=screening_percentile,
         scoring="roc_auc_ovr",
     )
     decoder.fit(fmri_img, y, groups=run)
@@ -461,7 +446,7 @@ processing using the ``n_jobs`` parameter in
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 316-321
+.. GENERATED FROM PYTHON SOURCE LINES 307-312
 
 Compare the results
 -------------------
@@ -469,7 +454,7 @@ Compare the results
 Let's compare the results from the Scikit-Learn pipeline and the Nilearn
 decoder.
 
-.. GENERATED FROM PYTHON SOURCE LINES 321-325
+.. GENERATED FROM PYTHON SOURCE LINES 312-316
 
 .. code-block:: Python
 
@@ -491,7 +476,7 @@ decoder.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 326-334
+.. GENERATED FROM PYTHON SOURCE LINES 317-325
 
 As we can see, the mean AU-ROC scores from the Scikit-Learn pipeline and
 Nilearn's :class:`~nilearn.decoding.Decoder` are identical.
@@ -505,9 +490,9 @@ results in a structured way that can be easily accessed and analyzed.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (5 minutes 44.703 seconds)
+   **Total running time of the script:** (5 minutes 43.900 seconds)
 
-**Estimated memory usage:**  1338 MB
+**Estimated memory usage:**  1191 MB
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_haxby_understand_decoder.py:
@@ -519,7 +504,7 @@ results in a structured way that can be easily accessed and analyzed.
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/02_decoding/plot_haxby_understand_decoder.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.12.0?urlpath=lab/tree/notebooks/auto_examples/02_decoding/plot_haxby_understand_decoder.ipynb
         :alt: Launch binder
         :width: 150 px
 
