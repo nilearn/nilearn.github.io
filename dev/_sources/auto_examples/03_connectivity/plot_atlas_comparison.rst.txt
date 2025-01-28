@@ -54,12 +54,12 @@ Load atlases
 
 .. code-block:: Python
 
-    from nilearn import datasets
+    from nilearn.datasets import fetch_atlas_yeo_2011, fetch_development_fmri
 
-    yeo = datasets.fetch_atlas_yeo_2011()
+    yeo = fetch_atlas_yeo_2011(thickness="thick", n_networks=17)
     print(
         "Yeo atlas nifti image (3D) with 17 parcels and liberal mask "
-        f" is located at: {yeo['thick_17']}"
+        f" is located at: {yeo['maps']}"
     )
 
 
@@ -85,7 +85,7 @@ Load functional data
 
 .. code-block:: Python
 
-    data = datasets.fetch_development_fmri(n_subjects=10)
+    data = fetch_development_fmri(n_subjects=10)
 
     print(
         "Functional nifti images (4D, e.g., one subject) "
@@ -121,7 +121,7 @@ Load functional data
 Extract coordinates on Yeo atlas - parcellations
 ------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 60-102
+.. GENERATED FROM PYTHON SOURCE LINES 60-108
 
 .. code-block:: Python
 
@@ -139,7 +139,7 @@ Extract coordinates on Yeo atlas - parcellations
     # atlas parcels from multiple subjects using parallelization to speed up the
     # computation
     masker = MultiNiftiLabelsMasker(
-        labels_img=yeo["thick_17"],  # Both hemispheres
+        labels_img=yeo["maps"],  # Both hemispheres
         standardize="zscore_sample",
         standardize_confounds="zscore_sample",
         memory="nilearn_cache",
@@ -157,15 +157,21 @@ Extract coordinates on Yeo atlas - parcellations
     mean_correlation_matrix = connectome_measure.mean_
 
     # useful for plotting connectivity interactions on glass brain
-    from nilearn import plotting
+    from nilearn.plotting import (
+        find_parcellation_cut_coords,
+        plot_connectome,
+        show,
+    )
 
     # grab center coordinates for atlas labels
-    coordinates = plotting.find_parcellation_cut_coords(labels_img=yeo["thick_17"])
+    coordinates = find_parcellation_cut_coords(labels_img=yeo["maps"])
 
     # plot connectome with 80% edge strength in the connectivity
-    left_connectome = plotting.plot_connectome(
+    left_connectome = plot_connectome(
         mean_correlation_matrix, coordinates, edge_threshold="80%"
     )
+
+    show()
 
 
 
@@ -179,15 +185,20 @@ Extract coordinates on Yeo atlas - parcellations
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-108
+.. GENERATED FROM PYTHON SOURCE LINES 109-119
 
-Note that the approach above will extract time series and compute a
-single connectivity matrix for both hemispheres. However, the connectome
-is plotted only for the left hemisphere. If your aim is to compute and plot
-hemisphere-wise connectivity, you can follow the example below.
+.. note::
+
+  The approach above will extract time series
+  and compute a single connectivity matrix for both hemispheres.
+  However, the connectome is plotted only for the left hemisphere.
+
+If your aim is to compute and plot hemisphere-wise connectivity,
+you can follow the example below.
+
 First, create a separate atlas image for each hemisphere:
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-135
+.. GENERATED FROM PYTHON SOURCE LINES 119-146
 
 .. code-block:: Python
 
@@ -199,7 +210,7 @@ First, create a separate atlas image for each hemisphere:
     from nilearn.image.resampling import coord_transform
 
     # load the atlas image first
-    label_image = nb.load(yeo["thick_17"])
+    label_image = nb.load(yeo["maps"])
 
     # extract the affine matrix of the image
     labels_affine = label_image.affine
@@ -225,12 +236,12 @@ First, create a separate atlas image for each hemisphere:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-138
+.. GENERATED FROM PYTHON SOURCE LINES 147-149
 
 Then, create a masker object, compute a connectivity matrix and
 plot the results for each hemisphere:
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-164
+.. GENERATED FROM PYTHON SOURCE LINES 149-175
 
 .. code-block:: Python
 
@@ -247,18 +258,18 @@ plot the results for each hemisphere:
         correlation_matrices = connectome_measure.fit_transform(time_series)
         mean_correlation_matrix = connectome_measure.mean_
 
-        coordinates = plotting.find_parcellation_cut_coords(
+        coordinates = find_parcellation_cut_coords(
             labels_img=img, label_hemisphere=hemi
         )
 
-        plotting.plot_connectome(
+        plot_connectome(
             mean_correlation_matrix,
             coordinates,
             edge_threshold="80%",
             title=f"Yeo Atlas 17 thick (func) - {hemi}",
         )
 
-    plotting.show()
+    show()
 
 
 
@@ -284,16 +295,16 @@ plot the results for each hemisphere:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 165-171
+.. GENERATED FROM PYTHON SOURCE LINES 176-182
 
 Plot a directed connectome - asymmetric connectivity measure
 ------------------------------------------------------------
 In this section, we use the lag-1 correlation as the connectivity
 measure, which leads to an asymmetric connectivity matrix.
 The plot_connectome function accepts both symmetric and asymmetric
-matrices, but plot the latter as a directed graph.
+matrices, but plots the latter as a directed graph.
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-202
+.. GENERATED FROM PYTHON SOURCE LINES 182-213
 
 .. code-block:: Python
 
@@ -321,7 +332,7 @@ matrices, but plot the latter as a directed graph.
     # Compute lag-0 and lag-1 correlations and plot associated connectomes
     for lag in [0, 1]:
         lag_correlation_matrix = lag_correlation(time_series, lag)
-        plotting.plot_connectome(
+        plot_connectome(
             lag_correlation_matrix,
             coordinates,
             edge_threshold="90%",
@@ -353,25 +364,27 @@ matrices, but plot the latter as a directed graph.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/03_connectivity/plot_atlas_comparison.py:195: UserWarning: 'adjacency_matrix' is not symmetric.
+    /home/runner/work/nilearn/nilearn/examples/03_connectivity/plot_atlas_comparison.py:206: UserWarning: 'adjacency_matrix' is not symmetric.
     A directed graph will be plotted.
-      plotting.plot_connectome(
+      plot_connectome(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 203-205
+.. GENERATED FROM PYTHON SOURCE LINES 214-216
 
 Load probabilistic atlases - extracting coordinates on brain maps
 -----------------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 205-209
+.. GENERATED FROM PYTHON SOURCE LINES 216-222
 
 .. code-block:: Python
 
+    from nilearn.datasets import fetch_atlas_difumo
+    from nilearn.plotting import find_probabilistic_atlas_cut_coords
 
     dim = 64
-    difumo = datasets.fetch_atlas_difumo(dimension=dim, resolution_mm=2)
+    difumo = fetch_atlas_difumo(dimension=dim, resolution_mm=2)
 
 
 
@@ -386,25 +399,26 @@ Load probabilistic atlases - extracting coordinates on brain maps
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 210-212
+.. GENERATED FROM PYTHON SOURCE LINES 223-225
 
 Iterate over fetched atlases to extract coordinates - probabilistic
 -------------------------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 212-248
+.. GENERATED FROM PYTHON SOURCE LINES 225-260
 
 .. code-block:: Python
 
     from nilearn.maskers import MultiNiftiMapsMasker
 
-    # create masker using MultiNiftiMapsMasker to extract functional data within
+    # Create masker using MultiNiftiMapsMasker to extract functional data within
     # atlas parcels from multiple subjects using parallelization to speed up the
-    # # computation
+    # computation.
     masker = MultiNiftiMapsMasker(
         maps_img=difumo.maps,
         standardize="zscore_sample",
         standardize_confounds="zscore_sample",
         memory="nilearn_cache",
+        memory_level=1,
         n_jobs=2,
     )
 
@@ -419,18 +433,16 @@ Iterate over fetched atlases to extract coordinates - probabilistic
     mean_correlation_matrix = connectome_measure.mean_
 
     # grab center coordinates for probabilistic atlas
-    coordinates = plotting.find_probabilistic_atlas_cut_coords(
-        maps_img=difumo.maps
-    )
+    coordinates = find_probabilistic_atlas_cut_coords(maps_img=difumo.maps)
 
     # plot connectome with 85% edge strength in the connectivity
-    plotting.plot_connectome(
+    plot_connectome(
         mean_correlation_matrix,
         coordinates,
         edge_threshold="85%",
         title=f"DiFuMo with {dim} dimensions (probabilistic)",
     )
-    plotting.show()
+    show()
 
 
 
@@ -440,22 +452,15 @@ Iterate over fetched atlases to extract coordinates - probabilistic
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/maskers/multi_nifti_maps_masker.py:257: UserWarning: memory_level is currently set to 0 but a Memory object has been provided. Setting memory_level to 1.
-      return self.transform_imgs(
-
 
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 5.184 seconds)
+   **Total running time of the script:** (2 minutes 3.031 seconds)
 
-**Estimated memory usage:**  2011 MB
+**Estimated memory usage:**  1801 MB
 
 
 .. _sphx_glr_download_auto_examples_03_connectivity_plot_atlas_comparison.py:
