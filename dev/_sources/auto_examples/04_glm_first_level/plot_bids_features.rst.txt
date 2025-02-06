@@ -41,21 +41,7 @@ More specifically:
    estimation in the openneuro dataset.
 4. Display contrast plot and uncorrected first level statistics table report.
 
-.. GENERATED FROM PYTHON SOURCE LINES 25-28
-
-.. code-block:: Python
-
-
-    from nilearn import plotting
-
-
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 29-36
+.. GENERATED FROM PYTHON SOURCE LINES 27-34
 
 Fetch openneuro :term:`BIDS` dataset
 ------------------------------------
@@ -65,7 +51,7 @@ This dataset contains the necessary information to run a statistical analysis
 using Nilearn. The dataset also contains statistical results from a previous
 FSL analysis that we can employ for comparison with the Nilearn estimation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 36-65
+.. GENERATED FROM PYTHON SOURCE LINES 34-63
 
 .. code-block:: Python
 
@@ -114,7 +100,7 @@ FSL analysis that we can employ for comparison with the Nilearn estimation.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-78
+.. GENERATED FROM PYTHON SOURCE LINES 64-76
 
 Obtain FirstLevelModel objects automatically and fit arguments
 --------------------------------------------------------------
@@ -129,7 +115,7 @@ the task_label and the space_label as specified in the file names.
 We also have to provide the folder with the desired derivatives, that in this
 case were produced by the :term:`fMRIPrep` :term:`BIDS` app.
 
-.. GENERATED FROM PYTHON SOURCE LINES 78-97
+.. GENERATED FROM PYTHON SOURCE LINES 76-95
 
 .. code-block:: Python
 
@@ -159,11 +145,11 @@ case were produced by the :term:`fMRIPrep` :term:`BIDS` app.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-99
+.. GENERATED FROM PYTHON SOURCE LINES 96-97
 
 Access the model and model arguments of the subject and process events.
 
-.. GENERATED FROM PYTHON SOURCE LINES 99-125
+.. GENERATED FROM PYTHON SOURCE LINES 97-123
 
 .. code-block:: Python
 
@@ -200,13 +186,13 @@ Access the model and model arguments of the subject and process events.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-129
+.. GENERATED FROM PYTHON SOURCE LINES 124-127
 
 We identify the columns of the Go and StopSuccess conditions of the
 design matrix inferred from the FSL file, to use them later for contrast
 definition.
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-136
+.. GENERATED FROM PYTHON SOURCE LINES 127-134
 
 .. code-block:: Python
 
@@ -224,13 +210,13 @@ definition.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-140
+.. GENERATED FROM PYTHON SOURCE LINES 135-138
 
 First level model estimation (one subject)
 ------------------------------------------
 We fit the first level model for one subject.
 
-.. GENERATED FROM PYTHON SOURCE LINES 140-142
+.. GENERATED FROM PYTHON SOURCE LINES 138-140
 
 .. code-block:: Python
 
@@ -657,12 +643,12 @@ We fit the first level model for one subject.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-145
+.. GENERATED FROM PYTHON SOURCE LINES 141-143
 
 Then we compute the StopSuccess - Go contrast. We can use the column names
 of the design matrix.
 
-.. GENERATED FROM PYTHON SOURCE LINES 145-147
+.. GENERATED FROM PYTHON SOURCE LINES 143-145
 
 .. code-block:: Python
 
@@ -675,16 +661,22 @@ of the design matrix.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-150
+.. GENERATED FROM PYTHON SOURCE LINES 146-150
 
-We show the agreement between the Nilearn estimation and the FSL estimation
-available in the dataset.
+Visualize results
+-----------------
+Let's have a look at the Nilearn estimation
+and the FSL estimation available in the dataset.
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-190
+.. GENERATED FROM PYTHON SOURCE LINES 150-183
 
 .. code-block:: Python
 
+    import matplotlib.pyplot as plt
     import nibabel as nib
+    from scipy.stats import norm
+
+    from nilearn.plotting import plot_glass_brain, show
 
     fsl_z_map = nib.load(
         Path(data_dir)
@@ -696,10 +688,7 @@ available in the dataset.
         / "zstat12.nii.gz"
     )
 
-    import matplotlib.pyplot as plt
-    from scipy.stats import norm
-
-    plotting.plot_glass_brain(
+    plot_glass_brain(
         z_map,
         colorbar=True,
         threshold=norm.isf(0.001),
@@ -707,7 +696,7 @@ available in the dataset.
         plot_abs=False,
         display_mode="ortho",
     )
-    plotting.plot_glass_brain(
+    plot_glass_brain(
         fsl_z_map,
         colorbar=True,
         threshold=norm.isf(0.001),
@@ -715,14 +704,6 @@ available in the dataset.
         plot_abs=False,
         display_mode="ortho",
     )
-    plt.show()
-
-    from nilearn.plotting import plot_img_comparison
-
-    plot_img_comparison(
-        [z_map], [fsl_z_map], model.masker_, ref_label="Nilearn", src_label="FSL"
-    )
-    plt.show()
 
 
 
@@ -744,39 +725,36 @@ available in the dataset.
          :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_002.png
          :class: sphx-glr-multi-img
 
-    *
 
-      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_003.png
-         :alt: Histogram of imgs values
-         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_003.png
-         :class: sphx-glr-multi-img
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
 
 
+    <nilearn.plotting.displays._projectors.OrthoProjector object at 0x7f753f6dd640>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 191-194
+.. GENERATED FROM PYTHON SOURCE LINES 184-185
 
-Simple statistical report of thresholded contrast
--------------------------------------------------
-We display the :term:`contrast` plot and table with cluster information.
+We show the agreement between the 2 estimations.
 
-.. GENERATED FROM PYTHON SOURCE LINES 194-207
+.. GENERATED FROM PYTHON SOURCE LINES 185-198
 
 .. code-block:: Python
 
-    from nilearn.plotting import plot_contrast_matrix
 
-    plot_contrast_matrix("StopSuccess - Go", design_matrix)
-    plotting.plot_glass_brain(
-        z_map,
-        colorbar=True,
-        threshold=norm.isf(0.001),
-        plot_abs=False,
-        display_mode="z",
-        figure=plt.figure(figsize=(4, 4)),
+    from nilearn.plotting import plot_bland_altman, plot_img_comparison
+
+    plot_img_comparison(
+        [z_map], [fsl_z_map], model.masker_, ref_label="Nilearn", src_label="FSL"
     )
-    plt.show()
+
+    plot_bland_altman(
+        z_map, fsl_z_map, model.masker_, ref_label="Nilearn", src_label="FSL"
+    )
+
+    show()
 
 
 
@@ -786,10 +764,50 @@ We display the :term:`contrast` plot and table with cluster information.
 
     *
 
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_003.png
+         :alt: Histogram of imgs values
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_003.png
+         :class: sphx-glr-multi-img
+
+    *
+
       .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_004.png
          :alt: plot bids features
          :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_004.png
          :class: sphx-glr-multi-img
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 199-202
+
+Simple statistical report of thresholded contrast
+-------------------------------------------------
+We display the :term:`contrast` plot and table with cluster information.
+
+.. GENERATED FROM PYTHON SOURCE LINES 202-215
+
+.. code-block:: Python
+
+    from nilearn.plotting import plot_contrast_matrix
+
+    plot_contrast_matrix("StopSuccess - Go", design_matrix)
+    plot_glass_brain(
+        z_map,
+        colorbar=True,
+        threshold=norm.isf(0.001),
+        plot_abs=False,
+        display_mode="z",
+        figure=plt.figure(figsize=(4, 4)),
+    )
+    show()
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
 
     *
 
@@ -798,16 +816,23 @@ We display the :term:`contrast` plot and table with cluster information.
          :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_005.png
          :class: sphx-glr-multi-img
 
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_006.png
+         :alt: plot bids features
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_006.png
+         :class: sphx-glr-multi-img
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 208-210
+
+.. GENERATED FROM PYTHON SOURCE LINES 216-218
 
 We can get a latex table from a Pandas Dataframe for display and publication
 purposes
 
-.. GENERATED FROM PYTHON SOURCE LINES 210-215
+.. GENERATED FROM PYTHON SOURCE LINES 218-223
 
 .. code-block:: Python
 
@@ -865,7 +890,7 @@ purposes
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 216-222
+.. GENERATED FROM PYTHON SOURCE LINES 224-230
 
 Saving model outputs to disk
 ----------------------------
@@ -874,7 +899,7 @@ We can now easily save the main results,
 the model metadata and an HTML report to the disk.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-235
+.. GENERATED FROM PYTHON SOURCE LINES 230-243
 
 .. code-block:: Python
 
@@ -899,16 +924,16 @@ the model metadata and an HTML report to the disk.
 
     *
 
-      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_006.png
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_007.png
          :alt: plot bids features
-         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_006.png
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_007.png
          :class: sphx-glr-multi-img
 
     *
 
-      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_007.png
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_008.png
          :alt: plot bids features
-         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_007.png
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_bids_features_008.png
          :class: sphx-glr-multi-img
 
 
@@ -916,17 +941,17 @@ the model metadata and an HTML report to the disk.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:227: UserWarning: Contrast name "StopSuccess - Go" changed to "stopsuccessMinusGo"
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:235: UserWarning: Contrast name "StopSuccess - Go" changed to "stopsuccessMinusGo"
       save_glm_to_bids(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 236-237
+.. GENERATED FROM PYTHON SOURCE LINES 244-245
 
 View the generated files
 
-.. GENERATED FROM PYTHON SOURCE LINES 237-240
+.. GENERATED FROM PYTHON SOURCE LINES 245-248
 
 .. code-block:: Python
 
@@ -960,7 +985,7 @@ View the generated files
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 241-246
+.. GENERATED FROM PYTHON SOURCE LINES 249-254
 
 Only generating the HTML report
 -------------------------------
@@ -968,7 +993,7 @@ Only generating the HTML report
 Using the computed FirstLevelModel and :term:`contrast` information,
 we can quickly also also only create a summary report.
 
-.. GENERATED FROM PYTHON SOURCE LINES 246-253
+.. GENERATED FROM PYTHON SOURCE LINES 254-261
 
 .. code-block:: Python
 
@@ -986,11 +1011,11 @@ we can quickly also also only create a summary report.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 254-255
+.. GENERATED FROM PYTHON SOURCE LINES 262-263
 
 We have several ways to access the report:
 
-.. GENERATED FROM PYTHON SOURCE LINES 255-261
+.. GENERATED FROM PYTHON SOURCE LINES 263-269
 
 .. code-block:: Python
 
@@ -1010,9 +1035,9 @@ We have several ways to access the report:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 44.437 seconds)
+   **Total running time of the script:** (0 minutes 47.085 seconds)
 
-**Estimated memory usage:**  797 MB
+**Estimated memory usage:**  827 MB
 
 
 .. _sphx_glr_download_auto_examples_04_glm_first_level_plot_bids_features.py:
