@@ -25,9 +25,6 @@ Here, we will go through a full step-by-step example of fitting a GLM
 to experimental data and visualizing the results.
 This is done on two runs of one subject of the FIAC dataset.
 
-For more details on the data,
-please see experiment 2 in :footcite:t:`Dehaene2006`.
-
 Here are the steps we will go through:
 
 1. Set up the GLM
@@ -40,11 +37,16 @@ that contain the same experimental conditions.
 The model directly returns a fixed effect
 of the statistics across the two runs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-27
+.. seealso::
+
+    See the :ref:`dataset description <fiac_dataset>`
+    for more information on the data used in this example.
+
+.. GENERATED FROM PYTHON SOURCE LINES 28-29
 
 Create an output ``results`` in the current working directory.
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-34
+.. GENERATED FROM PYTHON SOURCE LINES 29-36
 
 .. code-block:: Python
 
@@ -68,20 +70,20 @@ Create an output ``results`` in the current working directory.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 35-39
+.. GENERATED FROM PYTHON SOURCE LINES 37-41
 
 Set up the GLM
 --------------
 Inspecting 'data', we note that there are two runs.
 We will retain those two runs in a list of 4D img objects.
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-44
+.. GENERATED FROM PYTHON SOURCE LINES 41-46
 
 .. code-block:: Python
 
-    from nilearn.datasets import func
+    from nilearn.datasets.func import fetch_fiac_first_level
 
-    data = func.fetch_fiac_first_level()
+    data = fetch_fiac_first_level()
     fmri_imgs = [data["func1"], data["func2"]]
 
 
@@ -97,11 +99,11 @@ We will retain those two runs in a list of 4D img objects.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 45-46
+.. GENERATED FROM PYTHON SOURCE LINES 47-48
 
 Create a mean image for plotting purpose.
 
-.. GENERATED FROM PYTHON SOURCE LINES 46-50
+.. GENERATED FROM PYTHON SOURCE LINES 48-52
 
 .. code-block:: Python
 
@@ -116,20 +118,18 @@ Create a mean image for plotting purpose.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-53
+.. GENERATED FROM PYTHON SOURCE LINES 53-55
 
 The design matrices were pre-computed,
 we simply put them in a list of DataFrames.
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-60
+.. GENERATED FROM PYTHON SOURCE LINES 55-60
 
 .. code-block:: Python
 
     import numpy as np
-    import pandas as pd
 
-    design_files = [data["design_matrix1"], data["design_matrix2"]]
-    design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
+    design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 
 
 
@@ -174,11 +174,10 @@ We can then compare run-specific and fixed effects.
 Here, we compare the activation produced from each run separately
 and then the fixed effects version.
 
-.. GENERATED FROM PYTHON SOURCE LINES 80-83
+.. GENERATED FROM PYTHON SOURCE LINES 80-82
 
 .. code-block:: Python
 
-    cut_coords = [-129, -126, 49]
     contrast_id = "DSt_minus_SSt"
 
 
@@ -188,18 +187,19 @@ and then the fixed effects version.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-85
+.. GENERATED FROM PYTHON SOURCE LINES 83-87
 
 Compute the statistics for the first run.
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-104
+Here, we define the contrast of interest for the first run.
+This may differ across runs depending on if the design matrices vary.
+
+.. GENERATED FROM PYTHON SOURCE LINES 87-113
 
 .. code-block:: Python
 
-    from nilearn import plotting
+    from nilearn.plotting import plot_stat_map, show
 
-    # Here, we define the contrast of interest for the first run.
-    # This may differ across runs depending on if the design matrices vary.
     contrast_val = [[-1, -1, 1, 1]]
 
     fmri_glm_run_1 = fmri_glm.fit(fmri_imgs[0], design_matrices=design_matrices[0])
@@ -207,13 +207,22 @@ Compute the statistics for the first run.
         contrast_val,
         output_type="all",
     )
-    plotting.plot_stat_map(
+
+    # Let's use the same plotting range and slices for all plots.
+    threshold = 3
+    vmax = 6.0
+    cut_coords = [-129, -126, 49]
+
+    plot_stat_map(
         summary_statistics_run_1["z_score"],
         bg_img=mean_img_,
-        threshold=3.0,
+        threshold=threshold,
         cut_coords=cut_coords,
         title=f"{contrast_id}, first run",
+        vmax=vmax,
     )
+
+    show()
 
 
 
@@ -231,15 +240,14 @@ Compute the statistics for the first run.
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/glm/contrasts.py:115: UserWarning: t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
       reg = regression_result[label_].Tcontrast(con_val)
 
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f1705fd6b20>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-106
+.. GENERATED FROM PYTHON SOURCE LINES 114-115
 
 Compute the statistics for the second run.
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-122
+.. GENERATED FROM PYTHON SOURCE LINES 115-134
 
 .. code-block:: Python
 
@@ -251,13 +259,16 @@ Compute the statistics for the second run.
         contrast_val,
         output_type="all",
     )
-    plotting.plot_stat_map(
+    plot_stat_map(
         summary_statistics_run_2["z_score"],
         bg_img=mean_img_,
-        threshold=3.0,
+        threshold=threshold,
         cut_coords=cut_coords,
         title=f"{contrast_id}, second run",
+        vmax=vmax,
     )
+
+    show()
 
 
 
@@ -275,11 +286,10 @@ Compute the statistics for the second run.
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/glm/contrasts.py:115: UserWarning: t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
       reg = regression_result[label_].Tcontrast(con_val)
 
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f16d7f83a90>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-129
+.. GENERATED FROM PYTHON SOURCE LINES 135-141
 
 Compute the fixed effects statistics
 using the statistical maps of both runs.
@@ -288,7 +298,7 @@ We can use :func:`~nilearn.glm.compute_fixed_effects` to compute
 the fixed effects statistics using the outputs
 from the run-specific FirstLevelModel results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-153
+.. GENERATED FROM PYTHON SOURCE LINES 141-169
 
 .. code-block:: Python
 
@@ -308,13 +318,17 @@ from the run-specific FirstLevelModel results.
         variance_imgs,
         data["mask"],
     )
-    plotting.plot_stat_map(
+    plot_stat_map(
         fixed_fx_stat,
         bg_img=mean_img_,
-        threshold=3.0,
+        threshold=threshold,
         cut_coords=cut_coords,
         title=f"{contrast_id}, fixed effects",
+        vmax=vmax,
     )
+
+    show()
+
 
 
 
@@ -325,23 +339,17 @@ from the run-specific FirstLevelModel results.
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f17044a7490>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-158
+.. GENERATED FROM PYTHON SOURCE LINES 170-174
 
 Not unexpectedly, the fixed effects version displays higher peaks
 than the input runs.
 Computing fixed effects enhances the signal-to-noise ratio
 of the resulting brain maps.
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-170
+.. GENERATED FROM PYTHON SOURCE LINES 176-186
 
 Compute the fixed effects statistics
 using the preprocessed data of both runs.
@@ -354,16 +362,30 @@ Since we can assume that the design matrices of both runs
 have the same columns, in the same order,
 we can again reuse the first run's contrast vector.
 
-.. GENERATED FROM PYTHON SOURCE LINES 170-195
+.. GENERATED FROM PYTHON SOURCE LINES 186-188
 
 .. code-block:: Python
 
     fmri_glm_multirun = fmri_glm.fit(fmri_imgs, design_matrices=design_matrices)
 
-    # We can just define the contrast array for one run and assume
-    # that the design matrix is the same for the other.
-    # However, if we want to be safe, we should define each contrast separately,
-    # and provide it as a list.
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 189-193
+
+We can just define the contrast array for one run and assume
+that the design matrix is the same for the other.
+However, if we want to be safe, we should define each contrast separately,
+and provide it as a list.
+
+.. GENERATED FROM PYTHON SOURCE LINES 193-213
+
+.. code-block:: Python
+
     contrast_val = [
         np.array([[-1, -1, 1, 1]]),  # run 1
         np.array([[-1, -1, 1, 1]]),  # run 2
@@ -373,15 +395,16 @@ we can again reuse the first run's contrast vector.
         contrast_val,
         output_type="z_score",
     )
-    plotting.plot_stat_map(
+    plot_stat_map(
         z_map,
         bg_img=mean_img_,
-        threshold=3.0,
+        threshold=threshold,
         cut_coords=cut_coords,
         title=f"{contrast_id}, fixed effects",
+        vmax=vmax,
     )
 
-    plotting.show()
+    show()
 
 
 
@@ -402,12 +425,12 @@ we can again reuse the first run's contrast vector.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 196-198
+.. GENERATED FROM PYTHON SOURCE LINES 214-216
 
 You may note that the results are the same as the first fixed effects
 analysis, but with a lot less code.
 
-.. GENERATED FROM PYTHON SOURCE LINES 200-205
+.. GENERATED FROM PYTHON SOURCE LINES 218-223
 
 Compute a range of contrasts across both runs
 ---------------------------------------------
@@ -415,11 +438,11 @@ It may be useful to investigate a number of contrasts.
 Therefore, we will move beyond the original contrast of interest
 and both define and compute several.
 
-.. GENERATED FROM PYTHON SOURCE LINES 207-208
+.. GENERATED FROM PYTHON SOURCE LINES 225-226
 
 Contrast specification
 
-.. GENERATED FROM PYTHON SOURCE LINES 208-220
+.. GENERATED FROM PYTHON SOURCE LINES 226-238
 
 .. code-block:: Python
 
@@ -442,11 +465,11 @@ Contrast specification
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 221-222
+.. GENERATED FROM PYTHON SOURCE LINES 239-240
 
 Next, we compute and plot the statistics for these new contrasts.
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-233
+.. GENERATED FROM PYTHON SOURCE LINES 240-251
 
 .. code-block:: Python
 
@@ -471,7 +494,7 @@ Next, we compute and plot the statistics for these new contrasts.
 
     Computing contrasts...
       Contrast 01 out of 8: SStSSp_minus_DStDSp
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:227: UserWarning: One contrast given, assuming it for all 2 runs
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:245: UserWarning: One contrast given, assuming it for all 2 runs
       z_map = fmri_glm.compute_contrast(contrast_val, output_type="z_score")
       Contrast 02 out of 8: DStDSp_minus_SStSSp
       Contrast 03 out of 8: DSt_minus_SSt
@@ -488,7 +511,7 @@ Next, we compute and plot the statistics for these new contrasts.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 234-239
+.. GENERATED FROM PYTHON SOURCE LINES 252-257
 
 Generating a report
 -------------------
@@ -496,7 +519,7 @@ Since we have already computed the FirstLevelModel
 and have a number of contrasts,
 we can quickly create a summary report.
 
-.. GENERATED FROM PYTHON SOURCE LINES 239-245
+.. GENERATED FROM PYTHON SOURCE LINES 257-263
 
 .. code-block:: Python
 
@@ -518,47 +541,42 @@ we can quickly create a summary report.
       return func(*args, **kwargs)
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/_utils/helpers.py:101: UserWarning: Contrasts will be padded with 8 column(s) of zeros.
       return func(*args, **kwargs)
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/reporting/glm_reporter.py:482: UserWarning: One contrast given, assuming it for all 2 runs
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/reporting/_utils.py:255: UserWarning: One contrast given, assuming it for all 2 runs
       contrast_id: model.compute_contrast(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 246-247
+.. GENERATED FROM PYTHON SOURCE LINES 264-265
 
 We have several ways to access the report:
 
-.. GENERATED FROM PYTHON SOURCE LINES 247-254
+.. GENERATED FROM PYTHON SOURCE LINES 265-274
 
 .. code-block:: Python
 
 
-    # report  # This report can be viewed in a notebook
+    # This report can be viewed in a notebook
+    report
+
+    # Or in a separate browser window
     # report.open_in_browser()
 
     # or we can save as an html file
-    # report.save_as_html(output_dir / 'report.html')
+    report.save_as_html(output_dir / "report.html")
 
 
 
 
 
 
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 255-259
-
-References
-----------
-
-.. footbibliography::
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 46.922 seconds)
+   **Total running time of the script:** (0 minutes 48.042 seconds)
 
-**Estimated memory usage:**  823 MB
+**Estimated memory usage:**  1002 MB
 
 
 .. _sphx_glr_download_auto_examples_04_glm_first_level_plot_two_runs_model.py:
