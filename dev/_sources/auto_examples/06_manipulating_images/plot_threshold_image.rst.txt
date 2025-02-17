@@ -29,30 +29,30 @@ The ``threshold`` parameter can take both positive and negative values.
 ``two_sided`` parameter is complementary to ``threshold`` effecting its
 behavior.
 
-.. GENERATED FROM PYTHON SOURCE LINES 17-21
+.. GENERATED FROM PYTHON SOURCE LINES 16-20
 
 Image without threshold
 -----------------------
 
 We will first load the dataset and display the image without manipulation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 21-35
+.. GENERATED FROM PYTHON SOURCE LINES 20-34
 
 .. code-block:: Python
 
 
-    from nilearn import datasets, plotting
-
-    cut_coords = [-26, -33, 59]
+    from nilearn import datasets
+    from nilearn.plotting import plot_stat_map
 
     image = datasets.load_sample_motor_activation_image()
 
-    plotting.plot_stat_map(
-        image,
-        colorbar=True,
-        title="image without threshold",
-        cut_coords=cut_coords,
-    )
+    plot_param = {
+        "display_mode": "ortho",
+        "cut_coords": [5, -26, 21],
+        "draw_cross": False,
+    }
+
+    plot_stat_map(image, title="image without threshold", **plot_param)
 
 
 
@@ -68,22 +68,31 @@ We will first load the dataset and display the image without manipulation.
  .. code-block:: none
 
 
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f3c60eac130>
+    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f301f8742e0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 36-44
+.. GENERATED FROM PYTHON SOURCE LINES 35-52
 
 Image thresholded at 2 when two_sided=True
 ------------------------------------------
 
-Now we will use ``threshold=2`` together with ``two_sided=True`` to
-threshold the image. When ``two_sided=True``, we can only use positive
-values for ``threshold``.
+Now we will use ``threshold=2`` together with ``two_sided=True``
+to threshold the image.
+When ``two_sided=True``,
+we can only use positive values for ``threshold``.
 
 This will set all image values between -2 and 2 to 0.
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-80
+.. note::
+
+  You can get a similar result by passing threshold
+  directly when plotting.
+  In this case the colorbar will adapt to show
+  which part of the image was masked.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 52-93
 
 .. code-block:: Python
 
@@ -98,29 +107,34 @@ This will set all image values between -2 and 2 to 0.
         cluster_threshold=0,
         two_sided=True,
         copy=True,
+        copy_header=True,
     )
 
+    figure_width = 8
 
     fig, axes = plt.subplots(
-        2,
+        3,
         1,
-        figsize=(8, 8),
+        figsize=(figure_width, 13),
     )
 
-    plotting.plot_stat_map(
-        image,
-        colorbar=True,
-        title="image without threshold",
-        axes=axes[0],
-        cut_coords=cut_coords,
+    plot_stat_map(
+        image, title="image without threshold", axes=axes[0], **plot_param
     )
 
-    plotting.plot_stat_map(
+    plot_stat_map(
         thresholded_img,
-        colorbar=True,
-        title="image thresholded at 2 with two_sided=True",
-        cut_coords=cut_coords,
+        title="image thresholded at 2 before plotting with two_sided=True",
         axes=axes[1],
+        **plot_param,
+    )
+
+    plot_stat_map(
+        image,
+        title="image thresholded during plotting",
+        threshold=2,
+        axes=axes[2],
+        **plot_param,
     )
 
 
@@ -136,31 +150,25 @@ This will set all image values between -2 and 2 to 0.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/06_manipulating_images/plot_threshold_image.py:49: FutureWarning: From release 0.13.0 onwards, this function will, by default, copy the header of the input image to the output. Currently, the header is reset to the default Nifti1Header. To suppress this warning and use the new behavior, set `copy_header=True`.
-      thresholded_img = threshold_img(
 
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f3c519331c0>
+    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f2ff0630880>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-88
+.. GENERATED FROM PYTHON SOURCE LINES 94-101
 
 Image thresholded at 2 when two_sided=False
 -------------------------------------------
 
-Now we will use ``threshold=2`` together with ``two_sided=False`` to
-see the effect.
+Now we will use ``threshold=2`` together with ``two_sided=False``
+to see the effect.
 
 This will set all image values below 2 to 0.
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-126
+.. GENERATED FROM PYTHON SOURCE LINES 101-131
 
 .. code-block:: Python
 
-
-    import matplotlib.pyplot as plt
-
-    from nilearn.image import threshold_img
 
     thresholded_img = threshold_img(
         image,
@@ -168,31 +176,27 @@ This will set all image values below 2 to 0.
         cluster_threshold=0,
         two_sided=False,
         copy=True,
+        copy_header=True,
     )
 
 
     fig, axes = plt.subplots(
         2,
         1,
-        figsize=(8, 8),
+        figsize=(figure_width, 8),
     )
 
 
-    plotting.plot_stat_map(
-        image,
-        colorbar=True,
-        title="image without threshold",
-        axes=axes[0],
-        cut_coords=cut_coords,
+    plot_stat_map(
+        image, title="image without threshold", axes=axes[0], **plot_param
     )
 
-    plotting.plot_stat_map(
+    plot_stat_map(
         thresholded_img,
-        colorbar=True,
         cmap="Reds",
         title="image thresholded at 2 with two_sided=False",
-        cut_coords=cut_coords,
         axes=axes[1],
+        **plot_param,
     )
 
 
@@ -208,14 +212,12 @@ This will set all image values below 2 to 0.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/06_manipulating_images/plot_threshold_image.py:93: FutureWarning: From release 0.13.0 onwards, this function will, by default, copy the header of the input image to the output. Currently, the header is reset to the default Nifti1Header. To suppress this warning and use the new behavior, set `copy_header=True`.
-      thresholded_img = threshold_img(
 
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f3c2fdb07c0>
+    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f301a195eb0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-134
+.. GENERATED FROM PYTHON SOURCE LINES 132-139
 
 Image thresholded at -2 when two_sided=False
 --------------------------------------------
@@ -225,12 +227,10 @@ see the effect.
 
 This will set all image values above -2 to 0.
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-170
+.. GENERATED FROM PYTHON SOURCE LINES 139-167
 
 .. code-block:: Python
 
-
-    import matplotlib.pyplot as plt
 
     thresholded_img = threshold_img(
         image,
@@ -238,33 +238,27 @@ This will set all image values above -2 to 0.
         cluster_threshold=0,
         two_sided=False,
         copy=True,
+        copy_header=True,
     )
 
 
     fig, axes = plt.subplots(
         2,
         1,
-        figsize=(8, 8),
+        figsize=(figure_width, 8),
     )
 
-    plotting.plot_stat_map(
-        image,
-        colorbar=True,
-        title="image without threshold",
-        axes=axes[0],
-        cut_coords=cut_coords,
+    plot_stat_map(
+        image, title="image without threshold", axes=axes[0], **plot_param
     )
 
-    plotting.plot_stat_map(
+    plot_stat_map(
         thresholded_img,
-        colorbar=True,
         cmap="Blues_r",
         title="image thresholded at -2 with two_sided=False",
-        cut_coords=cut_coords,
         axes=axes[1],
+        **plot_param,
     )
-    # -
-
 
 
 
@@ -278,17 +272,15 @@ This will set all image values above -2 to 0.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/06_manipulating_images/plot_threshold_image.py:137: FutureWarning: From release 0.13.0 onwards, this function will, by default, copy the header of the input image to the output. Currently, the header is reset to the default Nifti1Header. To suppress this warning and use the new behavior, set `copy_header=True`.
-      thresholded_img = threshold_img(
 
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f3c60b96eb0>
+    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f30164421f0>
 
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 8.997 seconds)
+   **Total running time of the script:** (0 minutes 11.803 seconds)
 
 **Estimated memory usage:**  107 MB
 
