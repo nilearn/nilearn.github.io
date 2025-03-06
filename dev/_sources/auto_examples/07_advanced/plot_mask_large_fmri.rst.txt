@@ -49,27 +49,21 @@ the fMRI image in a different way:
 2. Masking the fMRI image's data array using numpy indexing.
 3. Using :class:`multiprocessing.shared_memory.SharedMemory`.
 
-For the first two methods, there are two ways to input the fMRI image:
+For the first method, there are two ways to input the fMRI image:
 
 1. passing the file path (i.e., the location of the large fMRI image on-disk).
-2. loading image using :mod:`nibabel` and passing this in-memory object.
-
-These two input methods can impact the memory usage of the task, so we will
-also compare these variants of the first two methods.
+2. loading image first and passing this in-memory object to joblib.
 
 When using file paths, the entire image is loaded into memory for each process,
 and that is exactly the problem we described earlier.
 
-However, when the fMRI image is loaded in a way that allows
-`numpy memory mapping <https://numpy.org/doc/stable/reference/generated/numpy.memmap.html>`_,
-as with :class:`nibabel.arrayproxy.ArrayProxy`,
-only the segments of data that are needed are read from the disk. Joblib
-can handle this efficiently across multiple processes and this results in
-lower memory usage. We will see that this can already be a significant
+However, when the fMRI image is loaded once and then passed to
+:class:`joblib.Parallel` as an in-memory object, the image is not loaded
+multiple times. We will see that this can already be a significant
 improvement over the naive usage of :class:`~nilearn.maskers.NiftiMasker` with
 file paths.
 
-.. GENERATED FROM PYTHON SOURCE LINES 55-60
+.. GENERATED FROM PYTHON SOURCE LINES 49-54
 
 Create a large fMRI image
 -------------------------
@@ -77,7 +71,7 @@ Here we will create a "large" fMRI image by fetching 6 subjects'
 fMRI images via the :func:`~nilearn.datasets.fetch_adhd`
 function, concatenating them and then saving to a file.
 
-.. GENERATED FROM PYTHON SOURCE LINES 60-79
+.. GENERATED FROM PYTHON SOURCE LINES 54-74
 
 .. code-block:: Python
 
@@ -92,6 +86,7 @@ function, concatenating them and then saving to a file.
 
     fmri_data = fetch_adhd(n_subjects=N_SUBJECTS)
     fmri_img = concat_imgs(fmri_data.func)
+    n_timepoints = fmri_img.shape[-1]
 
     output_dir = Path.cwd() / "results" / "plot_mask_large_fmri"
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -111,13 +106,9 @@ function, concatenating them and then saving to a file.
     [get_dataset_dir] Dataset found in /home/runner/nilearn_data/adhd
     [fetch_single_file] Downloading data from 
     https://www.nitrc.org/frs/download.php/7784/adhd40_0010128.tgz ...
-    [_chunk_report_] Downloaded 12304384 of 45461055 bytes (27.1%%,    2.7s 
+    [_chunk_report_] Downloaded 27770880 of 45461055 bytes (61.1%%,    0.6s 
     remaining)
-    [_chunk_report_] Downloaded 25804800 of 45461055 bytes (56.8%%,    1.5s 
-    remaining)
-    [_chunk_report_] Downloaded 39174144 of 45461055 bytes (86.2%%,    0.5s 
-    remaining)
-    [fetch_single_file]  ...done. (4 seconds, 0 min)
+    [fetch_single_file]  ...done. (2 seconds, 0 min)
 
     [uncompress_file] Extracting data from 
     /home/runner/nilearn_data/adhd/67b924beca01574bbea08fde49fbbbcd/adhd40_0010128.t
@@ -126,13 +117,9 @@ function, concatenating them and then saving to a file.
 
     [fetch_single_file] Downloading data from 
     https://www.nitrc.org/frs/download.php/7785/adhd40_0021019.tgz ...
-    [_chunk_report_] Downloaded 11649024 of 46216320 bytes (25.2%%,    3.0s 
+    [_chunk_report_] Downloaded 28033024 of 46216320 bytes (60.7%%,    0.7s 
     remaining)
-    [_chunk_report_] Downloaded 24231936 of 46216320 bytes (52.4%%,    1.8s 
-    remaining)
-    [_chunk_report_] Downloaded 36290560 of 46216320 bytes (78.5%%,    0.8s 
-    remaining)
-    [fetch_single_file]  ...done. (4 seconds, 0 min)
+    [fetch_single_file]  ...done. (2 seconds, 0 min)
 
     [uncompress_file] Extracting data from 
     /home/runner/nilearn_data/adhd/67b924beca01574bbea08fde49fbbbcd/adhd40_0021019.t
@@ -141,9 +128,7 @@ function, concatenating them and then saving to a file.
 
     [fetch_single_file] Downloading data from 
     https://www.nitrc.org/frs/download.php/7786/adhd40_0023008.tgz ...
-    [_chunk_report_] Downloaded 12926976 of 20407901 bytes (63.3%%,    0.6s 
-    remaining)
-    [fetch_single_file]  ...done. (2 seconds, 0 min)
+    [fetch_single_file]  ...done. (1 seconds, 0 min)
 
     [uncompress_file] Extracting data from 
     /home/runner/nilearn_data/adhd/67b924beca01574bbea08fde49fbbbcd/adhd40_0023008.t
@@ -152,9 +137,7 @@ function, concatenating them and then saving to a file.
 
     [fetch_single_file] Downloading data from 
     https://www.nitrc.org/frs/download.php/7787/adhd40_0023012.tgz ...
-    [_chunk_report_] Downloaded 11378688 of 20706939 bytes (55.0%%,    0.8s 
-    remaining)
-    [fetch_single_file]  ...done. (2 seconds, 0 min)
+    [fetch_single_file]  ...done. (1 seconds, 0 min)
 
     [uncompress_file] Extracting data from 
     /home/runner/nilearn_data/adhd/67b924beca01574bbea08fde49fbbbcd/adhd40_0023012.t
@@ -167,7 +150,7 @@ function, concatenating them and then saving to a file.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 80-87
+.. GENERATED FROM PYTHON SOURCE LINES 75-82
 
 Create a set of binary masks
 ----------------------------
@@ -177,7 +160,7 @@ multiscale functional brain parcellations via the
 We will fetch a 64-region version of this atlas and then create separate
 binary masks for the first 6 regions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-95
+.. GENERATED FROM PYTHON SOURCE LINES 82-90
 
 .. code-block:: Python
 
@@ -203,14 +186,14 @@ binary masks for the first 6 regions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-100
+.. GENERATED FROM PYTHON SOURCE LINES 91-95
 
 In this case, the atlas and the fMRI image have different resolutions.
 So we will resample the atlas to the fMRI image. It is important to do that
 because only :class:`~nilearn.maskers.NiftiMasker` can handle the resampling
 of the mask to the fMRI image but other methods considered here will not.
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-125
+.. GENERATED FROM PYTHON SOURCE LINES 95-120
 
 .. code-block:: Python
 
@@ -223,7 +206,6 @@ of the mask to the fMRI image but other methods considered here will not.
         force_resample=True,
     )
 
-    mask_imgs = []
     mask_paths = []
     for idx in range(1, N_REGIONS + 1):
         mask = resampled_atlas.get_fdata() == idx
@@ -233,12 +215,12 @@ of the mask to the fMRI image but other methods considered here will not.
             affine=resampled_atlas.affine,
             copy_header=True,
         )
-
-        mask_imgs.append(mask)
         path = output_dir / f"mask_{idx}.nii.gz"
         mask.to_filename(path)
         mask_paths.append(path)
 
+    # remove images from memory
+    del atlas_img, resampled_atlas, mask, fmri_img
 
 
 
@@ -246,24 +228,28 @@ of the mask to the fMRI image but other methods considered here will not.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-140
+
+.. GENERATED FROM PYTHON SOURCE LINES 121-138
 
 Mask the fMRI image using NiftiMasker
 -------------------------------------
-Let's first see how we would typically mask the fMRI image using
-:class:`~nilearn.maskers.NiftiMasker`. This is the most common way to extract
-data from an fMRI image as it makes it easy to standardize, smooth, detrend,
-etc. the data.
+Let's first mask the fMRI image using :class:`~nilearn.maskers.NiftiMasker`.
+This is the most user-friendly way to extract data from an fMRI image as it
+makes it easy to standardize, smooth, detrend, etc. the data.
 
 We will first wrap the :func:`nilearn.maskers.NiftiMasker.fit_transform`
 within a function so that it is more readable and easier to use.
 We will then define another function that would mask the fMRI image using
-multiple masks in parallel using the :mod:`joblib` package.
+multiple masks in parallel using the :mod:`joblib` package. As mentioned
+earlier, this could further be done in two ways: directly using file paths
+as input or first loading the images in-memory and passing them as input.
 
-We can then use this function to measure the memory usage using the
+So we will define two functions for each case.
+
+We can then track the memory usage of these functions via the
 ``memory_profiler`` package.
 
-.. GENERATED FROM PYTHON SOURCE LINES 140-156
+.. GENERATED FROM PYTHON SOURCE LINES 138-165
 
 .. code-block:: Python
 
@@ -273,14 +259,25 @@ We can then use this function to measure the memory usage using the
     from nilearn.maskers import NiftiMasker
 
 
-    def nifti_masker_single(fmri_path, mask_path):
-        return NiftiMasker(mask_img=mask_path).fit_transform(fmri_path)
+    def nifti_masker_single(fmri, mask):
+        return NiftiMasker(mask_img=mask).fit_transform(fmri)
 
 
-    def nifti_masker_parallel(fmri_path, mask_paths):
-        return Parallel(n_jobs=N_REGIONS)(
-            delayed(nifti_masker_single)(fmri_path, mask) for mask in mask_paths
+    def nifti_masker_parallel_path(fmri_path, mask_paths):
+        Parallel(n_jobs=N_REGIONS)(
+            delayed(nifti_masker_single)(fmri_path, mask_path)
+            for mask_path in mask_paths
         )
+        return 1
+
+
+    def nifti_masker_parallel_inmemory(fmri_path, mask_paths):
+        fmri_img = load_img(fmri_path)
+        mask_imgs = [load_img(mask) for mask in mask_paths]
+        Parallel(n_jobs=N_REGIONS)(
+            delayed(nifti_masker_single)(fmri_img, mask) for mask in mask_imgs
+        )
+        return 1
 
 
 
@@ -290,14 +287,11 @@ We can then use this function to measure the memory usage using the
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 157-161
+.. GENERATED FROM PYTHON SOURCE LINES 166-167
 
-As mentioned previously, we will also compare two ways to input the fMRI
-image: using the file paths and using the in-memory objects.
+Let's also create a dictionary to store the memory usage for each method.
 
-So let's first create a dictionary to store the memory usage for each method.
-
-.. GENERATED FROM PYTHON SOURCE LINES 161-186
+.. GENERATED FROM PYTHON SOURCE LINES 167-192
 
 .. code-block:: Python
 
@@ -307,13 +301,13 @@ So let's first create a dictionary to store the memory usage for each method.
     nifti_masker = {"path": [], "in_memory": []}
 
     nifti_masker["path"] = memory_usage(
-        (nifti_masker_parallel, (fmri_path, mask_paths)),
+        (nifti_masker_parallel_path, (fmri_path, mask_paths)),
         max_usage=True,
         include_children=True,
         multiprocess=True,
     )
     nifti_masker["in_memory"] = memory_usage(
-        (nifti_masker_parallel, (fmri_img, mask_imgs)),
+        (nifti_masker_parallel_inmemory, (fmri_path, mask_paths)),
         max_usage=True,
         include_children=True,
         multiprocess=True,
@@ -335,13 +329,13 @@ So let's first create a dictionary to store the memory usage for each method.
  .. code-block:: none
 
     Peak memory usage with NiftiMasker, 6 jobs in parallel:
-    - with file paths: 18028.1328125 MiB
-    - with in-memory images: 12753.0390625 MiB
+    - with file paths: 16293.234375 MiB
+    - with in-memory images: 13253.0 MiB
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 187-204
+.. GENERATED FROM PYTHON SOURCE LINES 193-204
 
 Masking using numpy indexing
 ----------------------------
@@ -350,50 +344,30 @@ could be more efficient than the NiftiMasker when we simply need to mask
 the fMRI image with binary masks and don't need to standardize, smooth, etc.
 the image.
 
-In addition, we will use :func:`nibabel.loadsave.load` function to load the
-fMRI image as a proxy object. This will allow us to load the data directly
-from the file as a numpy array without loading the entire image into memory.
-You can find more information about this in the :mod:`nibabel` documentation,
-here: https://nipy.org/nibabel/images_and_memory.html
+As before we will first define a function that would mask the data array
+of the fMRI image using a single mask. We will then define another function
+that would iterate over multiple masks in parallel and mask the data array
+of the fMRI image using each mask.
 
-As before we will do this by loading the data from the file paths and from
-the in-memory objects. This time, the logic between masking the data using
-the file paths and the in-memory objects is different, so we will define
-separate functions for each case.
-
-.. GENERATED FROM PYTHON SOURCE LINES 204-235
+.. GENERATED FROM PYTHON SOURCE LINES 204-221
 
 .. code-block:: Python
 
 
-    import nibabel as nib
     import numpy as np
 
 
-    def numpy_masker_single_path(fmri_path, mask_path):
-        return np.asarray(nib.load(fmri_path).dataobj)[
-            np.asarray(nib.load(mask_path).dataobj).astype(bool)
-        ]
+    def numpy_masker_single(fmri, mask):
+        return fmri[mask]
 
 
-    def numpy_masker_single_inmemory(fmri_img, mask_img):
-        return np.asarray(fmri_img.dataobj)[
-            np.asarray(mask_img.dataobj).astype(bool)
-        ]
-
-
-    def numpy_masker_parallel_path(fmri_path, mask_paths):
-        return Parallel(n_jobs=N_REGIONS)(
-            delayed(numpy_masker_single_path)(fmri_path, mask)
-            for mask in mask_paths
+    def numpy_masker_parallel(fmri_path, mask_paths):
+        fmri_data = load_img(fmri_path).get_fdata()
+        masks = [load_img(mask).get_fdata().astype(bool) for mask in mask_paths]
+        Parallel(n_jobs=N_REGIONS)(
+            delayed(numpy_masker_single)(fmri_data, mask) for mask in masks
         )
-
-
-    def numpy_masker_parallel_inmemory(fmri_img, mask_imgs):
-        return Parallel(n_jobs=N_REGIONS)(
-            delayed(numpy_masker_single_inmemory)(fmri_img, mask)
-            for mask in mask_imgs
-        )
+        return 1
 
 
 
@@ -403,35 +377,25 @@ separate functions for each case.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 236-238
+.. GENERATED FROM PYTHON SOURCE LINES 222-223
 
-Let's measure the memory usage for each method and store the results in a
-dictionary.
+Let's measure the memory usage
 
-.. GENERATED FROM PYTHON SOURCE LINES 238-260
+.. GENERATED FROM PYTHON SOURCE LINES 223-236
 
 .. code-block:: Python
 
 
-    numpy_masker = {"path": [], "in_memory": []}
-
-    numpy_masker["path"] = memory_usage(
-        (numpy_masker_parallel_path, (fmri_path, mask_paths)),
+    numpy_masker = memory_usage(
+        (numpy_masker_parallel, (fmri_path, mask_paths)),
         max_usage=True,
         include_children=True,
         multiprocess=True,
     )
 
-    numpy_masker["in_memory"] = memory_usage(
-        (numpy_masker_parallel_inmemory, (fmri_img, mask_imgs)),
-        max_usage=True,
-        include_children=True,
-        multiprocess=True,
-    )
     print(
         f"Peak memory usage with numpy indexing, {N_REGIONS} jobs in parallel:\n"
-        f"- with file paths: {numpy_masker['path']} MiB\n"
-        f"- with in-memory images: {numpy_masker['in_memory']} MiB"
+        f"{numpy_masker} MiB"
     )
 
 
@@ -443,13 +407,12 @@ dictionary.
  .. code-block:: none
 
     Peak memory usage with numpy indexing, 6 jobs in parallel:
-    - with file paths: 14012.296875 MiB
-    - with in-memory images: 4097.9609375 MiB
+    4457.296875 MiB
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 261-271
+.. GENERATED FROM PYTHON SOURCE LINES 237-247
 
 Masking using numpy indexing in parallel with shared memory
 -----------------------------------------------------------
@@ -462,51 +425,34 @@ that can be accessed by multiple processes. This way, each process can
 access the data directly from the shared memory without loading the entire
 image into memory again.
 
-.. GENERATED FROM PYTHON SOURCE LINES 271-282
+.. GENERATED FROM PYTHON SOURCE LINES 247-282
 
 .. code-block:: Python
 
 
     from multiprocessing.shared_memory import SharedMemory
 
-    fmri_array = np.asarray(fmri_img.dataobj)
-    shm = SharedMemory(create=True, size=fmri_array.nbytes)
-    shared_array = np.ndarray(
-        fmri_array.shape, dtype=fmri_array.dtype, buffer=shm.buf
-    )
-    np.copyto(shared_array, fmri_array)
-    del fmri_array
 
-
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 283-285
-
-Here, the image is already in-memory, so there is no need to examine the
-the two cases as we did before.
-
-.. GENERATED FROM PYTHON SOURCE LINES 285-313
-
-.. code-block:: Python
-
-
-
-    def numpy_masker_shared_single(img, mask):
-        return img[np.asarray(mask.dataobj).astype(bool)]
-
-
-    def numpy_masker_shared_parallel(img, masks):
-        return Parallel(n_jobs=N_REGIONS)(
-            delayed(numpy_masker_shared_single)(img, mask) for mask in masks
+    def numpy_masker_shared_parallel(fmri_path, mask_paths):
+        fmri_array = load_img(fmri_path).get_fdata()
+        shm = SharedMemory(create=True, size=fmri_array.nbytes)
+        shared_array = np.ndarray(
+            fmri_array.shape, dtype=fmri_array.dtype, buffer=shm.buf
         )
+        np.copyto(shared_array, fmri_array)
+        del fmri_array
+        masks = [load_img(mask).get_fdata().astype(bool) for mask in mask_paths]
+        Parallel(n_jobs=N_REGIONS)(
+            delayed(numpy_masker_single)(shared_array, mask) for mask in masks
+        )
+        # cleanup
+        shm.close()
+        shm.unlink()
+        return 1
 
 
     numpy_masker_shared = memory_usage(
-        (numpy_masker_shared_parallel, (shared_array, mask_imgs)),
+        (numpy_masker_shared_parallel, (fmri_path, mask_paths)),
         max_usage=True,
         include_children=True,
         multiprocess=True,
@@ -517,9 +463,6 @@ the two cases as we did before.
         f"{numpy_masker_shared} MiB"
     )
 
-    # cleanup
-    shm.close()
-    shm.unlink()
 
 
 
@@ -530,16 +473,16 @@ the two cases as we did before.
  .. code-block:: none
 
     Peak memory usage with numpy indexing and shared memory, 6 jobs in parallel:
-    4493.078125 MiB
+    4687.49609375 MiB
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 314-315
+.. GENERATED FROM PYTHON SOURCE LINES 283-284
 
 Let's plot the memory usage for each method to compare them.
 
-.. GENERATED FROM PYTHON SOURCE LINES 315-346
+.. GENERATED FROM PYTHON SOURCE LINES 284-315
 
 .. code-block:: Python
 
@@ -551,34 +494,34 @@ Let's plot the memory usage for each method to compare them.
         [
             "NiftiMasker,\nwith path",
             "NiftiMasker,\nwith in-memory\nimage",
-            "Numpy indexing,\nwith path",
-            "Numpy indexing,\nwith in-memory\nimage",
-            "Numpy indexing,\nwith shared\nmemory",
+            "Numpy indexing",
+            "Numpy indexing,\nwith\nSharedMemory",
         ],
         [
             nifti_masker["path"],
             nifti_masker["in_memory"],
-            numpy_masker["path"],
-            numpy_masker["in_memory"],
+            numpy_masker,
             numpy_masker_shared,
         ],
         color=[
             (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
             (0.6823529411764706, 0.7803921568627451, 0.9098039215686274),
             (1.0, 0.4980392156862745, 0.054901960784313725),
-            (1.0, 0.7333333333333333, 0.47058823529411764),
             (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
         ],
     )
     plt.ylabel("Peak memory usage (MiB)")
-    plt.title(f"Memory usage comparison with {N_REGIONS} jobs in parallel")
+    plt.title(
+        f"Memory usage comparison for masking a 4D fMRI image with \n"
+        f"{n_timepoints} volumes across {N_REGIONS} jobs in parallel"
+    )
     plt.show()
 
 
 
 
 .. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_mask_large_fmri_001.png
-   :alt: Memory usage comparison with 6 jobs in parallel
+   :alt: Memory usage comparison for masking a 4D fMRI image with  857 volumes across 6 jobs in parallel
    :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_mask_large_fmri_001.png
    :class: sphx-glr-single-img
 
@@ -586,7 +529,7 @@ Let's plot the memory usage for each method to compare them.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 347-372
+.. GENERATED FROM PYTHON SOURCE LINES 316-341
 
 Conclusion
 ----------
@@ -606,7 +549,7 @@ is much more memory-efficient than using
 However, if you also need to standardize, smooth, detrend, etc. the data,
 then using :class:`~nilearn.maskers.NiftiMasker` with in-memory images is
 the most user-friendly way to run all these operations in the appropriate
-order.
+order while still being relatively memory-efficient.
 
 Finally, it should be noted that the differences in memory usage between
 the methods can be more significant when working with even larger images
@@ -617,9 +560,9 @@ to see how the memory usage changes for each method.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 23.750 seconds)
+   **Total running time of the script:** (1 minutes 23.771 seconds)
 
-**Estimated memory usage:**  1383 MB
+**Estimated memory usage:**  2467 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_mask_large_fmri.py:
