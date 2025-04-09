@@ -186,7 +186,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.11.2.dev262+g1520edb64) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.11.1)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.11.2.dev264+g9f1841389) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.11.1)</span></a></p> 
   </aside>
 </div>
 
@@ -899,6 +899,43 @@ and opening the the landing page of the deployed doc by clikcing on <code class=
 <p>Automatically comments on a newly open pull request to provide some guidelines, useful links and a checklist.</p>
 <p>The checklist is only editable by maintainers at the moment.</p>
 </section>
+<section id="benchmark-yml">
+<h3>benchmark.yml<a class="headerlink" href="#benchmark-yml" title="Link to this heading">¶</a></h3>
+<p>Workflow file: <a class="reference external" href="https://github.com/nilearn/nilearn/blob/main/.github/workflows/benchmark.yml">benchmark.yml</a></p>
+<p>TL;DR: this workflow runs the benchmarks on the latest commit on the main
+and then deploys the updated benchmarks to
+<a class="reference external" href="https://nilearn.github.io/benchmarks/">nilearn.github.io/benchmarks</a>.
+You can trigger it manually by adding <code class="docutils literal notranslate"><span class="pre">[bm]</span></code> to the commit message on the
+main. It will also run on a schedule at regular interval.</p>
+<p>Step-wise details:</p>
+<ul class="simple">
+<li><p>The benchmarks are set to run at regular intervals via cron.</p></li>
+<li><p>It can also be triggered manually by adding <code class="docutils literal notranslate"><span class="pre">[bm]</span></code> to the commit message.</p></li>
+<li><p>First it installs <a class="reference external" href="https://asv.readthedocs.io/en/latest/index.html">asv</a>.</p></li>
+<li><p>Then it sets up the SSH key to access the
+<a class="reference external" href="https://github.com/nilearn/benchmarks">benchmarks</a> repo,
+pulls it, and copies the results dir into the current dir. We will append
+the new results to these results.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">machine</span> <span class="pre">--yes</span></code> then fetches the machine info like CPU, RAM, OS,
+etc. and saves it in <code class="docutils literal notranslate"><span class="pre">~/.asv-machine.json</span></code>, but it gives a unique name
+to the machine on every run even if the specs are the same. So we will set
+a fixed name for the machine so the legend isn’t too overcrowded.</p></li>
+<li><p>To do this, we edit the <code class="docutils literal notranslate"><span class="pre">~/.asv-machine.json</span></code> file to change the machine
+name to a fixed name <code class="docutils literal notranslate"><span class="pre">fv-az1113-357</span></code>. The name is arbitrary and has been
+chosen to match the first run. The script
+<code class="docutils literal notranslate"><span class="pre">build_tools/github/set_machine_name.py</span></code> does all this.</p></li>
+<li><p>Then we run the benchmarks (<code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">run</span></code>) such that the results are
+appended to the old results (via <code class="docutils literal notranslate"><span class="pre">--append-samples</span></code> parameter).
+<code class="docutils literal notranslate"><span class="pre">-ev</span></code> makes sure any errors are printed in detail and all the output can
+be seen in the logs.</p></li>
+<li><p>Then we create the HTML with all the results via <code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">publish</span></code>.</p></li>
+<li><p>We upload the results as artifacts so that we can download them later.</p></li>
+<li><p>Then we push the new results back to the
+<a class="reference external" href="https://github.com/nilearn/benchmarks">benchmarks</a>  repo. This will
+automatically deploy the new results to
+<a class="reference external" href="https://nilearn.github.io/benchmarks/">nilearn.github.io/benchmarks</a>.</p></li>
+</ul>
+</section>
 <section id="build-docs-yml">
 <h3>build-docs.yml<a class="headerlink" href="#build-docs-yml" title="Link to this heading">¶</a></h3>
 <p>Workflow file: <a class="reference external" href="https://github.com/nilearn/nilearn/blob/main/.github/workflows/build-docs.yml">build-docs.yml</a></p>
@@ -1160,6 +1197,7 @@ and the and <code class="docutils literal notranslate"><span class="pre">doc/cha
 <li><a class="reference internal" href="#github-actions-specification">GitHub Actions Specification</a><ul>
 <li><a class="reference internal" href="#assign-yml">assign.yml</a></li>
 <li><a class="reference internal" href="#auto-comment-yml">auto-comment.yml</a></li>
+<li><a class="reference internal" href="#benchmark-yml">benchmark.yml</a></li>
 <li><a class="reference internal" href="#build-docs-yml">build-docs.yml</a><ul>
 <li><a class="reference internal" href="#dataset-caching">Dataset caching</a></li>
 </ul>
