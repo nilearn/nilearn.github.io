@@ -304,7 +304,7 @@ We can use :func:`~nilearn.glm.compute_fixed_effects` to compute
 the fixed effects statistics using the outputs
 from the run-specific FirstLevelModel results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-170
+.. GENERATED FROM PYTHON SOURCE LINES 142-168
 
 .. code-block:: Python
 
@@ -319,10 +319,8 @@ from the run-specific FirstLevelModel results.
         summary_statistics_run_2["effect_variance"],
     ]
 
-    fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
-        contrast_imgs,
-        variance_imgs,
-        data["mask"],
+    fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _ = compute_fixed_effects(
+        contrast_imgs, variance_imgs, data["mask"], return_z_score=True
     )
     plot_stat_map(
         fixed_fx_stat,
@@ -349,20 +347,20 @@ from the run-specific FirstLevelModel results.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:153: DeprecationWarning: The behavior of this function will be changed in release 0.13 to have an additionalreturn value 'fixed_fx_z_score_img'  by default. Please set return_z_score to True.
-      fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:153: DeprecationWarning: The behavior of this function will be changed in release 0.13 to have an additional return value 'fixed_fx_z_score_img' by default. Please set return_z_score to True.
+      fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _ = compute_fixed_effects(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-175
+.. GENERATED FROM PYTHON SOURCE LINES 169-173
 
 Not unexpectedly, the fixed effects version displays higher peaks
 than the input runs.
 Computing fixed effects enhances the signal-to-noise ratio
 of the resulting brain maps.
 
-.. GENERATED FROM PYTHON SOURCE LINES 177-187
+.. GENERATED FROM PYTHON SOURCE LINES 175-185
 
 Compute the fixed effects statistics
 using the preprocessed data of both runs.
@@ -375,7 +373,7 @@ Since we can assume that the design matrices of both runs
 have the same columns, in the same order,
 we can again reuse the first run's contrast vector.
 
-.. GENERATED FROM PYTHON SOURCE LINES 187-189
+.. GENERATED FROM PYTHON SOURCE LINES 185-187
 
 .. code-block:: Python
 
@@ -389,20 +387,20 @@ we can again reuse the first run's contrast vector.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:187: UserWarning: [NiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:185: UserWarning: [NiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
       fmri_glm_multirun = fmri_glm.fit(fmri_imgs, design_matrices=design_matrices)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-194
+.. GENERATED FROM PYTHON SOURCE LINES 188-192
 
 We can just define the contrast array for one run and assume
 that the design matrix is the same for the other.
 However, if we want to be safe, we should define each contrast separately,
 and provide it as a list.
 
-.. GENERATED FROM PYTHON SOURCE LINES 194-214
+.. GENERATED FROM PYTHON SOURCE LINES 192-212
 
 .. code-block:: Python
 
@@ -439,18 +437,18 @@ and provide it as a list.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:199: UserWarning: t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:197: UserWarning: t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
       z_map = fmri_glm_multirun.compute_contrast(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 215-217
+.. GENERATED FROM PYTHON SOURCE LINES 213-215
 
 You may note that the results are the same as the first fixed effects
 analysis, but with a lot less code.
 
-.. GENERATED FROM PYTHON SOURCE LINES 219-224
+.. GENERATED FROM PYTHON SOURCE LINES 217-222
 
 Compute a range of contrasts across both runs
 ---------------------------------------------
@@ -458,11 +456,11 @@ It may be useful to investigate a number of contrasts.
 Therefore, we will move beyond the original contrast of interest
 and both define and compute several.
 
-.. GENERATED FROM PYTHON SOURCE LINES 226-227
+.. GENERATED FROM PYTHON SOURCE LINES 224-225
 
 Contrast specification
 
-.. GENERATED FROM PYTHON SOURCE LINES 227-239
+.. GENERATED FROM PYTHON SOURCE LINES 225-237
 
 .. code-block:: Python
 
@@ -485,11 +483,11 @@ Contrast specification
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 240-241
+.. GENERATED FROM PYTHON SOURCE LINES 238-239
 
 Next, we compute and plot the statistics for these new contrasts.
 
-.. GENERATED FROM PYTHON SOURCE LINES 241-252
+.. GENERATED FROM PYTHON SOURCE LINES 239-250
 
 .. code-block:: Python
 
@@ -514,9 +512,9 @@ Next, we compute and plot the statistics for these new contrasts.
 
     Computing contrasts...
       Contrast 01 out of 8: SStSSp_minus_DStDSp
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:246: UserWarning: One contrast given, assuming it for all 2 runs
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:244: UserWarning: One contrast given, assuming it for all 2 runs
       z_map = fmri_glm.compute_contrast(contrast_val, output_type="z_score")
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:246: UserWarning: t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:244: UserWarning: t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
       z_map = fmri_glm.compute_contrast(contrast_val, output_type="z_score")
       Contrast 02 out of 8: DStDSp_minus_SStSSp
       Contrast 03 out of 8: DSt_minus_SSt
@@ -524,16 +522,16 @@ Next, we compute and plot the statistics for these new contrasts.
       Contrast 05 out of 8: DSt_minus_SSt_for_DSp
       Contrast 06 out of 8: DSp_minus_SSp_for_DSt
       Contrast 07 out of 8: Deactivation
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:246: UserWarning: t contrasts should be of length P=13, but it has length 5. The rest of the contrast was padded with zeros.
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:244: UserWarning: t contrasts should be of length P=13, but it has length 5. The rest of the contrast was padded with zeros.
       z_map = fmri_glm.compute_contrast(contrast_val, output_type="z_score")
       Contrast 08 out of 8: Effects_of_interest
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:246: UserWarning: Running approximate fixed effects on F statistics.
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:244: UserWarning: Running approximate fixed effects on F statistics.
       z_map = fmri_glm.compute_contrast(contrast_val, output_type="z_score")
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 253-258
+.. GENERATED FROM PYTHON SOURCE LINES 251-256
 
 Generating a report
 -------------------
@@ -541,7 +539,7 @@ Since we have already computed the FirstLevelModel
 and have a number of contrasts,
 we can quickly create a summary report.
 
-.. GENERATED FROM PYTHON SOURCE LINES 258-264
+.. GENERATED FROM PYTHON SOURCE LINES 256-262
 
 .. code-block:: Python
 
@@ -559,29 +557,29 @@ we can quickly create a summary report.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:258: UserWarning: One contrast given, assuming it for all 2 runs
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:256: UserWarning: One contrast given, assuming it for all 2 runs
       report = fmri_glm_multirun.generate_report(
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:258: UserWarning: t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:256: UserWarning: t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
       report = fmri_glm_multirun.generate_report(
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:258: UserWarning: t contrasts should be of length P=13, but it has length 5. The rest of the contrast was padded with zeros.
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:256: UserWarning: t contrasts should be of length P=13, but it has length 5. The rest of the contrast was padded with zeros.
       report = fmri_glm_multirun.generate_report(
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:258: UserWarning: Running approximate fixed effects on F statistics.
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:256: UserWarning: Running approximate fixed effects on F statistics.
       report = fmri_glm_multirun.generate_report(
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:258: UserWarning: Contrasts will be padded with 9 column(s) of zeros.
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:256: UserWarning: Contrasts will be padded with 9 column(s) of zeros.
       report = fmri_glm_multirun.generate_report(
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:258: UserWarning: Contrasts will be padded with 8 column(s) of zeros.
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:256: UserWarning: Contrasts will be padded with 8 column(s) of zeros.
       report = fmri_glm_multirun.generate_report(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 265-268
+.. GENERATED FROM PYTHON SOURCE LINES 263-266
 
 We have several ways to access the report:
 
 This report can be viewed in a notebook.
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-270
+.. GENERATED FROM PYTHON SOURCE LINES 266-268
 
 .. code-block:: Python
 
@@ -1066,11 +1064,11 @@ This report can be viewed in a notebook.
       <!-- Adapted from Pure CSS navbar : https://purecss.io/layouts/tucked-menu-vertical/ -->
     <nav class="navbar pure-g fw-bold" id="menu" >
       <script>
-        var unique_id = "7e934aab7ae84e339cb2b122216488a3";
+        var unique_id = "f4c827d381da49a8a472bb5e5a778f86";
       </script>
       <div class="pure-u-1 pure-u-lg-1-8">
         <div class="pure-menu">
-          <a href="#model-details-7e934aab7ae84e339cb2b122216488a3" class="pure-menu-heading">Home</a>
+          <a href="#model-details-f4c827d381da49a8a472bb5e5a778f86" class="pure-menu-heading">Home</a>
           <a href="#" class="custom-toggle" id="toggle"
             ><s class="bar"></s><s class="bar"></s
           ></a>
@@ -1080,30 +1078,30 @@ This report can be viewed in a notebook.
         <div class="pure-menu pure-menu-horizontal custom-can-transform">
           <ul class="pure-menu-list">
             <li class="pure-menu-item">
-              <a href="#model-details-7e934aab7ae84e339cb2b122216488a3" class="pure-menu-link"
+              <a href="#model-details-f4c827d381da49a8a472bb5e5a778f86" class="pure-menu-link"
                 >Model details</a
               >
             </li>
             <li class="pure-menu-item">
-              <a href="#design-matrix-7e934aab7ae84e339cb2b122216488a3" class="pure-menu-link"
+              <a href="#design-matrix-f4c827d381da49a8a472bb5e5a778f86" class="pure-menu-link"
                 >Design Matrix</a
               >
             </li>
             <li class="pure-menu-item">
-              <a href="#mask-7e934aab7ae84e339cb2b122216488a3" class="pure-menu-link">Mask</a>
+              <a href="#mask-f4c827d381da49a8a472bb5e5a778f86" class="pure-menu-link">Mask</a>
             </li>
             <li class="pure-menu-item">
-              <a href="#contrasts-7e934aab7ae84e339cb2b122216488a3" class="pure-menu-link"
+              <a href="#contrasts-f4c827d381da49a8a472bb5e5a778f86" class="pure-menu-link"
                 >Contrasts</a
               >
             </li>
             <li class="pure-menu-item">
-              <a href="#statistical-maps-7e934aab7ae84e339cb2b122216488a3" class="pure-menu-link"
+              <a href="#statistical-maps-f4c827d381da49a8a472bb5e5a778f86" class="pure-menu-link"
                 >Statistical Maps</a
               >
             </li>
             <li class="pure-menu-item">
-              <a href="#about-7e934aab7ae84e339cb2b122216488a3" class="pure-menu-link">About</a>
+              <a href="#about-f4c827d381da49a8a472bb5e5a778f86" class="pure-menu-link">About</a>
             </li>
           </ul>
         </div>
@@ -1175,7 +1173,7 @@ This report can be viewed in a notebook.
         <h2>Description</h2>
         <p>
       Data were analyzed using <a href="https://nilearn.github.io">Nilearn</a>
-      (version= 0.11.2.dev324+gc95672634; RRID:SCR_001362).
+      (version= 0.11.2.dev327+g615c909da; RRID:SCR_001362).
     </p>
       <p>
         At the subject level, a mass univariate analysis was performed with a linear
@@ -1192,7 +1190,7 @@ This report can be viewed in a notebook.
 
       </section>
 
-      <section id="model-details-7e934aab7ae84e339cb2b122216488a3">
+      <section id="model-details-f4c827d381da49a8a472bb5e5a778f86">
         <h2>Model details</h2>
         <div class="table-container"><table class="pure-table">
       <thead>
@@ -1242,7 +1240,7 @@ This report can be viewed in a notebook.
     </table></div>
       </section>
 
-      <section id="design-matrix-7e934aab7ae84e339cb2b122216488a3">
+      <section id="design-matrix-f4c827d381da49a8a472bb5e5a778f86">
         <h2>Design Matrix</h2>
 
         <!--  -->
@@ -1300,7 +1298,7 @@ This report can be viewed in a notebook.
         <!--  -->
       </section>
 
-      <section id="contrasts-7e934aab7ae84e339cb2b122216488a3">
+      <section id="contrasts-f4c827d381da49a8a472bb5e5a778f86">
         <h2>Contrasts</h2>
         <div class="d-flex flex-column">
           <!--  -->
@@ -1474,7 +1472,7 @@ This report can be viewed in a notebook.
         </div>
       </section>
 
-      <section id="mask-7e934aab7ae84e339cb2b122216488a3">
+      <section id="mask-f4c827d381da49a8a472bb5e5a778f86">
         <h2>Mask</h2>
         <div class="scroll-y">
           <img
@@ -1492,7 +1490,7 @@ This report can be viewed in a notebook.
         </div>
       </section>
 
-      <section id="statistical-maps-7e934aab7ae84e339cb2b122216488a3">
+      <section id="statistical-maps-f4c827d381da49a8a472bb5e5a778f86">
         <h2>Statistical Maps</h2>
         <div class="pure-g">
           <!--  -->
@@ -6148,10 +6146,10 @@ This report can be viewed in a notebook.
                </div>
       </section>
 
-      <section id="about-7e934aab7ae84e339cb2b122216488a3" style="text-align: left">
+      <section id="about-f4c827d381da49a8a472bb5e5a778f86" style="text-align: left">
         <h2>About</h2>
         <ul>
-          <li>Date preprocessed: <time>2025-05-21T18:30:05</time></li>
+          <li>Date preprocessed: <time>2025-05-26T18:34:06</time></li>
         </ul>
       </section>
     </div>
@@ -6164,16 +6162,16 @@ This report can be viewed in a notebook.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 271-273
+.. GENERATED FROM PYTHON SOURCE LINES 269-271
 
 Or in a separate browser window
 report.open_in_browser()
 
-.. GENERATED FROM PYTHON SOURCE LINES 275-276
+.. GENERATED FROM PYTHON SOURCE LINES 273-274
 
 Or we can save as an html file.
 
-.. GENERATED FROM PYTHON SOURCE LINES 276-277
+.. GENERATED FROM PYTHON SOURCE LINES 274-275
 
 .. code-block:: Python
 
@@ -6188,9 +6186,9 @@ Or we can save as an html file.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 57.828 seconds)
+   **Total running time of the script:** (0 minutes 57.719 seconds)
 
-**Estimated memory usage:**  896 MB
+**Estimated memory usage:**  828 MB
 
 
 .. _sphx_glr_download_auto_examples_04_glm_first_level_plot_two_runs_model.py:
