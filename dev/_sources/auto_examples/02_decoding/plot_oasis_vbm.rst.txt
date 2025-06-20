@@ -319,7 +319,7 @@ Visualize the quality of predictions
  .. code-block:: none
 
 
-    <matplotlib.legend.Legend object at 0x7ffad547fa90>
+    <matplotlib.legend.Legend object at 0x7f1738161cd0>
 
 
 
@@ -328,7 +328,7 @@ Visualize the quality of predictions
 Inference with massively univariate model
 -----------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 185-228
+.. GENERATED FROM PYTHON SOURCE LINES 185-231
 
 .. code-block:: Python
 
@@ -341,13 +341,16 @@ Inference with massively univariate model
     from nilearn.mass_univariate import permuted_ols
 
     # This can be changed to use more CPUs.
-    neg_log_pvals, t_scores_original_data, _ = permuted_ols(
+    output = permuted_ols(
         age,
         data,  # + intercept as a covariate by default
         n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
         verbose=1,  # display progress bar
         n_jobs=2,
+        output_type="dict",
     )
+    neg_log_pvals = output["logp_max_t"]
+    t_scores_original_data = output["t"]
     signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
     signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
         variance_threshold.inverse_transform(signed_neg_log_pvals)
@@ -389,11 +392,9 @@ Inference with massively univariate model
  .. code-block:: none
 
     Massively univariate model
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_oasis_vbm.py:194: DeprecationWarning: The "legacy" output structure for "permuted_ols" is deprecated. The default output structure will be changed to "dict" in version 0.13.
-      neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   32.2s remaining:    0.0s
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   32.2s finished
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   32.7s remaining:    0.0s
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   32.7s finished
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1674: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
       ax = fh.add_axes(
 
@@ -403,9 +404,9 @@ Inference with massively univariate model
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 30.329 seconds)
+   **Total running time of the script:** (1 minutes 28.369 seconds)
 
-**Estimated memory usage:**  4356 MB
+**Estimated memory usage:**  4369 MB
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_oasis_vbm.py:

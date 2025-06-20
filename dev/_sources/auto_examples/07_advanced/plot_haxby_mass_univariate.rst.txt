@@ -164,21 +164,24 @@ Perform massively univariate analysis with permuted OLS
 We use a two-sided t-test to compute p-values, but we keep trace of the
 effect sign to add it back at the end and thus observe the signed effect
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-116
+.. GENERATED FROM PYTHON SOURCE LINES 100-119
 
 .. code-block:: Python
 
     from nilearn.mass_univariate import permuted_ols
 
     # Note that an intercept as a covariate is used by default
-    neg_log_pvals, t_scores_original_data, _ = permuted_ols(
+    output = permuted_ols(
         grouped_conditions_encoded,
         grouped_fmri_masked,
         n_perm=10000,
         two_sided_test=True,
         verbose=1,  # display progress bar
         n_jobs=2,  # can be changed to use more CPUs
+        output_type="dict",
     )
+    neg_log_pvals = output["logp_max_t"]
+    t_scores_original_data = output["t"]
     signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
     signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
         signed_neg_log_pvals
@@ -192,22 +195,20 @@ effect sign to add it back at the end and thus observe the signed effect
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_haxby_mass_univariate.py:103: DeprecationWarning: The "legacy" output structure for "permuted_ols" is deprecated. The default output structure will be changed to "dict" in version 0.13.
-      neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.5s remaining:    0.0s
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.5s finished
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.3s remaining:    0.0s
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.3s finished
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-120
+.. GENERATED FROM PYTHON SOURCE LINES 120-123
 
 scikit-learn F-scores for comparison
 
 F-test does not allow to observe the effect sign (pure two-sided test)
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-135
+.. GENERATED FROM PYTHON SOURCE LINES 123-138
 
 .. code-block:: Python
 
@@ -233,12 +234,12 @@ F-test does not allow to observe the effect sign (pure two-sided test)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-138
+.. GENERATED FROM PYTHON SOURCE LINES 139-141
 
 Visualization
 -------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-196
+.. GENERATED FROM PYTHON SOURCE LINES 141-199
 
 .. code-block:: Python
 
@@ -331,7 +332,7 @@ Visualization
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-201
+.. GENERATED FROM PYTHON SOURCE LINES 200-204
 
 References
 ----------
@@ -341,9 +342,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 20.056 seconds)
+   **Total running time of the script:** (0 minutes 19.156 seconds)
 
-**Estimated memory usage:**  1015 MB
+**Estimated memory usage:**  1014 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_haxby_mass_univariate.py:

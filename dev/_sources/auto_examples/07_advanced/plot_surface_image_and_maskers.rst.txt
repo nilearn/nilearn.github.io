@@ -151,7 +151,7 @@ for our plots we will be using the fsaverage sulcal data as background map
 Let's ensure that we have the same range
 centered on 0 for all subplots.
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-109
+.. GENERATED FROM PYTHON SOURCE LINES 73-110
 
 .. code-block:: Python
 
@@ -180,12 +180,13 @@ centered on 0 for all subplots.
                 axes=ax,
                 title=f"{hemi} - {view}",
                 colorbar=False,
-                symmetric_cmap=True,
+                symmetric_cmap=None,
                 bg_on_data=True,
                 vmin=vmin,
                 vmax=vmax,
                 bg_map=fsaverage_sulcal,
                 cmap="seismic",
+                darkness=None,
             )
     fig.set_size_inches(12, 8)
 
@@ -200,21 +201,10 @@ centered on 0 for all subplots.
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:90: UserWarning: 'symmetric_cmap' is not implemented for the matplotlib engine.
-    Got 'symmetric_cmap = True'.
-    Use 'symmetric_cmap = None' to silence this warning.
-      plot_surf(
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:90: DeprecationWarning: The `darkness` parameter will be deprecated in release 0.13. We recommend setting `darkness` to None
-      plot_surf(
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 110-117
+.. GENERATED FROM PYTHON SOURCE LINES 111-118
 
 Connectivity with a surface atlas and SurfaceLabelsMasker
 ---------------------------------------------------------
@@ -224,7 +214,7 @@ for our NKI data.
 We then compute and
 plot the connectome of these time series.
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-128
+.. GENERATED FROM PYTHON SOURCE LINES 118-129
 
 .. code-block:: Python
 
@@ -249,7 +239,7 @@ plot the connectome of these time series.
 
     [fetch_atlas_surf_destrieux] Dataset found in 
     /home/runner/nilearn_data/destrieux_surface
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:126: UserWarning: 
+    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:127: UserWarning: 
     The following regions are present in the atlas look-up table,
     but missing from the atlas image:
 
@@ -257,7 +247,7 @@ plot the connectome of these time series.
          0 Unknown
 
       destrieux = fetch_atlas_surf_destrieux()
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:126: UserWarning: 
+    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:127: UserWarning: 
     The following regions are present in the atlas look-up table,
     but missing from the atlas image:
 
@@ -269,12 +259,12 @@ plot the connectome of these time series.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-131
+.. GENERATED FROM PYTHON SOURCE LINES 130-132
 
 Let's create a surface image
 for this atlas.
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-147
+.. GENERATED FROM PYTHON SOURCE LINES 132-148
 
 .. code-block:: Python
 
@@ -307,16 +297,18 @@ for this atlas.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-150
+.. GENERATED FROM PYTHON SOURCE LINES 149-151
 
 Plot connectivity matrix
 ------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-156
+.. GENERATED FROM PYTHON SOURCE LINES 151-159
 
 .. code-block:: Python
 
-    connectome_measure = ConnectivityMeasure(kind="correlation")
+    connectome_measure = ConnectivityMeasure(
+        kind="correlation", standardize="zscore_sample"
+    )
     connectome = connectome_measure.fit([masked_data])
 
     vmax = np.absolute(connectome.mean_).max()
@@ -326,22 +318,15 @@ Plot connectivity matrix
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:151: DeprecationWarning: The default strategy for standardize is currently 'zscore' which incorrectly uses population std to calculate sample zscores. The new strategy 'zscore_sample' corrects this behavior by using the sample std. In release 0.13, the default strategy will be replaced by the new strategy and the 'zscore' option will be removed. Please use 'zscore_sample' instead.
-      connectome = connectome_measure.fit([masked_data])
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 157-159
+.. GENERATED FROM PYTHON SOURCE LINES 160-162
 
 We only print every 3rd label
 for a more legible figure.
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-175
+.. GENERATED FROM PYTHON SOURCE LINES 162-178
 
 .. code-block:: Python
 
@@ -373,7 +358,7 @@ for a more legible figure.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 176-191
+.. GENERATED FROM PYTHON SOURCE LINES 179-194
 
 Using the decoder
 -----------------
@@ -391,7 +376,7 @@ just as we do for volume images.
   in a biological sense.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 191-221
+.. GENERATED FROM PYTHON SOURCE LINES 194-225
 
 .. code-block:: Python
 
@@ -422,6 +407,7 @@ just as we do for volume images.
         bg_on_data=True,
         cmap="inferno",
         vmin=0,
+        darkness=None,
     )
     show()
 
@@ -438,7 +424,7 @@ just as we do for volume images.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:208: UserWarning: Overriding provided-default estimator parameters with provided masker parameters :
+    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:211: UserWarning: Overriding provided-default estimator parameters with provided masker parameters :
     Parameter standardize :
         Masker parameter False - overriding estimator parameter True
 
@@ -456,18 +442,16 @@ just as we do for volume images.
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/sklearn/feature_selection/_univariate_selection.py:113: RuntimeWarning: invalid value encountered in true_divide
       f = msb / msw
     CV scores: {0: [0.4991939095387371, 0.5115891053391053, 0.4847132034632034], 1: [0.4991939095387371, 0.5115891053391053, 0.4847132034632034]}
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:211: DeprecationWarning: The `darkness` parameter will be deprecated in release 0.13. We recommend setting `darkness` to None
-      plot_surf(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-224
+.. GENERATED FROM PYTHON SOURCE LINES 226-228
 
 Decoding with a scikit-learn `Pipeline`
 ---------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 224-249
+.. GENERATED FROM PYTHON SOURCE LINES 228-254
 
 .. code-block:: Python
 
@@ -494,6 +478,7 @@ Decoding with a scikit-learn `Pipeline`
         threshold=1e-6,
         bg_map=fsaverage_sulcal,
         bg_on_data=True,
+        darkness=None,
     )
     show()
 
@@ -505,22 +490,15 @@ Decoding with a scikit-learn `Pipeline`
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:239: DeprecationWarning: The `darkness` parameter will be deprecated in release 0.13. We recommend setting `darkness` to None
-      plot_surf(
-
 
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 37.963 seconds)
+   **Total running time of the script:** (0 minutes 38.881 seconds)
 
-**Estimated memory usage:**  1282 MB
+**Estimated memory usage:**  1274 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_surface_image_and_maskers.py:
