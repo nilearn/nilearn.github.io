@@ -1,0 +1,381 @@
+.. _continuous integration:
+
+Continuous integration
+======================
+
+Please note that if one of the following markers appear in the latest commit message, the following actions are taken.
+
+============================ ===================
+Commit message marker        Action taken by CI
+============================ ===================
+[skip ci]                    Gtihub CI is skipped completely. Several other options are also possible, see `github documentation <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs>`_.
+[skip test]                  Skip running the tests.
+[skip doc]                   Skip building the doc.
+[test nightly]               Run tests on the nightly build of Nilearn's dependencies.
+[full doc]                   Run a full build of the documentation (meaning that all examples will be run).
+[example] name_of_example.py Run partial documentation build but will run the requested example.
+[force download]             Force a download of all the dataset required for the build of the documentation.
+============================ ===================
+
+Documentation build and deploy
+------------------------------
+
+.. using a mermaid flowchart: https://mermaid.js.org/syntax/flowchart.html
+
+.. mermaid:: mermaid/doc_deploy.mmd
+
+The development docs are built using GitHub Actions and Circle-CI.
+
+The workflow ``.github/workflows/build-docs.yml`` builds the doc and stores as a Github artifact.
+On the ``main`` branch (or respectively on GitHub release),
+this workflow will also deploy the doc
+to https://github.com/nilearn//nilearn.github.io.git on the ``dev`` (respectively ``stable``).
+
+On pull-request,
+a successful build of the doc by ``.github/workflows/build-docs.yml`` triggers ``trigger_hosting_on_pr.yml``.
+This latter workflow will launch the circle-CI ``host_docs`` jobs by calling the circle-CI API.
+CircleCI download the doc artifacts from GitHub and hosts it on circle-CI.
+
+The documentation for a pull request can be accessed on https://app.circleci.com/pipelines/github/nilearn/nilearn,
+by selecting the ``host_and_deploy_doc`` workflow for the corresponding pull-request,
+then by selecting the ``host_docs`` job,
+clicking on the ``ARTIFACTS`` tab,
+and opening the the landing page of the deployed doc by clikcing on ``index.html``.
+
+
+GitHub Actions Specification
+----------------------------
+
+
+
+assign.yml
+^^^^^^^^^^
+
+Workflow file: `assign.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/assign.yml>`_
+
+Allows anyone to self-assign an issue automatically by commenting the word `take` on any issue.
+
+.. seealso::
+
+  Adapted from `Scikit-learn <https://github.com/scikit-learn/scikit-learn/blob/main/.github/workflows/assign.yml>`_.
+
+
+
+auto-comment.yml
+^^^^^^^^^^^^^^^^
+
+Workflow file: `auto-comment.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/auto-comment.yml>`_
+
+Automatically comments on a newly open pull request to provide some guidelines, useful links and a checklist.
+
+The checklist is only editable by maintainers at the moment.
+
+
+benchmark.yml
+^^^^^^^^^^^^^
+
+Workflow file: `benchmark.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/benchmark.yml>`_
+
+TL;DR: this workflow runs the benchmarks on the latest commit on the main
+and then deploys the updated benchmarks to
+`nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
+You can trigger it manually via the GitHub UI. It will also run on a schedule
+at regular interval.
+
+Step-wise details:
+
+- The benchmarks are set to run at regular intervals via cron.
+- It can also be triggered manually by adding ``[bm]`` to the commit message.
+- First it installs `asv <https://asv.readthedocs.io/en/latest/index.html>`_.
+- Then it sets up the SSH key to access the
+  `benchmarks <https://github.com/nilearn/benchmarks>`_ repo,
+  pulls it, and copies the results dir into the current dir. We will append
+  the new results to these results.
+- ``asv machine --yes`` then fetches the machine info like CPU, RAM, OS,
+  etc. and saves it in ``~/.asv-machine.json``, but it gives a unique name
+  to the machine on every run even if the specs are the same. So we will set
+  a fixed name for the machine so the legend isn't too overcrowded.
+- To do this, we edit the ``~/.asv-machine.json`` file to change the machine
+  name to a fixed name ``fv-az1113-357``. The name is arbitrary and has been
+  chosen to match the first run. The script
+  ``build_tools/github/set_machine_name.py`` does all this.
+- Then we run the benchmarks (``asv run``) such that the results are
+  appended to the old results (via ``--append-samples`` parameter).
+  ``-ev`` makes sure any errors are printed in detail and all the output can
+  be seen in the logs.
+- Then we create the HTML with all the results via ``asv publish``.
+- We upload the results as artifacts so that we can download them later.
+- Then we push the new results back to the
+  `benchmarks <https://github.com/nilearn/benchmarks>`_  repo. This will
+  automatically deploy the new results to
+  `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
+
+
+build-docs.yml
+^^^^^^^^^^^^^^
+
+Workflow file: `build-docs.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/build-docs.yml>`_
+
+Workflow to build the documentation.
+
+- validate CITATION.CFF file
+- check the quality of the doc strings
+- get datasets from cache or from source
+- build doc and upload it as artifact
+- on `main` (or on github release): trigger hosting of dev (or stable) doc on https://github.com/nilearn//nilearn.github.io.git
+
+.. admonition:: Control via commit message
+   :class: tip
+
+   This workflow can be controlled if your commit message contains:
+
+   - ``[full doc]`` runs a full build on pull-request.
+   - ``[skip doc]`` skip build of the documentation.
+   - ``[example] name_of_example.py`` trigger build of some specific examples.
+   - ``[force download]`` do not rely of cached datasets and force to redownload them.
+
+On Pull Requests, "partial builds" are run by default which render all the rst files,
+but only build examples modified in the Pull Request.
+This saves a lot of time and resources when working on Pull Requests.
+
+Occasionally, some changes necessitate rebuilding the documentation from scratch,
+for example to see the full effect of the changes.
+These are called "full builds".
+
+You can request a full build from a Pull Request at any time by including the tag ``[full doc]`` in your commit message.
+Note that this will trigger a full build of the documentation which usually takes >90 minutes.
+
+.. code-block:: bash
+
+  $ git commit -m "[full doc] request full build"
+
+Full builds are always run on "main".
+This is done every time there is a push on "main" and every week.
+
+Most of this workflow is skipped if ``[skip doc]`` is in the commit message.
+
+Though partial builds will build modified examples,
+sometimes code changes on the module side could affect the plots in unmodified examples.
+For this, you can request for the CI to build a specific example
+by using the tag ``[example]`` and the name of the example.
+This is useful when wanting to get quick feedback from reviewers.
+
+.. code-block:: bash
+
+  $ git commit -m "[example] plot_nilearn_101.py"
+
+However for quick checks to do yourself
+you should always opt for local builds following the instructions here:
+in the :ref:`building documentation` section.
+
+Dataset caching
+"""""""""""""""
+
+We also implemented a dataset caching strategy within this workflow such that datasets are only downloaded once every month.
+Once these datasets are cached,
+they will be used by all jobs running without requiring any download.
+This saves a lot of time and avoids potential network errors that can happen
+when downloading datasets from remote servers.
+
+Data is cached after the ``get_data`` job to be passed to the ``build_docs`` job.
+Data can be cached and restored across attempts of a run of this workflow.
+Data can be cached and restored across run of this workflow.
+
+Note that you can request to download all datasets and ignore the cache at any time
+by including the tag ``[force download]`` in your commit message.
+
+To run a full build and download all datasets, you would then combine both tags:
+
+.. code-block:: bash
+
+  $ git commit -m "[full doc][force download] request full build"
+
+
+check_gha_workflow.yml
+^^^^^^^^^^^^^^^^^^^^^^
+
+Workflow file: `check_gha_workflow.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/check_gha_workflow.yml>`_
+
+Workflow to check the time taken to run tests and build the documentation.
+
+Pings Github API to collect information about:
+
+- how long each run of the test suite lasted,
+- how long the build of the doc lasted.
+
+Plots the results and saves it as an artifact to download and manually inspect
+to see if there is a trend in tests or doc build taking longer.
+
+.. seealso::
+
+      `maint_tools/check_gha_workflow.py <https://github.com/nilearn/nilearn/blob/main/maint_tools/check_gha_workflow.py>`_
+
+
+
+circle_artifacts.yml
+^^^^^^^^^^^^^^^^^^^^
+
+Workflow file: `circle_artifacts.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/circle_artifacts.yml>`_
+
+Display a link to the circle-CI artifacts at the bottom of a pull-request.
+
+
+linkcheck.yml
+^^^^^^^^^^^^^
+
+Workflow file: `linkcheck.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/linkcheck.yml>`_
+
+Check for dead links in the the documentation.
+
+Links to ignore are set in doc/conf.py
+(see ``linkcheck_.*`` variables).
+
+
+
+nightly_dependencies.yml
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Workflow file: `nightly_dependencies.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/nightly_dependencies.yml>`_
+
+Run test suite using the nightly release of Nilearn dependencies.
+
+.. admonition:: Control via commit message
+   :class: tip
+
+   This workflow can be controlled if your commit message contains:
+
+   - ```[test nightly]`` runs the workflow on pull-request.
+
+When running on `main`, if the workflow fails the action will open an issue
+using this issue `template <https://github.com/nilearn/nilearn/blob/main/.github/nightly_failure.md>`_.
+
+
+sourcery.yml
+^^^^^^^^^^^^
+
+Workflow file: `sourcery.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/sourcery.yml>`_
+
+Runs Sourcery refactoring on the entire codebase.
+
+If some potential refactoring are found it opens a pull-request.
+
+Requires a ``SOURCERY_TOKEN`` that can be obtained from
+logging into `the sourcery website <https://sourcery.ai/>`_
+with your github account.
+
+
+
+test_atlases.yml
+^^^^^^^^^^^^^^^^
+
+Workflow file: `test_atlases.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/test_atlases.yml>`_
+
+Test label maskers on atlases (from nilearn, templateFlow...)
+
+
+
+test_with_free_threaded_python.yml
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Workflow file: `test_with_free_threaded_python.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/test_with_free_threaded_python.yml>`_
+
+Runs tests suite with free threaded python.
+
+
+
+test_with_tox.yml
+^^^^^^^^^^^^^^^^^
+
+Workflow file: `test_with_tox.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/test_with_tox.yml>`_
+
+Runs pytest in several environments including several Python and dependencies versions as well as on different systems.
+All environments are defined in `tox.ini <https://github.com/nilearn/nilearn/blob/main/tox.ini>`_.
+
+.. admonition:: Control via commit message
+   :class: tip
+
+   This workflow can be controlled if your commit message contains:
+
+   - ``[skip test]`` skip this workflow.
+
+Uploads as artifacts:
+
+- ``report.html`` that gives a browsable overview of the tests results
+
+- ``pytest_output`` that contains a .csv of the tests results and figures showing the run time of all the tests
+  See ``maint_tools/plot_test_timing.py``.
+
+- ``htmlcov`` containing the html version of the code coverage.
+
+
+
+
+testing_install.yml
+^^^^^^^^^^^^^^^^^^^
+
+Workflow file: `testing_install.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/testing_install.yml>`_
+
+Tries to install Nilearn from wheel & check installation on all operating systems.
+
+
+testing_minimum.yml
+^^^^^^^^^^^^^^^^^^^
+
+Workflow file: `testing_minimum.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/testing_minimum.yml>`_
+
+This workflow is triggered when a new commit is pushed to the main branch (or when a pull request is merged) and is also automatically run once a month.
+
+Checks that installing the minimum version of a given dependency of Nilearn
+along with the latest version of all the other dependencies leads to a successful run of all the tests.
+
+.. seealso::
+
+  https://github.com/nilearn/nilearn/issues/4069
+
+
+
+trigger_hosting_on_pr.yml
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Workflow file: `trigger_hosting_on_pr.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/trigger_hosting_on_pr.yml>`_
+
+Trigger hosting of the doc on circle-ci on pull-requests.
+
+We get the url for the artifacts for circle-ci via https://nightly.link/ .
+
+This must be run in a separate workflow because for security reasons
+the secrets for login to circle-ci cannot be accessed by pull-requests opened from a fork.
+
+So this workflow waits for the doc building workflow to finish successfully
+before grabbing its output and pushing it to circle-CI.
+
+.. seealso::
+
+  https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+
+.. admonition:: CIRCLE_CI_TOKEN
+  :class: warning
+
+  The ``CIRCLE_CI_TOKEN`` used in this workflow must be a personal token and not a project token:
+  https://support.circleci.com/hc/en-us/articles/360060360811-CircleCI-API-v2-Returns-404-Not-Found
+
+
+
+update_authors.yml
+^^^^^^^^^^^^^^^^^^
+
+Workflow file: `update_authors.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/update_authors.yml>`_
+
+If the CITATION.CFF file is modified,
+this workflow will run to update the AUTHORS file
+and the and ``doc/changes/names.rst`` file.
+
+
+Circle-CI workflows
+-------------------
+
+Source file: `.circleci/config.yml <https://github.com/nilearn/nilearn/blob/main/.circleci/config.yml>`_
+
+.. seealso::
+
+    https://app.circleci.com/pipelines/github/nilearn/nilearn
