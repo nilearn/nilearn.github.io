@@ -139,10 +139,12 @@ We use
 
 We use :class:`~nilearn.decoding.Decoder` to estimate a baseline.
 
-.. GENERATED FROM PYTHON SOURCE LINES 77-125
+.. GENERATED FROM PYTHON SOURCE LINES 77-139
 
 .. code-block:: Python
 
+
+    import warnings
 
     mask_names = ["mask_vt", "mask_face", "mask_house"]
 
@@ -170,7 +172,13 @@ We use :class:`~nilearn.decoding.Decoder` to estimate a baseline.
                 scoring="roc_auc",
                 standardize="zscore_sample",
             )
-            decoder.fit(task_data, classification_target, groups=run_labels)
+
+            with warnings.catch_warnings():
+                # ignore warnings thrown because the ROI mask we are using
+                # are much smaller than the whole brain.
+                warnings.filterwarnings(action="ignore", category=UserWarning)
+                decoder.fit(task_data, classification_target, groups=run_labels)
+
             mask_scores[mask_name][category] = decoder.cv_scores_[1]
             mean = np.mean(mask_scores[mask_name][category])
             std = np.std(mask_scores[mask_name][category])
@@ -183,9 +191,15 @@ We use :class:`~nilearn.decoding.Decoder` to estimate a baseline.
                 scoring="roc_auc",
                 standardize="zscore_sample",
             )
-            dummy_classifier.fit(
-                task_data, classification_target, groups=run_labels
-            )
+
+            with warnings.catch_warnings():
+                # ignore warnings thrown because the ROI mask we are using
+                # are much smaller than the whole brain.
+                warnings.filterwarnings(action="ignore", category=UserWarning)
+                dummy_classifier.fit(
+                    task_data, classification_target, groups=run_labels
+                )
+
             mask_chance_scores[mask_name][category] = dummy_classifier.cv_scores_[
                 1
             ]
@@ -218,144 +232,48 @@ We use :class:`~nilearn.decoding.Decoder` to estimate a baseline.
     Scores: 0.93 +- 0.04
     Working on mask_face
     Processing mask_face scissors
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.70 +- 0.16
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      dummy_classifier.fit(
     Processing mask_face face
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.90 +- 0.06
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      dummy_classifier.fit(
     Processing mask_face cat
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.76 +- 0.12
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      dummy_classifier.fit(
     Processing mask_face shoe
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.75 +- 0.14
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      dummy_classifier.fit(
     Processing mask_face house
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.71 +- 0.15
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      dummy_classifier.fit(
     Processing mask_face scrambledpix
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.87 +- 0.09
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      dummy_classifier.fit(
     Processing mask_face bottle
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.70 +- 0.12
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      dummy_classifier.fit(
     Processing mask_face chair
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.65 +- 0.07
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: After clustering and screening, the decoding model will be trained only on 30 features. Consider raising clustering_percentile or screening_percentile parameters.
-      dummy_classifier.fit(
     Working on mask_house
     Processing mask_house scissors
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.83 +- 0.08
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
     Processing mask_house face
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.90 +- 0.07
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
     Processing mask_house cat
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.86 +- 0.09
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
     Processing mask_house shoe
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.82 +- 0.12
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
     Processing mask_house house
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 1.00 +- 0.00
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
     Processing mask_house scrambledpix
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.96 +- 0.05
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
     Processing mask_house bottle
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.86 +- 0.10
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
     Processing mask_house chair
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:104: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      decoder.fit(task_data, classification_target, groups=run_labels)
     Scores: 0.90 +- 0.10
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_full_analysis.py:117: UserWarning: Brain mask is smaller than .5% of the size of the standard human brain. This object is probably not tuned to be used on such data.
-      dummy_classifier.fit(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-128
+.. GENERATED FROM PYTHON SOURCE LINES 140-142
 
 We make a simple bar plot to summarize the results
 --------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-165
+.. GENERATED FROM PYTHON SOURCE LINES 142-179
 
 .. code-block:: Python
 
@@ -408,7 +326,7 @@ We make a simple bar plot to summarize the results
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 166-170
+.. GENERATED FROM PYTHON SOURCE LINES 180-184
 
 References
 ----------
@@ -418,9 +336,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (3 minutes 5.083 seconds)
+   **Total running time of the script:** (2 minutes 51.679 seconds)
 
-**Estimated memory usage:**  1442 MB
+**Estimated memory usage:**  1322 MB
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_haxby_full_analysis.py:
