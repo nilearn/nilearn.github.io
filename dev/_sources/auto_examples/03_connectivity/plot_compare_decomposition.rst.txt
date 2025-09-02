@@ -86,10 +86,14 @@ We use "whole-brain-template" as a strategy to compute the mask,
 as this leads to slightly faster and more reproducible results.
 However, the images need to be in :term:`MNI` template space.
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-72
+.. GENERATED FROM PYTHON SOURCE LINES 44-80
 
 .. code-block:: Python
 
+
+    import warnings
+
+    from sklearn.exceptions import ConvergenceWarning
 
     from nilearn.decomposition import CanICA
 
@@ -98,12 +102,16 @@ However, the images need to be in :term:`MNI` template space.
         memory="nilearn_cache",
         memory_level=1,
         verbose=1,
-        mask_strategy="whole-brain-template",
         random_state=0,
         standardize="zscore_sample",
+        mask_strategy="whole-brain-template",
         n_jobs=2,
     )
-    canica.fit(func_filenames)
+    with warnings.catch_warnings():
+        # silence warnings about ICA not converging
+        # Consider increasing tolerance or the maximum number of iterations.
+        warnings.filterwarnings(action="ignore", category=ConvergenceWarning)
+        canica.fit(func_filenames)
 
     # Retrieve the independent components in brain space. Directly
     # accessible through attribute `components_img_`.
@@ -188,12 +196,6 @@ However, the images need to be in :term:`MNI` template space.
     '/home/runner/nilearn_data/development_fmri/development_fmri/sub-pixar015_task-p
     ixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz']
     [CanICA.fit] Computing mask
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:632: UserWarning: Cannot inspect object functools.partial(<function compute_multi_brain_mask at 0x7f99e7b00430>, mask_type='whole-brain'), ignore list will not work.
-      return hashing.hash(filter_args(self.func, self.ignore, args, kwargs),
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:810: UserWarning: Cannot inspect object functools.partial(<function compute_multi_brain_mask at 0x7f99e7b00430>, mask_type='whole-brain'), ignore list will not work.
-      argument_dict = filter_args(self.func, self.ignore,
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:632: UserWarning: Cannot inspect object functools.partial(<function compute_multi_brain_mask at 0x7f99e7b00430>, mask_type='whole-brain'), ignore list will not work.
-      return hashing.hash(filter_args(self.func, self.ignore, args, kwargs),
     [CanICA.fit] Resamping mask
     [CanICA.fit] Finished fit
     [CanICA.fit] Loading data
@@ -206,11 +208,11 @@ However, the images need to be in :term:`MNI` template space.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-74
+.. GENERATED FROM PYTHON SOURCE LINES 81-82
 
 To visualize we plot the outline of all components on one figure
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-80
+.. GENERATED FROM PYTHON SOURCE LINES 82-88
 
 .. code-block:: Python
 
@@ -235,26 +237,24 @@ To visualize we plot the outline of all components on one figure
 
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_axes.py:94: UserWarning: No contour levels were found within the data range.
       im = getattr(ax, type)(
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_axes.py:94: UserWarning: linewidths is ignored by contourf
-      im = getattr(ax, type)(
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/numpy/ma/core.py:2826: UserWarning: Warning: converting a masked element to nan.
       _data = np.array(data, dtype=dtype, copy=copy,
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/matplotlib/contour.py:1494: UserWarning: Warning: converting a masked element to nan.
       self.zmax = float(z.max())
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/matplotlib/contour.py:1495: UserWarning: Warning: converting a masked element to nan.
       self.zmin = float(z.min())
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:730: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:739: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
       self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
 
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f9a0f075d90>
+    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f6bfe1a0190>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-82
+.. GENERATED FROM PYTHON SOURCE LINES 89-90
 
 Finally, we plot the map for each :term:`ICA` component separately
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-99
+.. GENERATED FROM PYTHON SOURCE LINES 90-107
 
 .. code-block:: Python
 
@@ -426,13 +426,13 @@ Finally, we plot the map for each :term:`ICA` component separately
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1674: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1683: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
       ax = fh.add_axes(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-109
+.. GENERATED FROM PYTHON SOURCE LINES 108-117
 
 Compare :term:`CanICA` to dictionary learning
 ---------------------------------------------
@@ -444,11 +444,11 @@ with :term:`CanICA` to networks built with :term:`Dictionary learning`.
 For more detailse see :footcite:t:`Mensch2016`.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-113
+.. GENERATED FROM PYTHON SOURCE LINES 120-121
 
 Create a dictionary learning estimator
 
-.. GENERATED FROM PYTHON SOURCE LINES 113-139
+.. GENERATED FROM PYTHON SOURCE LINES 121-147
 
 .. code-block:: Python
 
@@ -549,14 +549,12 @@ Create a dictionary learning estimator
     '/home/runner/nilearn_data/development_fmri/development_fmri/sub-pixar015_task-p
     ixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz']
     [DictLearning.fit] Computing mask
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/joblib/memory.py:632: UserWarning: Cannot inspect object functools.partial(<function compute_multi_brain_mask at 0x7f99e7b00430>, mask_type='whole-brain'), ignore list will not work.
-      return hashing.hash(filter_args(self.func, self.ignore, args, kwargs),
     [DictLearning.fit] Resamping mask
     [DictLearning.fit] Finished fit
     [DictLearning.fit] Loading data
     [DictLearning.fit] Learning initial components
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done   1 out of   1 | elapsed:    0.4s finished
+    [Parallel(n_jobs=2)]: Done   1 out of   1 | elapsed:    0.3s finished
     [DictLearning.fit] Computing initial loadings
     ________________________________________________________________________________
     [Memory] Calling nilearn.decomposition.dict_learning._compute_loadings...
@@ -583,13 +581,13 @@ Create a dictionary learning estimator
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 140-143
+.. GENERATED FROM PYTHON SOURCE LINES 148-151
 
 Visualize the results
 
 First plot all DictLearning components together
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-148
+.. GENERATED FROM PYTHON SOURCE LINES 151-156
 
 .. code-block:: Python
 
@@ -611,8 +609,6 @@ First plot all DictLearning components together
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_axes.py:94: UserWarning: linewidths is ignored by contourf
-      im = getattr(ax, type)(
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_axes.py:94: UserWarning: No contour levels were found within the data range.
       im = getattr(ax, type)(
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/numpy/ma/core.py:2826: UserWarning: Warning: converting a masked element to nan.
@@ -621,18 +617,18 @@ First plot all DictLearning components together
       self.zmax = float(z.max())
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/matplotlib/contour.py:1495: UserWarning: Warning: converting a masked element to nan.
       self.zmin = float(z.min())
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:730: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:739: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
       self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
 
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f9a0014f9d0>
+    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f6c096e2be0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 149-150
+.. GENERATED FROM PYTHON SOURCE LINES 157-158
 
 One plot of each component
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-162
+.. GENERATED FROM PYTHON SOURCE LINES 158-170
 
 .. code-block:: Python
 
@@ -799,20 +795,20 @@ One plot of each component
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1674: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/plotting/displays/_slicers.py:1683: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
       ax = fh.add_axes(
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-167
+.. GENERATED FROM PYTHON SOURCE LINES 171-175
 
 Estimate explained variance per component and plot using matplotlib
 
 The fitted object `dict_learning` can be used
 to calculate the score per component
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-185
+.. GENERATED FROM PYTHON SOURCE LINES 175-193
 
 .. code-block:: Python
 
@@ -855,7 +851,7 @@ to calculate the score per component
     array([[ 0., ...,  0.],
            ...,
            [-0., ...,  0.]]), per_component=True)
-    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/decomposition/_base.py:665: UserWarning: Persisting input arguments took 1.31s to run.
+    /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/decomposition/_base.py:666: UserWarning: Persisting input arguments took 1.31s to run.
     If this happens often in your code, it can cause performance problems 
     (results will be correct in all cases). 
     The reason for this is probably some large input arguments for a wrapped
@@ -863,12 +859,12 @@ to calculate the score per component
     THIS IS A JOBLIB ISSUE. If you can, kindly provide the joblib's team with an
      example so that they can fix the problem.
       return self._cache(_explained_variance)(
-    ______________________________________________explained_variance - 15.7s, 0.3min
+    ______________________________________________explained_variance - 15.4s, 0.3min
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 186-193
+.. GENERATED FROM PYTHON SOURCE LINES 194-201
 
 .. note::
 
@@ -878,7 +874,7 @@ to calculate the score per component
     <sphx_glr_auto_examples_03_connectivity\
     _plot_extract_regions_dictlearning_maps.py>`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 195-199
+.. GENERATED FROM PYTHON SOURCE LINES 203-207
 
 References
 ----------
@@ -888,9 +884,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 37.777 seconds)
+   **Total running time of the script:** (2 minutes 45.321 seconds)
 
-**Estimated memory usage:**  5968 MB
+**Estimated memory usage:**  6102 MB
 
 
 .. _sphx_glr_download_auto_examples_03_connectivity_plot_compare_decomposition.py:
