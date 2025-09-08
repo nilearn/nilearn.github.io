@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_07_advanced_plot_haxby_mass_univariate.py>`
-        to download the full example code. or to run this example in your browser via Binder
+        to download the full example code or to run this example in your browser via Binder.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -105,7 +105,7 @@ Restrict to faces and houses
 Mask data
 ---------
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-94
+.. GENERATED FROM PYTHON SOURCE LINES 54-95
 
 .. code-block:: Python
 
@@ -119,6 +119,7 @@ Mask data
         mask_img=mask_filename,
         memory="nilearn_cache",  # cache options
         memory_level=1,
+        verbose=1,
     )
     func_filename = haxby_dataset.func[0]
     func_reduced = index_img(func_filename, condition_mask)
@@ -153,10 +154,47 @@ Mask data
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
+    0x7f30a29447c0>
+    [NiftiMasker.wrapped] Loading mask from 
+    '/home/runner/nilearn_data/haxby2001/mask.nii.gz'
+    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_haxby_mass_univariate.py:68: UserWarning: [NiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
+      fmri_masked = nifti_masker.fit_transform(func_reduced)
+    [NiftiMasker.wrapped] Resampling mask
+    [NiftiMasker.wrapped] Finished fit
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
+    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f30a29447c0>, <nibabel.nifti1.Nifti1Image object at 0x7f30a30244f0>, { 'clean_args': None,
+      'clean_kwargs': {},
+      'cmap': 'gray',
+      'detrend': False,
+      'dtype': None,
+      'high_pass': None,
+      'high_variance_confounds': False,
+      'low_pass': None,
+      'reports': True,
+      'runs': None,
+      'smoothing_fwhm': 8,
+      'standardize': False,
+      'standardize_confounds': True,
+      't_r': None,
+      'target_affine': None,
+      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, dtype=None, sklearn_output_config=None)
+    [NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
+    0x7f30a29447c0>
+    [NiftiMasker.wrapped] Smoothing images
+    [NiftiMasker.wrapped] Extracting region signals
+    [NiftiMasker.wrapped] Cleaning extracted signals
+    __________________________________________________filter_and_mask - 2.6s, 0.0min
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-100
+
+.. GENERATED FROM PYTHON SOURCE LINES 96-101
 
 Perform massively univariate analysis with permuted OLS
 -------------------------------------------------------
@@ -164,7 +202,7 @@ Perform massively univariate analysis with permuted OLS
 We use a two-sided t-test to compute p-values, but we keep trace of the
 effect sign to add it back at the end and thus observe the signed effect
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-119
+.. GENERATED FROM PYTHON SOURCE LINES 101-119
 
 .. code-block:: Python
 
@@ -178,7 +216,6 @@ effect sign to add it back at the end and thus observe the signed effect
         two_sided_test=True,
         verbose=1,  # display progress bar
         n_jobs=2,  # can be changed to use more CPUs
-        output_type="dict",
     )
     neg_log_pvals = output["logp_max_t"]
     t_scores_original_data = output["t"]
@@ -196,8 +233,12 @@ effect sign to add it back at the end and thus observe the signed effect
  .. code-block:: none
 
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.2s remaining:    0.0s
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.2s finished
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:    6.7s finished
+    [NiftiMasker.inverse_transform] Computing image from signals
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.masking.unmask...
+    unmask(array([[0., ..., 0.]], shape=(1, 39912)), <nibabel.nifti1.Nifti1Image object at 0x7f30a30244f0>)
+    ___________________________________________________________unmask - 0.4s, 0.0min
 
 
 
@@ -231,6 +272,16 @@ F-test does not allow to observe the effect sign (pure two-sided test)
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [NiftiMasker.inverse_transform] Computing image from signals
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.masking.unmask...
+    unmask(array([-0., ..., -0.], shape=(39912,)), <nibabel.nifti1.Nifti1Image object at 0x7f30a30244f0>)
+    ___________________________________________________________unmask - 0.4s, 0.0min
+
 
 
 
@@ -247,7 +298,7 @@ Visualization
     from nilearn.image import get_data
 
     # Use the fMRI mean image as a surrogate of anatomical data
-    mean_fmri_img = image.mean_img(func_filename, copy_header=True)
+    mean_fmri_img = image.mean_img(func_filename)
 
     threshold = -np.log10(0.1)  # 10% corrected
 
@@ -335,9 +386,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 19.571 seconds)
+   **Total running time of the script:** (0 minutes 28.268 seconds)
 
-**Estimated memory usage:**  1074 MB
+**Estimated memory usage:**  1045 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_haxby_mass_univariate.py:

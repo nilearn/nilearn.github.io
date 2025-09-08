@@ -42,7 +42,6 @@ then by selecting the ``host_docs`` job,
 clicking on the ``ARTIFACTS`` tab,
 and opening the the landing page of the deployed doc by clikcing on ``index.html``.
 
-
 GitHub Actions Specification
 ----------------------------
 
@@ -134,6 +133,7 @@ Workflow to build the documentation.
    - ``[skip doc]`` skip build of the documentation.
    - ``[example] name_of_example.py`` trigger build of some specific examples.
    - ``[force download]`` do not rely of cached datasets and force to redownload them.
+   - ``[reports]`` build estimators reports that are embedded in the documentation.
 
 On Pull Requests, "partial builds" are run by default which render all the rst files,
 but only build examples modified in the Pull Request.
@@ -240,13 +240,6 @@ Workflow file: `nightly_dependencies.yml <https://github.com/nilearn/nilearn/blo
 
 Run test suite using the nightly release of Nilearn dependencies.
 
-.. admonition:: Control via commit message
-   :class: tip
-
-   This workflow can be controlled if your commit message contains:
-
-   - ```[test nightly]`` runs the workflow on pull-request.
-
 When running on `main`, if the workflow fails the action will open an issue
 using this issue `template <https://github.com/nilearn/nilearn/blob/main/.github/nightly_failure.md>`_.
 
@@ -308,7 +301,13 @@ Uploads as artifacts:
 
 - ``htmlcov`` containing the html version of the code coverage.
 
+.. admonition:: Not all python version run on pull requests.
+   :class: warning
 
+   When this workflow is triggered by a pull-request,
+   it will run using only the oldest and latest python version we support.
+   When running on main all combinations of operating system
+   and python versions are run.
 
 
 testing_install.yml
@@ -316,7 +315,16 @@ testing_install.yml
 
 Workflow file: `testing_install.yml <https://github.com/nilearn/nilearn/blob/main/.github/workflows/testing_install.yml>`_
 
-Tries to install Nilearn from wheel & check installation on all operating systems.
+Runs several checks on the nilearn package:
+
+- tries to install Nilearn from wheel
+  & check installation on all operating systems
+
+- ensure thath the nilearn wheel is not over a certain size
+
+- ensure the whole nilearn install with all its transitive dependencies
+  is not too large
+
 
 
 testing_minimum.yml
