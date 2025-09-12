@@ -118,7 +118,7 @@ Loading the data
 Training the decoder
 --------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-114
+.. GENERATED FROM PYTHON SOURCE LINES 68-119
 
 .. code-block:: Python
 
@@ -152,9 +152,14 @@ Training the decoder
             mask=mask_filename,
             standardize="zscore_sample",
             cv=cv,
+            screening_percentile=100,
         )
         t0 = time.time()
-        decoder.fit(fmri_niimgs, classification_target, groups=run_labels)
+        decoder.fit(
+            fmri_niimgs,
+            classification_target,
+            groups=run_labels,
+        )
 
         classifiers_data[classifier_name] = {"score": decoder.cv_scores_}
         print(f"{classifier_name:10}: {time.time() - t0:.2f}s")
@@ -177,25 +182,17 @@ Training the decoder
  .. code-block:: none
 
     ______________________________________________________________________
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_different_estimators.py:100: UserWarning: screening_percentile set to '100' despite requesting 'screening_percentile=20'. 
-    All elements in the mask will be included. 
-    This usually occurs when the mask image is too small compared to full brain mask.
-      decoder.fit(fmri_niimgs, classification_target, groups=run_labels)
-    logistic_l1: 90.14s
+    logistic_l1: 89.17s
         scissors       vs all -- AUC: 0.50 +- 0.00
         face           vs all -- AUC: 0.58 +- 0.18
         cat            vs all -- AUC: 0.70 +- 0.21
         shoe           vs all -- AUC: 0.50 +- 0.00
         house          vs all -- AUC: 1.00 +- 0.00
         scrambledpix   vs all -- AUC: 0.98 +- 0.01
-        bottle         vs all -- AUC: 0.57 +- 0.16
+        bottle         vs all -- AUC: 0.57 +- 0.17
         chair          vs all -- AUC: 0.50 +- 0.00
     ______________________________________________________________________
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_different_estimators.py:100: UserWarning: screening_percentile set to '100' despite requesting 'screening_percentile=20'. 
-    All elements in the mask will be included. 
-    This usually occurs when the mask image is too small compared to full brain mask.
-      decoder.fit(fmri_niimgs, classification_target, groups=run_labels)
-    logistic_l2: 230.65s
+    logistic_l2: 228.62s
         scissors       vs all -- AUC: 0.90 +- 0.08
         face           vs all -- AUC: 0.97 +- 0.04
         cat            vs all -- AUC: 0.97 +- 0.04
@@ -205,11 +202,7 @@ Training the decoder
         bottle         vs all -- AUC: 0.82 +- 0.17
         chair          vs all -- AUC: 0.87 +- 0.17
     ______________________________________________________________________
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_different_estimators.py:100: UserWarning: screening_percentile set to '100' despite requesting 'screening_percentile=20'. 
-    All elements in the mask will be included. 
-    This usually occurs when the mask image is too small compared to full brain mask.
-      decoder.fit(fmri_niimgs, classification_target, groups=run_labels)
-    ridge_classifier: 16.18s
+    ridge_classifier: 16.43s
         scissors       vs all -- AUC: 0.94 +- 0.05
         face           vs all -- AUC: 0.98 +- 0.02
         cat            vs all -- AUC: 0.95 +- 0.04
@@ -219,25 +212,17 @@ Training the decoder
         bottle         vs all -- AUC: 0.89 +- 0.09
         chair          vs all -- AUC: 0.93 +- 0.07
     ______________________________________________________________________
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_different_estimators.py:100: UserWarning: screening_percentile set to '100' despite requesting 'screening_percentile=20'. 
-    All elements in the mask will be included. 
-    This usually occurs when the mask image is too small compared to full brain mask.
-      decoder.fit(fmri_niimgs, classification_target, groups=run_labels)
-    svc_l1    : 29.41s
+    svc_l1    : 28.62s
         scissors       vs all -- AUC: 0.92 +- 0.05
         face           vs all -- AUC: 0.98 +- 0.03
         cat            vs all -- AUC: 0.96 +- 0.04
         shoe           vs all -- AUC: 0.92 +- 0.07
         house          vs all -- AUC: 1.00 +- 0.00
         scrambledpix   vs all -- AUC: 0.99 +- 0.01
-        bottle         vs all -- AUC: 0.89 +- 0.09
+        bottle         vs all -- AUC: 0.89 +- 0.08
         chair          vs all -- AUC: 0.93 +- 0.04
     ______________________________________________________________________
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_different_estimators.py:100: UserWarning: screening_percentile set to '100' despite requesting 'screening_percentile=20'. 
-    All elements in the mask will be included. 
-    This usually occurs when the mask image is too small compared to full brain mask.
-      decoder.fit(fmri_niimgs, classification_target, groups=run_labels)
-    svc_l2    : 61.96s
+    svc_l2    : 61.71s
         scissors       vs all -- AUC: 0.90 +- 0.09
         face           vs all -- AUC: 0.96 +- 0.05
         cat            vs all -- AUC: 0.96 +- 0.04
@@ -250,12 +235,12 @@ Training the decoder
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-117
+.. GENERATED FROM PYTHON SOURCE LINES 120-122
 
 Visualization
 -------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-153
+.. GENERATED FROM PYTHON SOURCE LINES 122-158
 
 .. code-block:: Python
 
@@ -313,21 +298,21 @@ Visualization
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-158
+.. GENERATED FROM PYTHON SOURCE LINES 159-163
 
 We can see that for a fixed penalty the results are similar
 between the svc and the logistic regression.
 The main difference relies on the penalty l\ :sub:`1`\ and l\ :sub:`2`\).
 The sparse penalty works better because we are in an intra-subject setting.
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-164
+.. GENERATED FROM PYTHON SOURCE LINES 165-169
 
 Visualizing the face vs house map
 ---------------------------------
 
 Restrict the decoding to face vs house
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-185
+.. GENERATED FROM PYTHON SOURCE LINES 169-191
 
 .. code-block:: Python
 
@@ -346,6 +331,7 @@ Restrict the decoding to face vs house
             mask=mask_filename,
             standardize="zscore_sample",
             cv=cv,
+            screening_percentile=100,
         )
         decoder.fit(fmri_niimgs_condition, stimuli, groups=run_labels)
         classifiers_data[classifier_name] = {}
@@ -356,40 +342,15 @@ Restrict the decoding to face vs house
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_different_estimators.py:180: UserWarning: screening_percentile set to '100' despite requesting 'screening_percentile=20'. 
-    All elements in the mask will be included. 
-    This usually occurs when the mask image is too small compared to full brain mask.
-      decoder.fit(fmri_niimgs_condition, stimuli, groups=run_labels)
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_different_estimators.py:180: UserWarning: screening_percentile set to '100' despite requesting 'screening_percentile=20'. 
-    All elements in the mask will be included. 
-    This usually occurs when the mask image is too small compared to full brain mask.
-      decoder.fit(fmri_niimgs_condition, stimuli, groups=run_labels)
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_different_estimators.py:180: UserWarning: screening_percentile set to '100' despite requesting 'screening_percentile=20'. 
-    All elements in the mask will be included. 
-    This usually occurs when the mask image is too small compared to full brain mask.
-      decoder.fit(fmri_niimgs_condition, stimuli, groups=run_labels)
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_different_estimators.py:180: UserWarning: screening_percentile set to '100' despite requesting 'screening_percentile=20'. 
-    All elements in the mask will be included. 
-    This usually occurs when the mask image is too small compared to full brain mask.
-      decoder.fit(fmri_niimgs_condition, stimuli, groups=run_labels)
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_different_estimators.py:180: UserWarning: screening_percentile set to '100' despite requesting 'screening_percentile=20'. 
-    All elements in the mask will be included. 
-    This usually occurs when the mask image is too small compared to full brain mask.
-      decoder.fit(fmri_niimgs_condition, stimuli, groups=run_labels)
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 186-188
+.. GENERATED FROM PYTHON SOURCE LINES 192-194
 
 Finally, we plot the face vs house map for the different classifiers
 Use the average :term:`EPI` as a background
 
-.. GENERATED FROM PYTHON SOURCE LINES 188-207
+.. GENERATED FROM PYTHON SOURCE LINES 194-213
 
 .. code-block:: Python
 
@@ -460,9 +421,9 @@ Use the average :term:`EPI` as a background
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (7 minutes 37.747 seconds)
+   **Total running time of the script:** (7 minutes 34.585 seconds)
 
-**Estimated memory usage:**  1351 MB
+**Estimated memory usage:**  1314 MB
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_haxby_different_estimators.py:
