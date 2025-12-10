@@ -227,7 +227,7 @@ voxels inside the mask of interest,
 and transform 4D input :term:`fMRI` data to 2D arrays
 (`shape=(n_timepoints, n_voxels)`) that estimators can work on.
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-91
+.. GENERATED FROM PYTHON SOURCE LINES 79-92
 
 .. code-block:: Python
 
@@ -240,6 +240,7 @@ and transform 4D input :term:`fMRI` data to 2D arrays
         standardize="zscore_sample",
         memory="nilearn_cache",
         memory_level=1,
+        verbose=1,
     )
     fmri_masked = masker.fit_transform(fmri_niimgs)
 
@@ -251,13 +252,58 @@ and transform 4D input :term:`fMRI` data to 2D arrays
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_advanced_decoding_scikit.py:89: UserWarning: [NiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
+    [NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
+    0x7f0efc5c17e0>
+    [NiftiMasker.wrapped] Loading mask from 
+    '/home/runner/nilearn_data/haxby2001/subj2/mask4_vt.nii.gz'
+    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_advanced_decoding_scikit.py:90: UserWarning: [NiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
       fmri_masked = masker.fit_transform(fmri_niimgs)
+    [NiftiMasker.wrapped] Resampling mask
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.image.resampling.resample_img...
+    resample_img(<nibabel.nifti1.Nifti1Image object at 0x7f0efc5c20e0>, target_affine=None, target_shape=None, copy=False, interpolation='nearest')
+    _____________________________________________________resample_img - 0.0s, 0.0min
+    [NiftiMasker.wrapped] Finished fit
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
+    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f0efc5c17e0>, <nibabel.nifti1.Nifti1Image object at 0x7f0efc5c20e0>, { 'clean_args': None,
+      'clean_kwargs': {},
+      'cmap': 'gray',
+      'detrend': False,
+      'dtype': None,
+      'high_pass': None,
+      'high_variance_confounds': False,
+      'low_pass': None,
+      'reports': True,
+      'runs': 21       0
+    22       0
+    23       0
+    24       0
+    25       0
+            ..
+    1427    11
+    1428    11
+    1429    11
+    1430    11
+    1431    11
+    Name: chunks, Length: 216, dtype: int64,
+      'smoothing_fwhm': 4,
+      'standardize': 'zscore_sample',
+      'standardize_confounds': True,
+      't_r': None,
+      'target_affine': None,
+      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, dtype=None, sklearn_output_config=None)
+    [NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
+    0x7f0efc5c17e0>
+    [NiftiMasker.wrapped] Smoothing images
+    [NiftiMasker.wrapped] Extracting region signals
+    [NiftiMasker.wrapped] Cleaning extracted signals
+    __________________________________________________filter_and_mask - 1.4s, 0.0min
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 92-97
+.. GENERATED FROM PYTHON SOURCE LINES 93-98
 
 Cross-validation with scikit-learn
 ..................................
@@ -265,7 +311,7 @@ To train and test the model in a meaningful way we use cross-validation with
 the function :func:`sklearn.model_selection.cross_val_score` that computes
 for you the score for the different folds of cross-validation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-103
+.. GENERATED FROM PYTHON SOURCE LINES 98-104
 
 .. code-block:: Python
 
@@ -288,7 +334,7 @@ for you the score for the different folds of cross-validation.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-115
+.. GENERATED FROM PYTHON SOURCE LINES 105-116
 
 Tuning cross-validation parameters
 ..................................
@@ -302,7 +348,7 @@ You can change many parameters of the cross_validation here, for example:
 * use a different scoring function, as a keyword or imported from
   scikit-learn : scoring = 'roc_auc'
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-129
+.. GENERATED FROM PYTHON SOURCE LINES 116-130
 
 .. code-block:: Python
 
@@ -333,7 +379,7 @@ You can change many parameters of the cross_validation here, for example:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-136
+.. GENERATED FROM PYTHON SOURCE LINES 131-137
 
 Measuring the chance level
 --------------------------
@@ -342,12 +388,12 @@ simplest way to measure prediction performance at chance. A more controlled
 way, but slower, is to do permutation testing on the labels, with
 :func:`sklearn.model_selection.permutation_test_score`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-140
+.. GENERATED FROM PYTHON SOURCE LINES 139-141
 
 Dummy estimator
 ...............
 
-.. GENERATED FROM PYTHON SOURCE LINES 140-148
+.. GENERATED FROM PYTHON SOURCE LINES 141-149
 
 .. code-block:: Python
 
@@ -372,12 +418,12 @@ Dummy estimator
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 149-151
+.. GENERATED FROM PYTHON SOURCE LINES 150-152
 
 Permutation test
 ................
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-158
+.. GENERATED FROM PYTHON SOURCE LINES 152-159
 
 .. code-block:: Python
 
@@ -401,7 +447,7 @@ Permutation test
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-167
+.. GENERATED FROM PYTHON SOURCE LINES 160-168
 
 Decoding without a mask: Anova-SVM in scikit-lean
 -------------------------------------------------
@@ -412,7 +458,7 @@ the :mod:`sklearn.feature_selection` module and use
 based feature selection (a.k.a.
 `Anova <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_).
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-192
+.. GENERATED FROM PYTHON SOURCE LINES 168-193
 
 .. code-block:: Python
 
@@ -454,12 +500,12 @@ based feature selection (a.k.a.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 193-195
+.. GENERATED FROM PYTHON SOURCE LINES 194-196
 
 Visualize the :term:`ANOVA` + SVC's discriminating weights
 ..........................................................
 
-.. GENERATED FROM PYTHON SOURCE LINES 195-221
+.. GENERATED FROM PYTHON SOURCE LINES 196-222
 
 .. code-block:: Python
 
@@ -504,16 +550,21 @@ Visualize the :term:`ANOVA` + SVC's discriminating weights
 
     After feature selection, the SVC is trained only on 47 features
     After inverting feature selection, we have 464 features back
+    [NiftiMasker.inverse_transform] Computing image from signals
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.masking.unmask...
+    unmask(array([[-0.341415, ...,  0.      ]], shape=(1, 464)), <nibabel.nifti1.Nifti1Image object at 0x7f0efc5c20e0>)
+    ___________________________________________________________unmask - 0.2s, 0.0min
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-224
+.. GENERATED FROM PYTHON SOURCE LINES 223-225
 
 Going further with scikit-learn
 -------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 226-233
+.. GENERATED FROM PYTHON SOURCE LINES 227-234
 
 Changing the prediction engine
 ..............................
@@ -523,7 +574,7 @@ We can try Fisher's
 :sklearn:`Linear Discriminant Analysis (LDA)
 <auto_examples/decomposition/plot_pca_vs_lda.html>`
 
-.. GENERATED FROM PYTHON SOURCE LINES 233-254
+.. GENERATED FROM PYTHON SOURCE LINES 234-255
 
 .. code-block:: Python
 
@@ -539,7 +590,7 @@ We can try Fisher's
     import numpy as np
 
     cv_scores = cross_val_score(
-        anova_lda, fmri_masked, conditions, cv=cv, verbose=1, groups=run_label
+        anova_lda, fmri_masked, conditions, cv=cv, groups=run_label
     )
     classification_accuracy = np.mean(cv_scores)
     n_conditions = len(set(conditions))  # number of target classes
@@ -556,13 +607,12 @@ We can try Fisher's
 
  .. code-block:: none
 
-    [Parallel(n_jobs=1)]: Done  12 out of  12 | elapsed:    0.1s finished
     ANOVA + LDA classification accuracy: 0.8009 / Chance Level: 0.5000
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 255-260
+.. GENERATED FROM PYTHON SOURCE LINES 256-261
 
 Changing the feature selection
 ..............................
@@ -570,7 +620,7 @@ Let's say that you want a more sophisticated feature selection, for example a
 Recursive Feature Elimination(RFE) before a svc.
 We follows the same principle.
 
-.. GENERATED FROM PYTHON SOURCE LINES 260-280
+.. GENERATED FROM PYTHON SOURCE LINES 261-281
 
 .. code-block:: Python
 
@@ -601,7 +651,7 @@ We follows the same principle.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 281-285
+.. GENERATED FROM PYTHON SOURCE LINES 282-286
 
 References
 ----------
@@ -611,7 +661,7 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 20.669 seconds)
+   **Total running time of the script:** (0 minutes 19.000 seconds)
 
 **Estimated memory usage:**  1008 MB
 

@@ -81,7 +81,7 @@ We then plot the the mean image.
     surf_img_nki = load_nki()[0]
     print(f"NKI image: {surf_img_nki}")
 
-    masker = SurfaceMasker()
+    masker = SurfaceMasker(verbose=1)
     masked_data = masker.fit_transform(surf_img_nki)
     print(f"Masked data shape: {masked_data.shape}")
 
@@ -100,7 +100,12 @@ We then plot the the mean image.
     [load_nki] Dataset found in /home/runner/nilearn_data/nki_enhanced_surface
     [load_nki] Loading subject 1 of 1.
     NKI image: <SurfaceImage (20484, 895)>
+    [SurfaceMasker.wrapped] Computing mask
+    [SurfaceMasker.wrapped] Finished fit
+    [SurfaceMasker.wrapped] Extracting region signals
+    [SurfaceMasker.wrapped] Cleaning extracted signals
     Masked data shape: (895, 20484)
+    [SurfaceMasker.inverse_transform] Computing image from signals
     Image mean: <SurfaceImage (20484,)>
 
 
@@ -263,7 +268,7 @@ plot the connectome of these time series.
 Let's create a surface image
 for this atlas.
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-147
+.. GENERATED FROM PYTHON SOURCE LINES 131-146
 
 .. code-block:: Python
 
@@ -276,8 +281,7 @@ for this atlas.
     )
 
     labels_masker = SurfaceLabelsMasker(
-        labels_img=labels_img,
-        lut=destrieux.lut,
+        labels_img=labels_img, lut=destrieux.lut, verbose=1
     ).fit()
 
     masked_data = labels_masker.transform(surf_img_nki)
@@ -291,17 +295,21 @@ for this atlas.
 
  .. code-block:: none
 
+    [SurfaceLabelsMasker.fit] Loading regions from <SurfaceImage (20484,)>
+    [SurfaceLabelsMasker.fit] Finished fit
+    [SurfaceLabelsMasker.wrapped] Extracting region signals
+    [SurfaceLabelsMasker.wrapped] Cleaning extracted signals
     Masked data shape: (895, 75)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-150
+.. GENERATED FROM PYTHON SOURCE LINES 147-149
 
 Plot connectivity matrix
 ------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-158
+.. GENERATED FROM PYTHON SOURCE LINES 149-157
 
 .. code-block:: Python
 
@@ -320,12 +328,12 @@ Plot connectivity matrix
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-161
+.. GENERATED FROM PYTHON SOURCE LINES 158-160
 
 We only print every 3rd label
 for a more legible figure.
 
-.. GENERATED FROM PYTHON SOURCE LINES 161-177
+.. GENERATED FROM PYTHON SOURCE LINES 160-176
 
 .. code-block:: Python
 
@@ -357,7 +365,7 @@ for a more legible figure.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-193
+.. GENERATED FROM PYTHON SOURCE LINES 177-192
 
 Using the decoder
 -----------------
@@ -375,7 +383,7 @@ just as we do for volume images.
   in a biological sense.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 193-223
+.. GENERATED FROM PYTHON SOURCE LINES 192-222
 
 .. code-block:: Python
 
@@ -391,7 +399,7 @@ just as we do for volume images.
     )
 
     decoder = Decoder(
-        mask=SurfaceMasker(),
+        mask=SurfaceMasker(verbose=1),
         param_grid={"C": [0.01, 0.1]},
         cv=3,
         screening_percentile=1,
@@ -422,7 +430,7 @@ just as we do for volume images.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:210: UserWarning: Overriding provided-default estimator parameters with provided masker parameters :
+    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_image_and_maskers.py:209: UserWarning: Overriding provided-default estimator parameters with provided masker parameters :
     Parameter standardize :
         Masker parameter False - overriding estimator parameter True
 
@@ -439,24 +447,24 @@ just as we do for volume images.
       warnings.warn("Features %s are constant." % constant_features_idx, UserWarning)
     /home/runner/work/nilearn/nilearn/.tox/doc/lib/python3.10/site-packages/sklearn/feature_selection/_univariate_selection.py:111: RuntimeWarning: invalid value encountered in divide
       f = msb / msw
-    CV scores: {np.int64(0): [0.4991939095387371, 0.5115891053391053, 0.4847132034632034], np.int64(1): [0.4991939095387371, 0.5115891053391053, 0.4847132034632034]}
+    CV scores: {np.int64(0): [0.4991491267353336, 0.5115891053391053, 0.4847132034632034], np.int64(1): [0.4991491267353336, 0.5115891053391053, 0.4847132034632034]}
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 224-226
+.. GENERATED FROM PYTHON SOURCE LINES 223-225
 
 Decoding with a scikit-learn `Pipeline`
 ---------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 226-251
+.. GENERATED FROM PYTHON SOURCE LINES 225-250
 
 .. code-block:: Python
 
     from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
     decoder = pipeline.make_pipeline(
-        SurfaceMasker(),
+        SurfaceMasker(verbose=1),
         preprocessing.StandardScaler(),
         feature_selection.SelectKBest(
             score_func=feature_selection.f_regression, k=500
@@ -487,15 +495,25 @@ Decoding with a scikit-learn `Pipeline`
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [Pipeline.fit] Computing mask
+    [Pipeline.fit] Finished fit
+    [Pipeline.fit] Extracting region signals
+    [Pipeline.fit] Cleaning extracted signals
+    [Pipeline.inverse_transform] Computing image from signals
+
 
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 46.331 seconds)
+   **Total running time of the script:** (0 minutes 46.206 seconds)
 
-**Estimated memory usage:**  1298 MB
+**Estimated memory usage:**  1307 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_surface_image_and_maskers.py:
