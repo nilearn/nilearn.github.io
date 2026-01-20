@@ -183,7 +183,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.13.1.dev18+g3c2940bd4) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.13.0)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.13.1.dev24+ga055731c0) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.13.0)</span></a></p> 
   </aside>
 </div>
 
@@ -892,11 +892,11 @@ build a new niimg object that we can give to the masker. Although
 possible, there is no need to save your data to a file to pass it to a
 <a class="reference internal" href="../modules/generated/nilearn.maskers.NiftiMasker.html#nilearn.maskers.NiftiMasker" title="nilearn.maskers.NiftiMasker"><code class="xref py py-class docutils literal notranslate"><span class="pre">NiftiMasker</span></code></a>. Simply use <a class="reference internal" href="../modules/generated/nilearn.image.index_img.html#nilearn.image.index_img" title="nilearn.image.index_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.index_img</span></code></a> to apply a
 slice and create a <a class="reference internal" href="input_output.html#niimg"><span class="std std-ref">Niimg</span></a> in memory:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">fetch_development_fmri</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">epi_filename</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="c1"># Restrict to 100 frames to speed up computation</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_development_fmri</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">index_img</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">fetch_development_fmri</span><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">epi_filename</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">func</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
 <span class="n">epi_img</span> <span class="o">=</span> <span class="n">index_img</span><span class="p">(</span><span class="n">epi_filename</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
 
@@ -929,33 +929,27 @@ See the <a class="reference internal" href="../modules/generated/nilearn.maskers
 mask computation parameters.</p>
 <p>The mask can be retrieved and visualized from the <code class="docutils literal notranslate"><span class="pre">mask_img_</span></code> attribute
 of the masker:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">miyawaki_filename</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.image.image</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_img</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_roi</span><span class="p">,</span> <span class="n">show</span>
 
-<span class="c1"># Plot the generated mask using the mask_img_ attribute</span>
-<span class="n">plot_roi</span><span class="p">(</span>
-    <span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span><span class="p">,</span> <span class="n">miyawaki_mean_img</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Mask from already masked data&quot;</span>
-<span class="p">)</span>
+<span class="n">mask_img</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">mask_img_</span>
 
-<span class="c1"># %%</span>
+<span class="n">mean_func_img</span> <span class="o">=</span> <span class="n">mean_img</span><span class="p">(</span><span class="n">func_filename</span><span class="p">)</span>
+
+<span class="n">plot_roi</span><span class="p">(</span><span class="n">mask_img</span><span class="p">,</span> <span class="n">mean_func_img</span><span class="p">,</span> <span class="n">display_mode</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">cut_coords</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Mask&quot;</span><span class="p">)</span>
+
+<span class="n">show</span><span class="p">()</span>
+
 </pre></div>
 </div>
 <figure class="align-center">
-<a class="reference external image-reference" href="../auto_examples/06_manipulating_images/plot_mask_computation.html"><img alt="../_images/sphx_glr_plot_mask_computation_002.png" src="../_images/sphx_glr_plot_mask_computation_002.png" />
+<a class="reference external image-reference" href="../auto_examples/06_manipulating_images/plot_mask_computation.html"><img alt="../_images/sphx_glr_plot_nifti_simple_001.png" src="../_images/sphx_glr_plot_nifti_simple_001.png" />
 </a>
 </figure>
 <p>Alternatively, the mask can be visualized using the <code class="docutils literal notranslate"><span class="pre">generate_report</span></code>
 method of the masker. The generated report can be viewed in a Jupyter notebook,
 opened in a new browser tab using <code class="docutils literal notranslate"><span class="pre">report.open_in_browser()</span></code>,
 or saved as a portable HTML file <code class="docutils literal notranslate"><span class="pre">report.save_as_html(output_filepath)</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">masker</span> <span class="o">=</span> <span class="n">NiftiMasker</span><span class="p">(</span><span class="n">mask_strategy</span><span class="o">=</span><span class="s2">&quot;epi&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">masker</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">epi_img</span><span class="p">)</span>
-<span class="n">report</span> <span class="o">=</span> <span class="n">masker</span><span class="o">.</span><span class="n">generate_report</span><span class="p">()</span>
-<span class="n">report</span>
-
-<span class="c1"># %%</span>
-</pre></div>
-</div>
 <figure class="align-center">
 <a class="reference external image-reference" href="../auto_examples/06_manipulating_images/plot_mask_computation.html"><img alt="../_images/niftimasker_report.png" src="../_images/niftimasker_report.png" />
 </a>
