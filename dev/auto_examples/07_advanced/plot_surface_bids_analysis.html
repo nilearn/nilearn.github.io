@@ -11,7 +11,7 @@
 <meta property="og:image" content="https://nilearn.github.io/_static/nilearn-logo.png" />
 <meta property="og:image:alt" content="Nilearn" />
 <meta name="description" content="Full step-by-step example of fitting a GLM(first and second level analysis) in a 10-subjects dataset and visualizing the results. More specifically: Download an fMRI BIDS dataset with two language ..." />
-<link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Working with long time series fMRI images" href="plot_mask_large_fmri.html" /><link rel="prev" title="NeuroVault meta-analysis of stop-go paradigm studies" href="plot_neurovault_meta_analysis.html" />
+<link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Working with long time series fMRI images" href="plot_mask_large_fmri.html" /><link rel="prev" title="SearchLight MVPA with a custom correlation estimator on Haxby data" href="plot_haxby_mvpa.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
         <title>Surface-based dataset first and second level analysis of a dataset - Nilearn</title>
@@ -186,7 +186,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.13.2.dev101+gc677fb99f) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.13.1)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.14.0rc1.dev58+g15f923b6e) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.0)</span></a></p> 
   </aside>
 </div>
 
@@ -281,9 +281,9 @@
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_haxby_full_analysis.html">ROI-based decoding analysis in Haxby et al. dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_miyawaki_reconstruction.html">Reconstruction of visual stimuli from Miyawaki et al. 2008</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_haxby_searchlight.html">Searchlight analysis of face vs house recognition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_haxby_grid_search.html">Setting a parameter by cross-validation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_haxby_stimuli.html">Show stimuli of Haxby et al. dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_haxby_multiclass.html">The haxby dataset: different multi-class strategies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_haxby_grid_search.html">Tuning a parameter with cross-validation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_haxby_understand_decoder.html">Understanding <code class="xref py py-class docutils literal notranslate"><span class="pre">Decoder</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_oasis_vbm.html">Voxel-Based Morphometry on Oasis dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../02_decoding/plot_oasis_vbm_space_net.html">Voxel-Based Morphometry on Oasis dataset with Space-Net prior</a></li>
@@ -357,6 +357,7 @@
 <li class="toctree-l3"><a class="reference internal" href="plot_ica_resting_state.html">Multivariate decompositions: Independent component analysis of fMRI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_ica_neurovault.html">NeuroVault cross-study ICA maps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_neurovault_meta_analysis.html">NeuroVault meta-analysis of stop-go paradigm studies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plot_haxby_mvpa.html">SearchLight MVPA with a custom correlation estimator on Haxby data</a></li>
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">Surface-based dataset first and second level analysis of a dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_mask_large_fmri.html">Working with long time series fMRI images</a></li>
 </ul>
@@ -493,8 +494,8 @@
 <li class="toctree-l3"><a class="reference internal" href="../../modules/generated/nilearn.datasets.load_nki.html">nilearn.datasets.load_nki</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../modules/description/ABIDE_pcp.html">ABIDE PCP dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../modules/description/adhd.html">ADHD dataset</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../modules/description/bids_langloc.html">BIDS language localizer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../modules/description/development_fmri.html">development fMRI dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../modules/description/ds000030.html">ds000030</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../modules/description/fiac.html">fiac first level dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../modules/description/haxby2001.html">Haxby dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../modules/description/language_localizer_demo.html">language localizer demo dataset</a></li>
@@ -863,12 +864,14 @@ to run a statistical analysis using Nilearn.
 The raw data subject folders only contain bold.json and events.tsv files,
 while the derivatives folder includes the preprocessed files preproc.nii
 and the confounds.tsv files.</p>
+<p>For more information
+see the <a class="reference internal" href="../../modules/description/language_localizer_demo.html#language-localizer-dataset"><span class="std std-ref">dataset description</span></a>.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.datasets</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.datasets.fetch_language_localizer_demo_dataset.html#nilearn.datasets.fetch_language_localizer_demo_dataset" title="nilearn.datasets.fetch_language_localizer_demo_dataset" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">fetch_language_localizer_demo_dataset</span></a>
 
 <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">data</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_language_localizer_demo_dataset.html#nilearn.datasets.fetch_language_localizer_demo_dataset" title="nilearn.datasets.fetch_language_localizer_demo_dataset" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">fetch_language_localizer_demo_dataset</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[fetch_language_localizer_demo_dataset] Dataset found in
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[fetch_language_localizer_demo_dataset] Dataset directory found:
 /home/runner/nilearn_data/fMRI-language-localizer-demo-dataset
 </pre></div>
 </div>
@@ -907,11 +910,11 @@ and the <code class="docutils literal notranslate"><span class="pre">task_label<
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_bids_analysis.py:66: RuntimeWarning:
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_bids_analysis.py:70: RuntimeWarning:
 
 &#39;StartTime&#39; not found in file /home/runner/nilearn_data/fMRI-language-localizer-demo-dataset/derivatives/sub-01/func/sub-01_task-languagelocalizer_desc-preproc_bold.json.
 
-/home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_bids_analysis.py:66: UserWarning:
+/home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_bids_analysis.py:70: UserWarning:
 
 &#39;slice_time_ref&#39; not provided and cannot be inferred from metadata.
 It will be assumed that the slice timing reference is 0.0 percent of the repetition time.
@@ -992,7 +995,7 @@ to implement certain denoising strategies.</p>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Running GLM on derivatives/sub-01/func/sub-01_task-languagelocalizer_desc-preproc_bold.nii.gz
 Running GLM on derivatives/sub-02/func/sub-02_task-languagelocalizer_desc-preproc_bold.nii.gz
-/home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_bids_analysis.py:141: RuntimeWarning:
+/home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_bids_analysis.py:145: RuntimeWarning:
 
 Meshes are not identical but have compatible number of vertices.
 
@@ -1489,7 +1492,7 @@ h6 {
 <!-- djlint:on -->
 <section class="nilearn-report pt-0 border border-1 rounded-2 scroll-y">
     <h1 class="withtooltip m-0 pl-3 pt-3 rounded-top-2 fs-5">
-        Statistical Report - First Level Model<br>surface based subject-level model
+        surface based subject-level model
         <span class="tooltiptext m-1 p-1 fw-200 fs-3 border border-1 rounded-2">Implement the General Linear Model for single run :term:`fMRI` data.
 
     </span>
@@ -1498,10 +1501,10 @@ h6 {
 
 <!-- Adapted from Pure CSS navbar : https://purecss.io/layouts/tucked-menu-vertical/ -->
 <nav class="navbar pure-g fw-bold" id="menu">
-    <script>var unique_id = "UUID-5cb0f55d77d84b5f9a86c1be249348df";</script>
+    <script>var unique_id = "UUID-683339ea29e644a8b37009e3ef97914c";</script>
     <div class="pure-u-1 pure-u-lg-1-8">
         <div class="pure-menu">
-            <a href="#model-details-UUID-5cb0f55d77d84b5f9a86c1be249348df" class="pure-menu-heading">Home</a>
+            <a href="#model-details-UUID-683339ea29e644a8b37009e3ef97914c" class="pure-menu-heading">Home</a>
             <a href="#" class="custom-toggle" id="toggle"><s class="bar"></s><s class="bar"></s></a>
         </div>
     </div>
@@ -1509,26 +1512,26 @@ h6 {
         <div class="pure-menu pure-menu-horizontal custom-can-transform">
             <ul class="pure-menu-list">
                 <li class="pure-menu-item">
-                    <a href="#model-details-UUID-5cb0f55d77d84b5f9a86c1be249348df" class="pure-menu-link">Model details</a>
+                    <a href="#model-details-UUID-683339ea29e644a8b37009e3ef97914c" class="pure-menu-link">Model details</a>
                 </li>
                     <li class="pure-menu-item">
-                        <a id="navbar-matrix-link-UUID-5cb0f55d77d84b5f9a86c1be249348df"
-                           href="#design-matrix-UUID-5cb0f55d77d84b5f9a86c1be249348df"
+                        <a id="navbar-matrix-link-UUID-683339ea29e644a8b37009e3ef97914c"
+                           href="#design-matrix-UUID-683339ea29e644a8b37009e3ef97914c"
                            class="pure-menu-link">Design Matrix</a>
                     </li>
                     <li class="pure-menu-item">
-                        <a id="navbar-contrasts-link-UUID-5cb0f55d77d84b5f9a86c1be249348df"
-                           href="#contrasts-UUID-5cb0f55d77d84b5f9a86c1be249348df"
+                        <a id="navbar-contrasts-link-UUID-683339ea29e644a8b37009e3ef97914c"
+                           href="#contrasts-UUID-683339ea29e644a8b37009e3ef97914c"
                            class="pure-menu-link">Contrasts</a>
                     </li>
                 <li class="pure-menu-item">
-                    <a href="#mask-UUID-5cb0f55d77d84b5f9a86c1be249348df" class="pure-menu-link">Mask</a>
+                    <a href="#mask-UUID-683339ea29e644a8b37009e3ef97914c" class="pure-menu-link">Mask</a>
                 </li>
                     <li class="pure-menu-item">
-                        <a href="#statistical-maps-UUID-5cb0f55d77d84b5f9a86c1be249348df" class="pure-menu-link">Statistical Maps</a>
+                        <a href="#statistical-maps-UUID-683339ea29e644a8b37009e3ef97914c" class="pure-menu-link">Statistical Maps</a>
                     </li>
                 <li class="pure-menu-item">
-                    <a href="#about-UUID-5cb0f55d77d84b5f9a86c1be249348df" class="pure-menu-link">About</a>
+                    <a href="#about-UUID-683339ea29e644a8b37009e3ef97914c" class="pure-menu-link">About</a>
                 </li>
             </ul>
         </div>
@@ -1597,7 +1600,7 @@ h6 {
 
 <p>
     Data were analyzed using <a href="https://nilearn.github.io">Nilearn</a>
-    (version= 0.13.2.dev101+gc677fb99f; RRID:SCR_001362).
+    (version= 0.14.0; RRID:SCR_001362).
 </p>
     <p>
         At the subject level, a mass univariate analysis was performed with a linear
@@ -1610,7 +1613,7 @@ h6 {
             convolved with a glover canonical hemodynamic response function
             for the following conditions:
             <ul>
-<li>string</li><li>language</li>            </ul>
+<li>language</li><li>string</li>            </ul>
         </p>
     <p>
         Input images were smoothed with gaussian kernel
@@ -1625,7 +1628,7 @@ h6 {
     </p>
 
         </section>
-        <section id="model-details-UUID-5cb0f55d77d84b5f9a86c1be249348df">
+        <section id="model-details-UUID-683339ea29e644a8b37009e3ef97914c">
             <h2>Model details</h2>
             <div class="table-container"><table class="pure-table">
   <thead>
@@ -1682,9 +1685,9 @@ h6 {
   </tbody>
 </table></div>
         </section>
-        <div id="carousel-container-UUID-5cb0f55d77d84b5f9a86c1be249348df">
-                <div                      id="carousel-obj-UUID-5cb0f55d77d84b5f9a86c1be249348df-0">
-                    <section id="design-matrix-UUID-5cb0f55d77d84b5f9a86c1be249348df-0">
+        <div id="carousel-container-UUID-683339ea29e644a8b37009e3ef97914c">
+                <div                      id="carousel-obj-UUID-683339ea29e644a8b37009e3ef97914c-0">
+                    <section id="design-matrix-UUID-683339ea29e644a8b37009e3ef97914c-0">
                         <h3>Design Matrix</h3>
                             <div class="scroll-y">
 
@@ -1706,7 +1709,7 @@ h6 {
                                          style="min-width: 600px" />
                                 </div>
                     </section>
-                    <section id="contrasts-UUID-5cb0f55d77d84b5f9a86c1be249348df-0">
+                    <section id="contrasts-UUID-683339ea29e644a8b37009e3ef97914c-0">
                         <h3>Contrasts</h3>
                         <div class="d-flex flex-column">
                                     <div class="scroll-y">
@@ -1722,7 +1725,7 @@ h6 {
                     </section>
                 </div>
         </div>
-        <section id="mask-UUID-5cb0f55d77d84b5f9a86c1be249348df">
+        <section id="mask-UUID-683339ea29e644a8b37009e3ef97914c">
             <h2>Mask</h2>
                 <div class="scroll-y">
                     <img class="pure-img"
@@ -1737,7 +1740,7 @@ h6 {
                     </p>
                 </div>
         </section>
-        <section id="statistical-maps-UUID-5cb0f55d77d84b5f9a86c1be249348df">
+        <section id="statistical-maps-UUID-683339ea29e644a8b37009e3ef97914c">
             <h2>Statistical Maps</h2>
             <div class="pure-g">
                         <div class="pure-u-1">
@@ -2395,11 +2398,11 @@ h6 {
                         </div>
             </div>
         </section>
-        <section id="about-UUID-5cb0f55d77d84b5f9a86c1be249348df" style="text-align: left">
+        <section id="about-UUID-683339ea29e644a8b37009e3ef97914c" style="text-align: left">
             <h2>About</h2>
             <ul>
                 <li>
-                    Date preprocessed: <time>2026-04-15T10:17:21</time>
+                    Date preprocessed: <time>2026-06-06T09:40:59</time>
                 </li>
             </ul>
         </section>
@@ -2435,7 +2438,7 @@ to <a class="reference internal" href="../../modules/generated/nilearn.glm.secon
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_bids_analysis.py:175: RuntimeWarning:
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/nilearn/nilearn/examples/07_advanced/plot_surface_bids_analysis.py:179: RuntimeWarning:
 
 Meshes are not identical but have compatible number of vertices.
 </pre></div>
@@ -2923,7 +2926,7 @@ h6 {
 <!-- djlint:on -->
 <section class="nilearn-report pt-0 border border-1 rounded-2 scroll-y">
     <h1 class="withtooltip m-0 pl-3 pt-3 rounded-top-2 fs-5">
-        Statistical Report - Second Level Model<br>surface based group-level model
+        surface based group-level model
         <span class="tooltiptext m-1 p-1 fw-200 fs-3 border border-1 rounded-2">Implement the :term:`General Linear Model<GLM>` for multiple     subject :term:`fMRI` data.
 
     </span>
@@ -2932,10 +2935,10 @@ h6 {
 
 <!-- Adapted from Pure CSS navbar : https://purecss.io/layouts/tucked-menu-vertical/ -->
 <nav class="navbar pure-g fw-bold" id="menu">
-    <script>var unique_id = "UUID-537e1ec16d1c4f0fbfa5750b05f29243";</script>
+    <script>var unique_id = "UUID-5fad516b400944ae9b892a21911e8a26";</script>
     <div class="pure-u-1 pure-u-lg-1-8">
         <div class="pure-menu">
-            <a href="#model-details-UUID-537e1ec16d1c4f0fbfa5750b05f29243" class="pure-menu-heading">Home</a>
+            <a href="#model-details-UUID-5fad516b400944ae9b892a21911e8a26" class="pure-menu-heading">Home</a>
             <a href="#" class="custom-toggle" id="toggle"><s class="bar"></s><s class="bar"></s></a>
         </div>
     </div>
@@ -2943,26 +2946,26 @@ h6 {
         <div class="pure-menu pure-menu-horizontal custom-can-transform">
             <ul class="pure-menu-list">
                 <li class="pure-menu-item">
-                    <a href="#model-details-UUID-537e1ec16d1c4f0fbfa5750b05f29243" class="pure-menu-link">Model details</a>
+                    <a href="#model-details-UUID-5fad516b400944ae9b892a21911e8a26" class="pure-menu-link">Model details</a>
                 </li>
                     <li class="pure-menu-item">
-                        <a id="navbar-matrix-link-UUID-537e1ec16d1c4f0fbfa5750b05f29243"
-                           href="#design-matrix-UUID-537e1ec16d1c4f0fbfa5750b05f29243"
+                        <a id="navbar-matrix-link-UUID-5fad516b400944ae9b892a21911e8a26"
+                           href="#design-matrix-UUID-5fad516b400944ae9b892a21911e8a26"
                            class="pure-menu-link">Design Matrix</a>
                     </li>
                     <li class="pure-menu-item">
-                        <a id="navbar-contrasts-link-UUID-537e1ec16d1c4f0fbfa5750b05f29243"
-                           href="#contrasts-UUID-537e1ec16d1c4f0fbfa5750b05f29243"
+                        <a id="navbar-contrasts-link-UUID-5fad516b400944ae9b892a21911e8a26"
+                           href="#contrasts-UUID-5fad516b400944ae9b892a21911e8a26"
                            class="pure-menu-link">Contrasts</a>
                     </li>
                 <li class="pure-menu-item">
-                    <a href="#mask-UUID-537e1ec16d1c4f0fbfa5750b05f29243" class="pure-menu-link">Mask</a>
+                    <a href="#mask-UUID-5fad516b400944ae9b892a21911e8a26" class="pure-menu-link">Mask</a>
                 </li>
                     <li class="pure-menu-item">
-                        <a href="#statistical-maps-UUID-537e1ec16d1c4f0fbfa5750b05f29243" class="pure-menu-link">Statistical Maps</a>
+                        <a href="#statistical-maps-UUID-5fad516b400944ae9b892a21911e8a26" class="pure-menu-link">Statistical Maps</a>
                     </li>
                 <li class="pure-menu-item">
-                    <a href="#about-UUID-537e1ec16d1c4f0fbfa5750b05f29243" class="pure-menu-link">About</a>
+                    <a href="#about-UUID-5fad516b400944ae9b892a21911e8a26" class="pure-menu-link">About</a>
                 </li>
             </ul>
         </div>
@@ -3031,7 +3034,7 @@ h6 {
 
 <p>
     Data were analyzed using <a href="https://nilearn.github.io">Nilearn</a>
-    (version= 0.13.2.dev101+gc677fb99f; RRID:SCR_001362).
+    (version= 0.14.0; RRID:SCR_001362).
 </p>
     <p>
         At the group level, a mass univariate analysis was performed with a linear
@@ -3045,7 +3048,7 @@ h6 {
     </p>
 
         </section>
-        <section id="model-details-UUID-537e1ec16d1c4f0fbfa5750b05f29243">
+        <section id="model-details-UUID-5fad516b400944ae9b892a21911e8a26">
             <h2>Model details</h2>
             <div class="table-container"><table class="pure-table">
   <thead>
@@ -3057,9 +3060,9 @@ h6 {
   </tbody>
 </table></div>
         </section>
-        <div id="carousel-container-UUID-537e1ec16d1c4f0fbfa5750b05f29243">
-                <div                      id="carousel-obj-UUID-537e1ec16d1c4f0fbfa5750b05f29243-0">
-                    <section id="design-matrix-UUID-537e1ec16d1c4f0fbfa5750b05f29243-0">
+        <div id="carousel-container-UUID-5fad516b400944ae9b892a21911e8a26">
+                <div                      id="carousel-obj-UUID-5fad516b400944ae9b892a21911e8a26-0">
+                    <section id="design-matrix-UUID-5fad516b400944ae9b892a21911e8a26-0">
                         <h3>Design Matrix</h3>
                             <div class="scroll-y">
 
@@ -3071,7 +3074,7 @@ h6 {
                                      style="min-width: 600px" />
                             </div>
                     </section>
-                    <section id="contrasts-UUID-537e1ec16d1c4f0fbfa5750b05f29243-0">
+                    <section id="contrasts-UUID-5fad516b400944ae9b892a21911e8a26-0">
                         <h3>Contrasts</h3>
                         <div class="d-flex flex-column">
                                     <div class="scroll-y">
@@ -3087,7 +3090,7 @@ h6 {
                     </section>
                 </div>
         </div>
-        <section id="mask-UUID-537e1ec16d1c4f0fbfa5750b05f29243">
+        <section id="mask-UUID-5fad516b400944ae9b892a21911e8a26">
             <h2>Mask</h2>
                 <div class="scroll-y">
                     <img class="pure-img"
@@ -3102,7 +3105,7 @@ h6 {
                     </p>
                 </div>
         </section>
-        <section id="statistical-maps-UUID-537e1ec16d1c4f0fbfa5750b05f29243">
+        <section id="statistical-maps-UUID-5fad516b400944ae9b892a21911e8a26">
             <h2>Statistical Maps</h2>
             <div class="pure-g">
                         <div class="pure-u-1">
@@ -3400,11 +3403,11 @@ h6 {
                         </div>
             </div>
         </section>
-        <section id="about-UUID-537e1ec16d1c4f0fbfa5750b05f29243" style="text-align: left">
+        <section id="about-UUID-5fad516b400944ae9b892a21911e8a26" style="text-align: left">
             <h2>About</h2>
             <ul>
                 <li>
-                    Date preprocessed: <time>2026-04-15T10:18:27</time>
+                    Date preprocessed: <time>2026-06-06T09:41:56</time>
                 </li>
             </ul>
         </section>
@@ -3415,8 +3418,8 @@ h6 {
 </section>
 </div>
 <br />
-<br /><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 35.052 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  985 MB</p>
+<br /><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (1 minutes 24.017 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  1064 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-07-advanced-plot-surface-bids-analysis-py">
 <div class="binder-badge docutils container">
 <a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/07_advanced/plot_surface_bids_analysis.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo7.svg" style="width: 150px;" /></a>
@@ -3449,14 +3452,14 @@ h6 {
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="plot_neurovault_meta_analysis.html">
+          <a class="prev-page" href="plot_haxby_mvpa.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">NeuroVault meta-analysis of stop-go paradigm studies</div>
+                <div class="title">SearchLight MVPA with a custom correlation estimator on Haxby data</div>
                 
               </div>
             </a>

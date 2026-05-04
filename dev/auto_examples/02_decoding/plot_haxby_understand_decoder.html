@@ -11,7 +11,7 @@
 <meta property="og:image" content="https://nilearn.github.io/_static/nilearn-logo.png" />
 <meta property="og:image:alt" content="Nilearn" />
 <meta name="description" content="Nilearn’s Decoder object is a composite estimator that does several things under the hood and can hence be a bit difficult to understand at first. This example aims to provide a clear understanding..." />
-<link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Voxel-Based Morphometry on Oasis dataset" href="plot_oasis_vbm.html" /><link rel="prev" title="The haxby dataset: different multi-class strategies" href="plot_haxby_multiclass.html" />
+<link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Voxel-Based Morphometry on Oasis dataset" href="plot_oasis_vbm.html" /><link rel="prev" title="Tuning a parameter with cross-validation" href="plot_haxby_grid_search.html" />
 
     <link rel="shortcut icon" href="../../_static/favicon.ico"/><!-- Generated with Sphinx 7.4.7 and Furo 2024.08.06 -->
         <title>Understanding Decoder - Nilearn</title>
@@ -186,7 +186,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.13.2.dev101+gc677fb99f) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.13.1)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.14.0rc1.dev58+g15f923b6e) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.0)</span></a></p> 
   </aside>
 </div>
 
@@ -281,9 +281,9 @@
 <li class="toctree-l3"><a class="reference internal" href="plot_haxby_full_analysis.html">ROI-based decoding analysis in Haxby et al. dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_miyawaki_reconstruction.html">Reconstruction of visual stimuli from Miyawaki et al. 2008</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_haxby_searchlight.html">Searchlight analysis of face vs house recognition</a></li>
-<li class="toctree-l3"><a class="reference internal" href="plot_haxby_grid_search.html">Setting a parameter by cross-validation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_haxby_stimuli.html">Show stimuli of Haxby et al. dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_haxby_multiclass.html">The haxby dataset: different multi-class strategies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plot_haxby_grid_search.html">Tuning a parameter with cross-validation</a></li>
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">Understanding <code class="xref py py-class docutils literal notranslate"><span class="pre">Decoder</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_oasis_vbm.html">Voxel-Based Morphometry on Oasis dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plot_oasis_vbm_space_net.html">Voxel-Based Morphometry on Oasis dataset with Space-Net prior</a></li>
@@ -357,6 +357,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../07_advanced/plot_ica_resting_state.html">Multivariate decompositions: Independent component analysis of fMRI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../07_advanced/plot_ica_neurovault.html">NeuroVault cross-study ICA maps</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../07_advanced/plot_neurovault_meta_analysis.html">NeuroVault meta-analysis of stop-go paradigm studies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../07_advanced/plot_haxby_mvpa.html">SearchLight MVPA with a custom correlation estimator on Haxby data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../07_advanced/plot_surface_bids_analysis.html">Surface-based dataset first and second level analysis of a dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../07_advanced/plot_mask_large_fmri.html">Working with long time series fMRI images</a></li>
 </ul>
@@ -493,8 +494,8 @@
 <li class="toctree-l3"><a class="reference internal" href="../../modules/generated/nilearn.datasets.load_nki.html">nilearn.datasets.load_nki</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../modules/description/ABIDE_pcp.html">ABIDE PCP dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../modules/description/adhd.html">ADHD dataset</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../modules/description/bids_langloc.html">BIDS language localizer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../modules/description/development_fmri.html">development fMRI dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../modules/description/ds000030.html">ds000030</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../modules/description/fiac.html">fiac first level dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../modules/description/haxby2001.html">Haxby dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../modules/description/language_localizer_demo.html">language localizer demo dataset</a></li>
@@ -890,7 +891,7 @@ image based on the subject’s fMRI data from the Ventral Temporal cortex.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Runs (groups): </span><span class="si">{</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.unique.html#numpy.unique" title="numpy.unique" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">unique</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">run</span></a><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[fetch_haxby] Dataset found in /home/runner/nilearn_data/haxby2001
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[fetch_haxby] Dataset directory found: /home/runner/nilearn_data/haxby2001
 8 labels to predict (y): [&#39;bottle&#39; &#39;cat&#39; &#39;chair&#39; &#39;face&#39; &#39;house&#39; &#39;scissors&#39; &#39;scrambledpix&#39; &#39;shoe&#39;]
 fMRI data shape (X): (40, 64, 64, 864)
 Runs (groups): [ 0  1  2  3  4  5  6  7  8  9 10 11]
@@ -940,7 +941,7 @@ relative to the others in the brain.</p>
 label. These can be further used to understand the importance of each voxel
 for each corresponding cognitive domain.</p>
 <p>In this example we have N = 8 unique labels and we will use Scikit-Learn’s
-<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelBinarizer.html#sklearn.preprocessing.LabelBinarizer" title="(in scikit-learn v1.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LabelBinarizer</span></code></a> to do this conversion.</p>
+<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelBinarizer.html#sklearn.preprocessing.LabelBinarizer" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LabelBinarizer</span></code></a> to do this conversion.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelBinarizer.html#sklearn.preprocessing.LabelBinarizer" title="sklearn.preprocessing.LabelBinarizer" class="sphx-glr-backref-module-sklearn-preprocessing sphx-glr-backref-type-py-class"><span class="n">LabelBinarizer</span></a>
 
@@ -1005,8 +1006,8 @@ AU-ROC score for each row.</p>
 <p>After preprocessing the provided fMRI data, the
 <a class="reference internal" href="../../modules/generated/nilearn.decoding.Decoder.html#nilearn.decoding.Decoder" title="nilearn.decoding.Decoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">Decoder</span></code></a> performs a univariate feature selection on
 the voxels of the brain volume. It uses Scikit-Learn’s
-<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectPercentile.html#sklearn.feature_selection.SelectPercentile" title="(in scikit-learn v1.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SelectPercentile</span></code></a> with
-<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" title="(in scikit-learn v1.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">f_classif</span></code></a> to calculate ANOVA F-scores for
+<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SelectPercentile.html#sklearn.feature_selection.SelectPercentile" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SelectPercentile</span></code></a> with
+<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" title="(in scikit-learn v1.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">f_classif</span></code></a> to calculate ANOVA F-scores for
 each voxel and to only keep the ones that have highest 20 percentile scores,
 by default. This selection threshold can be changed using the
 <code class="docutils literal notranslate"><span class="pre">screening_percentile</span></code> parameter.</p>
@@ -1041,7 +1042,7 @@ by <a class="reference internal" href="../../modules/generated/nilearn.decoding.
 Scikit-Learn parameter grids for the corresponding <code class="docutils literal notranslate"><span class="pre">&lt;estimator_name&gt;CV</span></code>
 objects.</p>
 <p>For simplicity, let’s use Scikit-Learn’s
-<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegressionCV.html#sklearn.linear_model.LogisticRegressionCV" title="(in scikit-learn v1.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogisticRegressionCV</span></code></a> with custom parameter
+<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegressionCV.html#sklearn.linear_model.LogisticRegressionCV" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LogisticRegressionCV</span></code></a> with custom parameter
 grid (via <code class="docutils literal notranslate"><span class="pre">Cs</span></code> parameter) as used in Nilearn’s
 <a class="reference internal" href="../../modules/generated/nilearn.decoding.Decoder.html#nilearn.decoding.Decoder" title="nilearn.decoding.Decoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">Decoder</span></code></a>.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegressionCV.html#sklearn.linear_model.LogisticRegressionCV" title="sklearn.linear_model.LogisticRegressionCV" class="sphx-glr-backref-module-sklearn-linear_model sphx-glr-backref-type-py-class"><span class="n">LogisticRegressionCV</span></a>
@@ -1078,11 +1079,6 @@ set to evaluate the performance of the trained decoder on unseen data.</p>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">run_test</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">run</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">test_mask</span></a><span class="p">]</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_understand_decoder.py:254: UserWarning:
-
-[NiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
-</pre></div>
-</div>
 </section>
 <section id="train-and-cross-validate-via-an-scikit-learn-pipeline">
 <h2>Train and cross-validate via an Scikit-Learn pipeline<a class="headerlink" href="#train-and-cross-validate-via-an-scikit-learn-pipeline" title="Link to this heading">¶</a></h2>
@@ -1090,7 +1086,7 @@ set to evaluate the performance of the trained decoder on unseen data.</p>
 <a class="reference internal" href="../../modules/generated/nilearn.decoding.Decoder.html#nilearn.decoding.Decoder" title="nilearn.decoding.Decoder"><code class="xref py py-class docutils literal notranslate"><span class="pre">Decoder</span></code></a> uses a leave-one-group-out
 cross-validation scheme by default in cases where groups are defined. In our
 example a group is a run, so we will use Scikit-Learn’s
-<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="(in scikit-learn v1.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LeaveOneGroupOut</span></code></a></p>
+<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="(in scikit-learn v1.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">LeaveOneGroupOut</span></code></a></p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html#sklearn.metrics.roc_auc_score" title="sklearn.metrics.roc_auc_score" class="sphx-glr-backref-module-sklearn-metrics sphx-glr-backref-type-py-function"><span class="n">roc_auc_score</span></a>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html#sklearn.model_selection.LeaveOneGroupOut" title="sklearn.model_selection.LeaveOneGroupOut" class="sphx-glr-backref-module-sklearn-model_selection sphx-glr-backref-type-py-class"><span class="n">LeaveOneGroupOut</span></a>
 
@@ -1157,11 +1153,6 @@ processing using the <code class="docutils literal notranslate"><span class="pre
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scores_nilearn</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.concatenate.html#numpy.concatenate" title="numpy.concatenate" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span></a><span class="p">(</span><span class="nb">list</span><span class="p">(</span><a href="../../modules/generated/nilearn.decoding.Decoder.html#nilearn.decoding.Decoder" title="nilearn.decoding.Decoder" class="sphx-glr-backref-module-nilearn-decoding sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">decoder</span></a><span class="o">.</span><span class="n">cv_scores_</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_understand_decoder.py:331: UserWarning:
-
-[NiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
-</pre></div>
-</div>
 </section>
 <section id="compare-the-results">
 <h2>Compare the results<a class="headerlink" href="#compare-the-results" title="Link to this heading">¶</a></h2>
@@ -1171,8 +1162,8 @@ decoder.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Scikit-Learn mean AU-ROC score&quot;</span><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.mean.html#numpy.mean" title="numpy.mean" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">scores_sklearn</span></a><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Nilearn mean AU-ROC score 0.8988696488696489
-Scikit-Learn mean AU-ROC score 0.8988295654962322
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Nilearn mean AU-ROC score 0.8986992945326279
+Scikit-Learn mean AU-ROC score 0.8987794612794613
 </pre></div>
 </div>
 <p>As we can see, the mean AU-ROC scores from the Scikit-Learn pipeline and
@@ -1289,8 +1280,8 @@ are also identical.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted labels are identical: True
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (4 minutes 14.960 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  1334 MB</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (3 minutes 31.163 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  1468 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-02-decoding-plot-haxby-understand-decoder-py">
 <div class="binder-badge docutils container">
 <a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/02_decoding/plot_haxby_understand_decoder.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo2.svg" style="width: 150px;" /></a>
@@ -1323,14 +1314,14 @@ are also identical.</p>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="plot_haxby_multiclass.html">
+          <a class="prev-page" href="plot_haxby_grid_search.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">The haxby dataset: different multi-class strategies</div>
+                <div class="title">Tuning a parameter with cross-validation</div>
                 
               </div>
             </a>
