@@ -51,6 +51,7 @@ dict_learn = DictLearning(
     memory="nilearn_cache",
     memory_level=1,
     random_state=0,
+    standardize="zscore_sample",
     verbose=1,
 )
 # Fit to the data
@@ -87,6 +88,7 @@ extractor = RegionExtractor(
     threshold=0.5,
     thresholding_strategy="ratio_n_voxels",
     extractor="local_regions",
+    standardize="zscore_sample",
     standardize_confounds=True,
     min_region_size=1350,
     verbose=1,
@@ -128,7 +130,9 @@ from nilearn.connectome import ConnectivityMeasure
 
 correlations = []
 # Initializing ConnectivityMeasure object with kind='correlation'
-connectome_measure = ConnectivityMeasure(kind="correlation", verbose=1)
+connectome_measure = ConnectivityMeasure(
+    kind="correlation", standardize="zscore_sample", verbose=1
+)
 for filename, confound in zip(func_filenames, confounds, strict=False):
     # call transform from RegionExtractor object to extract timeseries signals
     timeseries_each_subject = extractor.transform(filename, confounds=confound)

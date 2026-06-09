@@ -8,6 +8,8 @@ More precisely, this example shows how to use the
 :class:`~nilearn.maskers.NiftiLabelsMasker` object to perform this
 operation in just a few lines of code.
 
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 from nilearn._utils.helpers import check_matplotlib
@@ -48,7 +50,9 @@ print(f"The atlas contains {len(atlas.labels) - 1} non-overlapping regions")
 #
 from nilearn.maskers import NiftiLabelsMasker
 
-masker = NiftiLabelsMasker(atlas.maps, lut=atlas.lut, verbose=1)
+masker = NiftiLabelsMasker(
+    atlas.maps, lut=atlas.lut, standardize="zscore_sample", verbose=1
+)
 
 # %%
 # Visualize the atlas
@@ -56,16 +60,12 @@ masker = NiftiLabelsMasker(atlas.maps, lut=atlas.lut, verbose=1)
 #
 # We need to call fit prior to generating the mask.
 # We can then generate a report to visualize the atlas.
-# Here we use the 'brainsprite' engine
-# that gives an interactive vizualtion
-# instead of the static one generated
-# by the matplotlib engine.
 #
 # .. include:: ../../../examples/report_note.rst
 #
 masker.fit()
 
-report = masker.generate_report(engine="brainsprite")
+report = masker.generate_report()
 report
 
 # %%

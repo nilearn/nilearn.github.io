@@ -39,6 +39,7 @@ display = plot_carpet(
     adhd_dataset.func[0],
     mask_img,
     t_r=adhd_dataset.t_r,
+    standardize="zscore_sample",
     title="global patterns over time",
 )
 
@@ -77,6 +78,7 @@ display = plot_carpet(
     t_r=adhd_dataset.t_r,
     mask_labels=map_labels,
     axes=ax,
+    standardize="zscore_sample",
     title="global patterns over time separated by tissue type",
 )
 

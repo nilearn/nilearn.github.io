@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_auto_examples_02_decoding_plot_haxby_understand_decoder.py>`
-        to download the full example code. or to run this example in your browser via Binder
+        to download the full example code or to run this example in your browser via Binder.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -133,7 +133,7 @@ parameter to ``"zscore_sample"``).
 
     from nilearn.maskers import NiftiMasker
 
-    masker = NiftiMasker(mask_img=mask_vt, standardize="zscore_sample")
+    masker = NiftiMasker(mask_img=mask_vt, standardize="zscore_sample", verbose=1)
 
 
 
@@ -324,7 +324,7 @@ For simplicity, let's use Scikit-Learn's
 grid (via ``Cs`` parameter) as used in Nilearn's
 :class:`~nilearn.decoding.Decoder`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 227-237
+.. GENERATED FROM PYTHON SOURCE LINES 227-238
 
 .. code-block:: Python
 
@@ -336,6 +336,7 @@ grid (via ``Cs`` parameter) as used in Nilearn's
         solver="liblinear",
         Cs=np.geomspace(1e-3, 1e4, 8),
         refit=True,
+        verbose=1,
     )
 
 
@@ -345,53 +346,7 @@ grid (via ``Cs`` parameter) as used in Nilearn's
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 238-243
-
-Leave out a test set for final evaluation
------------------------------------------
-
-Before we train and cross-validate, let's leave out one run as a final test
-set to evaluate the performance of the trained decoder on unseen data.
-
-.. GENERATED FROM PYTHON SOURCE LINES 243-261
-
-.. code-block:: Python
-
-
-    test_run = 6
-    test_mask = run == test_run
-
-    # training data for cross-validation
-    fmri_img_cv = index_img(fmri_img, ~test_mask)
-    y_cv = y[~test_mask]
-    y_binary_cv = y_binary[~test_mask]
-    run_cv = run[~test_mask]
-
-    # Transform fMRI data into a 2D numpy array and standardize it with the masker
-    X_cv = masker.fit_transform(fmri_img_cv)
-
-    # test data
-    fmri_img_test = index_img(fmri_img, test_mask)
-    X_test = masker.transform(fmri_img_test)
-    y_test = y_binary[test_mask]
-    run_test = run[test_mask]
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_understand_decoder.py:254: UserWarning:
-
-    [NiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 262-270
+.. GENERATED FROM PYTHON SOURCE LINES 239-247
 
 Train and cross-validate via an Scikit-Learn pipeline
 -----------------------------------------------------
@@ -402,7 +357,7 @@ cross-validation scheme by default in cases where groups are defined. In our
 example a group is a run, so we will use Scikit-Learn's
 :class:`~sklearn.model_selection.LeaveOneGroupOut`
 
-.. GENERATED FROM PYTHON SOURCE LINES 270-313
+.. GENERATED FROM PYTHON SOURCE LINES 247-285
 
 .. code-block:: Python
 
@@ -412,42 +367,37 @@ example a group is a run, so we will use Scikit-Learn's
 
     logo_cv = LeaveOneGroupOut()
 
-    print(f"fMRI data shape after masking: {X_cv.shape}")
-    # So now we have a 2D numpy array where each row corresponds to a trial and
-    # each column corresponds to a feature (voxel in the Ventral Temporal cortex).
+    # Transform fMRI data into a 2D numpy array and standardize it with the masker
+    X = masker.fit_transform(fmri_img)
+    print(f"fMRI data shape after masking: {X.shape}")
+    # So now we have a 2D numpy array of shape (864, 464) where each row
+    # corresponds to a trial and each column corresponds to a feature
+    # (voxel in the Ventral Temporal cortex).
 
     # Loop over each CV split and each class vs. rest binary classification
     # problems (number of classification problems = n_labels)
     scores_sklearn = []
-    coefs_sklearn = []
-    intercepts_sklearn = []
     for klass in range(n_labels):
-        for train, val in logo_cv.split(X_cv, groups=run_cv):
-            # separate train and val events in the data
-            X_train, X_val = X_cv[train], X_cv[val]
-            # separate labels for train and val events for a given class vs. rest
+        for train, test in logo_cv.split(X, y, groups=run):
+            # separate train and test events in the data
+            X_train, X_test = X[train], X[test]
+            # separate labels for train and test events for a given class vs. rest
             # problem
-            y_train, y_val = (
-                y_binary_cv[train, klass],
-                y_binary_cv[val, klass],
-            )
+            y_train, y_test = y_binary[train, klass], y_binary[test, klass]
 
             # select the voxels by fitting feature selector on training data
             X_train = feature_selector.fit_transform(X_train, y_train)
-            # pick the same voxels in the val data
-            X_val = feature_selector.transform(X_val)
+            # pick the same voxels in the test data
+            X_test = feature_selector.transform(X_test)
 
             # fit the classifier on the training data
             classifier.fit(X_train, y_train)
-            # predict the labels on the val data
-            pred = classifier.predict_proba(X_val)
+            # predict the labels on the test data
+            pred = classifier.predict_proba(X_test)
 
             # calculate the ROC AUC score
-            score = roc_auc_score(y_val, pred[:, 1])
+            score = roc_auc_score(y_test, pred[:, 1])
             scores_sklearn.append(score)
-
-            coefs_sklearn.append(classifier.coef_)
-            intercepts_sklearn.append(classifier.intercept_)
 
 
 
@@ -457,12 +407,122 @@ example a group is a run, so we will use Scikit-Learn's
 
  .. code-block:: none
 
-    fMRI data shape after masking: (792, 464)
+    [NiftiMasker.wrapped] Loading mask from 
+    '/home/runner/nilearn_data/haxby2001/subj2/mask4_vt.nii.gz'
+    [NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
+    0x7f1ee890b340>
+    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_understand_decoder.py:254: UserWarning:
+
+    [NiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
+
+    [NiftiMasker.wrapped] Resampling mask
+    [NiftiMasker.wrapped] Finished fit
+    [NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
+    0x7f1ee890b340>
+    [NiftiMasker.wrapped] Extracting region signals
+    [NiftiMasker.wrapped] Cleaning extracted signals
+    fMRI data shape after masking: (864, 464)
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.0s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.0s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.0s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.0s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.0s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.0s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.0s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.0s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.0s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.0s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.0s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.8s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.8s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.8s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.8s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.8s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.8s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.8s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.8s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.8s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.8s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.8s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.8s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    1.9s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.2s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
+    [LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][LibLinear][Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    2.1s finished
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 314-320
+.. GENERATED FROM PYTHON SOURCE LINES 286-292
 
 Decode via the :class:`~nilearn.decoding.Decoder`
 -------------------------------------------------
@@ -471,7 +531,7 @@ All these steps can be done in a few lines and made faster via parallel
 processing using the ``n_jobs`` parameter in
 :class:`~nilearn.decoding.Decoder`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 320-334
+.. GENERATED FROM PYTHON SOURCE LINES 292-308
 
 .. code-block:: Python
 
@@ -481,12 +541,14 @@ processing using the ``n_jobs`` parameter in
     decoder = Decoder(
         estimator="logistic_l2",
         mask=mask_vt,
+        standardize="zscore_sample",
         n_jobs=n_labels,
         cv=logo_cv,
         screening_percentile=screening_percentile,
         scoring="roc_auc_ovr",
+        verbose=1,
     )
-    decoder.fit(fmri_img_cv, y_cv, groups=run_cv)
+    decoder.fit(fmri_img, y, groups=run)
     scores_nilearn = np.concatenate(list(decoder.cv_scores_.values()))
 
 
@@ -497,15 +559,44 @@ processing using the ``n_jobs`` parameter in
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_understand_decoder.py:331: UserWarning:
+    [Decoder.fit] Loading mask from 
+    '/home/runner/nilearn_data/haxby2001/subj2/mask4_vt.nii.gz'
+    [Decoder.fit] Loading data from <nibabel.nifti1.Nifti1Image object at 
+    0x7f1ee890b340>
+    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_understand_decoder.py:305: UserWarning:
 
     [NiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
 
+    [Decoder.fit] Resampling mask
+    [Decoder.fit] Finished fit
+    [Decoder.fit] Loading data from <nibabel.nifti1.Nifti1Image object at 
+    0x7f1ee890b340>
+    [Decoder.fit] Extracting region signals
+    [Decoder.fit] Cleaning extracted signals
+    [Parallel(n_jobs=8)]: Using backend LokyBackend with 8 concurrent workers.
+    [Parallel(n_jobs=8)]: Done  25 tasks      | elapsed:   35.8s
+    [Parallel(n_jobs=8)]: Done  96 out of  96 | elapsed:  1.6min finished
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
+    [Decoder.fit] Computing image from signals
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 335-340
+.. GENERATED FROM PYTHON SOURCE LINES 309-314
 
 Compare the results
 -------------------
@@ -513,7 +604,7 @@ Compare the results
 Let's compare the results from the Scikit-Learn pipeline and the Nilearn
 decoder.
 
-.. GENERATED FROM PYTHON SOURCE LINES 340-344
+.. GENERATED FROM PYTHON SOURCE LINES 314-318
 
 .. code-block:: Python
 
@@ -529,13 +620,13 @@ decoder.
 
  .. code-block:: none
 
-    Nilearn mean AU-ROC score 0.8988696488696489
-    Scikit-Learn mean AU-ROC score 0.8988295654962322
+    Nilearn mean AU-ROC score 0.9073798500881832
+    Scikit-Learn mean AU-ROC score 0.9073798500881832
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 345-353
+.. GENERATED FROM PYTHON SOURCE LINES 319-327
 
 As we can see, the mean AU-ROC scores from the Scikit-Learn pipeline and
 Nilearn's :class:`~nilearn.decoding.Decoder` are identical.
@@ -546,169 +637,12 @@ to train, cross-validate and predict on new data, while also parallelizing
 the computations to make the cross-validation faster. It also organizes the
 results in a structured way that can be easily accessed and analyzed.
 
-.. GENERATED FROM PYTHON SOURCE LINES 355-368
-
-Compare the coefficients and intercepts
----------------------------------------
-
-The decoder object also provides access to the coefficients and intercepts of
-the trained classifiers for each class vs. rest problem. These are stored in
-the ``coef_`` and ``intercept_`` attributes of the decoder object,
-respectively. These coefficients and intercepts are averaged across the CV
-splits for each class vs. rest problem.
-
-So we can aggregate the coefficients and intercepts from the Scikit-Learn
-pipeline by taking their mean across CV splits for each class vs. rest
-problem to check if they are comparable to the coefficients and intercepts
-from the Nilearn decoder.
-
-.. GENERATED FROM PYTHON SOURCE LINES 368-415
-
-.. code-block:: Python
-
-
-    from nilearn.plotting import plot_img_comparison, plot_stat_map, show
-
-    increment = len(np.unique(run_cv))
-
-    av_sklearn_coef = np.vstack(
-        [
-            np.mean(coefs_sklearn[i : i + increment], axis=0)
-            for i in range(0, len(coefs_sklearn), increment)
-        ]
-    )
-    av_sklearn_intercept = np.squeeze(
-        np.vstack(
-            [
-                np.mean(intercepts_sklearn[i : i + increment], axis=0)
-                for i in range(0, len(intercepts_sklearn), increment)
-            ]
-        )
-    )
-
-    fig, (ax_nilearn, ax_sklearn) = plt.subplots(1, 2, figsize=(12, 5))
-    plot_stat_map(
-        decoder.coef_img_["bottle"],
-        axes=ax_nilearn,
-        display_mode="z",
-        cut_coords=[-9],
-        title="Nilearn",
-    )
-
-    plot_stat_map(
-        masker.inverse_transform(av_sklearn_coef[0]),
-        axes=ax_sklearn,
-        display_mode="z",
-        cut_coords=[-9],
-        title="Scikit-Learn",
-    )
-    show()
-
-    plot_img_comparison(
-        decoder.coef_img_["bottle"],
-        masker.inverse_transform(av_sklearn_coef[0]),
-        decoder.masker_,
-        ref_label="Nilearn",
-        src_label="Scikit-Learn",
-    )
-    show()
-
-
-
-
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image-sg:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_understand_decoder_002.png
-         :alt: plot haxby understand decoder
-         :srcset: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_understand_decoder_002.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_understand_decoder_003.png
-         :alt: Pearson's R: 1.00, Histogram of imgs values
-         :srcset: /auto_examples/02_decoding/images/sphx_glr_plot_haxby_understand_decoder_003.png
-         :class: sphx-glr-multi-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_haxby_understand_decoder.py:406: UserWarning:
-
-    Standardization of 3D signal has been requested but would lead to zero values. Skipping.
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 416-422
-
-.. note::
-  The coefficients and intercepts from the Scikit-Learn pipeline and the
-  Nilearn decoder are not identical. We're unsure about the exact reason
-  for this but the differences seem to depend on OS -- they are bigger on
-  Linux than on Mac. However they are not big enough to cause a difference
-  in the predicted labels on the test set.
-
-.. GENERATED FROM PYTHON SOURCE LINES 424-432
-
-Compare the predicted labels on the left-out test set
------------------------------------------------------
-
-Finally, the decoder object also uses these aggregated coefficients and
-intercepts to predict the labels on new data via its ``predict``
-method. So if we also compare the predicted labels from the decoder and
-the Scikit-Learn pipeline on the left-out test set, we should see that they
-are also identical.
-
-.. GENERATED FROM PYTHON SOURCE LINES 432-452
-
-.. code-block:: Python
-
-
-    from sklearn.utils.extmath import safe_sparse_dot
-
-    # select the same voxels in the test data as selected in the training data
-    X_test = feature_selector.transform(X_test)
-
-    pred_nilearn = decoder.predict(X_test)
-    decision_function_sklearn = (
-        safe_sparse_dot(X_test, av_sklearn_coef.T, dense_output=True)
-        + av_sklearn_intercept
-    )
-    indices = decision_function_sklearn.argmax(axis=1)
-    pred_sklearn = decoder.classes_[indices]
-
-
-    print(
-        "Predicted labels are identical:",
-        (pred_nilearn == pred_sklearn).all(),
-    )
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Predicted labels are identical: True
-
-
-
-
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (4 minutes 13.931 seconds)
+   **Total running time of the script:** (5 minutes 20.018 seconds)
 
-**Estimated memory usage:**  1449 MB
+**Estimated memory usage:**  1218 MB
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_haxby_understand_decoder.py:
@@ -720,7 +654,7 @@ are also identical.
     .. container:: binder-badge
 
       .. image:: images/binder_badge_logo.svg
-        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.14.0rc0?urlpath=lab/tree/notebooks/auto_examples/02_decoding/plot_haxby_understand_decoder.ipynb
+        :target: https://mybinder.org/v2/gh/nilearn/nilearn/0.13.1?urlpath=lab/tree/notebooks/auto_examples/02_decoding/plot_haxby_understand_decoder.ipynb
         :alt: Launch binder
         :width: 150 px
 

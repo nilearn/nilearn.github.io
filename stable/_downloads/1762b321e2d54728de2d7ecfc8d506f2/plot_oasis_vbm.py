@@ -45,6 +45,8 @@ much clearer view of the important regions.
     see the :ref:`dataset description <oasis_maps>`.
 
 ____
+
+.. include:: ../../../examples/masker_note.rst
 """
 
 # %%
@@ -120,6 +122,7 @@ decoder = DecoderRegressor(
     scoring="neg_mean_absolute_error",
     screening_percentile=1,
     n_jobs=2,
+    standardize="zscore_sample",
     verbose=1,
 )
 # Fit and predict with the decoder

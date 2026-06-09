@@ -16,6 +16,8 @@ from a permutation test combined
 with a max-type procedure (:footcite:t:`Anderson2001`).
 Bonferroni correction is a bit conservative, as revealed by the presence of
 a few false negative.
+
+.. include:: ../../../examples/masker_note.rst
 """
 
 # %%

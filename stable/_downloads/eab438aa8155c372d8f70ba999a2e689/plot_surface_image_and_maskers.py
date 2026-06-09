@@ -45,7 +45,7 @@ from nilearn.plotting import plot_matrix, plot_surf, show
 surf_img_nki = load_nki()[0]
 print(f"NKI image: {surf_img_nki}")
 
-masker = SurfaceMasker(verbose=1, smoothing_fwhm=3)
+masker = SurfaceMasker(verbose=1)
 masked_data = masker.fit_transform(surf_img_nki)
 print(f"Masked data shape: {masked_data.shape}")
 
@@ -146,7 +146,9 @@ print(f"Masked data shape: {masked_data.shape}")
 # %%
 # Plot connectivity matrix
 # ------------------------
-connectome_measure = ConnectivityMeasure(kind="correlation")
+connectome_measure = ConnectivityMeasure(
+    kind="correlation", standardize="zscore_sample"
+)
 connectome = connectome_measure.fit([masked_data])
 
 vmax = np.absolute(connectome.mean_).max()

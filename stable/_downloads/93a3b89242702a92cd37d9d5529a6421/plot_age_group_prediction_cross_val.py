@@ -11,6 +11,8 @@ discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations:
 see :footcite:t:`Dadi2019` for a careful study.
 
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 try:
@@ -43,6 +45,7 @@ masker = NiftiMapsMasker(
     high_pass=0.01,
     memory="nilearn_cache",
     memory_level=1,
+    standardize="zscore_sample",
     standardize_confounds=True,
     verbose=1,
 )
@@ -78,15 +81,12 @@ pipe = Pipeline(
             "connectivity",
             ConnectivityMeasure(
                 vectorize=True,
+                standardize="zscore_sample",
             ),
         ),
         (
             "classifier",
-            GridSearchCV(
-                LinearSVC(dual=True, random_state=0),
-                {"C": [0.1, 1.0, 10.0]},
-                cv=5,
-            ),
+            GridSearchCV(LinearSVC(dual=True), {"C": [0.1, 1.0, 10.0]}, cv=5),
         ),
     ]
 )

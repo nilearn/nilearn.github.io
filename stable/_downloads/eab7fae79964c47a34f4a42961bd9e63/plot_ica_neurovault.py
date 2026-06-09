@@ -9,6 +9,8 @@ and compute :term:`ICA` components across all the maps.
 See :func:`~nilearn.datasets.fetch_neurovault`
 documentation for more details.
 
+.. include:: ../../../examples/masker_note.rst
+
 ..  Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
     https://github.com/NeuroVault/neurovault_analysis
 
