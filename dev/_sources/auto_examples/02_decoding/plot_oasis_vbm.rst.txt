@@ -129,12 +129,17 @@ Load Oasis dataset
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-86
+.. GENERATED FROM PYTHON SOURCE LINES 84-91
 
 Preprocess data
 ---------------
+The features with too low between-subject variance are removed using
+:class:`sklearn.feature_selection.VarianceThreshold`.
+Then we convert the data back to the mask image in order to use it for
+decoding process
 
-.. GENERATED FROM PYTHON SOURCE LINES 86-102
+
+.. GENERATED FROM PYTHON SOURCE LINES 91-103
 
 .. code-block:: Python
 
@@ -143,15 +148,11 @@ Preprocess data
     )  # cache options
     gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
 
-    # The features with too low between-subject variance are removed using
-    # :class:`sklearn.feature_selection.VarianceThreshold`.
     from sklearn.feature_selection import VarianceThreshold
 
     variance_threshold = VarianceThreshold(threshold=0.01)
     variance_threshold.fit_transform(gm_maps_masked)
 
-    # Then we convert the data back to the mask image in order to use it for
-    # decoding process
     mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 
 
@@ -323,14 +324,14 @@ Preprocess data
       '/home/runner/nilearn_data/oasis1/OAS1_0121_MR1/mwrc1OAS1_0121_MR1_mpr_anon_fslswapdim_bet.nii.gz',
       '/home/runner/nilearn_data/oasis1/OAS1_0070_MR1/mwrc1OAS1_0070_MR1_mpr_anon_fslswapdim_bet.nii.gz',
       '/home/runner/nilearn_data/oasis1/OAS1_0003_MR1/mwrc1OAS1_0003_MR1_mpr_anon_fslswapdim..., verbose=0)
-    __________________________________________compute_background_mask - 1.3s, 0.0min
+    __________________________________________compute_background_mask - 1.5s, 0.0min
     \[NiftiMasker.wrapped] Resampling mask
     ________________________________________________________________________________
     [Memory] Calling nilearn.image.resampling.resample_img...
-    resample_img(<nibabel.nifti1.Nifti1Image object at 0x7f69f5c402b0>, target_affine=None, target_shape=None, copy=False, interpolation='nearest')
+    resample_img(<nibabel.nifti1.Nifti1Image object at 0x7f5c0e200250>, target_affine=None, target_shape=None, copy=False, interpolation='nearest')
     _____________________________________________________resample_img - 0.0s, 0.0min
     \[NiftiMasker.wrapped] Finished fit
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_oasis_vbm.py:89: FutureWarning:
+    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_oasis_vbm.py:94: FutureWarning:
 
     boolean values for 'standardize' will be deprecated in nilearn 0.15.0.
     Use 'zscore_sample' instead of 'True' or use 'None' instead of 'False'.
@@ -344,7 +345,7 @@ Preprocess data
       '/home/runner/nilearn_data/oasis1/OAS1_0121_MR1/mwrc1OAS1_0121_MR1_mpr_anon_fslswapdim_bet.nii.gz',
       '/home/runner/nilearn_data/oasis1/OAS1_0070_MR1/mwrc1OAS1_0070_MR1_mpr_anon_fslswapdim_bet.nii.gz',
       '/home/runner/nilearn_data/oasis1/OAS1_0003_MR1/mwrc1OAS1_0003_MR1_mpr_anon_fslswapdim..., 
-    <nibabel.nifti1.Nifti1Image object at 0x7f69f5c402b0>, { 'clean_args': None,
+    <nibabel.nifti1.Nifti1Image object at 0x7f5c0e200250>, { 'clean_args': None,
       'clean_kwargs': {},
       'cmap': 'gray',
       'detrend': False,
@@ -359,23 +360,27 @@ Preprocess data
       'standardize_confounds': True,
       't_r': None,
       'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, dtype=None, sklearn_output_config=None)
+      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
     \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f69f5c43160>
+    0x7f5c0bc8b460>
     \[NiftiMasker.wrapped] Smoothing images
     \[NiftiMasker.wrapped] Extracting region signals
     \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 5.2s, 0.1min
+    __________________________________________________filter_and_mask - 5.4s, 0.1min
+    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_oasis_vbm.py:101: UserWarning:
+
+    Casting boolean input to <class 'numpy.int32'>
+
     \[NiftiMasker.inverse_transform] Computing image from signals
     ________________________________________________________________________________
     [Memory] Calling nilearn.masking.unmask...
-    unmask(array([False, ..., False]), <nibabel.nifti1.Nifti1Image object at 0x7f69f5c402b0>)
+    unmask(array([0, ..., 0], dtype=int32), <nibabel.nifti1.Nifti1Image object at 0x7f5c0e200250>)
     ___________________________________________________________unmask - 0.0s, 0.0min
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-114
+.. GENERATED FROM PYTHON SOURCE LINES 104-115
 
 Prediction pipeline with :term:`ANOVA` and SVR using
 :class:`~nilearn.decoding.DecoderRegressor` Object
@@ -389,7 +394,7 @@ To save time (because these are anat images with many voxels), we include
 only the 1-percent voxels most correlated with the age variable to fit. We
 also want to set mask hyperparameter to be the mask we just obtained above.
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-140
+.. GENERATED FROM PYTHON SOURCE LINES 115-141
 
 .. code-block:: Python
 
@@ -434,7 +439,7 @@ also want to set mask hyperparameter to be the mask we just obtained above.
     \[DecoderRegressor.fit] The decoding model will be trained on 1520 features.
     \[DecoderRegressor.fit] The decoding model will be trained on 1520 features. 
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done  10 out of  10 | elapsed:    2.6s finished
+    [Parallel(n_jobs=2)]: Done  10 out of  10 | elapsed:    2.3s finished
     === DECODER ===
     explained variance for the cross-validation: 11.774939
 
@@ -442,12 +447,12 @@ also want to set mask hyperparameter to be the mask we just obtained above.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 141-143
+.. GENERATED FROM PYTHON SOURCE LINES 142-144
 
 Visualization
 -------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-159
+.. GENERATED FROM PYTHON SOURCE LINES 144-160
 
 .. code-block:: Python
 
@@ -479,12 +484,12 @@ Visualization
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-162
+.. GENERATED FROM PYTHON SOURCE LINES 161-163
 
 Visualize the quality of predictions
 ------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 162-179
+.. GENERATED FROM PYTHON SOURCE LINES 163-180
 
 .. code-block:: Python
 
@@ -531,16 +536,16 @@ Visualize the quality of predictions
  .. code-block:: none
 
 
-    <matplotlib.legend.Legend object at 0x7f69f2196f20>
+    <matplotlib.legend.Legend object at 0x7f5c0b6347c0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 180-182
+.. GENERATED FROM PYTHON SOURCE LINES 181-183
 
 Inference with massively univariate model
 -----------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-229
+.. GENERATED FROM PYTHON SOURCE LINES 183-230
 
 .. code-block:: Python
 
@@ -859,23 +864,23 @@ Inference with massively univariate model
     \[NiftiMasker.wrapped] Computing mask
     \[NiftiMasker.wrapped] Resampling mask
     \[NiftiMasker.wrapped] Finished fit
-    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_oasis_vbm.py:184: FutureWarning:
+    /home/runner/work/nilearn/nilearn/examples/02_decoding/plot_oasis_vbm.py:185: FutureWarning:
 
     boolean values for 'standardize' will be deprecated in nilearn 0.15.0.
     Use 'zscore_sample' instead of 'True' or use 'None' instead of 'False'.
 
     \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f69c8ec5a50>
+    0x7f5bc0b3be80>
     \[NiftiMasker.wrapped] Extracting region signals
     \[NiftiMasker.wrapped] Cleaning extracted signals
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   37.6s remaining:    0.0s
-    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   37.6s finished
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   31.5s remaining:    0.0s
+    [Parallel(n_jobs=2)]: Done   2 out of   2 | elapsed:   31.5s finished
     \[NiftiMasker.inverse_transform] Computing image from signals
     ________________________________________________________________________________
     [Memory] Calling nilearn.masking.unmask...
-    unmask(array([[0., ..., 0.]]), <nibabel.nifti1.Nifti1Image object at 0x7f69f5c402b0>)
-    ___________________________________________________________unmask - 0.0s, 0.0min
+    unmask(array([[0., ..., 0.]]), <nibabel.nifti1.Nifti1Image object at 0x7f5c0e200250>)
+    ___________________________________________________________unmask - 0.1s, 0.0min
 
 
 
@@ -883,9 +888,9 @@ Inference with massively univariate model
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 15.597 seconds)
+   **Total running time of the script:** (1 minutes 17.698 seconds)
 
-**Estimated memory usage:**  5266 MB
+**Estimated memory usage:**  6644 MB
 
 
 .. _sphx_glr_download_auto_examples_02_decoding_plot_oasis_vbm.py:
