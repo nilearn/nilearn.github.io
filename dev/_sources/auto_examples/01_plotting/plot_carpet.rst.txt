@@ -25,9 +25,12 @@ A common quality control step for functional MRI data is to visualize the data
 over time in a carpet plot (also known as a Power plot or a grayplot).
 
 The :func:`~nilearn.plotting.plot_carpet()` function generates a carpet plot
-from a 4D functional image.
+from a 4D functional image,
+where each row in the plot is the time-series for a given voxel.
 
-.. GENERATED FROM PYTHON SOURCE LINES 13-19
+This figure was originally developed in :footcite:t:`Power2017`.
+
+.. GENERATED FROM PYTHON SOURCE LINES 16-22
 
 Fetching data from ADHD dataset
 -------------------------------
@@ -36,12 +39,11 @@ For more information
 see the :ref:`dataset description <adhd_dataset>`.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 19-29
+.. GENERATED FROM PYTHON SOURCE LINES 22-31
 
 .. code-block:: Python
 
     from nilearn.datasets import fetch_adhd
-    from nilearn.plotting import plot_carpet
 
     adhd_dataset = fetch_adhd(n_subjects=1)
 
@@ -64,18 +66,19 @@ see the :ref:`dataset description <adhd_dataset>`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 30-32
+.. GENERATED FROM PYTHON SOURCE LINES 32-36
 
 Deriving a mask
 ---------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 32-37
+Build an EPI-based mask because we have no anatomical data
+
+.. GENERATED FROM PYTHON SOURCE LINES 36-40
 
 .. code-block:: Python
 
     from nilearn import masking
 
-    # Build an EPI-based mask because we have no anatomical data
     mask_img = masking.compute_epi_mask(adhd_dataset.func[0])
 
 
@@ -85,25 +88,27 @@ Deriving a mask
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-40
+.. GENERATED FROM PYTHON SOURCE LINES 41-43
 
 Visualizing global patterns over time
 -------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-51
+.. GENERATED FROM PYTHON SOURCE LINES 43-56
 
 .. code-block:: Python
 
     import matplotlib.pyplot as plt
 
-    display = plot_carpet(
+    from nilearn.plotting import plot_carpet, show
+
+    plot_carpet(
         adhd_dataset.func[0],
         mask_img,
         t_r=adhd_dataset.t_r,
         title="global patterns over time",
     )
 
-    display.show()
+    show()
 
 
 
@@ -117,36 +122,78 @@ Visualizing global patterns over time
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-56
+.. GENERATED FROM PYTHON SOURCE LINES 57-66
 
 Deriving a label-based mask
 ---------------------------
-Create a gray matter/white matter/cerebrospinal fluid mask from
-ICBM152 tissue probability maps.
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-73
+Carpet plots can also be organized,
+by sorting voxels in different regions of interest.
+To demonstrate this,
+let's create and visualize
+a gray matter/white matter/cerebrospinal fluid mask
+from ICBM152 tissue probability maps.
+
+.. GENERATED FROM PYTHON SOURCE LINES 66-115
 
 .. code-block:: Python
 
     import numpy as np
+    from matplotlib import colors
 
     from nilearn import image
     from nilearn.datasets import fetch_icbm152_2009
+    from nilearn.plotting import plot_roi
 
     atlas = fetch_icbm152_2009()
-    atlas_img = image.concat_imgs((atlas["gm"], atlas["wm"], atlas["csf"]))
-    map_labels = {"Gray Matter": 1, "White Matter": 2, "Cerebrospinal Fluid": 3}
+
+    atlas_img = image.concat_imgs(
+        (
+            atlas["gm"],
+            atlas["wm"],
+            atlas["csf"],
+        )
+    )
+
+    map_labels = {
+        "Gray Matter": 1,
+        "White Matter": 2,
+        "Cerebrospinal Fluid": 3,
+    }
 
     atlas_data = atlas_img.get_fdata()
+
     discrete_version = np.argmax(atlas_data, axis=3) + 1
     discrete_version[np.max(atlas_data, axis=3) == 0] = 0
+
     discrete_atlas_img = image.new_img_like(
         atlas_img, discrete_version.astype(np.float32)
     )
 
+    cmap = colors.LinearSegmentedColormap.from_list(
+        "3_colors",
+        [
+            "#1b9e77",
+            "#d95f02",
+            "#7570b3",
+        ],
+        N=4,
+    )
+    plot_roi(
+        discrete_atlas_img,
+        cmap=cmap,
+        title="gray matter / white matter / cerebrospinal fluid masks",
+    )
+
+    show()
 
 
 
+
+.. image-sg:: /auto_examples/01_plotting/images/sphx_glr_plot_carpet_002.png
+   :alt: plot carpet
+   :srcset: /auto_examples/01_plotting/images/sphx_glr_plot_carpet_002.png
+   :class: sphx-glr-single-img
 
 
 .. rst-class:: sphx-glr-script-out
@@ -159,16 +206,16 @@ ICBM152 tissue probability maps.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-76
+.. GENERATED FROM PYTHON SOURCE LINES 116-118
 
 Visualizing global patterns, separated by tissue type
 -----------------------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 76-89
+.. GENERATED FROM PYTHON SOURCE LINES 118-132
 
 .. code-block:: Python
 
-    fig, ax = plt.subplots(figsize=(10, 10))
+    fig, ax = plt.subplots(figsize=(12, 10))
 
     display = plot_carpet(
         adhd_dataset.func[0],
@@ -177,16 +224,17 @@ Visualizing global patterns, separated by tissue type
         mask_labels=map_labels,
         axes=ax,
         title="global patterns over time separated by tissue type",
+        cmap_labels=cmap,
     )
 
-    plt.show()
+    show()
 
 
 
 
-.. image-sg:: /auto_examples/01_plotting/images/sphx_glr_plot_carpet_002.png
+.. image-sg:: /auto_examples/01_plotting/images/sphx_glr_plot_carpet_003.png
    :alt: global patterns over time separated by tissue type
-   :srcset: /auto_examples/01_plotting/images/sphx_glr_plot_carpet_002.png
+   :srcset: /auto_examples/01_plotting/images/sphx_glr_plot_carpet_003.png
    :class: sphx-glr-single-img
 
 
@@ -199,12 +247,20 @@ Visualizing global patterns, separated by tissue type
 
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 133-138
+
+References
+----------
+
+.. footbibliography::
+
+
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 21.899 seconds)
+   **Total running time of the script:** (0 minutes 21.623 seconds)
 
-**Estimated memory usage:**  1151 MB
+**Estimated memory usage:**  1113 MB
 
 
 .. _sphx_glr_download_auto_examples_01_plotting_plot_carpet.py:

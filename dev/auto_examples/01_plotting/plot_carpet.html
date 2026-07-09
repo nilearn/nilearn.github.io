@@ -187,7 +187,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.14.1.dev28+ge1413a665) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.0)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.14.1.dev38+gdc26b6d6b) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.0)</span></a></p> 
   </aside>
 </div>
 
@@ -844,13 +844,14 @@ to download the full example code. or to run this example in your browser via Bi
 <p>A common quality control step for functional MRI data is to visualize the data
 over time in a carpet plot (also known as a Power plot or a grayplot).</p>
 <p>The <a class="reference internal" href="../../modules/generated/nilearn.plotting.plot_carpet.html#nilearn.plotting.plot_carpet" title="nilearn.plotting.plot_carpet"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_carpet</span></code></a> function generates a carpet plot
-from a 4D functional image.</p>
+from a 4D functional image,
+where each row in the plot is the time-series for a given voxel.</p>
+<p>This figure was originally developed in Power<a class="footnote-reference brackets" href="#footcite-power2017" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p>
 <section id="fetching-data-from-adhd-dataset">
 <h2>Fetching data from ADHD dataset<a class="headerlink" href="#fetching-data-from-adhd-dataset" title="Link to this heading">¶</a></h2>
 <p>For more information
 see the <a class="reference internal" href="../../modules/description/adhd.html#adhd-dataset"><span class="std std-ref">dataset description</span></a>.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.datasets</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.datasets.fetch_adhd.html#nilearn.datasets.fetch_adhd" title="nilearn.datasets.fetch_adhd" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">fetch_adhd</span></a>
-<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_carpet.html#nilearn.plotting.plot_carpet" title="nilearn.plotting.plot_carpet" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_carpet</span></a>
 
 <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">adhd_dataset</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_adhd.html#nilearn.datasets.fetch_adhd" title="nilearn.datasets.fetch_adhd" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">fetch_adhd</span></a><span class="p">(</span><span class="n">n_subjects</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
@@ -867,9 +868,9 @@ First subject functional nifti image (4D) is at: /home/runner/nilearn_data/adhd/
 </section>
 <section id="deriving-a-mask">
 <h2>Deriving a mask<a class="headerlink" href="#deriving-a-mask" title="Link to this heading">¶</a></h2>
+<p>Build an EPI-based mask because we have no anatomical data</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn</span><span class="w"> </span><span class="kn">import</span> <span class="n">masking</span>
 
-<span class="c1"># Build an EPI-based mask because we have no anatomical data</span>
 <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.masking.compute_epi_mask.html#nilearn.masking.compute_epi_mask" title="nilearn.masking.compute_epi_mask" class="sphx-glr-backref-module-nilearn-masking sphx-glr-backref-type-py-function"><span class="n">masking</span><span class="o">.</span><span class="n">compute_epi_mask</span></a><span class="p">(</span><a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">adhd_dataset</span><span class="o">.</span><span class="n">func</span></a><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -878,46 +879,85 @@ First subject functional nifti image (4D) is at: /home/runner/nilearn_data/adhd/
 <h2>Visualizing global patterns over time<a class="headerlink" href="#visualizing-global-patterns-over-time" title="Link to this heading">¶</a></h2>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">display</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_carpet.html#nilearn.plotting.plot_carpet" title="nilearn.plotting.plot_carpet" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_carpet</span></a><span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_carpet.html#nilearn.plotting.plot_carpet" title="nilearn.plotting.plot_carpet" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_carpet</span></a><span class="p">,</span> <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a>
+
+<a href="../../modules/generated/nilearn.plotting.plot_carpet.html#nilearn.plotting.plot_carpet" title="nilearn.plotting.plot_carpet" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_carpet</span></a><span class="p">(</span>
     <a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">adhd_dataset</span><span class="o">.</span><span class="n">func</span></a><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask_img</span></a><span class="p">,</span>
     <span class="n">t_r</span><span class="o">=</span><a href="https://docs.python.org/3.10/library/functions.html#float" title="builtins.float" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">adhd_dataset</span><span class="o">.</span><span class="n">t_r</span></a><span class="p">,</span>
     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;global patterns over time&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.show.html#matplotlib.figure.Figure.show" title="matplotlib.figure.Figure.show" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-method"><span class="n">display</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
 <img src="../../_images/sphx_glr_plot_carpet_001.png" srcset="../../_images/sphx_glr_plot_carpet_001.png" alt="global patterns over time" class = "sphx-glr-single-img"/></section>
 <section id="deriving-a-label-based-mask">
 <h2>Deriving a label-based mask<a class="headerlink" href="#deriving-a-label-based-mask" title="Link to this heading">¶</a></h2>
-<p>Create a gray matter/white matter/cerebrospinal fluid mask from
-ICBM152 tissue probability maps.</p>
+<p>Carpet plots can also be organized,
+by sorting voxels in different regions of interest.
+To demonstrate this,
+let’s create and visualize
+a gray matter/white matter/cerebrospinal fluid mask
+from ICBM152 tissue probability maps.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">colors</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">nilearn</span><span class="w"> </span><span class="kn">import</span> <span class="n">image</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.datasets</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.datasets.fetch_icbm152_2009.html#nilearn.datasets.fetch_icbm152_2009" title="nilearn.datasets.fetch_icbm152_2009" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">fetch_icbm152_2009</span></a>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi" title="nilearn.plotting.plot_roi" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_roi</span></a>
 
 <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_icbm152_2009.html#nilearn.datasets.fetch_icbm152_2009" title="nilearn.datasets.fetch_icbm152_2009" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">fetch_icbm152_2009</span></a><span class="p">()</span>
-<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.concat_imgs.html#nilearn.image.concat_imgs" title="nilearn.image.concat_imgs" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">image</span><span class="o">.</span><span class="n">concat_imgs</span></a><span class="p">((</span><a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas</span></a><span class="p">[</span><span class="s2">&quot;gm&quot;</span><span class="p">],</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas</span></a><span class="p">[</span><span class="s2">&quot;wm&quot;</span><span class="p">],</span> <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas</span></a><span class="p">[</span><span class="s2">&quot;csf&quot;</span><span class="p">]))</span>
-<a href="https://docs.python.org/3.10/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">map_labels</span></a> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Gray Matter&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;White Matter&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;Cerebrospinal Fluid&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.concat_imgs.html#nilearn.image.concat_imgs" title="nilearn.image.concat_imgs" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">image</span><span class="o">.</span><span class="n">concat_imgs</span></a><span class="p">(</span>
+    <span class="p">(</span>
+        <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas</span></a><span class="p">[</span><span class="s2">&quot;gm&quot;</span><span class="p">],</span>
+        <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas</span></a><span class="p">[</span><span class="s2">&quot;wm&quot;</span><span class="p">],</span>
+        <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas</span></a><span class="p">[</span><span class="s2">&quot;csf&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+<a href="https://docs.python.org/3.10/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">map_labels</span></a> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Gray Matter&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;White Matter&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;Cerebrospinal Fluid&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+<span class="p">}</span>
 
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas_data</span></a> <span class="o">=</span> <a href="https://nipy.org/nibabel/reference/nibabel.dataobj_images.html#nibabel.dataobj_images.DataobjImage.get_fdata" title="nibabel.dataobj_images.DataobjImage.get_fdata" class="sphx-glr-backref-module-nibabel-dataobj_images sphx-glr-backref-type-py-method"><span class="n">atlas_img</span><span class="o">.</span><span class="n">get_fdata</span></a><span class="p">()</span>
+
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">discrete_version</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.argmax.html#numpy.argmax" title="numpy.argmax" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">argmax</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas_data</span></a><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">discrete_version</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.max.html#numpy.max" title="numpy.max" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">max</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas_data</span></a><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
 <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">discrete_atlas_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">image</span><span class="o">.</span><span class="n">new_img_like</span></a><span class="p">(</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">atlas_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">discrete_version</span></a><span class="o">.</span><span class="n">astype</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.float32" title="numpy.float32" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">float32</span></a><span class="p">)</span>
 <span class="p">)</span>
+
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.LinearSegmentedColormap.html#matplotlib.colors.LinearSegmentedColormap" title="matplotlib.colors.LinearSegmentedColormap" class="sphx-glr-backref-module-matplotlib-colors sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cmap</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.LinearSegmentedColormap.html#matplotlib.colors.LinearSegmentedColormap.from_list" title="matplotlib.colors.LinearSegmentedColormap.from_list" class="sphx-glr-backref-module-matplotlib-colors-LinearSegmentedColormap sphx-glr-backref-type-py-method"><span class="n">colors</span><span class="o">.</span><span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span></a><span class="p">(</span>
+    <span class="s2">&quot;3_colors&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;#1b9e77&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;#d95f02&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;#7570b3&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">N</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="p">)</span>
+<a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi" title="nilearn.plotting.plot_roi" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_roi</span></a><span class="p">(</span>
+    <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">discrete_atlas_img</span></a><span class="p">,</span>
+    <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.LinearSegmentedColormap.html#matplotlib.colors.LinearSegmentedColormap" title="matplotlib.colors.LinearSegmentedColormap" class="sphx-glr-backref-module-matplotlib-colors sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cmap</span></a><span class="o">=</span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.LinearSegmentedColormap.html#matplotlib.colors.LinearSegmentedColormap" title="matplotlib.colors.LinearSegmentedColormap" class="sphx-glr-backref-module-matplotlib-colors sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cmap</span></a><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;gray matter / white matter / cerebrospinal fluid masks&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[fetch_icbm152_2009] Dataset directory found:
+<img src="../../_images/sphx_glr_plot_carpet_002.png" srcset="../../_images/sphx_glr_plot_carpet_002.png" alt="plot carpet" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[fetch_icbm152_2009] Dataset directory found:
 /home/runner/nilearn_data/icbm152_2009
 </pre></div>
 </div>
 </section>
 <section id="visualizing-global-patterns-separated-by-tissue-type">
 <h2>Visualizing global patterns, separated by tissue type<a class="headerlink" href="#visualizing-global-patterns-separated-by-tissue-type" title="Link to this heading">¶</a></h2>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">,</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fig</span></a><span class="p">,</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a> <span class="o">=</span> <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots" title="matplotlib.pyplot.subplots" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
 
 <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="matplotlib.figure.Figure" class="sphx-glr-backref-module-matplotlib-figure sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">display</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.plotting.plot_carpet.html#nilearn.plotting.plot_carpet" title="nilearn.plotting.plot_carpet" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_carpet</span></a><span class="p">(</span>
     <a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">adhd_dataset</span><span class="o">.</span><span class="n">func</span></a><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
@@ -926,16 +966,28 @@ ICBM152 tissue probability maps.</p>
     <span class="n">mask_labels</span><span class="o">=</span><a href="https://docs.python.org/3.10/library/stdtypes.html#dict" title="builtins.dict" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">map_labels</span></a><span class="p">,</span>
     <span class="n">axes</span><span class="o">=</span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.html#matplotlib.axes.Axes" title="matplotlib.axes.Axes" class="sphx-glr-backref-module-matplotlib-axes sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ax</span></a><span class="p">,</span>
     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;global patterns over time separated by tissue type&quot;</span><span class="p">,</span>
+    <span class="n">cmap_labels</span><span class="o">=</span><a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.LinearSegmentedColormap.html#matplotlib.colors.LinearSegmentedColormap" title="matplotlib.colors.LinearSegmentedColormap" class="sphx-glr-backref-module-matplotlib-colors sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cmap</span></a><span class="p">,</span>
 <span class="p">)</span>
 
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.show.html#matplotlib.pyplot.show" title="matplotlib.pyplot.show" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_plot_carpet_002.png" srcset="../../_images/sphx_glr_plot_carpet_002.png" alt="global patterns over time separated by tissue type" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[plot_carpet] Coercing atlas_values to int
+<img src="../../_images/sphx_glr_plot_carpet_003.png" srcset="../../_images/sphx_glr_plot_carpet_003.png" alt="global patterns over time separated by tissue type" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[plot_carpet] Coercing atlas_values to int
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 21.899 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  1151 MB</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
+<div class="docutils container" id="id2">
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="footcite-power2017" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>Jonathan D. Power. A simple but useful way to assess fmri scan qualities. <em>NeuroImage</em>, 154:150–158, 2017. Cleaning up the fMRI time series: Mitigating noise with advanced acquisition and correction strategies. <a class="reference external" href="https://doi.org/10.1016/j.neuroimage.2016.08.009">doi:10.1016/j.neuroimage.2016.08.009</a>.</p>
+</aside>
+</aside>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 21.623 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  1113 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-01-plotting-plot-carpet-py">
 <div class="binder-badge docutils container">
 <a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/01_plotting/plot_carpet.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo1.svg" style="width: 150px;" /></a>
@@ -1023,6 +1075,7 @@ ICBM152 tissue probability maps.</p>
 <li><a class="reference internal" href="#visualizing-global-patterns-over-time">Visualizing global patterns over time</a></li>
 <li><a class="reference internal" href="#deriving-a-label-based-mask">Deriving a label-based mask</a></li>
 <li><a class="reference internal" href="#visualizing-global-patterns-separated-by-tissue-type">Visualizing global patterns, separated by tissue type</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
 </ul>
