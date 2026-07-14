@@ -54,7 +54,7 @@ For more information,
 see the :ref:`dataset description <ds000030>`.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 37-66
+.. GENERATED FROM PYTHON SOURCE LINES 37-75
 
 .. code-block:: Python
 
@@ -66,23 +66,32 @@ see the :ref:`dataset description <ds000030>`.
 
     _, urls = fetch_ds000030_urls()
 
+    # Only keep the files for the ``stopsignal`` task that are actually
+    # needed for this example: the raw functional data and events,
+    # the relevant fMRIPrep derivatives, and the FSL ``stopsignal.feat``
+    # derivatives used later on for comparison.
+    # Restricting the download with a ``inclusion_filters`` this way,
+    # rather than trying to list every folder to exclude,
+    # avoids pulling in the (much larger) derivatives
+    # of the other tasks acquired for this subject.
+    inclusion_patterns = ["*sub-*stopsignal*"]
+    # Some fMRIPrep and FSL derivatives are are not used in that example.
     exclusion_patterns = [
-        "*group*",
-        "*phenotype*",
-        "*mriqc*",
-        "*parameter_plots*",
-        "*physio_plots*",
-        "*space-fsaverage*",
-        "*space-T1w*",
-        "*dwi*",
-        "*beh*",
-        "*task-bart*",
-        "*task-rest*",
-        "*task-scap*",
-        "*task-task*",
+        "*_space-T1w*",
+        "*_space-fsaverage*",
+        "*cope*gz",
+        "*jpg",
+        "*png",
+        "*txt",
+        "*tiff",
+        "*gif",
+        "*res4D*",
     ]
     urls = select_from_index(
-        urls, exclusion_filters=exclusion_patterns, n_subjects=1
+        urls,
+        inclusion_filters=inclusion_patterns,
+        exclusion_filters=exclusion_patterns,
+        n_subjects=1,
     )
 
     data_dir, _ = fetch_openneuro_dataset(urls=urls)
@@ -103,7 +112,7 @@ see the :ref:`dataset description <ds000030>`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-79
+.. GENERATED FROM PYTHON SOURCE LINES 76-88
 
 Obtain FirstLevelModel objects automatically and fit arguments
 --------------------------------------------------------------
@@ -118,7 +127,7 @@ the task_label and the space_label as specified in the file names.
 We also have to provide the folder with the desired derivatives, that in this
 case were produced by the :term:`fMRIPrep` :term:`BIDS` app.
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-100
+.. GENERATED FROM PYTHON SOURCE LINES 88-109
 
 .. code-block:: Python
 
@@ -151,13 +160,13 @@ case were produced by the :term:`fMRIPrep` :term:`BIDS` app.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:89: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:98: UserWarning:
 
 
     No bold.json found in BIDS folder in:
      /home/runner/work/nilearn/nilearn/nilearn_data/ds000030/ds000030_R1.0.4/uncompressed/derivatives/fmriprep.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:89: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:98: UserWarning:
 
     'slice_time_ref' not provided and cannot be inferred from metadata.
     It will be assumed that the slice timing reference is 0.0 percent of the repetition time.
@@ -198,11 +207,11 @@ case were produced by the :term:`fMRIPrep` :term:`BIDS` app.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-102
+.. GENERATED FROM PYTHON SOURCE LINES 110-111
 
 Access the model and model arguments of the subject and process events.
 
-.. GENERATED FROM PYTHON SOURCE LINES 102-128
+.. GENERATED FROM PYTHON SOURCE LINES 111-137
 
 .. code-block:: Python
 
@@ -239,13 +248,13 @@ Access the model and model arguments of the subject and process events.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-132
+.. GENERATED FROM PYTHON SOURCE LINES 138-141
 
 We identify the columns of the Go and StopSuccess conditions of the
 design matrix inferred from the FSL file, to use them later for contrast
 definition.
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-139
+.. GENERATED FROM PYTHON SOURCE LINES 141-148
 
 .. code-block:: Python
 
@@ -263,13 +272,13 @@ definition.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 140-143
+.. GENERATED FROM PYTHON SOURCE LINES 149-152
 
 First level model estimation (one subject)
 ------------------------------------------
 We fit the first level model for one subject.
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-145
+.. GENERATED FROM PYTHON SOURCE LINES 152-154
 
 .. code-block:: Python
 
@@ -283,11 +292,11 @@ We fit the first level model for one subject.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:143: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:152: UserWarning:
 
     If design matrices are supplied, [t_r] will be ignored.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:143: RuntimeWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:152: RuntimeWarning:
 
     [MultiNiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
 
@@ -712,12 +721,12 @@ We fit the first level model for one subject.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-148
+.. GENERATED FROM PYTHON SOURCE LINES 155-157
 
 Then we compute the StopSuccess - Go contrast. We can use the column names
 of the design matrix.
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-150
+.. GENERATED FROM PYTHON SOURCE LINES 157-159
 
 .. code-block:: Python
 
@@ -730,14 +739,14 @@ of the design matrix.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-155
+.. GENERATED FROM PYTHON SOURCE LINES 160-164
 
 Visualize results
 -----------------
 Let's have a look at the Nilearn estimation
 and the FSL estimation available in the dataset.
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-186
+.. GENERATED FROM PYTHON SOURCE LINES 164-195
 
 .. code-block:: Python
 
@@ -798,15 +807,15 @@ and the FSL estimation available in the dataset.
  .. code-block:: none
 
 
-    <nilearn.plotting.displays._projectors.OrthoProjector object at 0x7f07a775bb20>
+    <nilearn.plotting.displays._projectors.OrthoProjector object at 0x7f10c35688e0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 187-188
+.. GENERATED FROM PYTHON SOURCE LINES 196-197
 
 We show the agreement between the 2 estimations.
 
-.. GENERATED FROM PYTHON SOURCE LINES 188-201
+.. GENERATED FROM PYTHON SOURCE LINES 197-210
 
 .. code-block:: Python
 
@@ -847,7 +856,7 @@ We show the agreement between the 2 estimations.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 202-212
+.. GENERATED FROM PYTHON SOURCE LINES 211-221
 
 Saving model outputs to disk
 ----------------------------
@@ -860,7 +869,7 @@ This is easy to do if you have a fitted model and the list of contrasts,
 which we do here.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 212-228
+.. GENERATED FROM PYTHON SOURCE LINES 221-237
 
 .. code-block:: Python
 
@@ -888,7 +897,7 @@ which we do here.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:219: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:228: UserWarning:
 
     Contrast name "StopSuccess - Go" changed to "stopsuccessMinusGo"
 
@@ -898,7 +907,7 @@ which we do here.
     [save_glm_to_bids] Saving contrast-level statistical maps...
     [save_glm_to_bids] Saving model level statistical maps...
     [save_glm_to_bids] Generating HTML...
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:219: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_bids_features.py:228: UserWarning:
 
 
     'threshold=3.090232306167813' is not used with 'height_control='fpr''.
@@ -1319,11 +1328,11 @@ which we do here.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 229-230
+.. GENERATED FROM PYTHON SOURCE LINES 238-239
 
 View the generated files
 
-.. GENERATED FROM PYTHON SOURCE LINES 230-233
+.. GENERATED FROM PYTHON SOURCE LINES 239-242
 
 .. code-block:: Python
 
@@ -1361,7 +1370,7 @@ View the generated files
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 234-240
+.. GENERATED FROM PYTHON SOURCE LINES 243-249
 
 Simple statistical report of thresholded contrast
 -------------------------------------------------
@@ -1370,7 +1379,7 @@ We display the :term:`contrast` plot and table with cluster information.
 Here we will the image directly from the results saved to disk.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 240-264
+.. GENERATED FROM PYTHON SOURCE LINES 249-273
 
 .. code-block:: Python
 
@@ -1422,7 +1431,7 @@ Here we will the image directly from the results saved to disk.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 265-291
+.. GENERATED FROM PYTHON SOURCE LINES 274-300
 
 The saved results include a table of activated clusters.
 
@@ -1451,7 +1460,7 @@ The saved results include a table of activated clusters.
     the `atlasreader package <https://github.com/miykael/atlasreader>`_.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 291-308
+.. GENERATED FROM PYTHON SOURCE LINES 300-317
 
 .. code-block:: Python
 
@@ -1802,7 +1811,7 @@ The saved results include a table of activated clusters.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 309-320
+.. GENERATED FROM PYTHON SOURCE LINES 318-329
 
 We can get a latex table from a Pandas Dataframe
 for display and publication purposes.
@@ -1816,7 +1825,7 @@ for display and publication purposes.
        pip install jinja2
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 320-322
+.. GENERATED FROM PYTHON SOURCE LINES 329-331
 
 .. code-block:: Python
 
@@ -1873,7 +1882,7 @@ for display and publication purposes.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 323-334
+.. GENERATED FROM PYTHON SOURCE LINES 332-343
 
 You can also print the output to markdown,
 if you have the `tabulate` dependencies installed.
@@ -1890,9 +1899,9 @@ if you have the `tabulate` dependencies installed.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 33.740 seconds)
+   **Total running time of the script:** (0 minutes 26.687 seconds)
 
-**Estimated memory usage:**  944 MB
+**Estimated memory usage:**  1039 MB
 
 
 .. _sphx_glr_download_auto_examples_04_glm_first_level_plot_bids_features.py:
