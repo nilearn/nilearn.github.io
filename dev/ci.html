@@ -187,7 +187,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.14.1.dev39+g9926131f2) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.0)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.14.1.dev51+g0502e9ecc) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.0)</span></a></p> 
   </aside>
 </div>
 
@@ -930,7 +930,7 @@ and opening the the landing page of the deployed doc by clikcing on <code class=
 <h3>benchmark.yml<a class="headerlink" href="#benchmark-yml" title="Link to this heading">¶</a></h3>
 <p>Workflow file: <a class="reference external" href="https://github.com/nilearn/nilearn/blob/main/.github/workflows/benchmark.yml">benchmark.yml</a></p>
 <p>TL;DR: this workflow runs the benchmarks on the latest commit.
-It runs on PR
+It runs on PR.
 On main, it will also run on a schedule at regular interval
 or can be triggered manually via the GitHub UI.
 When run on main it will deploy the updated benchmarks to
@@ -938,28 +938,51 @@ When run on main it will deploy the updated benchmarks to
 <p>Step-wise details:</p>
 <ul class="simple">
 <li><p>First it installs <a class="reference external" href="https://asv.readthedocs.io/en/latest/index.html">asv</a>.</p></li>
-<li><p>Then it sets up the SSH key to access the
-<a class="reference external" href="https://github.com/nilearn/benchmarks">benchmarks</a> repo,
-pulls it, and copies the results dir into the current dir. We will append
-the new results to these results.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">machine</span> <span class="pre">--yes</span></code> then fetches the machine info like CPU, RAM, OS,
-etc. and saves it in <code class="docutils literal notranslate"><span class="pre">~/.asv-machine.json</span></code>, but it gives a unique name
-to the machine on every run even if the specs are the same. So we will set
-a fixed name for the machine so the legend isn’t too overcrowded.</p></li>
-<li><p>To do this, we edit the <code class="docutils literal notranslate"><span class="pre">~/.asv-machine.json</span></code> file to change the machine
-name to a fixed name <code class="docutils literal notranslate"><span class="pre">fv-az1113-357</span></code>. The name is arbitrary and has been
-chosen to match the first run. The script
-<code class="docutils literal notranslate"><span class="pre">build_tools/github/set_machine_name.py</span></code> does all this.</p></li>
-<li><p>Then we run the benchmarks (<code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">run</span></code>) such that the results are
-appended to the old results (via <code class="docutils literal notranslate"><span class="pre">--append-samples</span></code> parameter).
-<code class="docutils literal notranslate"><span class="pre">-ev</span></code> makes sure any errors are printed in detail and all the output can
-be seen in the logs.</p></li>
+<li><p>On a pull request, the checkout is pinned to the actual HEAD commit of the PR branch
+(rather than the synthetic PR merge commit),
+and the benchmarks are run for that commit as well as for the tip of the upstream <code class="docutils literal notranslate"><span class="pre">main</span></code> branch,
+so the two can be compared.
+Since the PR branch may live on a fork that is not reachable
+from the <code class="docutils literal notranslate"><span class="pre">repo</span></code> URL configured in <code class="docutils literal notranslate"><span class="pre">asv.conf.json</span></code>,
+asv is temporarily pointed at the already checked out local clone instead
+(it contains both commits, as the checkout step fetches full history).</p></li>
+<li><p>On a push to <code class="docutils literal notranslate"><span class="pre">main</span></code> (typically a merged PR), the benchmarks are run
+for the <code class="docutils literal notranslate"><span class="pre">main</span></code> HEAD and for the most recent git tag (the latest stable release),
+and this comparison <em>overwrites</em> whatever was previously published
+on the <a class="reference external" href="https://github.com/nilearn/benchmarks">benchmarks</a> repo,
+rather than being appended to the historical results used
+by the schedule/manual runs.</p></li>
+<li><p>Then it sets up the SSH key to access the <a class="reference external" href="https://github.com/nilearn/benchmarks">benchmarks</a> repo, pulls it,
+and copies the results dir into the current dir.
+We will append the new results to these results.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">machine</span> <span class="pre">--yes</span></code> then fetches the machine info like CPU, RAM, OS, etc. and saves it in <code class="docutils literal notranslate"><span class="pre">~/.asv-machine.json</span></code>,
+but it gives a unique name to the machine on every run even if the specs are the same.
+So we will set a fixed name for the machine so the legend isn’t too overcrowded.</p></li>
+<li><p>To do this, we edit the <code class="docutils literal notranslate"><span class="pre">~/.asv-machine.json</span></code> file to change the machine name to a fixed name <code class="docutils literal notranslate"><span class="pre">fv-az1113-357</span></code>.
+The name is arbitrary and has been chosen to match the first run.
+The script <code class="docutils literal notranslate"><span class="pre">build_tools/github/set_machine_name.py</span></code> does all this.</p></li>
+<li><p>Then we run the benchmarks (<code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">run</span></code>) such that the results are appended to the old results (via <code class="docutils literal notranslate"><span class="pre">--append-samples</span></code> parameter).
+<code class="docutils literal notranslate"><span class="pre">-ev</span></code> makes sure any errors are printed in detail and all the output can be seen in the logs.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">run</span></code> exits 0 and keeps going even when individual benchmarks fail,
+so we explicitly grep the log for <code class="docutils literal notranslate"><span class="pre">asv:</span> <span class="pre">benchmark</span> <span class="pre">failed</span></code>
+and fail the workflow if it is found.</p></li>
 <li><p>Then we create the HTML with all the results via <code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">publish</span></code>.</p></li>
-<li><p>We upload the results as artifacts so that we can download them later.</p></li>
-<li><p>Then we push the new results back to the
-<a class="reference external" href="https://github.com/nilearn/benchmarks">benchmarks</a>  repo. This will
-automatically deploy the new results to
-<a class="reference external" href="https://nilearn.github.io/benchmarks/">nilearn.github.io/benchmarks</a>.</p></li>
+<li><p>We upload the <code class="docutils literal notranslate"><span class="pre">html</span></code> and <code class="docutils literal notranslate"><span class="pre">results</span></code> directories as a single artifact so that we can download them later,
+e.g. to inspect the results of a PR run without waiting for them to be deployed.
+To view them after downloading and unzipping the artifact,
+the <code class="docutils literal notranslate"><span class="pre">html</span></code> directory it contains cannot simply be opened in a browser
+(it needs its data served over HTTP, not opened as local <code class="docutils literal notranslate"><span class="pre">file://</span></code> pages).
+Instead, either:</p>
+<ul>
+<li><p>run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">http.server</span></code> from inside the unzipped <code class="docutils literal notranslate"><span class="pre">html</span></code> directory,
+then open the printed URL (e.g. <a class="reference external" href="http://localhost:8000">http://localhost:8000</a>) in a browser; or</p></li>
+<li><p>if <a class="reference external" href="https://asv.readthedocs.io/en/latest/index.html">asv</a> is installed,
+run <code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">preview</span></code> from the unzipped directory that contains both <code class="docutils literal notranslate"><span class="pre">html</span></code> and <code class="docutils literal notranslate"><span class="pre">results</span></code>
+(this also works from a local <code class="docutils literal notranslate"><span class="pre">asv_benchmarks</span></code> checkout after running <code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">publish</span></code>, as described in <code class="docutils literal notranslate"><span class="pre">CONTRIBUTING.rst</span></code>).</p></li>
+</ul>
+</li>
+<li><p>Then we push the new results back to the <a class="reference external" href="https://github.com/nilearn/benchmarks">benchmarks</a> repo.
+This will automatically deploy the new results to <a class="reference external" href="https://nilearn.github.io/benchmarks/">nilearn.github.io/benchmarks</a>.</p></li>
 </ul>
 </section>
 <section id="build-docs-yml">
@@ -1017,9 +1040,14 @@ Once these datasets are cached,
 they will be used by all jobs running without requiring any download.
 This saves a lot of time and avoids potential network errors that can happen
 when downloading datasets from remote servers.</p>
-<p>Data is cached after the <code class="docutils literal notranslate"><span class="pre">get_data</span></code> job to be passed to the <code class="docutils literal notranslate"><span class="pre">build_docs</span></code> job.
-Data can be cached and restored across attempts of a run of this workflow.
-Data can be cached and restored across run of this workflow.</p>
+<p>There is a single cache for the month, shared by all runs of this workflow
+(scheduled, push and pull request alike). Only the first run of the month
+populates it; every other run only reads from it and never overwrites it.
+This keeps a single long-lived ~4GB+ cache entry instead of every run
+saving its own copy, which used to blow through the repository’s 10GB
+Actions cache quota and evict the shared cache well before it was reused.</p>
+<p>Data is passed from the <code class="docutils literal notranslate"><span class="pre">get_data</span></code> job to the <code class="docutils literal notranslate"><span class="pre">build_docs</span></code> job of the
+same run via a short-lived (1 day) build artifact, not via the cache above.</p>
 <p>Note that you can request to download all datasets and ignore the cache at any time
 by including the tag <code class="docutils literal notranslate"><span class="pre">[force</span> <span class="pre">download]</span></code> in your commit message.</p>
 <p>To run a full build and download all datasets, you would then combine both tags:</p>

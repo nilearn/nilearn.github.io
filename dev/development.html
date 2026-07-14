@@ -187,7 +187,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.14.1.dev39+g9926131f2) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.0)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.14.1.dev51+g0502e9ecc) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.0)</span></a></p> 
   </aside>
 </div>
 
@@ -1851,21 +1851,17 @@ this fixture. Existing tests can also serve as examples.</p>
 <section id="performance-monitoring">
 <h3>Performance monitoring<a class="headerlink" href="#performance-monitoring" title="Link to this heading">¶</a></h3>
 <p>Nilearn includes performance monitoring in the
-library using <a class="reference external" href="https://asv.readthedocs.io/en/latest/index.html">asv</a>
-benchmarks. The goal is two-fold:</p>
+library using <a class="reference external" href="https://asv.readthedocs.io/en/latest/index.html">asv</a> benchmarks.
+The goal is two-fold:</p>
 <ul class="simple">
-<li><p>To track the performance over time and flag regressions due to changes in the
-codebase.</p></li>
+<li><p>To track the performance over time and flag regressions due to changes in the codebase.</p></li>
 <li><p>To compare the performance of different implementations of an algorithm
-(for example, loading an image using <a class="reference internal" href="modules/generated/nilearn.image.load_img.html#nilearn.image.load_img" title="nilearn.image.load_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.load_img</span></code></a> vs.
-<a class="reference external" href="https://nipy.org/nibabel/reference/nibabel.loadsave.html#nibabel.loadsave.load" title="(in NiBabel v0.1.0.dev1+gabe5e8e0c)"><code class="xref py py-func docutils literal notranslate"><span class="pre">nibabel.loadsave.load</span></code></a>).</p></li>
+(for example, loading an image using <a class="reference internal" href="modules/generated/nilearn.image.load_img.html#nilearn.image.load_img" title="nilearn.image.load_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.image.load_img</span></code></a> vs. <a class="reference external" href="https://nipy.org/nibabel/reference/nibabel.loadsave.html#nibabel.loadsave.load" title="(in NiBabel v0.1.0.dev1+gabe5e8e0c)"><code class="xref py py-func docutils literal notranslate"><span class="pre">nibabel.loadsave.load</span></code></a>).</p></li>
 </ul>
-<p>A collection of these benchmarks are located in the <code class="docutils literal notranslate"><span class="pre">nilearn/asv_benchmarks</span></code>
-directory. Currently, we run them on GitHub CI regularly on the latest commit
-of the main branch. The results are available on
-<a class="reference external" href="https://nilearn.github.io/benchmarks/">nilearn.github.io/benchmarks/</a>.</p>
-<p>To run these benchmarks locally, you will need to install
-the asv package:</p>
+<p>A collection of these benchmarks are located in the <code class="docutils literal notranslate"><span class="pre">nilearn/asv_benchmarks</span></code> directory.
+Currently, we run them on GitHub CI regularly on the latest commit of the main branch.
+The results are available on <a class="reference external" href="https://nilearn.github.io/benchmarks/">nilearn.github.io/benchmarks/</a>.</p>
+<p>To run these benchmarks locally, you will need to install the asv package:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>asv
 </pre></div>
 </div>
@@ -1886,12 +1882,16 @@ use the following command:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>asv<span class="w"> </span>run<span class="w"> </span><span class="m">0</span>.10.0..main<span class="w"> </span>-b<span class="w"> </span>load_img<span class="w"> </span>--steps<span class="w"> </span><span class="m">5</span>
 </pre></div>
 </div>
-<p>There is also a <code class="docutils literal notranslate"><span class="pre">`hashestobenchmark.txt</span></code> file with the shasum of the git tag of several
-of the last versions of nilearn that will allow you to run
-the benchmarks only for those versions by doing:</p>
+<p>There is also a <code class="docutils literal notranslate"><span class="pre">`hashestobenchmark.txt</span></code> file
+with the shasum of the git tag of several of the last versions of nilearn
+that will allow you to run the benchmarks only for those versions by doing:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>asv<span class="w"> </span>run<span class="w"> </span>-b<span class="w"> </span>load_img<span class="w"> </span>HASHFILE:hashestobenchmark.txt
 </pre></div>
 </div>
+<p>Note that versions older than 0.11.0 cannot be benchmarked this way:
+their <code class="docutils literal notranslate"><span class="pre">nilearn/__init__.py</span></code> imports <code class="docutils literal notranslate"><span class="pre">pkg_resources</span></code>,
+which was removed from <code class="docutils literal notranslate"><span class="pre">setuptools&gt;=81</span></code>,
+the version pip installs by default in the virtualenv asv builds.</p>
 <p>If you want to update this file you can use
 to list the shasum of all tags
 that you can then edit to only keep the versions
@@ -1910,6 +1910,17 @@ asv<span class="w"> </span>preview
 <h4>Adding new benchmarks<a class="headerlink" href="#adding-new-benchmarks" title="Link to this heading">¶</a></h4>
 <p>Please see the <a class="reference external" href="https://asv.readthedocs.io/en/stable/writing_benchmarks.html">asv documentation writing tips</a>
 to make sure you understand the basics about how to write benchmarks.</p>
+<p>Only benchmark functions and methods that are part of nilearn’s public API
+(what a user could import and call directly),
+not private helpers (leading underscore) or implementation details.</p>
+<p>The structure of <code class="docutils literal notranslate"><span class="pre">asv_benchmarks/benchmarks</span></code> must mirror
+the structure of the <code class="docutils literal notranslate"><span class="pre">nilearn</span></code> package itself:
+a benchmark for a function or class living in <code class="docutils literal notranslate"><span class="pre">nilearn/glm/first_level/first_level.py</span></code>
+belongs in <code class="docutils literal notranslate"><span class="pre">asv_benchmarks/benchmarks/glm/first_level/first_level.py</span></code>,
+and a benchmark for <code class="docutils literal notranslate"><span class="pre">nilearn/glm/io.py</span></code> belongs in <code class="docutils literal notranslate"><span class="pre">asv_benchmarks/benchmarks/glm/io.py</span></code>.
+This makes it easy to find the benchmark(s) for a given piece of the public API,
+and keeps benchmark files from growing unrelated content
+as nilearn’s own modules get reorganized over time.</p>
 <p>For naming benchmarks, try to follow the following rules:</p>
 <ul class="simple">
 <li><p>use snake_case instead of CamelCase</p></li>
@@ -1921,6 +1932,16 @@ is in the name of the benchmark (<code class="docutils literal notranslate"><spa
 This makes is easier to systematically select the benchmarks to run
 via the command line: <code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">run</span> <span class="pre">-b</span> <span class="pre">nifti_masker</span></code>
 would run all the benchmarks for the NiftiMasker.</p></li>
+<li><p>if the benchmark exercises a function or class that was added recently,
+import it locally inside <code class="docutils literal notranslate"><span class="pre">setup()</span></code> rather than at the top of the module.
+All benchmarks in a given file share that file’s module-level imports,
+so a single top-level import of a function that does not exist yet in an older nilearn version
+(for example when benchmarking past releases with <code class="docutils literal notranslate"><span class="pre">HASHFILE:hashestobenchmark.txt</span></code>)
+will fail to import the whole module,
+and every other benchmark in that file will be reported as failed too,
+even though they do not rely on the missing function.
+A local import inside <code class="docutils literal notranslate"><span class="pre">setup()</span></code> confines the failure to that one benchmark.
+See <code class="docutils literal notranslate"><span class="pre">BenchMarkAllEstimators</span></code> in <code class="docutils literal notranslate"><span class="pre">asv_benchmarks/benchmarks/discovery.py</span></code> for a concrete example.</p></li>
 </ul>
 </section>
 </section>
