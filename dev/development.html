@@ -187,7 +187,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.14.1.dev57+g2d72b268b) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.0)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.14.1.dev61+g97df91169) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.0)</span></a></p> 
   </aside>
 </div>
 
@@ -1853,7 +1853,7 @@ returned by the <code class="docutils literal notranslate"><span class="pre">req
 this fixture. Existing tests can also serve as examples.</p>
 </section>
 <section id="performance-monitoring">
-<h3>Performance monitoring<a class="headerlink" href="#performance-monitoring" title="Link to this heading">¶</a></h3>
+<span id="performance"></span><h3>Performance monitoring<a class="headerlink" href="#performance-monitoring" title="Link to this heading">¶</a></h3>
 <p>Nilearn includes performance monitoring in the
 library using <a class="reference external" href="https://asv.readthedocs.io/en/latest/index.html">asv</a> benchmarks.
 The goal is two-fold:</p>
@@ -1926,7 +1926,7 @@ This makes it easy to find the benchmark(s) for a given piece of the public API,
 and keeps benchmark files from growing unrelated content
 as nilearn’s own modules get reorganized over time.</p>
 <p>For naming benchmarks, try to follow the following rules:</p>
-<ul class="simple">
+<ul>
 <li><p>use snake_case instead of CamelCase</p></li>
 <li><p>make sure that the name of the module the benchmark is in,
 is duplicated in the name of the benchmark:
@@ -1944,8 +1944,16 @@ so a single top-level import of a function that does not exist yet in an older n
 will fail to import the whole module,
 and every other benchmark in that file will be reported as failed too,
 even though they do not rely on the missing function.
-A local import inside <code class="docutils literal notranslate"><span class="pre">setup()</span></code> confines the failure to that one benchmark.
-See <code class="docutils literal notranslate"><span class="pre">BenchMarkAllEstimators</span></code> in <code class="docutils literal notranslate"><span class="pre">asv_benchmarks/benchmarks/discovery.py</span></code> for a concrete example.</p></li>
+A local import inside <code class="docutils literal notranslate"><span class="pre">setup()</span></code> confines the failure to that one benchmark.</p>
+<p>Catch the <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> and re-raise it as <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code>
+instead of letting it propagate as-is.
+asv treats a <code class="docutils literal notranslate"><span class="pre">NotImplementedError</span></code> raised in <code class="docutils literal notranslate"><span class="pre">setup()</span></code> as “this benchmark
+does not apply here” and reports it as <em>skipped</em>,
+whereas any other exception (including a bare <code class="docutils literal notranslate"><span class="pre">ImportError</span></code>) is reported as <em>failed</em>,
+which the CI benchmark workflow treats as a hard failure
+(see the “Fail if any benchmark reported as failed” step).
+See <code class="docutils literal notranslate"><span class="pre">BenchMarkAllEstimators</span></code> in <code class="docutils literal notranslate"><span class="pre">asv_benchmarks/benchmarks/discovery.py</span></code> for a concrete example.</p>
+</li>
 </ul>
 </section>
 </section>
