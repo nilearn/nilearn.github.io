@@ -18,28 +18,37 @@
 .. _sphx_glr_auto_examples_07_advanced_plot_haxby_mvpa.py:
 
 
-SearchLight MVPA with a custom correlation estimator on Haxby data
-===================================================================
+SearchLight with a custom correlation estimator
+===============================================
 
-This tutorial example shows how to use :class:`nilearn.decoding.SearchLight`
-with a user-defined scikit-learn compatible estimator.
+This example shows how to use :class:`nilearn.decoding.SearchLight`
+with a user-defined
+:sklearn:`scikit-learn compatible estimator </developers/develop.html>`.
+As in many other examples, we fetch the Haxby dataset using
+:func:`~nilearn.datasets.fetch_haxby`
+and compare two of the visual task categories: "face" and "house" images.
 
-The workflow is:
+The example is divided into the following sections:
 
-1. Load the Haxby dataset and keep only ``face`` and ``house`` trials.
-2. Define a custom ``CorrelationMVPA`` estimator that computes the
-   Haxby-style correlation contrast
+1. Load the dataset and keep only ``face`` and ``house`` trials.
+2. Define a custom ``CorrelationMVPA`` estimator
+   (following :footcite:t:`Haxby2001`) that computes the
+   correlation contrast as
    ``(within-category similarity - between-category similarity) / 2``
    across run splits.
-3. Run a whole-brain SearchLight with this estimator.
-4. Visualize the resulting score map.
+3. Run a whole-brain :term:`SearchLight` analysis with this estimator.
+4. Visualize the resulting correlation-score map.
 
-.. GENERATED FROM PYTHON SOURCE LINES 20-22
+.. GENERATED FROM PYTHON SOURCE LINES 25-31
 
 Load Haxby dataset
 ------------------
+For a complete picture of this dataset,
+please refer to the
+:ref:`dataset description <haxby_dataset>`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 22-39
+
+.. GENERATED FROM PYTHON SOURCE LINES 31-48
 
 .. code-block:: Python
 
@@ -48,10 +57,10 @@ Load Haxby dataset
 
     from nilearn.datasets import fetch_haxby
 
-    # We fetch 2nd subject from haxby datasets (which is default)
+    # We fetch one subject from Haxby dataset (the default argument)
     haxby_dataset = fetch_haxby()
 
-    # print basic information on the dataset
+    # Print basic information on the dataset
     print(f"Functional nifti image (4D) is located at: {haxby_dataset.func[0]}")
 
     fmri_filename = haxby_dataset.func[0]
@@ -75,11 +84,55 @@ Load Haxby dataset
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-41
+.. GENERATED FROM PYTHON SOURCE LINES 49-51
+
+Restrict to faces and houses
+............................
+
+.. GENERATED FROM PYTHON SOURCE LINES 51-66
+
+.. code-block:: Python
+
+    from nilearn.image import index_img
+
+    condition_mask = y.isin(["face", "house"])
+
+    fmri_img = index_img(fmri_filename, condition_mask)
+    y, run = y[condition_mask], run[condition_mask]
+
+    # Overview of the input data
+    n_labels = len(np.unique(y))
+
+    print(f"{n_labels} labels (`y`): {np.unique(y)}")
+    print(f"fMRI data shape (`X`): {fmri_img.shape}")
+    print(f"Runs (`groups`): {np.unique(run)}")
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    2 labels (`y`): ['face' 'house']
+    fMRI data shape (`X`): (40, 64, 64, 216)
+    Runs (`groups`): [ 0  1  2  3  4  5  6  7  8  9 10 11]
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 67-73
 
 Define our own MVPA estimator for use in SearchLight
+----------------------------------------------------
+We now define a custom Multi-Voxel Pattern Analysis (:term:`MVPA`)
+estimator to compute within each :term:`SearchLight`.
+In this case, we use the Haxby-style correlation contrast as
+defined in :footcite:t:`Haxby2001`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 41-155
+.. GENERATED FROM PYTHON SOURCE LINES 73-194
 
 .. code-block:: Python
 
@@ -94,7 +147,8 @@ Define our own MVPA estimator for use in SearchLight
 
 
     def pattern_corr(a, b):
-        """Compute correlation between two patterns, with mean-centering and norm.
+        """
+        Compute correlation between two patterns, with mean-centering and norm.
 
         This is a more stable and efficient way to compute correlation than
         np.corrcoef for 1D patterns.
@@ -106,9 +160,13 @@ Define our own MVPA estimator for use in SearchLight
 
 
     class CorrelationMVPA(BaseEstimator):
-        """Haxby-style correlation MVPA score for a pair of labels.
+        """
+        Haxby-style correlation Multi-Voxel Pattern Analysis (MVPA)
+        score for a pair of labels.
 
-        Computes (within - between)/2 using parity run splits.
+        Computes
+        `(within-category similarity - between-category similarity) / 2`
+        using run splits.
 
         Parameters
         ----------
@@ -122,7 +180,8 @@ Define our own MVPA estimator for use in SearchLight
             self.labels = labels
 
         def fit(self, X, y, groups=None):
-            """Fit the estimator and store a single correlation-based score.
+            """
+            Fit the estimator and store a single correlation-based score.
 
             Parameters
             ----------
@@ -147,18 +206,19 @@ Define our own MVPA estimator for use in SearchLight
             """
             if groups is None:
                 raise ValueError(
-                    "groups (runs/chunks) are required for CorrelationMVPA."
+                    "``groups`` (e.g., runs) are required for CorrelationMVPA."
                 )
 
             a, b = self.labels
             y = np.asarray(y)
             groups = np.asarray(groups)
 
-            # Create two splits based on parity of run numbers
+            # Create two splits based on parity (i.e., even vs. odd)
             g1 = groups % 2 == 0
             g2 = ~g1
 
             def mean_pattern(lbl, mask):
+                """Compute the mean pattern within a mask for a given label."""
                 sel = (y == lbl) & mask
                 if not np.any(sel):
                     return None
@@ -204,53 +264,19 @@ Define our own MVPA estimator for use in SearchLight
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-158
+.. GENERATED FROM PYTHON SOURCE LINES 195-204
 
-Restrict to faces and houses
+Perform searchlight analysis
 ----------------------------
+Using the ``CorrelationMVPA`` estimator defined above,
+we perform a :term:`Searchlight` analysis.
 
-.. GENERATED FROM PYTHON SOURCE LINES 158-173
-
-.. code-block:: Python
-
-    from nilearn.image import index_img, mean_img
-
-    condition_mask = y.isin(["face", "house"])
-
-    fmri_img = index_img(fmri_filename, condition_mask)
-    y, run = y[condition_mask], run[condition_mask]
-
-    # Overview of the input data
-
-    n_labels = len(np.unique(y))
-
-    print(f"{n_labels} labels (y): {np.unique(y)}")
-    print(f"fMRI data shape (X): {fmri_img.shape}")
-    print(f"Runs (groups): {np.unique(run)}")
+We compute and provide a binary mask using
+:func:`~nilearn.masking.compute_epi_mask` to restrict
+the ``Searchlight`` and reduce the computational time.
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    2 labels (y): ['face' 'house']
-    fMRI data shape (X): (40, 64, 64, 216)
-    Runs (groups): [ 0  1  2  3  4  5  6  7  8  9 10 11]
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 174-178
-
-Perform searchlight analysis, using the CorrelationMVPA estimator
-defined above.
-
-We also compute a binary mask to restrict
-
-.. GENERATED FROM PYTHON SOURCE LINES 178-194
+.. GENERATED FROM PYTHON SOURCE LINES 204-219
 
 .. code-block:: Python
 
@@ -264,7 +290,6 @@ We also compute a binary mask to restrict
         process_mask_img=mask_img,
         radius=5.6,
         n_jobs=2,
-        verbose=0,
         estimator=CorrelationMVPA(labels=("face", "house")),
     )
     searchlight.fit(imgs=fmri_img, y=y, groups=run)
@@ -278,7 +303,7 @@ We also compute a binary mask to restrict
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_haxby_mvpa.py:191: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/07_advanced/plot_haxby_mvpa.py:216: UserWarning:
 
     Use a custom estimator at your own risk of the process not working as intended.
 
@@ -286,16 +311,21 @@ We also compute a binary mask to restrict
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 195-196
+.. GENERATED FROM PYTHON SOURCE LINES 220-225
 
 Visualize the searchlight scores
+--------------------------------
+We can now visualize the :term:`Searchlight` scores calculated
+using our custom ``CorrelationMVPA``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 196-213
+
+.. GENERATED FROM PYTHON SOURCE LINES 225-245
 
 .. code-block:: Python
 
     from matplotlib import pyplot as plt
 
+    from nilearn.image import mean_img
     from nilearn.plotting import plot_stat_map, show
 
     mean_fmri = mean_img(fmri_img)
@@ -305,12 +335,14 @@ Visualize the searchlight scores
         bg_img=mean_fmri,
         title="Searchlight scores (face vs house)",
         threshold=0.15,
+        vmax=1.0,
         black_bg=True,
         figure=plt.figure(figsize=(6, 4)),
         symmetric_cbar=True,
     )
 
     show()
+
 
 
 
@@ -323,12 +355,19 @@ Visualize the searchlight scores
 
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 246-250
+
+References
+----------
+
+.. footbibliography::
+
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 25.135 seconds)
+   **Total running time of the script:** (0 minutes 31.622 seconds)
 
-**Estimated memory usage:**  1034 MB
+**Estimated memory usage:**  1033 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_haxby_mvpa.py:

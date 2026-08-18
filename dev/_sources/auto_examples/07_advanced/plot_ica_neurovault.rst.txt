@@ -18,58 +18,53 @@
 .. _sphx_glr_auto_examples_07_advanced_plot_ica_neurovault.py:
 
 
-NeuroVault cross-study ICA maps
-===============================
+Independent Component Analysis (ICA) of NeuroVault maps
+========================================================
 
 This example shows how to download statistical maps from
-NeuroVault, label them with NeuroSynth terms,
-and compute :term:`ICA` components across all the maps.
+`NeuroVault <https://neurovault.org>`_
+with :func:`~nilearn.datasets.fetch_neurovault`,
+label them with `Neurosynth <https://neurosynth.org/>`_ terms,
+and then compute Independent Component Analysis
+(:term:`ICA`) components across all the downloaded
+statistical maps.
 
-See :func:`~nilearn.datasets.fetch_neurovault`
-documentation for more details.
+.. note::
+    This example is modified from code originally authored by
+    `Chris Gorgolewski <https://github.com/chrisgorgo>`_
+    and
+    `Gaël Varoquaux <https://github.com/GaelVaroquaux>`_
+    and available at
+    `neurovault_analysis <https://github.com/NeuroVault/neurovault_analysis>`_.
 
-..  Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
-    https://github.com/NeuroVault/neurovault_analysis
+.. GENERATED FROM PYTHON SOURCE LINES 24-40
 
-.. GENERATED FROM PYTHON SOURCE LINES 16-26
+Get image and associated term data
+----------------------------------
+
+First, we download statistical images from
+:term:`NeuroVault`.
+To reduce computational time
+we download only 30 images, but note that
+using more images will provide better results.
+
+Each statistical image is associated with a set of
+`Neurosynth <https://neurosynth.org/>`_
+terms (or ``vocabulary``) which describe the analysis.
+For example, a study may be associated with terms such as
+"motor" or "working memory."
+We will also download these terms for analysis.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 40-59
 
 .. code-block:: Python
 
 
     import numpy as np
-    from scipy import stats
-    from sklearn.decomposition import FastICA
 
-    from nilearn.datasets import fetch_neurovault, load_mni152_brain_mask
-    from nilearn.image import smooth_img
-    from nilearn.maskers import NiftiMasker
-    from nilearn.plotting import plot_stat_map, show
+    from nilearn.datasets import fetch_neurovault
 
-
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 27-29
-
-Get image and term data
------------------------
-
-.. GENERATED FROM PYTHON SOURCE LINES 29-58
-
-.. code-block:: Python
-
-
-    # Download images
-    # Here by default we only download 80 images to save time,
-    # but for better results I recommend using at least 200.
-    print(
-        "Fetching Neurovault images; "
-        "if you haven't downloaded any Neurovault data before "
-        "this will take several minutes."
-    )
     nv_data = fetch_neurovault(
         max_images=30, fetch_neurosynth_words=True, timeout=30.0
     )
@@ -77,18 +72,12 @@ Get image and term data
     images = nv_data["images"]
     term_weights = nv_data["word_frequencies"]
     vocabulary = nv_data["vocabulary"]
+
+    # Neurosynth occasionally experiences stability issues ;
+    # we aim to quickly alert if images cannot be downloaded.
     if term_weights is None:
         term_weights = np.ones((len(images), 2))
         vocabulary = np.asarray(["Neurosynth is down", "Please try again later"])
-
-    # Clean and report term scores
-    term_weights[term_weights < 0] = 0
-    total_scores = np.mean(term_weights, axis=0)
-
-    print("\nTop 10 neurosynth terms from downloaded images:\n")
-
-    for term_idx in np.argsort(total_scores)[-10:][::-1]:
-        print(vocabulary[term_idx])
 
 
 
@@ -98,7 +87,6 @@ Get image and term data
 
  .. code-block:: none
 
-    Fetching Neurovault images; if you haven't downloaded any Neurovault data before this will take several minutes.
     [fetch_neurovault] Dataset directory found: 
     /home/runner/work/nilearn/nilearn/nilearn_data/neurovault
     [fetch_neurovault] Reading local neurovault data.
@@ -136,6 +124,34 @@ Get image and term data
     [fetch_neurovault] Computing word features.
     [fetch_neurovault] Computing word features done; vocabulary size: 1315
 
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 60-61
+
+After downloading, clean and report term scores.
+
+.. GENERATED FROM PYTHON SOURCE LINES 61-69
+
+.. code-block:: Python
+
+    term_weights[term_weights < 0] = 0
+    total_scores = np.mean(term_weights, axis=0)
+
+    print("\nTop 10 neurosynth terms from downloaded images:\n")
+
+    for term_idx in np.argsort(total_scores)[-10:][::-1]:
+        print(vocabulary[term_idx])
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
     Top 10 neurosynth terms from downloaded images:
 
     superior temporal
@@ -145,30 +161,39 @@ Get image and term data
     anterior insula
     superior
     parietal
-    planum
-    planum temporale
     temporale
+    planum temporale
+    planum
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-61
+.. GENERATED FROM PYTHON SOURCE LINES 70-80
 
 Reshape and mask images
 -----------------------
+As each statistical image comes from a different study,
+we apply some light preprocessing to improve our ability
+to compare them.
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-98
+We use a :func:`~nilearn.maskers.NiftiMasker` to
+extract all image data within an :term:`MNI` brain mask,
+accessed via :func:`~nilearn.datasets.load_mni152_brain_mask`.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 80-118
 
 .. code-block:: Python
 
+
     import warnings
 
-    print("\nReshaping and masking images.\n")
+    from nilearn.datasets import load_mni152_brain_mask
+    from nilearn.image import smooth_img
+    from nilearn.maskers import NiftiMasker
 
     mask_img = load_mni152_brain_mask(resolution=2)
-    masker = NiftiMasker(
-        mask_img=mask_img, memory="nilearn_cache", memory_level=1, verbose=1
-    )
+    masker = NiftiMasker(mask_img=mask_img, memory="nilearn_cache", memory_level=1)
     masker = masker.fit()
 
     # Images may fail to be transformed, and are of different shapes,
@@ -178,7 +203,7 @@ Reshape and mask images
 
     for index, image_path in enumerate(images):
         # load image and remove nan and inf values.
-        # applying smooth_img to an image with fwhm=None simply cleans up
+        # applying smooth_img to an image with ``FWHM=None`` simply cleans up
         # non-finite values but otherwise doesn't modify the image.
         image = smooth_img(image_path, fwhm=None)
         try:
@@ -202,765 +227,61 @@ Reshape and mask images
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    Reshaping and masking images.
-
-    \[NiftiMasker.fit] Loading mask from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fea40>
-    \[NiftiMasker.fit] Resampling mask
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.image.resampling.resample_img...
-    resample_img(<nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, target_affine=None, target_shape=None, copy=False, interpolation='nearest')
-    _____________________________________________________resample_img - 0.0s, 0.0min
-    \[NiftiMasker.fit] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a570ff520>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fc5e0>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a08456f50>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fd300>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a570ff6d0>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fdb10>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a08456440>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fe1a0>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a04a51450>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a04a531f0>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a08456bf0>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fe1a0>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a04a50fa0>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a04a52470>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a570fded0>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570ff550>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a04a52c80>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a04a512a0>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a04a53160>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a04a50d90>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a570fff40>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fe1a0>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a04a52050>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a04a50640>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a570fe5c0>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a04a50910>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a04a52740>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a04a53460>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a570fee00>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fe5c0>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a04a53580>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a04a53d30>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a04a51d20>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fcd30>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a570fe1a0>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fcc70>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a570ffbb0>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fceb0>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a313011b0>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fc1c0>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a570fdae0>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fc7c0>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a313011b0>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fcf10>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a570fdb10>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a08457040>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a570fce20>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fff40>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a570ff3a0>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a08457730>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a08457a30>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a08455720>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a313011b0>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a570fe5c0>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a08457640>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a08454eb0>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.nifti_masker.filter_and_mask...
-    filter_and_mask(<nibabel.nifti1.Nifti1Image object at 0x7f4a31301180>, <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>, { 'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'gray',
-      'detrend': False,
-      'dtype': None,
-      'high_pass': None,
-      'high_variance_confounds': False,
-      'low_pass': None,
-      'reports': True,
-      'runs': None,
-      'smoothing_fwhm': None,
-      'standardize': False,
-      'standardize_confounds': True,
-      't_r': None,
-      'target_affine': None,
-      'target_shape': None}, memory_level=1, memory=Memory(location=nilearn_cache/joblib), verbose=1, confounds=None, sample_mask=None, copy=True, sklearn_output_config=None)
-    \[NiftiMasker.wrapped] Loading data from <nibabel.nifti1.Nifti1Image object at 
-    0x7f4a08457880>
-    \[NiftiMasker.wrapped] Resampling images
-    \[NiftiMasker.wrapped] Extracting region signals
-    \[NiftiMasker.wrapped] Cleaning extracted signals
-    __________________________________________________filter_and_mask - 0.2s, 0.0min
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 99-101
+.. GENERATED FROM PYTHON SOURCE LINES 119-133
 
 Run :term:`ICA` and map components to terms
 -------------------------------------------
+Once we have all statistical images processed into a single 2D matrix,
+we can use :class:`sklearn.decomposition.FastICA`
+to extract :term:`ICA` components for this sample of images.
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-113
+In this example, we are using a very small number of images
+(i.e., only 30), so we explicitly pass ``n_components``
+to solve for a small number of components.
+In real data analysis, we may want to instead set
+``n_components=None`` to find as many components as the rank of the data.
+For more detail on :term:`ICA`, please refer to the
+:sklearn:`scikit-learn user guide
+<modules/decomposition.html#independent-component-analysis-ica>`.
+
+.. GENERATED FROM PYTHON SOURCE LINES 133-142
 
 .. code-block:: Python
 
 
-    print("Running ICA; may take time...")
-    # We use a very small number of components as we have downloaded only 80
-    # images. For better results, increase the number of images downloaded
-    # and the number of components
-    n_components = 8
+    from sklearn.decomposition import FastICA
+
+    n_components = 3
     fast_ica = FastICA(n_components=n_components, random_state=0)
     ica_maps = fast_ica.fit_transform(X.T).T
 
     term_weights_for_components = np.dot(fast_ica.components_, term_weights)
-    print("Done, plotting results.")
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Running ICA; may take time...
-    Done, plotting results.
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 114-116
+.. GENERATED FROM PYTHON SOURCE LINES 143-147
 
 Generate figures
 ----------------
+Finally, plot the generated :term:`ICA` maps and their loadings on
+the associated ``term_weights``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 116-132
+.. GENERATED FROM PYTHON SOURCE LINES 147-169
 
 .. code-block:: Python
 
+
+    from scipy import stats
+
+    from nilearn.plotting import plot_stat_map, show
 
     for index, (ic_map, ic_terms) in enumerate(
         zip(ica_maps, term_weights_for_components, strict=False)
@@ -976,6 +297,8 @@ Generate figures
         title = f"IC{int(index)}  {', '.join(important_terms[::-1])}"
 
         plot_stat_map(ic_img, threshold=ic_threshold, colorbar=False, title=title)
+
+    show()
 
 
 
@@ -1004,116 +327,22 @@ Generate figures
          :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_003.png
          :class: sphx-glr-multi-img
 
-    *
-
-      .. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_004.png
-         :alt: plot ica neurovault
-         :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_004.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_005.png
-         :alt: plot ica neurovault
-         :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_005.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_006.png
-         :alt: plot ica neurovault
-         :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_006.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_007.png
-         :alt: plot ica neurovault
-         :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_007.png
-         :class: sphx-glr-multi-img
-
-    *
-
-      .. image-sg:: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_008.png
-         :alt: plot ica neurovault
-         :srcset: /auto_examples/07_advanced/images/sphx_glr_plot_ica_neurovault_008.png
-         :class: sphx-glr-multi-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    \[NiftiMasker.inverse_transform] Computing image from signals
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.masking.unmask...
-    unmask(array([-0.230333, ..., -0.355222]), <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>)
-    ___________________________________________________________unmask - 0.0s, 0.0min
-    \[NiftiMasker.inverse_transform] Computing image from signals
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.masking.unmask...
-    unmask(array([ 0.174666, ..., -0.079971]), <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>)
-    ___________________________________________________________unmask - 0.0s, 0.0min
-    \[NiftiMasker.inverse_transform] Computing image from signals
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.masking.unmask...
-    unmask(array([-0.105046, ..., -0.089722]), <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>)
-    ___________________________________________________________unmask - 0.0s, 0.0min
-    \[NiftiMasker.inverse_transform] Computing image from signals
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.masking.unmask...
-    unmask(array([-0.022539, ..., -0.03561 ]), <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>)
-    ___________________________________________________________unmask - 0.0s, 0.0min
-    \[NiftiMasker.inverse_transform] Computing image from signals
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.masking.unmask...
-    unmask(array([0.100142, ..., 0.124067]), <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>)
-    ___________________________________________________________unmask - 0.0s, 0.0min
-    \[NiftiMasker.inverse_transform] Computing image from signals
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.masking.unmask...
-    unmask(array([-0.219892, ..., -0.21238 ]), <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>)
-    ___________________________________________________________unmask - 0.0s, 0.0min
-    \[NiftiMasker.inverse_transform] Computing image from signals
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.masking.unmask...
-    unmask(array([-0.475248, ..., -0.487403]), <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>)
-    ___________________________________________________________unmask - 0.0s, 0.0min
-    \[NiftiMasker.inverse_transform] Computing image from signals
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.masking.unmask...
-    unmask(array([0.082926, ..., 0.039885]), <nibabel.nifti1.Nifti1Image object at 0x7f4a570fe6e0>)
-    ___________________________________________________________unmask - 0.0s, 0.0min
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-136
+.. GENERATED FROM PYTHON SOURCE LINES 170-173
 
 As we can see, some of the components capture cognitive or neurological
 maps, while other capture noise in the database. More data, better
-filtering, and better cognitive labels would give better maps
-
-.. GENERATED FROM PYTHON SOURCE LINES 136-139
-
-.. code-block:: Python
-
-
-    # Done.
-    show()
-
-
-
-
-
-
+filtering, and better cognitive labels would give better maps.
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 11.969 seconds)
+   **Total running time of the script:** (0 minutes 10.373 seconds)
 
-**Estimated memory usage:**  348 MB
+**Estimated memory usage:**  349 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_ica_neurovault.py:
