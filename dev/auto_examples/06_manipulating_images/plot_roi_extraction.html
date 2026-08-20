@@ -187,7 +187,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.14.1.dev94+g9191c49e0) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.0)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.14.1.dev96+ga3f9fab3b) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.0)</span></a></p> 
   </aside>
 </div>
 
@@ -848,23 +848,23 @@ to download the full example code. or to run this example in your browser via Bi
 <p>This example shows manual steps to create and further modify an ROI spatial
 mask. They represent a means for “data folding”, i.e., extracting and then
 analyzing brain data from a subset of voxels rather than whole brain images.
-Example can also help alleviate curse of dimensionality (i.e., statistical
+Masking can also help alleviate the curse of dimensionality (i.e., statistical
 problems that arise in the context of high-dimensional input variables).</p>
-<p>We demonstrate how to compute a ROI mask using <strong>T-test</strong> and then how simple
-image operations can be used before and after computing ROI to improve the
+<p>We demonstrate how to compute a ROI mask using a <strong>T-test</strong> and then how simple
+image operations can be used before and after computing the ROI to improve the
 quality of the computed mask.</p>
 <p>These chains of operations are easy to set up using Nilearn and Scipy Python
 libraries. Here we give clear guidelines about these steps, starting with
 pre-image operations to post-image operations. The main point is that
-visualization &amp; results checking be possible at each step.</p>
+visualization &amp; results checking are possible at each step.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="plot_extract_rois_smith_atlas.html"><span class="doc">Regions Extraction of Default Mode Networks using Smith Atlas</span></a>
 for automatic ROI extraction of brain connected networks
 given in 4D image.</p>
 </div>
-<p>Coordinates of the slice we are interested in each direction. We will be
-using them for visualization.</p>
+<p>Here are the coordinates of the slice we are interested in each direction.
+We will be using them for visualization.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># cut in x-direction</span>
 <a href="https://docs.python.org/3.10/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sagittal</span></a> <span class="o">=</span> <span class="o">-</span><span class="mi">25</span>
 <span class="c1"># cut in y-direction</span>
@@ -878,99 +878,92 @@ using them for visualization.</p>
 </div>
 <section id="loading-the-data">
 <h2>Loading the data<a class="headerlink" href="#loading-the-data" title="Link to this heading">¶</a></h2>
-<p>We rely on the Haxby datasets and its experiments to demonstrate the complete
-list of operations. Fetching datasets is easy, shipping with Nilearn using a
-function named as <cite>fetch_haxby</cite>. The data will then be automatically stored
-in a home directory with “nilearn_data” folder in your computer. From which,
-we process data using paths of the Nifti images.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># We load data from nilearn by import datasets</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn</span><span class="w"> </span><span class="kn">import</span> <span class="n">datasets</span>
+<p>We will use the Haxby dataset to demonstrate the complete list of operations.
+The data will then be automatically stored in our home directory under
+<code class="docutils literal notranslate"><span class="pre">nilearn_data/</span></code>.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn</span><span class="w"> </span><span class="kn">import</span> <span class="n">datasets</span>
 
-<span class="c1"># First, we fetch single subject specific data with haxby datasets: to have</span>
-<span class="c1"># anatomical image, EPI images and masks images</span>
+<span class="c1"># First, we fetch EPI images and masks images from the Haxby dataset.</span>
 <a href="https://scikit-learn.org/stable/modules/generated/sklearn.utils.Bunch.html#sklearn.utils.Bunch" title="sklearn.utils.Bunch" class="sphx-glr-backref-module-sklearn-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_dataset</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.datasets.fetch_haxby.html#nilearn.datasets.fetch_haxby" title="nilearn.datasets.fetch_haxby" class="sphx-glr-backref-module-nilearn-datasets sphx-glr-backref-type-py-function"><span class="n">datasets</span><span class="o">.</span><span class="n">fetch_haxby</span></a><span class="p">()</span>
 
-<span class="c1"># print basic information on the dataset</span>
+<span class="c1"># Print basic information on the dataset.</span>
+
+<span class="c1"># Functional data</span>
+<a href="https://docs.python.org/3.10/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_filename</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
 <span class="nb">print</span><span class="p">(</span>
-    <span class="s2">"First subject anatomical nifti image (3D) is located "</span>
-    <span class="sa">f</span><span class="s2">"at: </span><span class="si">{</span><a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">anat</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span>
-    <span class="s2">"First subject functional nifti image (4D) is located "</span>
-    <span class="sa">f</span><span class="s2">"at: </span><span class="si">{</span><a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
+    <span class="sa">f</span><span class="s2">"First subject functional nifti image (4D) is located at: </span><span class="si">{</span><a href="https://docs.python.org/3.10/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_filename</span></a><span class="si">}</span><span class="s2">"</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span>
     <span class="s2">"Labels of haxby dataset (text file) is located "</span>
     <span class="sa">f</span><span class="s2">"at: </span><span class="si">{</span><a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
 <span class="p">)</span>
 
-<span class="c1"># Second, load the labels stored in a text file into array using pandas</span>
+<span class="c1"># Second, load the labels stored in a text file into array using pandas.</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">run_target</span></a> <span class="o">=</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html#pandas.read_csv" title="pandas.read_csv" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-function"><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span></a><span class="p">(</span><a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">session_target</span></a><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sep</span><span class="o">=</span><span class="s2">" "</span><span class="p">)</span>
-<span class="c1"># Now, we have the labels and will be useful while computing student's t-test</span>
+
+<span class="c1"># Now, we have the labels that will be useful while computing the</span>
+<span class="c1"># student's t-test.</span>
 <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="pandas.Series" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_labels</span></a> <span class="o">=</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="pandas.DataFrame" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">run_target</span></a><span class="p">[</span><span class="s2">"labels"</span><span class="p">]</span>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[fetch_haxby] Dataset directory found:
 /home/runner/work/nilearn/nilearn/nilearn_data/haxby2001
-First subject anatomical nifti image (3D) is located at: /home/runner/work/nilearn/nilearn/nilearn_data/haxby2001/subj2/anat.nii.gz
 First subject functional nifti image (4D) is located at: /home/runner/work/nilearn/nilearn/nilearn_data/haxby2001/subj2/bold.nii.gz
 Labels of haxby dataset (text file) is located at: /home/runner/work/nilearn/nilearn/nilearn_data/haxby2001/subj2/labels.txt
 </pre></div>
 </div>
-<p>We have the datasets in hand especially paths to the locations. Now, we do
-simple pre-processing step called as image smoothing on functional images
+<p>We now have the paths to the images in this dataset. The next step is to do a
+simple pre-processing step called <cite>image smoothing</cite> on the functional images
 and then build a statistical test on smoothed images.</p>
 </section>
 <section id="build-a-statistical-test-to-find-voxels-of-interest">
 <h2>Build a statistical test to find voxels of interest<a class="headerlink" href="#build-a-statistical-test-to-find-voxels-of-interest" title="Link to this heading">¶</a></h2>
-<p><strong>Smoothing</strong>: Functional MRI data have a low signal-to-noise ratio.
+<section id="smoothing">
+<h3>Smoothing<a class="headerlink" href="#smoothing" title="Link to this heading">¶</a></h3>
+<p>Functional MRI data have a low signal-to-noise ratio.
 When using methods that are not robust to noise, it is useful to apply a
 spatial filtering kernel on the data. Such data smoothing is usually applied
 using a Gaussian function with 4mm to 12mm
-<a class="reference internal" href="../../glossary.html#term-FWHM"><span class="xref std std-term">full-width at half-maximum</span></a> (this is where the <a class="reference internal" href="../../glossary.html#term-FWHM"><span class="xref std std-term">FWHM</span></a>
-comes from). The function <a class="reference internal" href="../../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="nilearn.image.smooth_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">smooth_img</span></code></a> accounts for
-potential anisotropy in the image affine (i.e., non-identical
+<a class="reference internal" href="../../glossary.html#term-FWHM"><span class="xref std std-term">full-width at half-maximum</span></a> (this is where the <code class="docutils literal notranslate"><span class="pre">fwhm</span></code>
+parameter below comes from). The function <a class="reference internal" href="../../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="nilearn.image.smooth_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">smooth_img</span></code></a>
+accounts for potential anisotropy in the image affine (i.e., non-identical
 <a class="reference internal" href="../../glossary.html#term-voxel"><span class="xref std std-term">voxel</span></a> size in all the three dimensions). Analogous to the
 majority of nilearn functions, <a class="reference internal" href="../../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="nilearn.image.smooth_img"><code class="xref py py-func docutils literal notranslate"><span class="pre">smooth_img</span></code></a> can
 also use file names as input parameters.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Smooth the data using image processing module from nilearn</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn</span><span class="w"> </span><span class="kn">import</span> <span class="n">image</span>
-
-<span class="c1"># Functional data</span>
-<a href="https://docs.python.org/3.10/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_filename</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">func</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Smooth the data using image processing module from nilearn.</span>
 <span class="c1"># smoothing: first argument as functional data filename and smoothing value</span>
-<span class="c1"># (integer) in second argument. Output returns in Nifti image.</span>
-<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="nilearn.image.smooth_img" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">image</span><span class="o">.</span><span class="n">smooth_img</span></a><span class="p">(</span><a href="https://docs.python.org/3.10/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_filename</span></a><span class="p">,</span> <span class="n">fwhm</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="c1"># (integer) in second argument. Output is a Nifti image.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.image</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="nilearn.image.smooth_img" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">smooth_img</span></a>
+
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.smooth_img.html#nilearn.image.smooth_img" title="nilearn.image.smooth_img" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">smooth_img</span></a><span class="p">(</span><a href="https://docs.python.org/3.10/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_filename</span></a><span class="p">,</span> <span class="n">fwhm</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 
 <span class="c1"># Visualize the mean of the smoothed EPI image using plotting function</span>
-<span class="c1"># `plot_epi`</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_epi.html#nilearn.plotting.plot_epi" title="nilearn.plotting.plot_epi" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_epi</span></a>
+<span class="c1"># `plot_epi`.</span>
+<span class="c1"># First, compute the voxel-wise mean of the smooth EPI image</span>
+<span class="c1"># (first argument) using the image processing module `image`.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.image</span><span class="w"> </span><span class="kn">import</span> <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_epi.html#nilearn.plotting.plot_epi" title="nilearn.plotting.plot_epi" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_epi</span></a><span class="p">,</span> <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a>
 
-<span class="c1"># First, compute the voxel-wise mean of smooth EPI image</span>
-<span class="c1"># (first argument) using image processing module `image`</span>
-<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.mean_img.html#nilearn.image.mean_img" title="nilearn.image.mean_img" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">image</span><span class="o">.</span><span class="n">mean_img</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">)</span>
-<span class="c1"># Second, we visualize the mean image with coordinates positioned manually</span>
+<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a> <span class="o">=</span> <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">)</span>
+
+<span class="c1"># Second, we visualize the mean image with coordinates positioned manually.</span>
 <a href="../../modules/generated/nilearn.plotting.plot_epi.html#nilearn.plotting.plot_epi" title="nilearn.plotting.plot_epi" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_epi</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Smoothed mean EPI"</span><span class="p">,</span> <a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cut_coords</span></a><span class="o">=</span><a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cut_coords</span></a><span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_plot_roi_extraction_001.png" srcset="../../_images/sphx_glr_plot_roi_extraction_001.png" alt="plot roi extraction" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7fe2c6b54760&gt;
-</pre></div>
-</div>
-<p>Given the smoothed functional data stored in variable ‘fmri_img’, we then
-select two features of interest with face and house experimental conditions.
-The method we will be using is a simple Student’s t-test. The below section
-gives us brief motivation example about why selecting features in high
-dimensional FMRI data setting.</p>
-<p>Functional MRI data can be considered “high dimensional” given the p-versus-n
+<img src="../../_images/sphx_glr_plot_roi_extraction_001.png" srcset="../../_images/sphx_glr_plot_roi_extraction_001.png" alt="plot roi extraction" class = "sphx-glr-single-img"/><p>Functional MRI data can be considered “high dimensional” given the p-versus-n
 ratio (e.g., p=~20,000-200,000 voxels for n=1000 samples or less). In this
 setting, machine-learning algorithms can perform poorly due to the so-called
-curse of dimensionality. However, simple means from the realms of classical
-statistics can help reducing the number of voxels.</p>
+curse of dimensionality. However, simple means from classical statistics
+can help reduce the number of voxels.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.image</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="nilearn.image.get_data" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">get_data</span></a>
 
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_data</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="nilearn.image.get_data" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">get_data</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">)</span>
+
 <span class="c1"># number of voxels being x*y*z, samples in 4th dimension</span>
 <a href="https://docs.python.org/3.10/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_data</span><span class="o">.</span><span class="n">shape</span></a>
 </pre></div>
@@ -978,7 +971,10 @@ statistics can help reducing the number of voxels.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(40, 64, 64, 1452)
 </pre></div>
 </div>
-<p><strong>Selecting features using T-test</strong>: The Student’s t-test
+</section>
+<section id="selecting-features-using-a-t-test">
+<h3>Selecting features using a T-test<a class="headerlink" href="#selecting-features-using-a-t-test" title="Link to this heading">¶</a></h3>
+<p>The Student’s t-test
 (<a class="reference external" href="https://scipy.github.io/devdocs/reference/generated/scipy.stats.ttest_ind.html#scipy.stats.ttest_ind" title="(in SciPy v2.0.0.dev)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.stats.ttest_ind</span></code></a>) is an established method to determine whether
 two distributions have a different mean value.
 It can be used to compare voxel
@@ -986,13 +982,13 @@ time-series from two different experimental conditions (e.g., when houses or
 faces are shown to individuals during brain scanning). If the time-series
 distribution is similar in the two conditions,
 then the <a class="reference internal" href="../../glossary.html#term-voxel"><span class="xref std std-term">voxel</span></a> is not very interesting to discriminate the condition.</p>
+<p>This test returns p-values that represent probabilities that the two
+time-series were not drawn from the same distribution. The lower the
+p-value, the more discriminative is the voxel in distinguishing
+the two conditions (faces and houses).</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
 
-<span class="c1"># This test returns p-values that represent probabilities that the two</span>
-<span class="c1"># time-series were not drawn from the same distribution. The lower the</span>
-<span class="c1"># p-value, the more discriminative is the voxel in distinguishing</span>
-<span class="c1"># the two conditions (faces and houses).</span>
 <a href="https://docs.python.org/3.10/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">_</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">p_values</span></a> <span class="o">=</span> <a href="https://scipy.github.io/devdocs/reference/generated/scipy.stats.ttest_ind.html#scipy.stats.ttest_ind" title="scipy.stats.ttest_ind" class="sphx-glr-backref-module-scipy-stats sphx-glr-backref-type-py-function"><span class="n">stats</span><span class="o">.</span><span class="n">ttest_ind</span></a><span class="p">(</span>
     <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_data</span></a><span class="p">[</span><span class="o">...</span><span class="p">,</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="pandas.Series" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_labels</span></a> <span class="o">==</span> <span class="s2">"face"</span><span class="p">],</span>
     <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_data</span></a><span class="p">[</span><span class="o">...</span><span class="p">,</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="pandas.Series" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_labels</span></a> <span class="o">==</span> <span class="s2">"house"</span><span class="p">],</span>
@@ -1001,26 +997,29 @@ then the <a class="reference internal" href="../../glossary.html#term-voxel"><sp
 
 <span class="c1"># Use a log scale for p-values</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a> <span class="o">=</span> <span class="o">-</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ufunc.html#numpy.ufunc" title="numpy.ufunc" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">np</span><span class="o">.</span><span class="n">log10</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">p_values</span></a><span class="p">)</span>
-<span class="c1"># NAN values to zero</span>
+<span class="c1"># Set NAN values to zero</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ufunc.html#numpy.ufunc" title="numpy.ufunc" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">np</span><span class="o">.</span><span class="n">isnan</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a> <span class="o">&gt;</span> <span class="mf">10.0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">10.0</span>
+</pre></div>
+</div>
+<section id="visualize-statistical-p-values">
+<h4>Visualize statistical p-values<a class="headerlink" href="#visualize-statistical-p-values" title="Link to this heading">¶</a></h4>
+<p>Before visualizing, we transform the computed p-values to a Nifti-like image
+using function <cite>new_img_like</cite> from nilearn.
+First argument being a reference image
+and second argument should be p-values data
+to convert to a new image as output.
+This new image will have same header information as the reference image.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.image</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a>
 
-<span class="c1"># Before visualizing, we transform the computed p-values to Nifti-like image</span>
-<span class="c1"># using function `new_img_like` from nilearn.</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.image</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a>
-
-<span class="c1"># Visualize statistical p-values using plotting function `plot_stat_map`</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a>
-
-<span class="c1"># First argument being a reference image</span>
-<span class="c1"># and second argument should be p-values data</span>
-<span class="c1"># to convert to a new image as output.</span>
-<span class="c1"># This new image will have same header information as reference image.</span>
 <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, we visualize the log p-values image on the functional mean image as
+a background with coordinates given manually and a colorbar on the right side
+of the plot (by default, colorbar=True).</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a>
 
-<span class="c1"># Now, we visualize log p-values image on functional mean image as background</span>
-<span class="c1"># with coordinates given manually and colorbar on the right side of plot (by</span>
-<span class="c1"># default colorbar=True)</span>
 <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values_img</span></a><span class="p">,</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span>
@@ -1028,187 +1027,207 @@ then the <a class="reference internal" href="../../glossary.html#term-voxel"><sp
     <a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cut_coords</span></a><span class="o">=</span><a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cut_coords</span></a><span class="p">,</span>
     <span class="n">cmap</span><span class="o">=</span><span class="s2">"inferno"</span><span class="p">,</span>
 <span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_plot_roi_extraction_002.png" srcset="../../_images/sphx_glr_plot_roi_extraction_002.png" alt="plot roi extraction" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7fe27623d540&gt;
-</pre></div>
-</div>
-<p><strong>Selecting features using f_classif</strong>: Feature selection method is also
-available in the scikit-learn Python package, where it has been extended to
-several classes, using the <cite>sklearn.feature_selection.f_classif</cite> function.</p>
+<img src="../../_images/sphx_glr_plot_roi_extraction_002.png" srcset="../../_images/sphx_glr_plot_roi_extraction_002.png" alt="plot roi extraction" class = "sphx-glr-single-img"/></section>
 </section>
-<section id="build-a-mask-from-this-statistical-map-improving-the-quality-of-the-mask">
-<h2>Build a mask from this statistical map (Improving the quality of the mask)<a class="headerlink" href="#build-a-mask-from-this-statistical-map-improving-the-quality-of-the-mask" title="Link to this heading">¶</a></h2>
-<p><strong>Thresholding</strong> - We build the t-map to have better representation of voxels
-of interest and voxels with lower p-values correspond to the most intense
+<section id="selecting-features-using-f-classif">
+<h3>Selecting features using f_classif<a class="headerlink" href="#selecting-features-using-f-classif" title="Link to this heading">¶</a></h3>
+<p>It is also possible to use the
+<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html#sklearn.feature_selection.f_classif" title="(in scikit-learn v1.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sklearn.feature_selection.f_classif</span></code></a> function, which works for
+feature selection in multi-class settings.</p>
+</section>
+</section>
+<section id="build-a-mask">
+<h2>Build a mask<a class="headerlink" href="#build-a-mask" title="Link to this heading">¶</a></h2>
+<section id="thresholding">
+<h3>Thresholding<a class="headerlink" href="#thresholding" title="Link to this heading">¶</a></h3>
+<p>We build the t-map to have better representation of voxels
+of interest, where voxels with lower p-values correspond to the most intense
 voxels. This can be done easily by applying a threshold to a t-map data in
 array.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note that we use log p-values data; we force values below 5 to 0 by</span>
-<span class="c1"># thresholding.</span>
-<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<p>Note that we use log p-values data; we force values below 5 to 0 by
+thresholding.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>Visualize the reduced voxels of interest using statistical image plotting
+function. As shown above, we first transform data in array to Nifti image.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a><span class="p">)</span>
 
-<span class="c1"># Visualize the reduced voxels of interest using statistical image plotting</span>
-<span class="c1"># function. As shown above, we first transform data in array to Nifti image.</span>
-<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a><span class="p">)</span>
-
-<span class="c1"># Now, visualizing the created log p-values to image</span>
-<span class="c1"># without Left - 'L', Right - 'R' annotation</span>
+<span class="c1"># Now, visualizing the created log p-values to image.</span>
 <a href="../../modules/generated/nilearn.plotting.plot_stat_map.html#nilearn.plotting.plot_stat_map" title="nilearn.plotting.plot_stat_map" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_stat_map</span></a><span class="p">(</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values_img</span></a><span class="p">,</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span>
     <span class="n">title</span><span class="o">=</span><span class="s2">"Thresholded p-values"</span><span class="p">,</span>
-    <span class="n">annotate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">colorbar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cut_coords</span></a><span class="o">=</span><a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cut_coords</span></a><span class="p">,</span>
     <span class="n">cmap</span><span class="o">=</span><span class="s2">"inferno"</span><span class="p">,</span>
 <span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_plot_roi_extraction_003.png" srcset="../../_images/sphx_glr_plot_roi_extraction_003.png" alt="plot roi extraction" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7fe29bfddcc0&gt;
-</pre></div>
-</div>
-<p>We can post-process the results obtained with simple operations
+<img src="../../_images/sphx_glr_plot_roi_extraction_003.png" srcset="../../_images/sphx_glr_plot_roi_extraction_003.png" alt="plot roi extraction" class = "sphx-glr-single-img"/><p>We can post-process the results obtained with simple operations
 such as mask intersection and <a class="reference internal" href="../../glossary.html#term-Dilation"><span class="xref std std-term">dilation</span></a>
 to regularize the mask definition.
 The idea of using these operations are to have more compact or sparser blobs.</p>
-<p><strong>Binarization</strong> and <strong>Intersection</strong> with Ventral Temporal (VT) mask - We
-now want to restrict our investigation to the VT area. The corresponding
-spatial mask is provided in haxby_dataset.mask_vt. We want to compute the
+</section>
+<section id="binarization-and-intersection-with-ventral-temporal-vt-mask">
+<h3>Binarization and Intersection with Ventral Temporal (VT) mask<a class="headerlink" href="#binarization-and-intersection-with-ventral-temporal-vt-mask" title="Link to this heading">¶</a></h3>
+<p>We now want to restrict our investigation to the VT area. The corresponding
+spatial mask is provided in <code class="docutils literal notranslate"><span class="pre">haxby_dataset.mask_vt</span></code>. We want to compute the
 intersection of this provided mask with our self-computed mask.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># self-computed mask</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bin_p_values</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_p_values</span></a> <span class="o">!=</span> <span class="mi">0</span>
 <span class="c1"># VT mask</span>
 <a href="https://docs.python.org/3.10/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask_vt_filename</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_dataset</span><span class="o">.</span><span class="n">mask_vt</span></a><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="c1"># The first step is to load VT mask and same time convert data type</span>
-<span class="c1"># numbers to boolean type</span>
+<span class="c1"># The first step is to load VT mask and at the same time to convert the</span>
+<span class="c1"># datatype from "number" to "boolean".</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.image</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.image.load_img.html#nilearn.image.load_img" title="nilearn.image.load_img" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">load_img</span></a>
 
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">vt</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.get_data.html#nilearn.image.get_data" title="nilearn.image.get_data" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">get_data</span></a><span class="p">(</span><a href="../../modules/generated/nilearn.image.load_img.html#nilearn.image.load_img" title="nilearn.image.load_img" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">load_img</span></a><span class="p">(</span><a href="https://docs.python.org/3.10/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mask_vt_filename</span></a><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
-
-<span class="c1"># We can then use a logical "and" operation - numpy.logical_and - to keep only</span>
-<span class="c1"># voxels that have been selected in both masks. In neuroimaging jargon, this</span>
-<span class="c1"># is called an "AND conjunction". We use already imported numpy as np</span>
-<a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bin_p_values_and_vt</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ufunc.html#numpy.ufunc" title="numpy.ufunc" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bin_p_values</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">vt</span></a><span class="p">)</span>
-
-<span class="c1"># Visualizing the mask intersection results using plotting function `plot_roi`,</span>
-<span class="c1"># a function which can be used for visualizing target specific voxels.</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi" title="nilearn.plotting.plot_roi" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_roi</span></a><span class="p">,</span> <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a>
-
-<span class="c1"># First, we create new image type of binarized and intersected mask (second</span>
-<span class="c1"># argument) and use this created Nifti image type in visualization. Binarized</span>
-<span class="c1"># values in data type boolean should be converted to int data type at the same</span>
-<span class="c1"># time. Otherwise, an error will be raised</span>
-<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bin_p_values_and_vt_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span>
+</pre></div>
+</div>
+<p>We can then use a logical “and” operation - <cite>numpy.logical_and</cite> - to
+keep only voxels that have been selected in both masks.
+In neuroimaging jargon, this is called an “AND conjunction”.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bin_p_values_and_vt</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ufunc.html#numpy.ufunc" title="numpy.ufunc" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bin_p_values</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">vt</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<p>Visualizing the mask intersection results using plotting function <cite>plot_roi</cite>,
+a function which can be used for visualizing target specific voxels.</p>
+<p>First, we create new image type of binarized and intersected mask
+(second argument) and use this created Nifti image type in visualization.
+Binarized values in data type boolean
+should be converted to int data type at the same time.
+Otherwise, an error will be raised.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bin_p_values_and_vt_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bin_p_values_and_vt</span></a><span class="o">.</span><span class="n">astype</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int32" title="numpy.int32" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">int32</span></a><span class="p">)</span>
 <span class="p">)</span>
-<span class="c1"># Visualizing goes here with background as computed mean of functional images</span>
+<span class="c1"># We visualize the mask using the computed mean of functional images as</span>
+<span class="c1"># background.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi" title="nilearn.plotting.plot_roi" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_roi</span></a>
+
 <a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi" title="nilearn.plotting.plot_roi" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_roi</span></a><span class="p">(</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bin_p_values_and_vt_img</span></a><span class="p">,</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span>
     <a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cut_coords</span></a><span class="o">=</span><a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cut_coords</span></a><span class="p">,</span>
     <span class="n">title</span><span class="o">=</span><span class="s2">"Intersection with ventral temporal mask"</span><span class="p">,</span>
 <span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_plot_roi_extraction_004.png" srcset="../../_images/sphx_glr_plot_roi_extraction_004.png" alt="plot roi extraction" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7fe2c66035e0&gt;
-</pre></div>
-</div>
-<p><strong>Dilation</strong> - Thresholded functional brain images often contain scattered
+<img src="../../_images/sphx_glr_plot_roi_extraction_004.png" srcset="../../_images/sphx_glr_plot_roi_extraction_004.png" alt="plot roi extraction" class = "sphx-glr-single-img"/></section>
+<section id="dilation">
+<h3>Dilation<a class="headerlink" href="#dilation" title="Link to this heading">¶</a></h3>
+<p>Thresholded functional brain images often contain scattered
 voxels across the brain. To consolidate such brain images towards
 more compact shapes, we use a <a class="reference external" href="https://en.wikipedia.org/wiki/Dilation_(morphology)">morphological dilation</a>.
 This is a common step
 to be sure not to forget voxels located on the edge of a ROI. In other words,
 such operations can fill “holes” in masked <a class="reference internal" href="../../glossary.html#term-voxel"><span class="xref std std-term">voxel</span></a> representations.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># We use ndimage function from scipy Python library for mask dilation</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># We use ndimage function from scipy Python library for mask dilation.</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <a href="https://scipy.github.io/devdocs/reference/generated/scipy.ndimage.binary_dilation.html#scipy.ndimage.binary_dilation" title="scipy.ndimage.binary_dilation" class="sphx-glr-backref-module-scipy-ndimage sphx-glr-backref-type-py-function"><span class="n">binary_dilation</span></a>
 
-<span class="c1"># Input here is a binarized and intersected mask data from previous section</span>
+<span class="c1"># Input here is a binarized and intersected mask data</span>
+<span class="c1"># from the previous section.</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dil_bin_p_values_and_vt</span></a> <span class="o">=</span> <a href="https://scipy.github.io/devdocs/reference/generated/scipy.ndimage.binary_dilation.html#scipy.ndimage.binary_dilation" title="scipy.ndimage.binary_dilation" class="sphx-glr-backref-module-scipy-ndimage sphx-glr-backref-type-py-function"><span class="n">binary_dilation</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">bin_p_values_and_vt</span></a><span class="p">)</span>
 
-<span class="c1"># Now, we visualize the same using `plot_roi` with data being converted</span>
-<span class="c1"># to Nifti image.</span>
-<span class="c1"># In all new image like, reference image is the same but second argument</span>
-<span class="c1"># varies with data specific</span>
+<span class="c1"># Now, we visualize the same using `plot_roi` with the data being converted</span>
+<span class="c1"># to Nifti image. In all `new_img_like` calls, we use the same reference image.</span>
 <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dil_bin_p_values_and_vt_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dil_bin_p_values_and_vt</span></a><span class="o">.</span><span class="n">astype</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int32" title="numpy.int32" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">int32</span></a><span class="p">)</span>
 <span class="p">)</span>
-<span class="c1"># Visualization goes here without 'L', 'R' annotation and coordinates being the</span>
-<span class="c1"># same</span>
 <a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi" title="nilearn.plotting.plot_roi" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_roi</span></a><span class="p">(</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dil_bin_p_values_and_vt_img</span></a><span class="p">,</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span>
     <span class="n">title</span><span class="o">=</span><span class="s2">"Dilated mask"</span><span class="p">,</span>
     <a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cut_coords</span></a><span class="o">=</span><a href="https://docs.python.org/3.10/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cut_coords</span></a><span class="p">,</span>
-    <span class="n">annotate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_plot_roi_extraction_005.png" srcset="../../_images/sphx_glr_plot_roi_extraction_005.png" alt="plot roi extraction" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7fe27e2b3640&gt;
-</pre></div>
-</div>
-<p>Finally, we end with splitting the connected ROIs to two hemispheres into two
-separate regions (ROIs). The function <cite>scipy.ndimage.label</cite> from the scipy
-Python library.</p>
-<p><strong>Identification of connected components</strong> - The function
+<img src="../../_images/sphx_glr_plot_roi_extraction_005.png" srcset="../../_images/sphx_glr_plot_roi_extraction_005.png" alt="plot roi extraction" class = "sphx-glr-single-img"/><p>Finally, we end with splitting the connected ROIs to two hemispheres into two
+separate regions (ROIs). We use the function <a class="reference external" href="https://scipy.github.io/devdocs/reference/generated/scipy.ndimage.label.html#scipy.ndimage.label" title="(in SciPy v2.0.0.dev)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.ndimage.label</span></code></a> from
+the scipy Python library.</p>
+</section>
+<section id="identification-of-connected-components">
+<h3>Identification of connected components<a class="headerlink" href="#identification-of-connected-components" title="Link to this heading">¶</a></h3>
+<p>The function
 <a class="reference external" href="https://scipy.github.io/devdocs/reference/generated/scipy.ndimage.label.html#scipy.ndimage.label" title="(in SciPy v2.0.0.dev)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.ndimage.label</span></code></a> from the scipy Python library identifies
 immediately neighboring voxels in our voxels mask. It assigns a separate
 integer label to each one of them.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <a href="https://scipy.github.io/devdocs/reference/generated/scipy.ndimage.label.html#scipy.ndimage.label" title="scipy.ndimage.label" class="sphx-glr-backref-module-scipy-ndimage sphx-glr-backref-type-py-function"><span class="n">label</span></a>
 
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels</span></a><span class="p">,</span> <a href="https://docs.python.org/3.10/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">_</span></a> <span class="o">=</span> <a href="https://scipy.github.io/devdocs/reference/generated/scipy.ndimage.label.html#scipy.ndimage.label" title="scipy.ndimage.label" class="sphx-glr-backref-module-scipy-ndimage sphx-glr-backref-type-py-function"><span class="n">label</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">dil_bin_p_values_and_vt</span></a><span class="p">)</span>
+
 <span class="c1"># we take first roi data with labels assigned as integer 1</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">first_roi_data</span></a> <span class="o">=</span> <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels</span></a> <span class="o">==</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int32" title="numpy.int32" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">int32</span></a><span class="p">)</span>
+
 <span class="c1"># Similarly, second roi data is assigned as integer 2</span>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">second_roi_data</span></a> <span class="o">=</span> <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels</span></a> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int32" title="numpy.int32" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">np</span><span class="o">.</span><span class="n">int32</span></a><span class="p">)</span>
-<span class="c1"># Visualizing the connected components</span>
-<span class="c1"># First, we create a Nifti image type from first roi data in a array</span>
-<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">first_roi_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">first_roi_data</span></a><span class="p">)</span>
-<span class="c1"># Then, visualize the same created Nifti image in first argument and mean of</span>
-<span class="c1"># functional images as background (second argument), cut_coords is default now</span>
-<span class="c1"># and coordinates are selected automatically pointed exactly on the roi data</span>
-<a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi" title="nilearn.plotting.plot_roi" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_roi</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">first_roi_img</span></a><span class="p">,</span> <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Connected components: first ROI"</span><span class="p">)</span>
-<span class="c1"># we do the same for second roi data</span>
-<a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">second_roi_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">second_roi_data</span></a><span class="p">)</span>
-<span class="c1"># Visualization goes here with second roi image and cut_coords are default with</span>
-<span class="c1"># coordinates selected automatically pointed on the data</span>
+</pre></div>
+</div>
+<section id="visualizing-the-connected-components">
+<h4>Visualizing the connected components<a class="headerlink" href="#visualizing-the-connected-components" title="Link to this heading">¶</a></h4>
+<p>First, we create a Nifti image type from first roi data in a array.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">first_roi_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">first_roi_data</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then, we visualize the same created Nifti image (first argument) with the
+mean of functional images as background (second argument). The cut_coords are
+the default now: coordinates are selected automatically and will be pointed
+exactly on the roi data.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi" title="nilearn.plotting.plot_roi" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_roi</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">first_roi_img</span></a><span class="p">,</span> <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Connected components: first ROI"</span><span class="p">)</span>
+</pre></div>
+</div>
+<img src="../../_images/sphx_glr_plot_roi_extraction_006.png" srcset="../../_images/sphx_glr_plot_roi_extraction_006.png" alt="plot roi extraction" class = "sphx-glr-single-img"/><div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f60537ec640&gt;
+</pre></div>
+</div>
+<p>We do the same for the second roi data.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">second_roi_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">second_roi_data</span></a><span class="p">)</span>
 <a href="../../modules/generated/nilearn.plotting.plot_roi.html#nilearn.plotting.plot_roi" title="nilearn.plotting.plot_roi" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">plot_roi</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">second_roi_img</span></a><span class="p">,</span> <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">mean_img</span></a><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Connected components: second ROI"</span><span class="p">)</span>
+
+<a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<ul class="sphx-glr-horizontal">
-<li><img src="../../_images/sphx_glr_plot_roi_extraction_006.png" srcset="../../_images/sphx_glr_plot_roi_extraction_006.png" alt="plot roi extraction" class = "sphx-glr-multi-img"/></li>
-<li><img src="../../_images/sphx_glr_plot_roi_extraction_007.png" srcset="../../_images/sphx_glr_plot_roi_extraction_007.png" alt="plot roi extraction" class = "sphx-glr-multi-img"/></li>
-</ul>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7fe2b58c1cf0&gt;
-</pre></div>
-</div>
-<p>Use the new ROIs, to extract data maps in both ROIs
-We extract data from ROIs using nilearn’s NiftiLabelsMasker</p>
+<img src="../../_images/sphx_glr_plot_roi_extraction_007.png" srcset="../../_images/sphx_glr_plot_roi_extraction_007.png" alt="plot roi extraction" class = "sphx-glr-single-img"/></section>
+</section>
+</section>
+<section id="use-the-new-rois-to-extract-data-maps-in-both-rois">
+<h2>Use the new ROIs to extract data maps in both ROIs<a class="headerlink" href="#use-the-new-rois-to-extract-data-maps-in-both-rois" title="Link to this heading">¶</a></h2>
+<p>We extract data from ROIs using Nilearn’s
+<a class="reference internal" href="../../modules/generated/nilearn.maskers.NiftiLabelsMasker.html#nilearn.maskers.NiftiLabelsMasker" title="nilearn.maskers.NiftiLabelsMasker"><code class="xref py py-class docutils literal notranslate"><span class="pre">NiftiLabelsMasker</span></code></a>.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.maskers</span><span class="w"> </span><span class="kn">import</span> <a href="../../modules/generated/nilearn.maskers.NiftiLabelsMasker.html#nilearn.maskers.NiftiLabelsMasker" title="nilearn.maskers.NiftiLabelsMasker" class="sphx-glr-backref-module-nilearn-maskers sphx-glr-backref-type-py-class"><span class="n">NiftiLabelsMasker</span></a>
 </pre></div>
 </div>
-<p>Before data extraction, we convert an array labels to Nifti like image. All
-inputs to NiftiLabelsMasker must be Nifti-like images or filename to Nifti
-images. We use the same reference image as used above in previous sections</p>
+<p>Before data extraction, we convert array labels to a Nifti like image. All
+inputs to <code class="docutils literal notranslate"><span class="pre">NiftiLabelsMasker</span></code> must be Nifti-like images or filenames to
+Nifti images. We use the same reference image as used above in previous
+sections.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels_img</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span><a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<p>First, initialize masker with parameters suited for data extraction using
-labels as input image, resampling_target is None as affine,
-shape/size is same
-for all the data used here, time series signal processing parameters
-standardize and detrend are set to False</p>
+<p>First, we initialize a masker with parameters suited for data extraction:
+labels as input image, <code class="docutils literal notranslate"><span class="pre">resampling_target</span></code> is None as the affine and
+shape/size are the same for all the data used here, time series signal
+processing parameters <code class="docutils literal notranslate"><span class="pre">standardize</span></code> and <code class="docutils literal notranslate"><span class="pre">detrend</span></code> are set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../../modules/generated/nilearn.maskers.NiftiLabelsMasker.html#nilearn.maskers.NiftiLabelsMasker" title="nilearn.maskers.NiftiLabelsMasker" class="sphx-glr-backref-module-nilearn-maskers sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">masker</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.maskers.NiftiLabelsMasker.html#nilearn.maskers.NiftiLabelsMasker" title="nilearn.maskers.NiftiLabelsMasker" class="sphx-glr-backref-module-nilearn-maskers sphx-glr-backref-type-py-class"><span class="n">NiftiLabelsMasker</span></a><span class="p">(</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">labels_img</span></a><span class="p">,</span>
     <span class="n">resampling_target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">standardize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">standardize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">detrend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Preparing for data extraction: setting number of conditions, size, etc from
-haxby dataset</p>
+<p>Preparing for data extraction: setting number of conditions, size, etc. from
+haxby dataset.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">condition_names</span></a> <span class="o">=</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.unique.html#pandas.Series.unique" title="pandas.Series.unique" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-method"><span class="n">haxby_labels</span><span class="o">.</span><span class="n">unique</span></a><span class="p">()</span>
 <a href="https://docs.python.org/3.10/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_cond_img</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_data</span></a><span class="p">[</span><span class="o">...</span><span class="p">,</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="pandas.Series" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_labels</span></a> <span class="o">==</span> <span class="s2">"house"</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 <a href="https://docs.python.org/3.10/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_conds</span></a> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">condition_names</span></a><span class="p">)</span>
@@ -1216,9 +1235,10 @@ haxby dataset</p>
 <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">X1</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">X2</span></a> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="numpy.zeros" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><a href="https://docs.python.org/3.10/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_cond_img</span></a><span class="p">,</span> <a href="https://docs.python.org/3.10/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_conds</span></a><span class="p">)),</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="numpy.zeros" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-function"><span class="n">np</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><a href="https://docs.python.org/3.10/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_cond_img</span></a><span class="p">,</span> <a href="https://docs.python.org/3.10/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_conds</span></a><span class="p">))</span>
 </pre></div>
 </div>
-<p>Gathering data for each condition and then use transformer from masker
-object transform() on each data. The transformer extracts data in condition
-maps where the target regions are specified by labels images</p>
+<p>Gathering data for each condition and then use
+<a class="reference internal" href="../../modules/generated/nilearn.maskers.NiftiLabelsMasker.html#nilearn.maskers.NiftiLabelsMasker.fit_transform" title="nilearn.maskers.NiftiLabelsMasker.fit_transform"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit_transform</span></code></a> on each data.
+The transformer extracts data in condition maps where the target regions are
+specified by labels images.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <a href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.int64" title="numpy.int64" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-attribute"><span class="n">i</span></a><span class="p">,</span> <a href="https://docs.python.org/3.10/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cond</span></a> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">condition_names</span></a><span class="p">):</span>
     <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cond_maps</span></a> <span class="o">=</span> <a href="../../modules/generated/nilearn.image.new_img_like.html#nilearn.image.new_img_like" title="nilearn.image.new_img_like" class="sphx-glr-backref-module-nilearn-image sphx-glr-backref-type-py-function"><span class="n">new_img_like</span></a><span class="p">(</span>
         <a href="https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Image" title="nibabel.nifti1.Nifti1Image" class="sphx-glr-backref-module-nibabel-nifti1 sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_img</span></a><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="numpy.ndarray" class="sphx-glr-backref-module-numpy sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">fmri_data</span></a><span class="p">[</span><span class="o">...</span><span class="p">,</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html#pandas.Series" title="pandas.Series" class="sphx-glr-backref-module-pandas sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">haxby_labels</span></a> <span class="o">==</span> <a href="https://docs.python.org/3.10/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">cond</span></a><span class="p">][</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><a href="https://docs.python.org/3.10/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n_cond_img</span></a><span class="p">]</span>
@@ -1229,116 +1249,71 @@ maps where the target regions are specified by labels images</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>\[NiftiLabelsMasker.wrapped] Loading regions from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d543640&gt;
+object at 0x7f608dedc4c0&gt;
 \[NiftiLabelsMasker.wrapped] Finished fit
-/home/runner/work/nilearn/nilearn/examples/06_manipulating_images/plot_roi_extraction.py:373: FutureWarning:
-
-boolean values for 'standardize' will be deprecated in nilearn 0.15.0.
-Use 'zscore_sample' instead of 'True' or use 'None' instead of 'False'.
-
 \[NiftiLabelsMasker.wrapped] Loading data from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26dbbbdf0&gt;
+object at 0x7f604d4cefb0&gt;
 \[NiftiLabelsMasker.wrapped] Extracting region signals
 \[NiftiLabelsMasker.wrapped] Cleaning extracted signals
 \[NiftiLabelsMasker.wrapped] Loading regions from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d543640&gt;
+object at 0x7f608dedc4c0&gt;
 \[NiftiLabelsMasker.wrapped] Finished fit
-/home/runner/work/nilearn/nilearn/examples/06_manipulating_images/plot_roi_extraction.py:373: FutureWarning:
-
-boolean values for 'standardize' will be deprecated in nilearn 0.15.0.
-Use 'zscore_sample' instead of 'True' or use 'None' instead of 'False'.
-
 \[NiftiLabelsMasker.wrapped] Loading data from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe2c499a3e0&gt;
+object at 0x7f604d4cead0&gt;
 \[NiftiLabelsMasker.wrapped] Extracting region signals
 \[NiftiLabelsMasker.wrapped] Cleaning extracted signals
 \[NiftiLabelsMasker.wrapped] Loading regions from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d543640&gt;
+object at 0x7f608dedc4c0&gt;
 \[NiftiLabelsMasker.wrapped] Finished fit
-/home/runner/work/nilearn/nilearn/examples/06_manipulating_images/plot_roi_extraction.py:373: FutureWarning:
-
-boolean values for 'standardize' will be deprecated in nilearn 0.15.0.
-Use 'zscore_sample' instead of 'True' or use 'None' instead of 'False'.
-
 \[NiftiLabelsMasker.wrapped] Loading data from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d541780&gt;
+object at 0x7f608de25120&gt;
 \[NiftiLabelsMasker.wrapped] Extracting region signals
 \[NiftiLabelsMasker.wrapped] Cleaning extracted signals
 \[NiftiLabelsMasker.wrapped] Loading regions from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d543640&gt;
+object at 0x7f608dedc4c0&gt;
 \[NiftiLabelsMasker.wrapped] Finished fit
-/home/runner/work/nilearn/nilearn/examples/06_manipulating_images/plot_roi_extraction.py:373: FutureWarning:
-
-boolean values for 'standardize' will be deprecated in nilearn 0.15.0.
-Use 'zscore_sample' instead of 'True' or use 'None' instead of 'False'.
-
 \[NiftiLabelsMasker.wrapped] Loading data from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d543a30&gt;
+object at 0x7f604d4ccca0&gt;
 \[NiftiLabelsMasker.wrapped] Extracting region signals
 \[NiftiLabelsMasker.wrapped] Cleaning extracted signals
 \[NiftiLabelsMasker.wrapped] Loading regions from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d543640&gt;
+object at 0x7f608dedc4c0&gt;
 \[NiftiLabelsMasker.wrapped] Finished fit
-/home/runner/work/nilearn/nilearn/examples/06_manipulating_images/plot_roi_extraction.py:373: FutureWarning:
-
-boolean values for 'standardize' will be deprecated in nilearn 0.15.0.
-Use 'zscore_sample' instead of 'True' or use 'None' instead of 'False'.
-
 \[NiftiLabelsMasker.wrapped] Loading data from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d542b30&gt;
+object at 0x7f608de24700&gt;
 \[NiftiLabelsMasker.wrapped] Extracting region signals
 \[NiftiLabelsMasker.wrapped] Cleaning extracted signals
 \[NiftiLabelsMasker.wrapped] Loading regions from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d543640&gt;
+object at 0x7f608dedc4c0&gt;
 \[NiftiLabelsMasker.wrapped] Finished fit
-/home/runner/work/nilearn/nilearn/examples/06_manipulating_images/plot_roi_extraction.py:373: FutureWarning:
-
-boolean values for 'standardize' will be deprecated in nilearn 0.15.0.
-Use 'zscore_sample' instead of 'True' or use 'None' instead of 'False'.
-
 \[NiftiLabelsMasker.wrapped] Loading data from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d542770&gt;
+object at 0x7f604d4ce2f0&gt;
 \[NiftiLabelsMasker.wrapped] Extracting region signals
 \[NiftiLabelsMasker.wrapped] Cleaning extracted signals
 \[NiftiLabelsMasker.wrapped] Loading regions from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d543640&gt;
+object at 0x7f608dedc4c0&gt;
 \[NiftiLabelsMasker.wrapped] Finished fit
-/home/runner/work/nilearn/nilearn/examples/06_manipulating_images/plot_roi_extraction.py:373: FutureWarning:
-
-boolean values for 'standardize' will be deprecated in nilearn 0.15.0.
-Use 'zscore_sample' instead of 'True' or use 'None' instead of 'False'.
-
 \[NiftiLabelsMasker.wrapped] Loading data from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d540b20&gt;
+object at 0x7f604d4cec80&gt;
 \[NiftiLabelsMasker.wrapped] Extracting region signals
 \[NiftiLabelsMasker.wrapped] Cleaning extracted signals
 \[NiftiLabelsMasker.wrapped] Loading regions from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d543640&gt;
+object at 0x7f608dedc4c0&gt;
 \[NiftiLabelsMasker.wrapped] Finished fit
-/home/runner/work/nilearn/nilearn/examples/06_manipulating_images/plot_roi_extraction.py:373: FutureWarning:
-
-boolean values for 'standardize' will be deprecated in nilearn 0.15.0.
-Use 'zscore_sample' instead of 'True' or use 'None' instead of 'False'.
-
 \[NiftiLabelsMasker.wrapped] Loading data from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d543310&gt;
+object at 0x7f608de269e0&gt;
 \[NiftiLabelsMasker.wrapped] Extracting region signals
 \[NiftiLabelsMasker.wrapped] Cleaning extracted signals
 \[NiftiLabelsMasker.wrapped] Loading regions from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe26d543640&gt;
+object at 0x7f608dedc4c0&gt;
 \[NiftiLabelsMasker.wrapped] Finished fit
-/home/runner/work/nilearn/nilearn/examples/06_manipulating_images/plot_roi_extraction.py:373: FutureWarning:
-
-boolean values for 'standardize' will be deprecated in nilearn 0.15.0.
-Use 'zscore_sample' instead of 'True' or use 'None' instead of 'False'.
-
 \[NiftiLabelsMasker.wrapped] Loading data from &lt;nibabel.nifti1.Nifti1Image
-object at 0x7fe27093b6d0&gt;
+object at 0x7f604d4cc670&gt;
 \[NiftiLabelsMasker.wrapped] Extracting region signals
 \[NiftiLabelsMasker.wrapped] Cleaning extracted signals
 </pre></div>
 </div>
-<p>save the ROI ‘atlas’ to a Nifti file</p>
+<p>Save the ROI ‘atlas’ to a Nifti file.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <a href="https://docs.python.org/3.10/library/pathlib.html#pathlib.PosixPath" title="pathlib.PosixPath" class="sphx-glr-backref-module-pathlib sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">output_dir</span></a> <span class="o">=</span> <a href="https://docs.python.org/3.10/library/pathlib.html#pathlib.Path.cwd" title="pathlib.Path.cwd" class="sphx-glr-backref-module-pathlib sphx-glr-backref-type-py-method"><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span></a><span class="p">()</span> <span class="o">/</span> <span class="s2">"results"</span> <span class="o">/</span> <span class="s2">"plot_roi_extraction"</span>
@@ -1351,7 +1326,7 @@ object at 0x7fe27093b6d0&gt;
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Output will be saved to: /home/runner/work/nilearn/nilearn/examples/06_manipulating_images/results/plot_roi_extraction
 </pre></div>
 </div>
-<p>Plot the average in the different condition names</p>
+<p>Plot the average in the different condition names.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.figure.html#matplotlib.pyplot.figure" title="matplotlib.pyplot.figure" class="sphx-glr-backref-module-matplotlib-pyplot sphx-glr-backref-type-py-function"><span class="n">plt</span><span class="o">.</span><span class="n">figure</span></a><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
@@ -1366,8 +1341,8 @@ object at 0x7fe27093b6d0&gt;
 <a href="../../modules/generated/nilearn.plotting.show.html#nilearn.plotting.show" title="nilearn.plotting.show" class="sphx-glr-backref-module-nilearn-plotting sphx-glr-backref-type-py-function"><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
-<img src="../../_images/sphx_glr_plot_roi_extraction_008.png" srcset="../../_images/sphx_glr_plot_roi_extraction_008.png" alt="Boxplots of data in ROI1 per condition, Boxplots of data in ROI2 per condition" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 21.719 seconds)</p>
-<p><strong>Estimated memory usage:</strong>  2396 MB</p>
+<img src="../../_images/sphx_glr_plot_roi_extraction_008.png" srcset="../../_images/sphx_glr_plot_roi_extraction_008.png" alt="Boxplots of data in ROI1 per condition, Boxplots of data in ROI2 per condition" class = "sphx-glr-single-img"/><p class="sphx-glr-timing"><strong>Total running time of the script:</strong> (0 minutes 23.392 seconds)</p>
+<p><strong>Estimated memory usage:</strong>  2386 MB</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-auto-examples-06-manipulating-images-plot-roi-extraction-py">
 <div class="binder-badge docutils container">
 <a class="reference external image-reference" href="https://mybinder.org/v2/gh/nilearn/nilearn/main?urlpath=lab/tree/notebooks/auto_examples/06_manipulating_images/plot_roi_extraction.ipynb"><img alt="Launch binder" src="../../_images/binder_badge_logo6.svg" style="width: 150px;" /></a>
@@ -1451,8 +1426,26 @@ object at 0x7fe27093b6d0&gt;
             <ul>
 <li><a class="reference internal" href="#">Computing a Region of Interest (ROI) mask manually</a><ul>
 <li><a class="reference internal" href="#loading-the-data">Loading the data</a></li>
-<li><a class="reference internal" href="#build-a-statistical-test-to-find-voxels-of-interest">Build a statistical test to find voxels of interest</a></li>
-<li><a class="reference internal" href="#build-a-mask-from-this-statistical-map-improving-the-quality-of-the-mask">Build a mask from this statistical map (Improving the quality of the mask)</a></li>
+<li><a class="reference internal" href="#build-a-statistical-test-to-find-voxels-of-interest">Build a statistical test to find voxels of interest</a><ul>
+<li><a class="reference internal" href="#smoothing">Smoothing</a></li>
+<li><a class="reference internal" href="#selecting-features-using-a-t-test">Selecting features using a T-test</a><ul>
+<li><a class="reference internal" href="#visualize-statistical-p-values">Visualize statistical p-values</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#selecting-features-using-f-classif">Selecting features using f_classif</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#build-a-mask">Build a mask</a><ul>
+<li><a class="reference internal" href="#thresholding">Thresholding</a></li>
+<li><a class="reference internal" href="#binarization-and-intersection-with-ventral-temporal-vt-mask">Binarization and Intersection with Ventral Temporal (VT) mask</a></li>
+<li><a class="reference internal" href="#dilation">Dilation</a></li>
+<li><a class="reference internal" href="#identification-of-connected-components">Identification of connected components</a><ul>
+<li><a class="reference internal" href="#visualizing-the-connected-components">Visualizing the connected components</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#use-the-new-rois-to-extract-data-maps-in-both-rois">Use the new ROIs to extract data maps in both ROIs</a></li>
 </ul>
 </li>
 </ul>
