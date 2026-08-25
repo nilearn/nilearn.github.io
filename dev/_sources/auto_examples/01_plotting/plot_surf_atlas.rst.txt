@@ -29,14 +29,15 @@ to plot the :term:`parcellation` on the pial surface.
 
 See :ref:`plotting` for more details.
 
-.. GENERATED FROM PYTHON SOURCE LINES 15-19
+.. GENERATED FROM PYTHON SOURCE LINES 15-20
 
 Data fetcher
 ------------
+
 Retrieve destrieux parcellation in fsaverage5 space from nilearn
 and create a :obj:`~nilearn.surface.SurfaceImage` instance with it.
 
-.. GENERATED FROM PYTHON SOURCE LINES 19-49
+.. GENERATED FROM PYTHON SOURCE LINES 20-37
 
 .. code-block:: Python
 
@@ -57,16 +58,92 @@ and create a :obj:`~nilearn.surface.SurfaceImage` instance with it.
         },
     )
 
-    # Retrieve fsaverage5 surface dataset for the plotting background.
-    # It contains the surface template as pial and inflated version.
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [fetch_atlas_surf_destrieux] Dataset directory found: 
+    /home/runner/work/nilearn/nilearn/nilearn_data/destrieux_surface
+    /home/runner/work/nilearn/nilearn/examples/01_plotting/plot_surf_atlas.py:28: UserWarning:
+
+
+    The following regions are present in the atlas look-up table,
+    but missing from the atlas image:
+
+     index    name
+         0 Unknown
+
+
+    /home/runner/work/nilearn/nilearn/examples/01_plotting/plot_surf_atlas.py:28: UserWarning:
+
+
+    The following regions are present in the atlas look-up table,
+    but missing from the atlas image:
+
+     index    name
+         0 Unknown
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 38-40
+
+Retrieve fsaverage5 surface dataset for the plotting background.
+It contains the surface template as pial and inflated version.
+
+.. GENERATED FROM PYTHON SOURCE LINES 40-42
+
+.. code-block:: Python
+
     fsaverage_meshes = load_fsaverage()
 
-    # The fsaverage meshes contains the FileMesh objects:
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 43-44
+
+The fsaverage meshes contains the FileMesh objects:
+
+.. GENERATED FROM PYTHON SOURCE LINES 44-47
+
+.. code-block:: Python
+
     print(f"{fsaverage_meshes['pial'].parts['left']=}")
     print(f"{fsaverage_meshes['inflated'].parts['left']=}")
 
-    # The fsaverage data contains file names pointing to the file locations
-    # The sulcal depth maps will be used for shading.
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    fsaverage_meshes['pial'].parts['left']=<FileMesh with 10242 vertices and 20480 faces.>
+    fsaverage_meshes['inflated'].parts['left']=<FileMesh with 10242 vertices and 20480 faces.>
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 48-50
+
+The fsaverage data contains file names pointing to the file locations
+The sulcal depth maps will be used for shading.
+
+.. GENERATED FROM PYTHON SOURCE LINES 50-53
+
+.. code-block:: Python
+
     fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
     print(f"{fsaverage_sulcal=}")
 
@@ -78,59 +155,41 @@ and create a :obj:`~nilearn.surface.SurfaceImage` instance with it.
 
  .. code-block:: none
 
-    [fetch_atlas_surf_destrieux] Dataset directory found: 
-    /home/runner/work/nilearn/nilearn/nilearn_data/destrieux_surface
-    /home/runner/work/nilearn/nilearn/examples/01_plotting/plot_surf_atlas.py:27: UserWarning:
-
-
-    The following regions are present in the atlas look-up table,
-    but missing from the atlas image:
-
-     index    name
-         0 Unknown
-
-
-    /home/runner/work/nilearn/nilearn/examples/01_plotting/plot_surf_atlas.py:27: UserWarning:
-
-
-    The following regions are present in the atlas look-up table,
-    but missing from the atlas image:
-
-     index    name
-         0 Unknown
-
-
-    fsaverage_meshes['pial'].parts['left']=<FileMesh with 10242 vertices and 20480 faces.>
-    fsaverage_meshes['inflated'].parts['left']=<FileMesh with 10242 vertices and 20480 faces.>
     fsaverage_sulcal=<SurfaceImage (20484,)>
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 50-52
+.. GENERATED FROM PYTHON SOURCE LINES 54-60
 
 Visualization
 -------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-56
-
 Destrieux parcellation on pial surface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-67
+
+.. GENERATED FROM PYTHON SOURCE LINES 60-78
 
 .. code-block:: Python
 
     from nilearn.plotting import plot_surf_roi, show
 
+    common_plotting_params = {
+        "roi_map": destrieux_atlas,
+        "hemi": "left",
+        "bg_on_data": True,
+        "bg_map": fsaverage_sulcal,
+        "colorbar": False,
+    }
+
     plot_surf_roi(
-        roi_map=destrieux_atlas,
-        hemi="left",
         view="lateral",
-        bg_map=fsaverage_sulcal,
-        bg_on_data=True,
         title="Destrieux parcellation on sulcal surface",
+        **common_plotting_params,
     )
+
+    show()
 
 
 
@@ -141,33 +200,25 @@ Destrieux parcellation on pial surface
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    <Figure size 470x500 with 2 Axes>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-70
+.. GENERATED FROM PYTHON SOURCE LINES 79-82
 
 Destrieux parcellation on inflated surface with different views
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-83
+
+.. GENERATED FROM PYTHON SOURCE LINES 82-92
 
 .. code-block:: Python
 
     for view in ["lateral", "posterior", "ventral"]:
         plot_surf_roi(
             surf_mesh=fsaverage_meshes["inflated"],
-            roi_map=destrieux_atlas,
-            hemi="left",
             view=view,
-            bg_map=fsaverage_sulcal,
-            bg_on_data=True,
             title=f"Destrieux parcellation on inflated surface\n{view} view",
+            **common_plotting_params,
         )
 
     show()
@@ -203,25 +254,26 @@ Destrieux parcellation on inflated surface with different views
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-86
+.. GENERATED FROM PYTHON SOURCE LINES 93-96
 
 Destrieux parcellation with custom view: explicitly set angle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. GENERATED FROM PYTHON SOURCE LINES 86-97
+
+.. GENERATED FROM PYTHON SOURCE LINES 96-107
 
 .. code-block:: Python
 
     elev, azim = 210.0, 90.0  # appropriate for visualizing, e.g., the OTS
+
     plot_surf_roi(
         surf_mesh=fsaverage_meshes["inflated"],
-        roi_map=destrieux_atlas,
-        hemi="left",
         view=(elev, azim),
-        bg_map=fsaverage_sulcal,
-        bg_on_data=True,
         title="Arbitrary view of Destrieux parcellation",
+        **common_plotting_params,
     )
+
+    show()
 
 
 
@@ -232,26 +284,22 @@ Destrieux parcellation with custom view: explicitly set angle
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    <Figure size 470x500 with 2 Axes>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-105
+.. GENERATED FROM PYTHON SOURCE LINES 108-117
 
 Display connectome from surface parcellation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 The following code extracts 3D coordinates of surface parcels
 (also known as labels in the Freesurfer naming convention).
 To do so we get the pial surface of fsaverage subject,
 get the :term:`vertices<vertex>` contained in each parcel
 and compute the mean location to obtain the coordinates.
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-137
+
+.. GENERATED FROM PYTHON SOURCE LINES 117-133
 
 .. code-block:: Python
 
@@ -271,13 +319,30 @@ and compute the mean location to obtain the coordinates.
     # 3D coordinates of parcels
     coordinates = np.array(coordinates)
 
-    # We now make a synthetic connectivity matrix that connects labels
-    # between left and right hemispheres.
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 134-137
+
+We now make a synthetic connectivity matrix that connects labels
+between left and right hemispheres.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 137-153
+
+.. code-block:: Python
+
+
     n_parcels = len(coordinates)
     corr = np.zeros((n_parcels, n_parcels))
     n_parcels_hemi = n_parcels // 2
     corr[np.arange(n_parcels_hemi), np.arange(n_parcels_hemi) + n_parcels_hemi] = 1
     corr = corr + corr.T
+
 
     plot_connectome(
         adjacency_matrix=corr,
@@ -299,16 +364,21 @@ and compute the mean location to obtain the coordinates.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-144
+.. GENERATED FROM PYTHON SOURCE LINES 154-165
 
 3D visualization in a web browser
 ---------------------------------
+
+view_surf with plotly
+^^^^^^^^^^^^^^^^^^^^^
+
 An alternative to :func:`~nilearn.plotting.plot_surf_roi` is to use
 :func:`~nilearn.plotting.view_surf`
 for more interactive visualizations in a web browser.
 See :ref:`interactive-surface-plotting` for more details.
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-159
+
+.. GENERATED FROM PYTHON SOURCE LINES 165-180
 
 .. code-block:: Python
 
@@ -678,13 +748,16 @@ See :ref:`interactive-surface-plotting` for more details.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-163
+.. GENERATED FROM PYTHON SOURCE LINES 181-187
+
+view_surf with niivue
+^^^^^^^^^^^^^^^^^^^^^
 
 Note that you can also specify "niivue"
 as plotting engine to visualize surfaces.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-177
+.. GENERATED FROM PYTHON SOURCE LINES 187-197
 
 .. code-block:: Python
 
@@ -695,12 +768,8 @@ as plotting engine to visualize surfaces.
         symmetric_cmap=False,
         engine="niivue",
     )
-    # In a notebook, if ``view`` is the output of a cell,
-    # it will be displayed below the cell
     view
 
-    # uncomment this to open the plot in a web browser:
-    # view.open_in_browser()
 
 
 
@@ -3229,12 +3298,16 @@ as plotting engine to visualize surfaces.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-180
+.. GENERATED FROM PYTHON SOURCE LINES 198-204
+
+view_connectome
+^^^^^^^^^^^^^^^
 
 you can also use :func:`~nilearn.plotting.view_connectome`
 to open an interactive view of the connectome.
 
-.. GENERATED FROM PYTHON SOURCE LINES 180-190
+
+.. GENERATED FROM PYTHON SOURCE LINES 204-212
 
 .. code-block:: Python
 
@@ -3243,10 +3316,8 @@ to open an interactive view of the connectome.
         coordinates,
         edge_threshold="90%",
     )
-
-    # uncomment this to open the plot in a web browser:
-    # view.open_in_browser()
     view
+
 
 
 
@@ -3654,7 +3725,7 @@ to open an interactive view of the connectome.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 191-195
+.. GENERATED FROM PYTHON SOURCE LINES 213-217
 
 References
 ----------
@@ -3664,9 +3735,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 8.834 seconds)
+   **Total running time of the script:** (0 minutes 9.307 seconds)
 
-**Estimated memory usage:**  187 MB
+**Estimated memory usage:**  169 MB
 
 
 .. _sphx_glr_download_auto_examples_01_plotting_plot_surf_atlas.py:
