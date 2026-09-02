@@ -22,7 +22,7 @@ Copying headers from input images with ``math_img``
 ===================================================
 
 This example shows how to copy the header information from one of
-the input images to the result image when using the function
+the input images to a resulting image when using the function
 :func:`~nilearn.image.math_img`.
 
 The header information contains metadata about the image, such as the
@@ -30,15 +30,17 @@ dimensions, the voxel sizes, the affine matrix, repetition time (:term:`TR`),
 etc. Some of this information might be important for downstream analyses
 depending on the software used.
 
-.. GENERATED FROM PYTHON SOURCE LINES 16-21
+.. GENERATED FROM PYTHON SOURCE LINES 16-23
 
-Let's fetch an example :term:`fMRI` dataset
+Let's fetch two subjects from
+an example :term:`fMRI` dataset,
+:func:`~nilearn.datasets.fetch_adhd`.
 
-For more information
+For more information on the structure of this dataset,
 see the :ref:`dataset description <adhd_dataset>`.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 21-25
+.. GENERATED FROM PYTHON SOURCE LINES 23-27
 
 .. code-block:: Python
 
@@ -54,25 +56,25 @@ see the :ref:`dataset description <adhd_dataset>`.
 
  .. code-block:: none
 
-    [fetch_adhd] Dataset directory found: 
-    /home/runner/work/nilearn/nilearn/nilearn_data/adhd
-    [fetch_adhd] Downloading data from 
-    https://www.nitrc.org/frs/download.php/7783/adhd40_0010064.tgz ...
-    [fetch_adhd]  ...done. (1 seconds, 0 min)
+    [fetch_adhd] Dataset directory found: /home/runner/work/nilearn/nilearn/nilearn_data/adhd
+    [fetch_adhd] Downloading data from https://www.nitrc.org/frs/download.php/7783/adhd40_0010064.tgz ...
+    [fetch_adhd]  ...done. (0 seconds, 0 min)
 
-    [fetch_adhd] Extracting data from /home/runner/work/nilearn/nilearn/nilearn_data
-    /adhd/31769c9cee5cd55f045e62633d651f3d/adhd40_0010064.tgz...
+    [fetch_adhd] Extracting data from /home/runner/work/nilearn/nilearn/nilearn_data/adhd/31769c9cee5cd55f045e62633d651f3d/adhd40_0010064.tgz...
     [fetch_adhd] .. done.
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-27
+.. GENERATED FROM PYTHON SOURCE LINES 28-32
+
+Preserving header information from an input image
+-------------------------------------------------
 
 Now let's look at the header of one of these images
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-33
+.. GENERATED FROM PYTHON SOURCE LINES 32-38
 
 .. code-block:: Python
 
@@ -139,11 +141,12 @@ Now let's look at the header of one of these images
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 34-35
+.. GENERATED FROM PYTHON SOURCE LINES 39-41
 
-Let's apply a simple operation using :func:`~nilearn.image.math_img`
+Let's apply a simple operation to this image
+using :func:`~nilearn.image.math_img`
 
-.. GENERATED FROM PYTHON SOURCE LINES 35-39
+.. GENERATED FROM PYTHON SOURCE LINES 41-45
 
 .. code-block:: Python
 
@@ -158,17 +161,17 @@ Let's apply a simple operation using :func:`~nilearn.image.math_img`
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-47
+.. GENERATED FROM PYTHON SOURCE LINES 46-53
 
-By default, :func:`~nilearn.image.math_img` simply resets result image's
-header to the default :class:`~nibabel.nifti1.Nifti1Header`.
+By default, :func:`~nilearn.image.math_img` simply resets the result
+image's header to the default :class:`~nibabel.nifti1.Nifti1Header`.
 
-This means that it will contain different information as compared to the
+This means that it will not contain the same information as the
 input image.
 
 We can check that as follows:
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-58
+.. GENERATED FROM PYTHON SOURCE LINES 53-64
 
 .. code-block:: Python
 
@@ -223,17 +226,18 @@ We can check that as follows:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-66
+.. GENERATED FROM PYTHON SOURCE LINES 65-73
 
 This could affect some downstream analyses.
 
-For example, here the :term:`TR` (given as fifth element in ``pixdim``)
+For example, here the :term:`TR`
+(given as the fifth element in ``pixdim``)
 is changed from 2 in ``subj1_img`` to 1 in ``result_img``.
 
 To fix this, we can copy the header of the input images to the
-result image, like this:
+result image, like so:
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-70
+.. GENERATED FROM PYTHON SOURCE LINES 73-77
 
 .. code-block:: Python
 
@@ -248,11 +252,11 @@ result image, like this:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-72
+.. GENERATED FROM PYTHON SOURCE LINES 78-79
 
 Let's compare the header fields again.
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-82
+.. GENERATED FROM PYTHON SOURCE LINES 79-89
 
 .. code-block:: Python
 
@@ -288,13 +292,13 @@ Let's compare the header fields again.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 83-86
+.. GENERATED FROM PYTHON SOURCE LINES 90-93
 
 We can safely ignore the fields that are still different -- ``scl_scope`` and
 ``scl_inter`` are just ``nan`` and ``cal_max`` is supposed to have the
 maximum data value that is updated automatically by nilearn.
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-101
+.. GENERATED FROM PYTHON SOURCE LINES 95-108
 
 Modifying dimensions in the formula
 -----------------------------------
@@ -304,16 +308,19 @@ input images. For example, by taking the mean of the images along the
 time axis.
 
 Copying the header with the ``copy_header_from`` parameter will not work
-in this case.
+in this case as the dimensions of the resulting image will be different.
 
-So, in such cases we could just use :func:`~nilearn.image.math_img` without
+Instead, in these cases we can use :func:`~nilearn.image.math_img` without
 specifying ``copy_header_from`` and then explicitly copy the header from one
 of the images using :func:`~nilearn.image.new_img_like`
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-107
+.. GENERATED FROM PYTHON SOURCE LINES 108-117
 
 .. code-block:: Python
 
+
+    # Take the mean of both subject images along the time axis
+    # and subtract them.
     result_img = math_img(
         "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)",
         img1=subj1_img,
@@ -327,11 +334,11 @@ of the images using :func:`~nilearn.image.new_img_like`
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-109
+.. GENERATED FROM PYTHON SOURCE LINES 118-119
 
-Several of the header fields are different:
+We can confirm that several of the header fields are different:
 
-.. GENERATED FROM PYTHON SOURCE LINES 109-119
+.. GENERATED FROM PYTHON SOURCE LINES 119-129
 
 .. code-block:: Python
 
@@ -388,11 +395,11 @@ Several of the header fields are different:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-121
+.. GENERATED FROM PYTHON SOURCE LINES 130-131
 
-Now we can copy the header explicitly like this:
+To account for this, we can copy the header explicitly like so:
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-129
+.. GENERATED FROM PYTHON SOURCE LINES 131-139
 
 .. code-block:: Python
 
@@ -411,20 +418,11 @@ Now we can copy the header explicitly like this:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-140
+.. GENERATED FROM PYTHON SOURCE LINES 140-141
 
 Now, only a few not-so-important fields are different.
 
-The modified fields can vary depending upon the formula passed into the
-function.
-
-In this case, ``dim`` and ``pixdim`` are different because we took a mean
-over the time dimension.
-
-And again, ``cal_min`` and ``cal_max`` are set to minimum and maximum data
-values respectively, by Nilearn.
-
-.. GENERATED FROM PYTHON SOURCE LINES 140-150
+.. GENERATED FROM PYTHON SOURCE LINES 141-152
 
 .. code-block:: Python
 
@@ -438,6 +436,7 @@ values respectively, by Nilearn.
                 "\n\tresult image:",
                 result_img_with_header.header[key],
             )
+
 
 
 
@@ -469,12 +468,23 @@ values respectively, by Nilearn.
 
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 153-161
+
+The modified fields can vary depending upon the formula passed into the
+function.
+
+In this case, ``dim`` and ``pixdim`` are different because we took a mean
+over the time dimension.
+
+And again, ``cal_min`` and ``cal_max`` are set to minimum and maximum data
+values respectively, by Nilearn.
+
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 5.527 seconds)
+   **Total running time of the script:** (0 minutes 6.410 seconds)
 
-**Estimated memory usage:**  1018 MB
+**Estimated memory usage:**  1035 MB
 
 
 .. _sphx_glr_download_auto_examples_07_advanced_plot_copy_headers_math_img.py:
