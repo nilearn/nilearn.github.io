@@ -22,10 +22,10 @@ Deriving spatial maps from group fMRI data using ICA and Dictionary Learning
 ============================================================================
 
 Various approaches exist to derive spatial maps or networks from
-group fmr data. The methods extract distributed brain regions that
+group :term:`fMRI` data. The methods extract distributed brain regions that
 exhibit similar :term:`BOLD` fluctuations over time. Decomposition
 methods allow for generation of many independent maps simultaneously
-without the need to provide a priori information (e.g. seeds or priors.)
+without the need to provide a priori information (e.g. seeds or priors).
 
 This example will apply two popular decomposition methods, :term:`ICA` and
 :term:`Dictionary learning`, to :term:`fMRI` data measured while children
@@ -81,7 +81,7 @@ We use "whole-brain-template" as a strategy to compute the mask,
 as this leads to slightly faster and more reproducible results.
 However, the images need to be in :term:`MNI` template space.
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-79
+.. GENERATED FROM PYTHON SOURCE LINES 44-67
 
 .. code-block:: Python
 
@@ -107,18 +107,6 @@ However, the images need to be in :term:`MNI` template space.
         warnings.filterwarnings(action="ignore", category=ConvergenceWarning)
         canica.fit(func_filenames)
 
-    # Retrieve the independent components in brain space. Directly
-    # accessible through attribute `components_img_`.
-    canica_components_img = canica.components_img_
-    # components_img is a Nifti Image object, and can be saved to a file with
-    # the following lines:
-    from pathlib import Path
-
-    output_dir = Path.cwd() / "results" / "plot_compare_decomposition"
-    output_dir.mkdir(exist_ok=True, parents=True)
-    print(f"Output will be saved to: {output_dir}")
-    canica_components_img.to_filename(output_dir / "canica_resting_state.nii.gz")
-
 
 
 
@@ -130,23 +118,29 @@ However, the images need to be in :term:`MNI` template space.
 
     [CanICA.fit] Loading data
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
-    [Parallel(n_jobs=2)]: Done  10 out of  10 | elapsed:   14.6s finished
-    Output will be saved to: /home/runner/work/nilearn/nilearn/examples/03_connectivity/results/plot_compare_decomposition
+    [Parallel(n_jobs=2)]: Done  10 out of  10 | elapsed:   15.7s finished
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 80-81
+.. GENERATED FROM PYTHON SOURCE LINES 68-75
 
-To visualize we plot the outline of all components on one figure
+Visualize the results
+.....................
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-87
+To visualize,
+we retrieve the independent components in brain space
+directly accessible through attribute `components_img_`.
+We then plot the outline of all ICA components on one figure.
+
+.. GENERATED FROM PYTHON SOURCE LINES 75-82
 
 .. code-block:: Python
 
     from nilearn.plotting import plot_prob_atlas
 
-    # Plot all ICA components together
+    canica_components_img = canica.components_img_
+
     plot_prob_atlas(canica_components_img, title="All ICA components")
 
 
@@ -168,13 +162,18 @@ To visualize we plot the outline of all components on one figure
     Warning: converting a masked element to nan.
 
 
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7fe34cf66190>
+    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f46f2058b10>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-89
+.. GENERATED FROM PYTHON SOURCE LINES 83-89
 
-Finally, we plot the map for each :term:`ICA` component separately
+Finally, we plot the map for each :term:`ICA` component separately.
+
+.. note::
+
+  The following code block will generate many figures.
+
 
 .. GENERATED FROM PYTHON SOURCE LINES 89-106
 
@@ -194,8 +193,8 @@ Finally, we plot the map for each :term:`ICA` component separately
             colorbar=False,
         )
 
-
     show()
+
 
 
 
@@ -356,14 +355,14 @@ for extracting spatial maps. It extracts maps that are naturally sparse
 and usually cleaner than :term:`ICA`. Here, we will compare networks built
 with :term:`CanICA` to networks built with :term:`Dictionary learning`.
 
-For more detailse see :footcite:t:`Mensch2016`.
+For more details see :footcite:t:`Mensch2016`.
 
 
 .. GENERATED FROM PYTHON SOURCE LINES 119-120
 
 Create a dictionary learning estimator
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-145
+.. GENERATED FROM PYTHON SOURCE LINES 120-136
 
 .. code-block:: Python
 
@@ -380,16 +379,7 @@ Create a dictionary learning estimator
         n_jobs=2,
     )
 
-    print("[Example] Fitting dictionary learning model")
     dict_learning.fit(func_filenames)
-    print("[Example] Saving results")
-    # Grab extracted components umasked back to Nifti image.
-    # Note: For older versions, less than 0.4.1. components_img_
-    # is not implemented. See Note section above for details.
-    dictlearning_components_img = dict_learning.components_img_
-    dictlearning_components_img.to_filename(
-        output_dir / "dictionary_learning_resting_state.nii.gz"
-    )
 
 
 
@@ -400,7 +390,6 @@ Create a dictionary learning estimator
 
  .. code-block:: none
 
-    [Example] Fitting dictionary learning model
     [DictLearning.fit] Loading data
     [DictLearning.fit] Learning initial components
     [Parallel(n_jobs=2)]: Using backend LokyBackend with 2 concurrent workers.
@@ -424,21 +413,445 @@ Create a dictionary learning estimator
            ...,
            [ 0.349894, ..., -0.191299]]), verbose=0, random_state=0, return_code=True, shuffle=True, n_jobs=1, max_iter=1090)
     _____________________________________________dict_learning_online - 2.0s, 0.0min
-    [Example] Saving results
 
 
+.. raw:: html
+
+    <div class="output_subarea output_html rendered_html output_result">
+    <style>#sk-container-id-12 {
+      /* Definition of color scheme common for light and dark mode */
+      --sklearn-color-text: #000;
+      --sklearn-color-text-muted: #666;
+      --sklearn-color-line: gray;
+      /* Definition of color scheme for unfitted estimators */
+      --sklearn-color-unfitted-level-0: #fff5e6;
+      --sklearn-color-unfitted-level-1: #f6e4d2;
+      --sklearn-color-unfitted-level-2: #ffe0b3;
+      --sklearn-color-unfitted-level-3: chocolate;
+      /* Definition of color scheme for fitted estimators */
+      --sklearn-color-fitted-level-0: #f0f8ff;
+      --sklearn-color-fitted-level-1: #d4ebff;
+      --sklearn-color-fitted-level-2: #b3dbfd;
+      --sklearn-color-fitted-level-3: cornflowerblue;
+
+      /* Specific color for light theme */
+      --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
+      --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, white)));
+      --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
+      --sklearn-color-icon: #696969;
+
+      @media (prefers-color-scheme: dark) {
+        /* Redefinition of color scheme for dark theme */
+        --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
+        --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, #111)));
+        --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
+        --sklearn-color-icon: #878787;
+      }
+    }
+
+    #sk-container-id-12 {
+      color: var(--sklearn-color-text);
+    }
+
+    #sk-container-id-12 pre {
+      padding: 0;
+    }
+
+    #sk-container-id-12 input.sk-hidden--visually {
+      border: 0;
+      clip: rect(1px 1px 1px 1px);
+      clip: rect(1px, 1px, 1px, 1px);
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      padding: 0;
+      position: absolute;
+      width: 1px;
+    }
+
+    #sk-container-id-12 div.sk-dashed-wrapped {
+      border: 1px dashed var(--sklearn-color-line);
+      margin: 0 0.4em 0.5em 0.4em;
+      box-sizing: border-box;
+      padding-bottom: 0.4em;
+      background-color: var(--sklearn-color-background);
+    }
+
+    #sk-container-id-12 div.sk-container {
+      /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
+         but bootstrap.min.css set `[hidden] { display: none !important; }`
+         so we also need the `!important` here to be able to override the
+         default hidden behavior on the sphinx rendered scikit-learn.org.
+         See: https://github.com/scikit-learn/scikit-learn/issues/21755 */
+      display: inline-block !important;
+      position: relative;
+    }
+
+    #sk-container-id-12 div.sk-text-repr-fallback {
+      display: none;
+    }
+
+    div.sk-parallel-item,
+    div.sk-serial,
+    div.sk-item {
+      /* draw centered vertical line to link estimators */
+      background-image: linear-gradient(var(--sklearn-color-text-on-default-background), var(--sklearn-color-text-on-default-background));
+      background-size: 2px 100%;
+      background-repeat: no-repeat;
+      background-position: center center;
+    }
+
+    /* Parallel-specific style estimator block */
+
+    #sk-container-id-12 div.sk-parallel-item::after {
+      content: "";
+      width: 100%;
+      border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
+      flex-grow: 1;
+    }
+
+    #sk-container-id-12 div.sk-parallel {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      background-color: var(--sklearn-color-background);
+      position: relative;
+    }
+
+    #sk-container-id-12 div.sk-parallel-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #sk-container-id-12 div.sk-parallel-item:first-child::after {
+      align-self: flex-end;
+      width: 50%;
+    }
+
+    #sk-container-id-12 div.sk-parallel-item:last-child::after {
+      align-self: flex-start;
+      width: 50%;
+    }
+
+    #sk-container-id-12 div.sk-parallel-item:only-child::after {
+      width: 0;
+    }
+
+    /* Serial-specific style estimator block */
+
+    #sk-container-id-12 div.sk-serial {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: var(--sklearn-color-background);
+      padding-right: 1em;
+      padding-left: 1em;
+    }
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-149
+    /* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
+    clickable and can be expanded/collapsed.
+    - Pipeline and ColumnTransformer use this feature and define the default style
+    - Estimators will overwrite some part of the style using the `sk-estimator` class
+    */
+
+    /* Pipeline and ColumnTransformer style (default) */
+
+    #sk-container-id-12 div.sk-toggleable {
+      /* Default theme specific background. It is overwritten whether we have a
+      specific estimator or a Pipeline/ColumnTransformer */
+      background-color: var(--sklearn-color-background);
+    }
+
+    /* Toggleable label */
+    #sk-container-id-12 label.sk-toggleable__label {
+      cursor: pointer;
+      display: flex;
+      width: 100%;
+      margin-bottom: 0;
+      padding: 0.5em;
+      box-sizing: border-box;
+      text-align: center;
+      align-items: start;
+      justify-content: space-between;
+      gap: 0.5em;
+    }
+
+    #sk-container-id-12 label.sk-toggleable__label .caption {
+      font-size: 0.6rem;
+      font-weight: lighter;
+      color: var(--sklearn-color-text-muted);
+    }
+
+    #sk-container-id-12 label.sk-toggleable__label-arrow:before {
+      /* Arrow on the left of the label */
+      content: "▸";
+      float: left;
+      margin-right: 0.25em;
+      color: var(--sklearn-color-icon);
+    }
+
+    #sk-container-id-12 label.sk-toggleable__label-arrow:hover:before {
+      color: var(--sklearn-color-text);
+    }
+
+    /* Toggleable content - dropdown */
+
+    #sk-container-id-12 div.sk-toggleable__content {
+      max-height: 0;
+      max-width: 0;
+      overflow: hidden;
+      text-align: left;
+      /* unfitted */
+      background-color: var(--sklearn-color-unfitted-level-0);
+    }
+
+    #sk-container-id-12 div.sk-toggleable__content.fitted {
+      /* fitted */
+      background-color: var(--sklearn-color-fitted-level-0);
+    }
+
+    #sk-container-id-12 div.sk-toggleable__content pre {
+      margin: 0.2em;
+      border-radius: 0.25em;
+      color: var(--sklearn-color-text);
+      /* unfitted */
+      background-color: var(--sklearn-color-unfitted-level-0);
+    }
+
+    #sk-container-id-12 div.sk-toggleable__content.fitted pre {
+      /* unfitted */
+      background-color: var(--sklearn-color-fitted-level-0);
+    }
+
+    #sk-container-id-12 input.sk-toggleable__control:checked~div.sk-toggleable__content {
+      /* Expand drop-down */
+      max-height: 200px;
+      max-width: 100%;
+      overflow: auto;
+    }
+
+    #sk-container-id-12 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
+      content: "▾";
+    }
+
+    /* Pipeline/ColumnTransformer-specific style */
+
+    #sk-container-id-12 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
+      color: var(--sklearn-color-text);
+      background-color: var(--sklearn-color-unfitted-level-2);
+    }
+
+    #sk-container-id-12 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+      background-color: var(--sklearn-color-fitted-level-2);
+    }
+
+    /* Estimator-specific style */
+
+    /* Colorize estimator box */
+    #sk-container-id-12 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
+      /* unfitted */
+      background-color: var(--sklearn-color-unfitted-level-2);
+    }
+
+    #sk-container-id-12 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+      /* fitted */
+      background-color: var(--sklearn-color-fitted-level-2);
+    }
+
+    #sk-container-id-12 div.sk-label label.sk-toggleable__label,
+    #sk-container-id-12 div.sk-label label {
+      /* The background is the default theme color */
+      color: var(--sklearn-color-text-on-default-background);
+    }
+
+    /* On hover, darken the color of the background */
+    #sk-container-id-12 div.sk-label:hover label.sk-toggleable__label {
+      color: var(--sklearn-color-text);
+      background-color: var(--sklearn-color-unfitted-level-2);
+    }
+
+    /* Label box, darken color on hover, fitted */
+    #sk-container-id-12 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
+      color: var(--sklearn-color-text);
+      background-color: var(--sklearn-color-fitted-level-2);
+    }
+
+    /* Estimator label */
+
+    #sk-container-id-12 div.sk-label label {
+      font-family: monospace;
+      font-weight: bold;
+      display: inline-block;
+      line-height: 1.2em;
+    }
+
+    #sk-container-id-12 div.sk-label-container {
+      text-align: center;
+    }
+
+    /* Estimator-specific */
+    #sk-container-id-12 div.sk-estimator {
+      font-family: monospace;
+      border: 1px dotted var(--sklearn-color-border-box);
+      border-radius: 0.25em;
+      box-sizing: border-box;
+      margin-bottom: 0.5em;
+      /* unfitted */
+      background-color: var(--sklearn-color-unfitted-level-0);
+    }
+
+    #sk-container-id-12 div.sk-estimator.fitted {
+      /* fitted */
+      background-color: var(--sklearn-color-fitted-level-0);
+    }
+
+    /* on hover */
+    #sk-container-id-12 div.sk-estimator:hover {
+      /* unfitted */
+      background-color: var(--sklearn-color-unfitted-level-2);
+    }
+
+    #sk-container-id-12 div.sk-estimator.fitted:hover {
+      /* fitted */
+      background-color: var(--sklearn-color-fitted-level-2);
+    }
+
+    /* Specification for estimator info (e.g. "i" and "?") */
+
+    /* Common style for "i" and "?" */
+
+    .sk-estimator-doc-link,
+    a:link.sk-estimator-doc-link,
+    a:visited.sk-estimator-doc-link {
+      float: right;
+      font-size: smaller;
+      line-height: 1em;
+      font-family: monospace;
+      background-color: var(--sklearn-color-background);
+      border-radius: 1em;
+      height: 1em;
+      width: 1em;
+      text-decoration: none !important;
+      margin-left: 0.5em;
+      text-align: center;
+      /* unfitted */
+      border: var(--sklearn-color-unfitted-level-1) 1pt solid;
+      color: var(--sklearn-color-unfitted-level-1);
+    }
+
+    .sk-estimator-doc-link.fitted,
+    a:link.sk-estimator-doc-link.fitted,
+    a:visited.sk-estimator-doc-link.fitted {
+      /* fitted */
+      border: var(--sklearn-color-fitted-level-1) 1pt solid;
+      color: var(--sklearn-color-fitted-level-1);
+    }
+
+    /* On hover */
+    div.sk-estimator:hover .sk-estimator-doc-link:hover,
+    .sk-estimator-doc-link:hover,
+    div.sk-label-container:hover .sk-estimator-doc-link:hover,
+    .sk-estimator-doc-link:hover {
+      /* unfitted */
+      background-color: var(--sklearn-color-unfitted-level-3);
+      color: var(--sklearn-color-background);
+      text-decoration: none;
+    }
+
+    div.sk-estimator.fitted:hover .sk-estimator-doc-link.fitted:hover,
+    .sk-estimator-doc-link.fitted:hover,
+    div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
+    .sk-estimator-doc-link.fitted:hover {
+      /* fitted */
+      background-color: var(--sklearn-color-fitted-level-3);
+      color: var(--sklearn-color-background);
+      text-decoration: none;
+    }
+
+    /* Span, style for the box shown on hovering the info icon */
+    .sk-estimator-doc-link span {
+      display: none;
+      z-index: 9999;
+      position: relative;
+      font-weight: normal;
+      right: .2ex;
+      padding: .5ex;
+      margin: .5ex;
+      width: min-content;
+      min-width: 20ex;
+      max-width: 50ex;
+      color: var(--sklearn-color-text);
+      box-shadow: 2pt 2pt 4pt #999;
+      /* unfitted */
+      background: var(--sklearn-color-unfitted-level-0);
+      border: .5pt solid var(--sklearn-color-unfitted-level-3);
+    }
+
+    .sk-estimator-doc-link.fitted span {
+      /* fitted */
+      background: var(--sklearn-color-fitted-level-0);
+      border: var(--sklearn-color-fitted-level-3);
+    }
+
+    .sk-estimator-doc-link:hover span {
+      display: block;
+    }
+
+    /* "?"-specific style due to the `<a>` HTML tag */
+
+    #sk-container-id-12 a.estimator_doc_link {
+      float: right;
+      font-size: 1rem;
+      line-height: 1em;
+      font-family: monospace;
+      background-color: var(--sklearn-color-background);
+      border-radius: 1rem;
+      height: 1rem;
+      width: 1rem;
+      text-decoration: none;
+      /* unfitted */
+      color: var(--sklearn-color-unfitted-level-1);
+      border: var(--sklearn-color-unfitted-level-1) 1pt solid;
+    }
+
+    #sk-container-id-12 a.estimator_doc_link.fitted {
+      /* fitted */
+      border: var(--sklearn-color-fitted-level-1) 1pt solid;
+      color: var(--sklearn-color-fitted-level-1);
+    }
+
+    /* On hover */
+    #sk-container-id-12 a.estimator_doc_link:hover {
+      /* unfitted */
+      background-color: var(--sklearn-color-unfitted-level-3);
+      color: var(--sklearn-color-background);
+      text-decoration: none;
+    }
+
+    #sk-container-id-12 a.estimator_doc_link.fitted:hover {
+      /* fitted */
+      background-color: var(--sklearn-color-fitted-level-3);
+    }
+    </style><div id="sk-container-id-12" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>DictLearning(mask_strategy=&#x27;whole-brain-template&#x27;, memory=&#x27;nilearn_cache&#x27;,
+                 memory_level=1, n_jobs=2, random_state=0, verbose=1)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-18" type="checkbox" checked><label for="sk-estimator-id-18" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>DictLearning</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://nilearn.github.io/dev/modules/generated/nilearn.decomposition.DictLearning.html">?<span>Documentation for DictLearning</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>DictLearning(mask_strategy=&#x27;whole-brain-template&#x27;, memory=&#x27;nilearn_cache&#x27;,
+                 memory_level=1, n_jobs=2, random_state=0, verbose=1)</pre></div> </div></div></div></div>
+    </div>
+    <br />
+    <br />
+
+.. GENERATED FROM PYTHON SOURCE LINES 137-141
 
 Visualize the results
+.....................
 
 First plot all DictLearning components together
 
-.. GENERATED FROM PYTHON SOURCE LINES 149-154
+.. GENERATED FROM PYTHON SOURCE LINES 141-147
 
 .. code-block:: Python
 
+    dictlearning_components_img = dict_learning.components_img_
     plot_prob_atlas(
         dictlearning_components_img, title="All DictLearning components"
     )
@@ -462,15 +875,20 @@ First plot all DictLearning components together
     Warning: converting a masked element to nan.
 
 
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7fe37c568b10>
+    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f47169f50d0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-156
+.. GENERATED FROM PYTHON SOURCE LINES 148-154
 
 One plot of each component
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-168
+.. note::
+
+  The following code block will generate many figures.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 154-167
 
 .. code-block:: Python
 
@@ -485,6 +903,7 @@ One plot of each component
             vmin=-0.1,
             colorbar=False,
         )
+
 
 
 
@@ -636,20 +1055,49 @@ One plot of each component
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 169-173
+.. GENERATED FROM PYTHON SOURCE LINES 168-172
 
-Estimate explained variance per component and plot using matplotlib
+Estimate explained variance per component and plot using matplotlib.
 
-The fitted object `dict_learning` can be used
-to calculate the score per component
+The fitted object ``dict_learning`` can be used
+to calculate the score per component.
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-191
+.. GENERATED FROM PYTHON SOURCE LINES 172-175
 
 .. code-block:: Python
 
     scores = dict_learning.score(func_filenames, per_component=True)
 
-    # Plot the scores
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    ________________________________________________________________________________
+    [Memory] Calling nilearn.decomposition._base._explained_variance...
+    _explained_variance(array([[-2.806378e-01, ...,  8.257976e-01],
+           ...,
+           [-2.017024e-15, ..., -6.232236e-16]]), 
+    array([[0., ..., 0.],
+           ...,
+           [0., ..., 0.]]), per_component=True)
+    ______________________________________________explained_variance - 12.6s, 0.2min
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 176-177
+
+Plot the scores
+
+.. GENERATED FROM PYTHON SOURCE LINES 177-193
+
+.. code-block:: Python
+
     import numpy as np
     from matplotlib import pyplot as plt
     from matplotlib.ticker import FormatStrFormatter
@@ -668,40 +1116,27 @@ to calculate the score per component
 
 
 
+
 .. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_043.png
    :alt: plot compare decomposition
    :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_043.png
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.decomposition._base._explained_variance...
-    _explained_variance(array([[-2.806378e-01, ...,  8.257976e-01],
-           ...,
-           [-2.017024e-15, ..., -6.232236e-16]]), 
-    array([[0., ..., 0.],
-           ...,
-           [0., ..., 0.]]), per_component=True)
-    ______________________________________________explained_variance - 12.7s, 0.2min
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 192-199
+.. GENERATED FROM PYTHON SOURCE LINES 194-201
 
 .. note::
 
-    To see how to extract subject-level timeseries' from regions
+    To see how to extract subject-level timeseries from regions
     created using :term:`Dictionary learning`, see :ref:`example Regions
     extraction using dictionary learning and functional connectomes
     <sphx_glr_auto_examples_03_connectivity\
     _plot_extract_regions_dictlearning_maps.py>`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 201-205
+.. GENERATED FROM PYTHON SOURCE LINES 204-208
 
 References
 ----------
@@ -711,9 +1146,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 23.004 seconds)
+   **Total running time of the script:** (1 minutes 23.684 seconds)
 
-**Estimated memory usage:**  2777 MB
+**Estimated memory usage:**  2772 MB
 
 
 .. _sphx_glr_download_auto_examples_03_connectivity_plot_compare_decomposition.py:
