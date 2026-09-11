@@ -187,7 +187,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.14.2.dev20+g155b5f778) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.1)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.14.2.dev21+gaee5750ea) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.1)</span></a></p> 
   </aside>
 </div>
 
@@ -888,9 +888,8 @@ necessarily converting each file to <a class="reference external" href="https://
 <span class="p">)</span>
 <span class="c1"># Fit to the data</span>
 <span class="n">dict_learn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">func_filenames</span><span class="p">)</span>
-<span class="c1"># Resting state networks/maps in attribute `components_img_`</span>
-<span class="n">components_img</span> <span class="o">=</span> <span class="n">dict_learn</span><span class="o">.</span><span class="n">components_img_</span>
 
+<span class="c1"># %%</span>
 </pre></div>
 </div>
 </section>
@@ -900,7 +899,12 @@ necessarily converting each file to <a class="reference external" href="https://
 Here, we use <a class="reference internal" href="../modules/generated/nilearn.plotting.plot_prob_atlas.html#nilearn.plotting.plot_prob_atlas" title="nilearn.plotting.plot_prob_atlas"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_prob_atlas</span></code></a> for easy visualization of 4D atlas maps
 onto the anatomical standard template. Each map is displayed in different
 color and colors are random and automatically picked.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_prob_atlas</span><span class="p">,</span> <span class="n">show</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># via the attribute ``components_img_``</span>
+<span class="c1"># and show them using plotting utilities.</span>
+<span class="c1">#</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_prob_atlas</span><span class="p">,</span> <span class="n">show</span>
+
+<span class="n">components_img</span> <span class="o">=</span> <span class="n">dict_learn</span><span class="o">.</span><span class="n">components_img_</span>
 
 <span class="n">plot_prob_atlas</span><span class="p">(</span>
     <span class="n">components_img</span><span class="p">,</span>
@@ -932,7 +936,14 @@ the maps data.</p>
 regions. We control the small spurious regions size by thresholding in <a class="reference internal" href="../glossary.html#term-voxel"><span class="xref std std-term">voxel</span></a>
 units to adapt well to the resolution of the image. Please see the documentation of
 <a class="reference internal" href="../modules/generated/nilearn.regions.connected_regions.html#nilearn.regions.connected_regions" title="nilearn.regions.connected_regions"><code class="xref py py-func docutils literal notranslate"><span class="pre">connected_regions</span></code></a> for more details.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.regions</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegionExtractor</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ``threshold=0.5`` indicates that we keep nominal of amount nonzero</span>
+<span class="c1"># :term:`voxels&lt;voxel&gt;` across all maps, less the threshold means that</span>
+<span class="c1"># Import :class:`~nilearn.regions.RegionExtractor` from the</span>
+<span class="c1"># :mod:`~nilearn.regions` module.</span>
+<span class="c1"># ``threshold=0.5`` indicates that we keep a nominal of amount non-zero</span>
+<span class="c1"># :term:`voxels&lt;voxel&gt;` across all maps.</span>
+<span class="c1">#</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.regions</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegionExtractor</span>
 
 <span class="n">extractor</span> <span class="o">=</span> <span class="n">RegionExtractor</span><span class="p">(</span>
     <span class="n">components_img</span><span class="p">,</span>
@@ -944,15 +955,11 @@ units to adapt well to the resolution of the image. Please see the documentation
     <span class="n">min_region_size</span><span class="o">=</span><span class="mi">1350</span><span class="p">,</span>
     <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="c1"># Just call fit() to process for regions extraction</span>
-<span class="n">extractor</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-<span class="c1"># Extracted regions are stored in regions_img_</span>
-<span class="n">regions_extracted_img</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">regions_img_</span>
-<span class="c1"># Each region index is stored in index_</span>
-<span class="n">regions_index</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">index_</span>
-<span class="c1"># Total number of regions extracted</span>
-<span class="n">n_regions_extracted</span> <span class="o">=</span> <span class="n">regions_extracted_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
+<span class="c1"># Just call fit() to proceed with regions extraction.</span>
+<span class="n">extractor</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># %%</span>
 </pre></div>
 </div>
 </section>
@@ -962,10 +969,20 @@ units to adapt well to the resolution of the image. Please see the documentation
 for visualizing extracted regions on a standard template. Each extracted brain
 region is assigned a color and as you can see that visual cortex area is extracted
 quite nicely into each hemisphere.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">title</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n_regions_extracted</span><span class="si">}</span><span class="s2"> regions are extracted from 8 components.</span><span class="se">\n</span><span class="s2">"</span>
-    <span class="s2">"Each separate color of region indicates extracted region"</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ..........................................</span>
+<span class="c1"># Extracted regions are stored in ``regions_img_``</span>
+<span class="c1"># and each region index is stored in ``index_``.</span>
+<span class="n">regions_index</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">index_</span>
+
+<span class="n">regions_extracted_img</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">regions_img_</span>
+<span class="n">n_regions_extracted</span> <span class="o">=</span> <span class="n">regions_extracted_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">n_components</span> <span class="o">=</span> <span class="n">components_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">title</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">n_regions_extracted</span><span class="si">}</span><span class="s2"> regions are extracted "</span>
+    <span class="sa">f</span><span class="s2">"from </span><span class="si">{</span><span class="n">n_components</span><span class="si">}</span><span class="s2"> components.</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"Each separate color of region indicates extracted region."</span>
 <span class="p">)</span>
+
 <span class="n">plot_prob_atlas</span><span class="p">(</span>
     <span class="n">regions_extracted_img</span><span class="p">,</span>
     <span class="n">view_type</span><span class="o">=</span><span class="s2">"filled_contours"</span><span class="p">,</span>
@@ -993,25 +1010,22 @@ Here, for each subject we have time series signals of <code class="docutils lite
 where 168 is the length of time series and <code class="docutils literal notranslate"><span class="pre">n_regions_extracted</span></code> is the number of
 extracted regions. Likewise, we have a total of 20 subject specific time series signals.
 The third step, we compute the mean correlation across all subjects.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.connectome</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConnectivityMeasure</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># and then estimate the correlation matrices on those signals.</span>
+<span class="c1"># To extract timeseries, we call</span>
+<span class="c1"># :meth:`~nilearn.regions.RegionExtractor.transform` onto each subject</span>
+<span class="c1"># functional data stored in ``func_filenames``.</span>
+<span class="c1"># To estimate the correlation matrices</span>
+<span class="c1"># we can rely on :class:`nilearn.connectome.ConnectivityMeasure`.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.connectome</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConnectivityMeasure</span>
+
+<span class="n">connectome_measure</span> <span class="o">=</span> <span class="n">ConnectivityMeasure</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">"correlation"</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="n">correlations</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="c1"># Initializing ConnectivityMeasure object with kind='correlation'</span>
-<span class="n">connectome_measure</span> <span class="o">=</span> <span class="n">ConnectivityMeasure</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">"correlation"</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">confound</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">func_filenames</span><span class="p">,</span> <span class="n">confounds</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="c1"># call transform from RegionExtractor object to extract timeseries signals</span>
     <span class="n">timeseries_each_subject</span> <span class="o">=</span> <span class="n">extractor</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">confounds</span><span class="o">=</span><span class="n">confound</span><span class="p">)</span>
-    <span class="c1"># call fit_transform from ConnectivityMeasure object</span>
     <span class="n">correlation</span> <span class="o">=</span> <span class="n">connectome_measure</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">([</span><span class="n">timeseries_each_subject</span><span class="p">])</span>
-    <span class="c1"># saving each subject correlation to correlations</span>
     <span class="n">correlations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">correlation</span><span class="p">)</span>
 
-<span class="c1"># Mean of all correlations</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-
-<span class="n">mean_correlations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">correlations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
-    <span class="n">n_regions_extracted</span><span class="p">,</span> <span class="n">n_regions_extracted</span>
-<span class="p">)</span>
 
 </pre></div>
 </div>
@@ -1023,7 +1037,8 @@ At this point, we make use of nilearn image and plotting utilities to find
 automatically the coordinates required, for plotting connectome relations.
 Left image is the correlations in a matrix form and right image is the
 connectivity relations to brain regions plotted using <a class="reference internal" href="../modules/generated/nilearn.plotting.plot_connectome.html#nilearn.plotting.plot_connectome" title="nilearn.plotting.plot_connectome"><code class="xref py py-func docutils literal notranslate"><span class="pre">plot_connectome</span></code></a></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">find_probabilistic_atlas_cut_coords</span><span class="p">,</span>
     <span class="n">find_xyz_cut_coords</span><span class="p">,</span>
@@ -1031,15 +1046,16 @@ connectivity relations to brain regions plotted using <a class="reference intern
     <span class="n">plot_matrix</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Correlation between </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">n_regions_extracted</span><span class="p">)</span><span class="si">}</span><span class="s2"> regions"</span>
+<span class="n">mean_correlations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">correlations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+    <span class="n">n_regions_extracted</span><span class="p">,</span> <span class="n">n_regions_extracted</span>
+<span class="p">)</span>
 
-<span class="c1"># First plot the matrix</span>
+<span class="n">title</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Correlation between </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">n_regions_extracted</span><span class="p">)</span><span class="si">}</span><span class="s2"> regions"</span>
 <span class="n">plot_matrix</span><span class="p">(</span><span class="n">mean_correlations</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
 
-<span class="c1"># Then find the center of the regions and plot a connectome</span>
+<span class="c1"># Find the center of the regions and plot the connectome.</span>
 <span class="n">regions_img</span> <span class="o">=</span> <span class="n">regions_extracted_img</span>
 <span class="n">coords_connectome</span> <span class="o">=</span> <span class="n">find_probabilistic_atlas_cut_coords</span><span class="p">(</span><span class="n">regions_img</span><span class="p">)</span>
-
 <span class="n">plot_connectome</span><span class="p">(</span>
     <span class="n">mean_correlations</span><span class="p">,</span> <span class="n">coords_connectome</span><span class="p">,</span> <span class="n">edge_threshold</span><span class="o">=</span><span class="s2">"90%"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span>
 <span class="p">)</span>
@@ -1057,7 +1073,9 @@ The first image displays the regions of one specific functional network without 
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nilearn</span><span class="w"> </span><span class="kn">import</span> <span class="n">image</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_stat_map</span>
 
-<span class="n">img</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">index_img</span><span class="p">(</span><span class="n">components_img</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">index</span> <span class="o">=</span> <span class="mi">4</span>
+
+<span class="n">img</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">index_img</span><span class="p">(</span><span class="n">components_img</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
 <span class="n">coords</span> <span class="o">=</span> <span class="n">find_xyz_cut_coords</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
 <span class="n">plot_stat_map</span><span class="p">(</span>
     <span class="n">img</span><span class="p">,</span>
@@ -1076,7 +1094,7 @@ color.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">nilearn.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span><span class="p">,</span> <span class="n">plot_anat</span>
 
-<span class="n">regions_indices_of_map3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">regions_index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">regions_indices_of_map3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">regions_index</span><span class="p">)</span> <span class="o">==</span> <span class="n">index</span><span class="p">)</span>
 
 <span class="n">display</span> <span class="o">=</span> <span class="n">plot_anat</span><span class="p">(</span>
     <span class="n">cut_coords</span><span class="o">=</span><span class="n">coords</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Regions from this network"</span><span class="p">,</span> <span class="n">colorbar</span><span class="o">=</span><span class="kc">False</span>
