@@ -26,49 +26,63 @@ between regions of interest : correlation, partial correlation,
 and tangent space embedding.
 
 The resulting connectivity coefficients can be used to
-discriminate children from adults.In general, the tangent space embedding
+discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations: see :footcite:t:`Dadi2019`
 for a careful study.
 
-.. GENERATED FROM PYTHON SOURCE LINES 17-20
+.. GENERATED FROM PYTHON SOURCE LINES 14-18
+
+.. code-block:: Python
+
+
+    # overall verbosity of the example
+    verbose = 0
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 19-22
 
 Load brain development :term:`fMRI` dataset and MSDL atlas
 ----------------------------------------------------------
 We study only 30 subjects from the dataset, to save computation time.
 
-.. GENERATED FROM PYTHON SOURCE LINES 20-25
+.. GENERATED FROM PYTHON SOURCE LINES 22-31
 
 .. code-block:: Python
 
     from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
-    from nilearn.plotting import plot_connectome, plot_matrix, show
+    from nilearn.plotting import (
+        plot_connectome,
+        plot_matrix,
+        show,
+    )
 
-    development_dataset = fetch_development_fmri(n_subjects=30)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    [fetch_development_fmri] Dataset directory found: /home/runner/work/nilearn/nilearn/nilearn_data/development_fmri
+    development_dataset = fetch_development_fmri(n_subjects=30, verbose=verbose)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-27
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 32-33
 
 We use probabilistic regions of interest (ROIs) from the MSDL atlas.
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-35
+.. GENERATED FROM PYTHON SOURCE LINES 33-42
 
 .. code-block:: Python
 
     msdl_data = fetch_atlas_msdl()
     msdl_coords = msdl_data.region_coords
     n_regions = len(msdl_coords)
+
     print(
         f"MSDL has {n_regions} ROIs, "
         f"part of the following networks:\n{msdl_data.networks}."
@@ -89,21 +103,25 @@ We use probabilistic regions of interest (ROIs) from the MSDL atlas.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 36-41
+.. GENERATED FROM PYTHON SOURCE LINES 43-52
 
 Region signals extraction
 -------------------------
 To extract regions time series, we instantiate a
-:class:`~nilearn.maskers.NiftiMapsMasker` object and pass the atlas the
-file name to it, as well as filtering band-width and detrending option.
+:class:`~nilearn.maskers.MultiNiftiMapsMasker` object
+and pass the atlas the file name to it,
+as well as filtering band-width and detrending option.
 
-.. GENERATED FROM PYTHON SOURCE LINES 41-57
+Then we compute region signals and extract useful phenotypic information,
+for all subjects and then group the outputs for children and adults.
+
+.. GENERATED FROM PYTHON SOURCE LINES 52-82
 
 .. code-block:: Python
 
-    from nilearn.maskers import NiftiMapsMasker
+    from nilearn.maskers import MultiNiftiMapsMasker
 
-    masker = NiftiMapsMasker(
+    masker = MultiNiftiMapsMasker(
         msdl_data.maps,
         resampling_target="data",
         t_r=development_dataset.t_r,
@@ -114,39 +132,21 @@ file name to it, as well as filtering band-width and detrending option.
         memory="nilearn_cache",
         memory_level=1,
         standardize_confounds=True,
-        verbose=1,
+        verbose=verbose,
     )
 
+    pooled_subjects = masker.fit_transform(
+        development_dataset.func, confounds=development_dataset.confounds
+    )
 
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 58-59
-
-Then we compute region signals and extract useful phenotypic information.
-
-.. GENERATED FROM PYTHON SOURCE LINES 59-76
-
-.. code-block:: Python
+    groups = development_dataset.phenotypic["Child_Adult"].tolist()
 
     children = []
-    pooled_subjects = []
-    groups = []  # child or adult
-    for func_file, confound_file, phenotype in zip(
-        development_dataset.func,
-        development_dataset.confounds,
-        development_dataset.phenotypic["Child_Adult"],
-        strict=False,
-    ):
-        time_series = masker.fit_transform(func_file, confounds=confound_file)
-        pooled_subjects.append(time_series)
+    for time_series, phenotype in zip(pooled_subjects, groups, strict=False):
         if phenotype == "child":
             children.append(time_series)
-        groups.append(phenotype)
 
+    #  %%
     print(f"Data has {len(children)} children.")
 
 
@@ -157,903 +157,26 @@ Then we compute region signals and extract useful phenotypic information.
 
  .. code-block:: none
 
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar128_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.image.resampling.resample_img...
-    resample_img(<nibabel.nifti1.Nifti1Image object at 0x7ff55b12c0d0>, interpolation='linear', target_shape=(50, 59, 50), target_affine=array([[   4.,    0.,    0.,  -96.],
-           [   0.,    4.,    0., -132.],
-           [   0.,    0.,    4.,  -78.],
-           [   0.,    0.,    0.,    1.]]))
-    _____________________________________________________resample_img - 0.2s, 0.0min
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar128_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff55b12d050>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar128_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar128_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.8s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar126_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar126_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff578d624d0>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar126_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar126_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar125_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar125_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff56019fad0>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar125_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar125_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar124_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar124_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff578d62290>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar124_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar124_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar123_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff5604c4690>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar123_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar123_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar127_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar127_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff52a611b90>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar127_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar127_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar024_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar024_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff586460a90>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar024_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar024_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.9s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar023_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar023_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff56040c4d0>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar023_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar023_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.8s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar022_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar022_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff55ec96450>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar022_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar022_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar021_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar021_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff539de32d0>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar021_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar021_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar020_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar020_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff55ef06410>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar020_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar020_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar019_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar019_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff560253e90>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar019_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar019_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar018_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar018_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff56040df90>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar018_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar018_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar017_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar017_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff52df5c210>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar017_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar017_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar016_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar016_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff55b128490>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar016_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar016_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar001_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar001_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff52df5de50>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar001_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar001_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar013_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar013_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff590145210>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar013_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar013_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar012_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar012_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff52a612510>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar012_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar012_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar011_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar011_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff560394bd0>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar011_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar011_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar010_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar010_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff56040fc50>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar010_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar010_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar009_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar009_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff57a58d010>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar009_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar009_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar008_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar008_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff582ae6110>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar008_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar008_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar007_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar007_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff5793bd650>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar007_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar007_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar006_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar006_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff58674de50>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar006_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar006_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar005_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar005_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff586a58410>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar005_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar005_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar004_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar004_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff578d62ed0>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar004_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar004_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar003_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar003_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff57933b950>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar003_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar003_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar002_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar002_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff52a612ad0>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar002_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar002_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar014_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar014_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff586510490>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar014_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar014_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar015_task-...
-    [NiftiMapsMasker.wrapped] Loading regions from .../msdl_rois.nii
-    [NiftiMapsMasker.wrapped] Resampling regions
-    [NiftiMapsMasker.wrapped] Finished fit
-    ________________________________________________________________________________
-    [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar015_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7ff52ed07510>, { 'allow_overlap': True,
-      'clean_args': None,
-      'clean_kwargs': {},
-      'cmap': 'CMRmap_r',
-      'detrend': True,
-      'dtype': None,
-      'high_pass': 0.01,
-      'high_variance_confounds': False,
-      'low_pass': 0.1,
-      'maps_img': '/home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas/MSDL_rois/msdl_rois.nii',
-      'mask_img': None,
-      'reports': True,
-      'smoothing_fwhm': None,
-      'standardize': 'zscore_sample',
-      'standardize_confounds': True,
-      't_r': 2,
-      'target_affine': None,
-      'target_shape': None}, confounds=[ '/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar015_task-pixar_desc-reducedConfounds_regressors.tsv'], sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [NiftiMapsMasker.wrapped] Loading data from sub-pixar015_task-...
-    [NiftiMapsMasker.wrapped] Extracting region signals
-    [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.7s, 0.0min
     Data has 24 children.
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 77-82
+.. GENERATED FROM PYTHON SOURCE LINES 83-88
 
 ROI-to-ROI correlations of children
 -----------------------------------
-The simpler and most commonly used kind of connectivity is correlation. It
-models the full (marginal) connectivity between pairwise ROIs. We can
-estimate it using :class:`~nilearn.connectome.ConnectivityMeasure`.
+The simpler and most commonly used kind of connectivity is correlation.
+It models the full (marginal) connectivity between pairwise ROIs.
+We can estimate it using :class:`~nilearn.connectome.ConnectivityMeasure`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-86
+.. GENERATED FROM PYTHON SOURCE LINES 88-92
 
 .. code-block:: Python
 
     from nilearn.connectome import ConnectivityMeasure
 
-    correlation_measure = ConnectivityMeasure(kind="correlation", verbose=1)
+    correlation_measure = ConnectivityMeasure(kind="correlation", verbose=verbose)
 
 
 
@@ -1062,44 +185,37 @@ estimate it using :class:`~nilearn.connectome.ConnectivityMeasure`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-89
+.. GENERATED FROM PYTHON SOURCE LINES 93-95
 
-From the list of ROIs time-series for children, the
-`correlation_measure` computes individual correlation matrices.
+From the list of ROIs time-series for children,
+the ``correlation_measure`` computes individual correlation matrices.
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-97
+.. GENERATED FROM PYTHON SOURCE LINES 95-97
 
 .. code-block:: Python
 
     correlation_matrices = correlation_measure.fit_transform(children)
 
-    # All individual coefficients are stacked in a unique 2D matrix.
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 98-100
+
+All individual coefficients are stacked in a unique 2D matrix.
+as well as the average correlation across all fitted subjects.
+
+.. GENERATED FROM PYTHON SOURCE LINES 100-109
+
+.. code-block:: Python
+
     print(
         "Correlations of children are stacked "
         f"in an array of shape {correlation_matrices.shape}"
     )
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    [ConnectivityMeasure.wrapped] Finished fit
-    Correlations of children are stacked in an array of shape (24, 39, 39)
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 98-99
-
-as well as the average correlation across all fitted subjects.
-
-.. GENERATED FROM PYTHON SOURCE LINES 99-103
-
-.. code-block:: Python
 
     mean_correlation_matrix = correlation_measure.mean_
     print(f"Mean correlation has shape {mean_correlation_matrix.shape}.")
@@ -1113,16 +229,17 @@ as well as the average correlation across all fitted subjects.
 
  .. code-block:: none
 
+    Correlations of children are stacked in an array of shape (24, 39, 39)
     Mean correlation has shape (39, 39).
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-105
+.. GENERATED FROM PYTHON SOURCE LINES 110-111
 
-We display the connectome matrices of the first 3 children
+We display the connectome matrices of the first 3 children.
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-121
+.. GENERATED FROM PYTHON SOURCE LINES 111-130
 
 .. code-block:: Python
 
@@ -1143,6 +260,9 @@ We display the connectome matrices of the first 3 children
             vmin=-vmax,
         )
 
+    show()
+
+
 
 
 .. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_group_level_connectivity_001.png
@@ -1154,15 +274,13 @@ We display the connectome matrices of the first 3 children
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 122-123
+.. GENERATED FROM PYTHON SOURCE LINES 131-134
 
 The blocks structure that reflect functional networks are visible.
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-126
-
 Now we display as a connectome the mean correlation matrix over all children.
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-132
+.. GENERATED FROM PYTHON SOURCE LINES 134-142
 
 .. code-block:: Python
 
@@ -1171,6 +289,8 @@ Now we display as a connectome the mean correlation matrix over all children.
         msdl_coords,
         title="mean correlation over all children",
     )
+
+    show()
 
 
 
@@ -1181,28 +301,23 @@ Now we display as a connectome the mean correlation matrix over all children.
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    <nilearn.plotting.displays._projectors.OrthoProjector object at 0x7ff5600638d0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-137
+.. GENERATED FROM PYTHON SOURCE LINES 143-148
 
 Studying partial correlations
 -----------------------------
-We can also study **direct connections**, revealed by partial correlation
-coefficients. We just change the `ConnectivityMeasure` kind
+We can also study **direct connections**,
+revealed by partial correlation coefficients.
+We just change the ``ConnectivityMeasure`` kind.
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-144
+.. GENERATED FROM PYTHON SOURCE LINES 148-155
 
 .. code-block:: Python
 
     partial_correlation_measure = ConnectivityMeasure(
-        kind="partial correlation", verbose=1
+        kind="partial correlation", verbose=verbose
     )
     partial_correlation_matrices = partial_correlation_measure.fit_transform(
         children
@@ -1212,20 +327,14 @@ coefficients. We just change the `ConnectivityMeasure` kind
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    [ConnectivityMeasure.wrapped] Finished fit
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 145-146
+.. GENERATED FROM PYTHON SOURCE LINES 156-157
 
 Most of direct connections are weaker than full connections.
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-160
+.. GENERATED FROM PYTHON SOURCE LINES 157-180
 
 .. code-block:: Python
 
@@ -1244,58 +353,51 @@ Most of direct connections are weaker than full connections.
             vmin=-vmax,
         )
 
-
-
-.. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_group_level_connectivity_003.png
-   :alt: partial correlation, child 0, partial correlation, child 1, partial correlation, child 2
-   :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_group_level_connectivity_003.png
-   :class: sphx-glr-single-img
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 161-167
-
-.. code-block:: Python
-
     plot_connectome(
         partial_correlation_measure.mean_,
         msdl_coords,
         title="mean partial correlation over all children",
     )
 
+    show()
 
 
 
-.. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_group_level_connectivity_004.png
-   :alt: plot group level connectivity
-   :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_group_level_connectivity_004.png
-   :class: sphx-glr-single-img
+
+.. rst-class:: sphx-glr-horizontal
 
 
-.. rst-class:: sphx-glr-script-out
+    *
 
- .. code-block:: none
+      .. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_group_level_connectivity_003.png
+         :alt: partial correlation, child 0, partial correlation, child 1, partial correlation, child 2
+         :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_group_level_connectivity_003.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/03_connectivity/images/sphx_glr_plot_group_level_connectivity_004.png
+         :alt: plot group level connectivity
+         :srcset: /auto_examples/03_connectivity/images/sphx_glr_plot_group_level_connectivity_004.png
+         :class: sphx-glr-multi-img
 
 
-    <nilearn.plotting.displays._projectors.OrthoProjector object at 0x7ff55ac1b4d0>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-173
+.. GENERATED FROM PYTHON SOURCE LINES 181-186
 
 Extract subjects variabilities around a group connectivity
 ----------------------------------------------------------
 We can use **both** correlations and partial correlations to capture
 reproducible connectivity patterns at the group-level.
-This is done by the tangent space embedding.
+This is done by the ``"tangent"`` space embedding.
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-175
+.. GENERATED FROM PYTHON SOURCE LINES 186-188
 
 .. code-block:: Python
 
-    tangent_measure = ConnectivityMeasure(kind="tangent", verbose=1)
+    tangent_measure = ConnectivityMeasure(kind="tangent", verbose=verbose)
 
 
 
@@ -1304,13 +406,13 @@ This is done by the tangent space embedding.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 176-179
+.. GENERATED FROM PYTHON SOURCE LINES 189-192
 
-We fit our children group and get the group connectivity matrix stored as
-in `tangent_measure.mean_`, and individual deviation matrices of each subject
-from it.
+We fit our children group to estimate the group connectivity matrix
+(stored in ``tangent_measure.mean_``),
+and individual deviation matrices of each subject from it.
 
-.. GENERATED FROM PYTHON SOURCE LINES 179-181
+.. GENERATED FROM PYTHON SOURCE LINES 192-194
 
 .. code-block:: Python
 
@@ -1320,24 +422,20 @@ from it.
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    [ConnectivityMeasure.wrapped] Finished fit
 
 
 
+.. GENERATED FROM PYTHON SOURCE LINES 195-202
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-187
+``tangent_matrices`` model individual connectivities
+as **perturbations** of the group connectivity matrix
+``tangent_measure.mean_``.
+Keep in mind that these subjects-to-group variability matrices
+do not directly reflect individual brain connections.
+For instance negative coefficients cannot be interpreted
+as anticorrelated regions.
 
-`tangent_matrices` model individual connectivities as
-**perturbations** of the group connectivity matrix `tangent_measure.mean_`.
-Keep in mind that these subjects-to-group variability matrices do not
-directly reflect individual brain connections. For instance negative
-coefficients can not be interpreted as anticorrelated regions.
-
-.. GENERATED FROM PYTHON SOURCE LINES 187-197
+.. GENERATED FROM PYTHON SOURCE LINES 202-214
 
 .. code-block:: Python
 
@@ -1349,6 +447,8 @@ coefficients can not be interpreted as anticorrelated regions.
             axes=ax,
             title=f"tangent offset, child {i}",
         )
+
+    show()
 
 
 
@@ -1363,26 +463,32 @@ coefficients can not be interpreted as anticorrelated regions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 198-200
+.. GENERATED FROM PYTHON SOURCE LINES 215-217
 
-The average tangent matrix cannot be interpreted, as individual matrices
-represent deviations from the mean, which is set to 0.
+The average tangent matrix cannot be interpreted,
+as individual matrices represent deviations from the mean, which is set to 0.
 
-.. GENERATED FROM PYTHON SOURCE LINES 202-210
+.. GENERATED FROM PYTHON SOURCE LINES 219-232
 
 What kind of connectivity is most powerful for classification?
 --------------------------------------------------------------
-We will use connectivity matrices as features to distinguish children from
-adults. We use cross-validation and measure classification accuracy to
-compare the different kinds of connectivity matrices.
+We will use connectivity matrices as features to distinguish children
+from adults.
+We use cross-validation and measure classification accuracy
+to compare the different kinds of connectivity matrices.
 We use random splits of the subjects into training/testing sets.
-StratifiedShuffleSplit allows preserving the proportion of children in the
-test set.
+:class:`sklearn.model_selection.StratifiedShuffleSplit`
+allows preserving the proportion of children in the test set.
+We also use :class:`sklearn.dummy.DummyClassifier`
+to get the chance level performance.
+As the the proportion of children in the training/testing sets
+are preserved across all folds, we only need to calculate it once.
 
-.. GENERATED FROM PYTHON SOURCE LINES 210-242
+.. GENERATED FROM PYTHON SOURCE LINES 232-274
 
 .. code-block:: Python
 
+    from sklearn.dummy import DummyClassifier
     from sklearn.metrics import accuracy_score
     from sklearn.model_selection import StratifiedShuffleSplit
     from sklearn.svm import LinearSVC
@@ -1399,12 +505,12 @@ test set.
             # *ConnectivityMeasure* can output the estimated subjects coefficients
             # as a 1D arrays through the parameter *vectorize*.
             connectivity = ConnectivityMeasure(
-                kind=kind, vectorize=True, verbose=1
+                kind=kind, vectorize=True, verbose=verbose
             )
             # build vectorized connectomes for subjects in the train set
             connectomes = connectivity.fit_transform(pooled_subjects[train])
             # fit the classifier
-            classifier = LinearSVC(dual=True, random_state=0).fit(
+            classifier = LinearSVC(dual=True, random_state=0, verbose=verbose).fit(
                 connectomes, classes[train]
             )
             # make predictions for the left-out test subjects
@@ -1414,72 +520,30 @@ test set.
             # store the accuracy for this cross-validation fold
             scores[kind].append(accuracy_score(classes[test], predictions))
 
+            if not scores.get("dummy"):
+                # run dummy classifier to get chance level performance
+                # if its not there already
+                dummy_prediction = (
+                    DummyClassifier()
+                    .fit(connectomes, classes[train])
+                    .predict(pooled_subjects[test])
+                )
+                scores["dummy"] = accuracy_score(classes[test], dummy_prediction)
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
-    [ConnectivityMeasure.wrapped] Finished fit
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 243-244
+.. GENERATED FROM PYTHON SOURCE LINES 275-276
 
 display the results
 
-.. GENERATED FROM PYTHON SOURCE LINES 244-260
+.. GENERATED FROM PYTHON SOURCE LINES 276-292
 
 .. code-block:: Python
-
 
     mean_scores = [np.mean(scores[kind]) for kind in kinds]
     scores_std = [np.std(scores[kind]) for kind in kinds]
@@ -1492,9 +556,10 @@ display the results
     plt.yticks(positions, yticks)
     plt.gca().grid(True)
     plt.gca().set_axisbelow(True)
-    plt.gca().axvline(0.8, color="red", linestyle="--")
+    plt.gca().axvline(scores["dummy"], color="red", linestyle="--")
     plt.xlabel("Classification accuracy\n(red line = chance level)")
 
+    show()
 
 
 
@@ -1505,16 +570,10 @@ display the results
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    Text(0.5, 34.367, 'Classification accuracy\n(red line = chance level)')
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 261-267
+.. GENERATED FROM PYTHON SOURCE LINES 293-299
 
 This is a small example to showcase nilearn features. In practice such
 comparisons need to be performed on much larger cohorts and several
@@ -1523,21 +582,7 @@ datasets.
 across many cohorts and clinical questions,
 the tangent kind should be preferred.
 
-.. GENERATED FROM PYTHON SOURCE LINES 267-270
-
-.. code-block:: Python
-
-
-    show()
-
-
-
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 271-275
+.. GENERATED FROM PYTHON SOURCE LINES 302-306
 
 References
 ----------
@@ -1547,9 +592,9 @@ References
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 45.064 seconds)
+   **Total running time of the script:** (0 minutes 53.405 seconds)
 
-**Estimated memory usage:**  1075 MB
+**Estimated memory usage:**  6354 MB
 
 
 .. _sphx_glr_download_auto_examples_03_connectivity_plot_group_level_connectivity.py:
