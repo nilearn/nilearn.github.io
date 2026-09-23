@@ -25,7 +25,7 @@
     <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css?v=1277b6f3" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=302659d7" />
-    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=54f5008b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=a7f73b52" />
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/fontawesome.min.css" />
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/solid.min.css" />
@@ -187,7 +187,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.14.2.dev30+g9d09c9113) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.1)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.14.2.dev33+g7e6e4ce8f) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.1)</span></a></p> 
   </aside>
 </div>
 
@@ -237,6 +237,7 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installing Nilearn</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="auto_examples/index.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Examples</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="auto_examples/00_tutorials/index.html">Basic tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Basic tutorials</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="auto_examples/00_tutorials/plot_3d_and_4d_niimg.html">3D and 4D niimgs: handling and visualizing</a></li>
@@ -932,12 +933,15 @@ and opening the the landing page of the deployed doc by clikcing on <code class=
 <section id="benchmark-yml">
 <h3>benchmark.yml<a class="headerlink" href="#benchmark-yml" title="Link to this heading">¶</a></h3>
 <p>Workflow file: <a class="reference external" href="https://github.com/nilearn/nilearn/blob/main/.github/workflows/benchmark.yml">benchmark.yml</a></p>
-<p>TL;DR: this workflow runs the benchmarks on the latest commit.
+<div class="admonition-tl-dr admonition">
+<p class="admonition-title">TL;DR</p>
+<p>this workflow runs the benchmarks on the latest commit.
 It runs on PR.
 On main, it will also run on a schedule at regular interval
 or can be triggered manually via the GitHub UI.
 When run on main it will deploy the updated benchmarks to
 <a class="reference external" href="https://nilearn.github.io/benchmarks/">nilearn.github.io/benchmarks</a>.</p>
+</div>
 <p>Step-wise details:</p>
 <ul class="simple">
 <li><p>First it installs <a class="reference external" href="https://asv.readthedocs.io/en/latest/index.html">asv</a>.</p></li>
@@ -992,7 +996,8 @@ as described in <a class="reference internal" href="development.html#performance
 <li><p>Then we push the new results back to the <a class="reference external" href="https://github.com/nilearn/benchmarks">benchmarks</a> repo.
 This will automatically deploy the new results to <a class="reference external" href="https://nilearn.github.io/benchmarks/">nilearn.github.io/benchmarks</a>.</p></li>
 </ul>
-<p>A second, independent set of jobs, run only on schedule or manual trigger
+<p>A second, independent set of jobs (<code class="docutils literal notranslate"><span class="pre">list-history-commits</span></code>, <code class="docutils literal notranslate"><span class="pre">benchmark-history</span></code>, <code class="docutils literal notranslate"><span class="pre">benchmark-history</span></code>, <code class="docutils literal notranslate"><span class="pre">combine-history</span></code>),
+run only on schedule or manual trigger
 (running the full suite for several commits is too expensive to also run on every pull request),
 benchmarks the fixed list of release commits in <code class="docutils literal notranslate"><span class="pre">asv_benchmarks/hashestobenchmark.txt</span></code>
 (see <a class="reference internal" href="development.html#performance"><span class="std std-ref">CONTRIBUTING.rst</span></a>).
@@ -1012,6 +1017,13 @@ Any performance difference spotted here should therefore be treated as a lead, n
 and confirmed by rerunning the specific benchmark locally for the relevant commits on the same machine,
 for example with <code class="docutils literal notranslate"><span class="pre">asv</span> <span class="pre">run</span> <span class="pre">-b</span> <span class="pre">&lt;benchmark_name&gt;</span> <span class="pre">HASHFILE:hashestobenchmark.txt</span></code>.</p>
 </div>
+<p>The job <code class="docutils literal notranslate"><span class="pre">sync-benchmark-dependencies</span></code> keeps asv_benchmarks/asv.conf.json’s “pythons” / dependency matrix
+from silently drifting behind pyproject.toml’s “min_plotting” dependency group and “requires-python” floor
+(see <a class="reference external" href="https://github.com/nilearn/nilearn/issues/6592">#6592</a> / <a class="reference external" href="https://github.com/nilearn/nilearn/issues/6593">#6593</a>).
+A stale pin here can lose its pre-built wheel and break this workflow’s “benchmark” job.
+If a drift is detected this job will open a PR to fix it.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">check-history-commits-installable</span></code> ensures that old Nilearn releases listed in asv_benchmarks/hashestobenchmark.txt
+are still installable after an update of the the asv config.</p>
 </section>
 <section id="build-docs-yml">
 <h3>build-docs.yml<a class="headerlink" href="#build-docs-yml" title="Link to this heading">¶</a></h3>
@@ -1183,7 +1195,8 @@ at the end of the workflow.</p>
 <section id="test-maintenance-scripts-yml">
 <h3>test_maintenance_scripts.yml<a class="headerlink" href="#test-maintenance-scripts-yml" title="Link to this heading">¶</a></h3>
 <p>Workflow file: <a class="reference external" href="https://github.com/nilearn/nilearn/blob/main/.github/workflows/test_maintenance_scripts.yml">test_maintenance_scripts.yml</a></p>
-<p>Runs pytest on maint_tools and build_tools folders.</p>
+<p>Runs pytest on maint_tools, build_tools and (a couple of files from)
+asv_benchmarks folders.</p>
 </section>
 <section id="test-with-free-threaded-python-yml">
 <h3>test_with_free_threaded_python.yml<a class="headerlink" href="#test-with-free-threaded-python-yml" title="Link to this heading">¶</a></h3>
