@@ -190,7 +190,7 @@
 
 <div class="announcement">
   <aside class="announcement-content">
-     <p>This is the development documentation of nilearn (0.14.2.dev56+g8584104bb) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.1)</span></a></p> 
+     <p>This is the development documentation of nilearn (0.14.2.dev64+gf74696d00) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.14.1)</span></a></p> 
   </aside>
 </div>
 
@@ -802,7 +802,9 @@
           
 
 <div class="view-this-page">
-        <a class="muted-link" href="https://github.com/nilearn/nilearn/blob/main/doc/building_blocks/manual_pipeline.rst?plain=true" title="View this page">
+        <a class="muted-link"
+           href="https://github.com/nilearn/nilearn/blob/main/doc/building_blocks/manual_pipeline.rst?plain=true"
+           title="View this page">
             <svg>
                 <use href="#svg-eye"></use>
             </svg>
@@ -950,6 +952,26 @@ provided with the Haxby dataset.</p>
 <p>The <a class="reference internal" href="../modules/generated/nilearn.maskers.NiftiMasker.html#nilearn.maskers.NiftiMasker" title="nilearn.maskers.NiftiMasker"><code class="xref py py-class docutils literal notranslate"><span class="pre">NiftiMasker</span></code></a> can be seen as a <em>tube</em> that transforms data
 from 4D images to 2D arrays, but first it needs to ‘fit’ this data in
 order to learn simple parameters from it, such as its shape:</p>
+</section>
+</section>
+<section id="the-importance-of-data-standardization">
+<h3><span class="section-number">10.1.1.4. </span>The importance of data standardization<a class="headerlink" href="#the-importance-of-data-standardization" title="Link to this heading">¶</a></h3>
+<p>When building machine-learning pipelines for neuroimaging data,
+the preprocessing steps applied to the data are often as critical
+as the choice of the estimator itself. A key preprocessing option
+to consider is <strong>standardization</strong>.</p>
+<p>In <a class="reference internal" href="../glossary.html#term-fMRI"><span class="xref std std-term">fMRI</span></a> time series data, different voxels or vertices
+can exhibit drastically different baseline scales
+and variance profiles. If data is fed directly into machine-learning
+models (such as <a class="reference internal" href="../glossary.html#term-SVM"><span class="xref std std-term">support vector machines</span></a>, regularized linear models,
+or penalized regression) without scaling, features with larger
+numerical variances will disproportionately dominate the optimization
+objective, leading to a severe scale bias.</p>
+<p>By enabling standardization (such as using the <code class="docutils literal notranslate"><span class="pre">standardize</span></code>
+parameter in maskers like <a class="reference internal" href="../modules/generated/nilearn.maskers.NiftiMasker.html#nilearn.maskers.NiftiMasker" title="nilearn.maskers.NiftiMasker"><code class="xref py py-class docutils literal notranslate"><span class="pre">NiftiMasker</span></code></a>), the time-series of each feature (e.g., voxel or vertex)
+is shifted and re-scaled, minimizing signal scaling differences across features. For example, with <code class="docutils literal notranslate"><span class="pre">standardize=zscore_sample</span></code>, each feature is z-scored; i.e., shifted to a mean of zero and scaled to unit variance. This ensures that all features contribute equally
+to the algorithm, resulting in more stable, reliable, and
+statistically sound predictive models.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># We first create a masker, giving it the options that we care</span>
 <span class="c1"># about. Here we use standardizing of the data, as it is often important</span>
 <span class="c1"># for decoding</span>
@@ -965,9 +987,8 @@ order to learn simple parameters from it, such as its shape:</p>
 <p>Note that you can call <code class="docutils literal notranslate"><span class="pre">nifti_masker.transform(dataset.func[1])</span></code> on new
 data to mask it in a similar way as the data that was used during the
 fit.</p>
-</section>
 <section id="automatically-computing-a-mask">
-<h4><span class="section-number">10.1.1.3.2. </span>Automatically computing a mask<a class="headerlink" href="#automatically-computing-a-mask" title="Link to this heading">¶</a></h4>
+<h4><span class="section-number">10.1.1.4.1. </span>Automatically computing a mask<a class="headerlink" href="#automatically-computing-a-mask" title="Link to this heading">¶</a></h4>
 <p>If your dataset does not provide a mask, the Nifti masker will compute
 one for you in the <code class="docutils literal notranslate"><span class="pre">fit</span></code> step. The generated mask can be accessed via the
 <code class="docutils literal notranslate"><span class="pre">mask_img_</span></code> attribute.</p>
@@ -1106,7 +1127,10 @@ are described in <a class="reference internal" href="../manipulating_images/mani
 <li><a class="reference internal" href="#loading-non-image-data-experiment-description">10.1.1.2. Loading non image data: experiment description</a></li>
 <li><a class="reference internal" href="#masking-the-data-from-4d-image-to-2d-array">10.1.1.3. Masking the data: from 4D image to 2D array</a><ul>
 <li><a class="reference internal" href="#applying-a-mask">10.1.1.3.1. Applying a mask</a></li>
-<li><a class="reference internal" href="#automatically-computing-a-mask">10.1.1.3.2. Automatically computing a mask</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-importance-of-data-standardization">10.1.1.4. The importance of data standardization</a><ul>
+<li><a class="reference internal" href="#automatically-computing-a-mask">10.1.1.4.1. Automatically computing a mask</a></li>
 </ul>
 </li>
 </ul>
