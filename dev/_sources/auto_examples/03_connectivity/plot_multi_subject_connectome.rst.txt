@@ -27,7 +27,12 @@ using the group sparse inverse covariance estimate.
 This example is a toy example as running it on more subjects will
 require a longer run time.
 
-.. GENERATED FROM PYTHON SOURCE LINES 14-46
+.. admonition:: dataset
+
+    This example uses the :ref:`MSDL atlas <msdl_atlas>` to extract data
+    from the :ref:`development fMRI dataset <development_dataset>`.
+
+.. GENERATED FROM PYTHON SOURCE LINES 18-50
 
 .. code-block:: Python
 
@@ -70,21 +75,19 @@ require a longer run time.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-49
+.. GENERATED FROM PYTHON SOURCE LINES 51-53
 
 Fetching datasets
 ------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 49-63
+.. GENERATED FROM PYTHON SOURCE LINES 53-65
 
 .. code-block:: Python
 
-    from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
+    from nilearn.datasets import fetch_development_fmri
 
     n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)
 
-
-    msdl_atlas_dataset = fetch_atlas_msdl()
     rest_dataset = fetch_development_fmri(n_subjects=n_subjects)
 
     # print basic information on the dataset
@@ -101,26 +104,51 @@ Fetching datasets
 
  .. code-block:: none
 
-    [fetch_atlas_msdl] Dataset directory found: /home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas
     [fetch_development_fmri] Dataset directory found: /home/runner/work/nilearn/nilearn/nilearn_data/development_fmri
     First subject functional nifti image (4D) is at: /home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-66
+.. GENERATED FROM PYTHON SOURCE LINES 66-68
 
 Extracting region signals
 -------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-91
+.. GENERATED FROM PYTHON SOURCE LINES 68-78
 
 .. code-block:: Python
 
+    from nilearn.datasets import fetch_atlas_msdl
     from nilearn.maskers import MultiNiftiMapsMasker
 
+    atlas = fetch_atlas_msdl()
+
+    print(atlas.description.content)
+
+    atlas_img = atlas.maps
+    labels = atlas.labels
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    [fetch_atlas_msdl] Dataset directory found: /home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas
+    {'labels': {'type': list[str], 'desc': 'List of the names of the regions. There are 39 labels such that ``data.labels[i]`` corresponds to map ``i``.'}, 'maps': {'type': <class 'str'>, 'desc': 'Full path to nifti file containing the :term:`Probabilistic atlas` image (shape is equal to ``(40, 48, 35, 39)``).'}, 'networks': {'type': list[str], 'desc': 'List containing the names of the networks. There are 39 network names such that ``data.networks[i]`` is the network name of region ``i``.'}, 'region_coords': {'type': list[list[float]], 'desc': 'Length-3 :obj:`tuple` ``data.region_coords[i]`` contains the coordinates ``(x, y, z)`` of region ``i`` in :term:`MNI` space.'}, 'atlas_type': {'type': <class 'str'>, 'desc': '\n        Type of atlas.\n        See :term:`Probabilistic atlas` and :term:`Deterministic atlas`.'}, 'template': {'type': <class 'str'>, 'desc': 'The standardized space of analysis in which the data is provided.'}}
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 79-101
+
+.. code-block:: Python
+
     masker = MultiNiftiMapsMasker(
-        msdl_atlas_dataset.maps,
+        atlas_img,
         resampling_target="maps",
         detrend=True,
         high_variance_confounds=True,
@@ -145,7 +173,6 @@ Extracting region signals
 
 
 
-
 .. rst-class:: sphx-glr-script-out
 
  .. code-block:: none
@@ -160,32 +187,32 @@ Extracting region signals
     ________________________________________________________________________________
     [Memory] Calling nilearn.image.image.high_variance_confounds...
     high_variance_confounds('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz')
-    __________________________________________high_variance_confounds - 0.5s, 0.0min
+    __________________________________________high_variance_confounds - 0.4s, 0.0min
     ________________________________________________________________________________
     [Memory] Calling nilearn.image.image.high_variance_confounds...
     high_variance_confounds('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar001_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz')
-    __________________________________________high_variance_confounds - 0.5s, 0.0min
+    __________________________________________high_variance_confounds - 0.4s, 0.0min
     ________________________________________________________________________________
     [Memory] Calling nilearn.image.image.high_variance_confounds...
     high_variance_confounds('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar002_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz')
-    __________________________________________high_variance_confounds - 0.5s, 0.0min
+    __________________________________________high_variance_confounds - 0.4s, 0.0min
     ________________________________________________________________________________
     [Memory] Calling nilearn.image.image.high_variance_confounds...
     high_variance_confounds('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar003_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz')
-    __________________________________________high_variance_confounds - 0.5s, 0.0min
+    __________________________________________high_variance_confounds - 0.4s, 0.0min
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.nifti_maps_masker.NiftiMapsMasker.transform_single_imgs...
-    transform_single_imgs(imgs=<nibabel.nifti1.Nifti1Image object at 0x7fcf9ee4d350>, confounds=array([[-0.000233, ..., -0.048779],
+    transform_single_imgs(imgs=<nibabel.nifti1.Nifti1Image object at 0x7f28f2ac4610>, confounds=array([[-0.000233, ..., -0.048779],
            ...,
            [-0.026896, ...,  0.155444]]), sample_mask=None)
-    /home/runner/work/nilearn/nilearn/examples/03_connectivity/plot_multi_subject_connectome.py:86: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/03_connectivity/plot_multi_subject_connectome.py:97: UserWarning:
 
     Resampling images at transform time...
     To avoid this warning, make sure to resample the images you want to transform to the shape of the maps or set resampling_target to 'data'.
 
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract(<nibabel.nifti1.Nifti1Image object at 0x7fcf9ee4d350>, <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7fcf9561ced0>, { 'allow_overlap': True,
+    filter_and_extract(<nibabel.nifti1.Nifti1Image object at 0x7f28f2ac4610>, <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7f2919d43b90>, { 'allow_overlap': True,
       'clean_args': None,
       'clean_kwargs': {},
       'cmap': 'CMRmap_r',
@@ -208,25 +235,25 @@ Extracting region signals
       'target_shape': (40, 48, 35)}, confounds=array([[-0.000233, ..., -0.048779],
            ...,
            [-0.026896, ...,  0.155444]]), sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [MultiNiftiMapsMasker.fit_transform] Loading data from <nibabel.nifti1.Nifti1Image object at 0x7fcf9ee4d350>
+    [MultiNiftiMapsMasker.fit_transform] Loading data from <nibabel.nifti1.Nifti1Image object at 0x7f28f2ac4610>
     [MultiNiftiMapsMasker.fit_transform] Resampling images
     [MultiNiftiMapsMasker.fit_transform] Extracting region signals
     [MultiNiftiMapsMasker.fit_transform] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 4.2s, 0.1min
+    _______________________________________________filter_and_extract - 4.1s, 0.1min
     ____________________________________________transform_single_imgs - 4.2s, 0.1min
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.nifti_maps_masker.NiftiMapsMasker.transform_single_imgs...
-    transform_single_imgs(imgs=<nibabel.nifti1.Nifti1Image object at 0x7fcf4da46150>, confounds=array([[ 0.013422, ..., -0.057023],
+    transform_single_imgs(imgs=<nibabel.nifti1.Nifti1Image object at 0x7f291a49d510>, confounds=array([[ 0.013422, ..., -0.057023],
            ...,
            [ 0.087146, ...,  0.102714]]), sample_mask=None)
-    /home/runner/work/nilearn/nilearn/examples/03_connectivity/plot_multi_subject_connectome.py:86: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/03_connectivity/plot_multi_subject_connectome.py:97: UserWarning:
 
     Resampling images at transform time...
     To avoid this warning, make sure to resample the images you want to transform to the shape of the maps or set resampling_target to 'data'.
 
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract(<nibabel.nifti1.Nifti1Image object at 0x7fcf4da46150>, <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7fcf93473b50>, { 'allow_overlap': True,
+    filter_and_extract(<nibabel.nifti1.Nifti1Image object at 0x7f291a49d510>, <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7f291a49cc10>, { 'allow_overlap': True,
       'clean_args': None,
       'clean_kwargs': {},
       'cmap': 'CMRmap_r',
@@ -249,25 +276,25 @@ Extracting region signals
       'target_shape': (40, 48, 35)}, confounds=array([[ 0.013422, ..., -0.057023],
            ...,
            [ 0.087146, ...,  0.102714]]), sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [MultiNiftiMapsMasker.fit_transform] Loading data from <nibabel.nifti1.Nifti1Image object at 0x7fcf4da46150>
+    [MultiNiftiMapsMasker.fit_transform] Loading data from <nibabel.nifti1.Nifti1Image object at 0x7f291a49d510>
     [MultiNiftiMapsMasker.fit_transform] Resampling images
     [MultiNiftiMapsMasker.fit_transform] Extracting region signals
     [MultiNiftiMapsMasker.fit_transform] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 4.2s, 0.1min
-    ____________________________________________transform_single_imgs - 4.3s, 0.1min
+    _______________________________________________filter_and_extract - 4.1s, 0.1min
+    ____________________________________________transform_single_imgs - 4.2s, 0.1min
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.nifti_maps_masker.NiftiMapsMasker.transform_single_imgs...
-    transform_single_imgs(imgs=<nibabel.nifti1.Nifti1Image object at 0x7fcf744dd250>, confounds=array([[ 0.      , ..., -0.087084],
+    transform_single_imgs(imgs=<nibabel.nifti1.Nifti1Image object at 0x7f28f2b7eb50>, confounds=array([[ 0.      , ..., -0.087084],
            ...,
            [ 0.00349 , ..., -0.02587 ]]), sample_mask=None)
-    /home/runner/work/nilearn/nilearn/examples/03_connectivity/plot_multi_subject_connectome.py:86: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/03_connectivity/plot_multi_subject_connectome.py:97: UserWarning:
 
     Resampling images at transform time...
     To avoid this warning, make sure to resample the images you want to transform to the shape of the maps or set resampling_target to 'data'.
 
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract(<nibabel.nifti1.Nifti1Image object at 0x7fcf744dd250>, <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7fcf4da45310>, { 'allow_overlap': True,
+    filter_and_extract(<nibabel.nifti1.Nifti1Image object at 0x7f28f2b7eb50>, <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7f28be011650>, { 'allow_overlap': True,
       'clean_args': None,
       'clean_kwargs': {},
       'cmap': 'CMRmap_r',
@@ -290,7 +317,7 @@ Extracting region signals
       'target_shape': (40, 48, 35)}, confounds=array([[ 0.      , ..., -0.087084],
            ...,
            [ 0.00349 , ..., -0.02587 ]]), sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [MultiNiftiMapsMasker.fit_transform] Loading data from <nibabel.nifti1.Nifti1Image object at 0x7fcf744dd250>
+    [MultiNiftiMapsMasker.fit_transform] Loading data from <nibabel.nifti1.Nifti1Image object at 0x7f28f2b7eb50>
     [MultiNiftiMapsMasker.fit_transform] Resampling images
     [MultiNiftiMapsMasker.fit_transform] Extracting region signals
     [MultiNiftiMapsMasker.fit_transform] Cleaning extracted signals
@@ -298,17 +325,17 @@ Extracting region signals
     ____________________________________________transform_single_imgs - 4.2s, 0.1min
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.nifti_maps_masker.NiftiMapsMasker.transform_single_imgs...
-    transform_single_imgs(imgs=<nibabel.nifti1.Nifti1Image object at 0x7fcf45d81ad0>, confounds=array([[ 6.680960e-06, ..., -6.231628e-02],
+    transform_single_imgs(imgs=<nibabel.nifti1.Nifti1Image object at 0x7f2901c66710>, confounds=array([[ 6.680960e-06, ..., -6.231628e-02],
            ...,
            [ 2.379980e-02, ..., -2.286822e-02]]), sample_mask=None)
-    /home/runner/work/nilearn/nilearn/examples/03_connectivity/plot_multi_subject_connectome.py:86: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/03_connectivity/plot_multi_subject_connectome.py:97: UserWarning:
 
     Resampling images at transform time...
     To avoid this warning, make sure to resample the images you want to transform to the shape of the maps or set resampling_target to 'data'.
 
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
-    filter_and_extract(<nibabel.nifti1.Nifti1Image object at 0x7fcf45d81ad0>, <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7fcf7710ac90>, { 'allow_overlap': True,
+    filter_and_extract(<nibabel.nifti1.Nifti1Image object at 0x7f2901c66710>, <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7f291a1f1150>, { 'allow_overlap': True,
       'clean_args': None,
       'clean_kwargs': {},
       'cmap': 'CMRmap_r',
@@ -331,22 +358,22 @@ Extracting region signals
       'target_shape': (40, 48, 35)}, confounds=array([[ 6.680960e-06, ..., -6.231628e-02],
            ...,
            [ 2.379980e-02, ..., -2.286822e-02]]), sample_mask=None, memory=Memory(location=nilearn_cache/joblib), memory_level=1, verbose=1, sklearn_output_config=None)
-    [MultiNiftiMapsMasker.fit_transform] Loading data from <nibabel.nifti1.Nifti1Image object at 0x7fcf45d81ad0>
+    [MultiNiftiMapsMasker.fit_transform] Loading data from <nibabel.nifti1.Nifti1Image object at 0x7f2901c66710>
     [MultiNiftiMapsMasker.fit_transform] Resampling images
     [MultiNiftiMapsMasker.fit_transform] Extracting region signals
     [MultiNiftiMapsMasker.fit_transform] Cleaning extracted signals
     _______________________________________________filter_and_extract - 4.2s, 0.1min
-    ____________________________________________transform_single_imgs - 4.2s, 0.1min
+    ____________________________________________transform_single_imgs - 4.3s, 0.1min
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 92-94
+.. GENERATED FROM PYTHON SOURCE LINES 102-104
 
 Computing group-sparse precision matrices
 -----------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 94-99
+.. GENERATED FROM PYTHON SOURCE LINES 104-109
 
 .. code-block:: Python
 
@@ -363,13 +390,13 @@ Computing group-sparse precision matrices
 
  .. code-block:: none
 
-    [Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    7.5s finished
+    [Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:    7.1s finished
     [GroupSparseCovarianceCV.fit] [GroupSparseCovarianceCV] Done refinement  0 out of 4
-    [Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:   12.7s finished
+    [Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:   12.1s finished
     [GroupSparseCovarianceCV.fit] [GroupSparseCovarianceCV] Done refinement  1 out of 4
-    [Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:   14.8s finished
+    [Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:   14.1s finished
     [GroupSparseCovarianceCV.fit] [GroupSparseCovarianceCV] Done refinement  2 out of 4
-    [Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:   11.8s finished
+    [Parallel(n_jobs=1)]: Done   5 out of   5 | elapsed:   11.3s finished
     [GroupSparseCovarianceCV.fit] [GroupSparseCovarianceCV] Done refinement  3 out of 4
     [GroupSparseCovarianceCV.fit] Final optimization
 
@@ -797,7 +824,7 @@ Computing group-sparse precision matrices
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-106
+.. GENERATED FROM PYTHON SOURCE LINES 110-115
 
 .. code-block:: Python
 
@@ -805,7 +832,6 @@ Computing group-sparse precision matrices
 
     gl = GraphicalLassoCV(verbose=True)
     gl.fit(np.concatenate(subject_time_series))
-
 
 
 
@@ -1248,12 +1274,12 @@ Computing group-sparse precision matrices
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-109
+.. GENERATED FROM PYTHON SOURCE LINES 116-118
 
 Displaying results
 ------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 109-127
+.. GENERATED FROM PYTHON SOURCE LINES 118-134
 
 .. code-block:: Python
 
@@ -1263,9 +1289,7 @@ Displaying results
         show,
     )
 
-    atlas_img = msdl_atlas_dataset.maps
     atlas_region_coords = find_probabilistic_atlas_cut_coords(atlas_img)
-    labels = msdl_atlas_dataset.labels
 
     plot_connectome(
         gl.covariance_,
@@ -1289,11 +1313,11 @@ Displaying results
  .. code-block:: none
 
 
-    <nilearn.plotting.displays._projectors.LZRProjector object at 0x7fcf7435f3d0>
+    <nilearn.plotting.displays._projectors.LZRProjector object at 0x7f291a0b3e50>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-149
+.. GENERATED FROM PYTHON SOURCE LINES 135-156
 
 .. code-block:: Python
 
@@ -1342,7 +1366,7 @@ Displaying results
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-159
+.. GENERATED FROM PYTHON SOURCE LINES 157-166
 
 .. code-block:: Python
 
@@ -1396,9 +1420,9 @@ Displaying results
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 17.784 seconds)
+   **Total running time of the script:** (1 minutes 15.431 seconds)
 
-**Estimated memory usage:**  1441 MB
+**Estimated memory usage:**  1430 MB
 
 
 .. _sphx_glr_download_auto_examples_03_connectivity_plot_multi_subject_connectome.py:

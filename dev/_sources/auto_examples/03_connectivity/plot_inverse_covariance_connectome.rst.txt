@@ -24,44 +24,35 @@ Computing a connectome with sparse inverse covariance
 This example constructs a functional connectome using the sparse inverse
 covariance.
 
-We use the `MSDL atlas
-<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
-of functional regions in movie watching, and the
-:class:`~nilearn.maskers.NiftiMapsMasker` to extract time series.
-
 Note that the inverse covariance (or precision) contains values that can
 be linked to *negated* partial correlations, so we negated it for
 display.
 
-As the MSDL atlas comes with (x, y, z) :term:`MNI` coordinates for
-the different regions, we can visualize the matrix as a graph of
-interaction in a brain. To avoid having too dense a graph, we
-represent only the edges above 80% of the values.
+.. admonition:: dataset
 
-.. GENERATED FROM PYTHON SOURCE LINES 24-26
+    This example uses the :ref:`MSDL atlas <msdl_atlas>`
+    to extract time series
+    from the :ref:`development fMRI dataset <development_dataset>`
+    with the :class:`~nilearn.maskers.NiftiMapsMasker`.
+
+    As the MSDL atlas comes with (x, y, z) :term:`MNI` coordinates
+    for the different regions,
+    we can visualize the matrix as a graph of interaction in a brain.
+    To avoid having too dense a graph,
+    we represent only the 20% edges with the highest values.
+
+.. GENERATED FROM PYTHON SOURCE LINES 27-29
 
 Retrieve the atlas and the data
 -------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-42
+.. GENERATED FROM PYTHON SOURCE LINES 29-33
 
 .. code-block:: Python
 
     from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 
     atlas = fetch_atlas_msdl()
-
-    # Loading atlas image stored in 'maps'
-    atlas_filename = atlas["maps"]
-
-    # Loading atlas data stored in 'labels'
-    labels = atlas["labels"]
-
-    # Loading the functional datasets
-    data = fetch_development_fmri(n_subjects=1)
-
-    # print basic information on the dataset
-    print(f"First subject functional nifti images (4D) are at: {data.func[0]}")
 
 
 
@@ -72,18 +63,85 @@ Retrieve the atlas and the data
  .. code-block:: none
 
     [fetch_atlas_msdl] Dataset directory found: /home/runner/work/nilearn/nilearn/nilearn_data/msdl_atlas
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 34-40
+
+.. code-block:: Python
+
+    print(atlas.description.content)
+
+    # Loading atlas image and labels
+    atlas_filename = atlas.maps
+    labels = atlas.labels
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    {'labels': {'type': list[str], 'desc': 'List of the names of the regions. There are 39 labels such that ``data.labels[i]`` corresponds to map ``i``.'}, 'maps': {'type': <class 'str'>, 'desc': 'Full path to nifti file containing the :term:`Probabilistic atlas` image (shape is equal to ``(40, 48, 35, 39)``).'}, 'networks': {'type': list[str], 'desc': 'List containing the names of the networks. There are 39 network names such that ``data.networks[i]`` is the network name of region ``i``.'}, 'region_coords': {'type': list[list[float]], 'desc': 'Length-3 :obj:`tuple` ``data.region_coords[i]`` contains the coordinates ``(x, y, z)`` of region ``i`` in :term:`MNI` space.'}, 'atlas_type': {'type': <class 'str'>, 'desc': '\n        Type of atlas.\n        See :term:`Probabilistic atlas` and :term:`Deterministic atlas`.'}, 'template': {'type': <class 'str'>, 'desc': 'The standardized space of analysis in which the data is provided.'}}
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 41-42
+
+Loading the functional datasets
+
+.. GENERATED FROM PYTHON SOURCE LINES 42-44
+
+.. code-block:: Python
+
+    data = fetch_development_fmri(n_subjects=1)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
     [fetch_development_fmri] Dataset directory found: /home/runner/work/nilearn/nilearn/nilearn_data/development_fmri
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 45-46
+
+print basic information on the dataset
+
+.. GENERATED FROM PYTHON SOURCE LINES 46-48
+
+.. code-block:: Python
+
+    print(f"First subject functional nifti images (4D) are at: {data.func[0]}")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
     First subject functional nifti images (4D) are at: /home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 43-45
+.. GENERATED FROM PYTHON SOURCE LINES 49-51
 
 Extract time series
 -------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 45-58
+.. GENERATED FROM PYTHON SOURCE LINES 51-64
 
 .. code-block:: Python
 
@@ -115,7 +173,7 @@ Extract time series
     ________________________________________________________________________________
     [Memory] Calling nilearn.maskers.base_masker.filter_and_extract...
     filter_and_extract('/home/runner/work/nilearn/nilearn/nilearn_data/development_fmri/sub-pixar123_task-pixar_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz', 
-    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7fcf9d7d0190>, { 'allow_overlap': True,
+    <nilearn.maskers.nifti_maps_masker._ExtractionFunctor object at 0x7f291a57bd90>, { 'allow_overlap': True,
       'clean_args': None,
       'clean_kwargs': {},
       'cmap': 'CMRmap_r',
@@ -136,17 +194,17 @@ Extract time series
     [NiftiMapsMasker.wrapped] Loading data from sub-pixar123_task-...
     [NiftiMapsMasker.wrapped] Extracting region signals
     [NiftiMapsMasker.wrapped] Cleaning extracted signals
-    _______________________________________________filter_and_extract - 0.8s, 0.0min
+    _______________________________________________filter_and_extract - 0.7s, 0.0min
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 59-61
+.. GENERATED FROM PYTHON SOURCE LINES 65-67
 
 Compute the sparse inverse covariance
 -------------------------------------
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-66
+.. GENERATED FROM PYTHON SOURCE LINES 67-72
 
 .. code-block:: Python
 
@@ -596,14 +654,14 @@ Compute the sparse inverse covariance
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-71
+.. GENERATED FROM PYTHON SOURCE LINES 73-77
 
 Visualization: covariance
 -------------------------
 The covariance can be found at ``estimator.covariance_``.
 We plot it along with its connectome graph.
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-96
+.. GENERATED FROM PYTHON SOURCE LINES 77-102
 
 .. code-block:: Python
 
@@ -656,13 +714,13 @@ We plot it along with its connectome graph.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-100
+.. GENERATED FROM PYTHON SOURCE LINES 103-106
 
 Visualization: sparse inverse covariance
 ----------------------------------------
 We negate the precision to get partial correlations.
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-118
+.. GENERATED FROM PYTHON SOURCE LINES 106-124
 
 .. code-block:: Python
 
@@ -708,7 +766,7 @@ We negate the precision to get partial correlations.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-125
+.. GENERATED FROM PYTHON SOURCE LINES 125-131
 
 3D visualization in a web browser
 ---------------------------------
@@ -717,7 +775,7 @@ An alternative to :func:`~nilearn.plotting.plot_connectome` is to use
 visualizations in a web browser.
 See :ref:`interactive-connectome-plotting` for more details.
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-133
+.. GENERATED FROM PYTHON SOURCE LINES 131-139
 
 .. code-block:: Python
 
@@ -1118,7 +1176,7 @@ See :ref:`interactive-connectome-plotting` for more details.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-138
+.. GENERATED FROM PYTHON SOURCE LINES 140-144
 
 .. code-block:: Python
 
@@ -1136,9 +1194,9 @@ See :ref:`interactive-connectome-plotting` for more details.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 10.257 seconds)
+   **Total running time of the script:** (0 minutes 10.696 seconds)
 
-**Estimated memory usage:**  988 MB
+**Estimated memory usage:**  950 MB
 
 
 .. _sphx_glr_download_auto_examples_03_connectivity_plot_inverse_covariance_connectome.py:

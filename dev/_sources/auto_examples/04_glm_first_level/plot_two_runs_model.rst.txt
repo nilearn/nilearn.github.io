@@ -37,54 +37,27 @@ that contain the same experimental conditions.
 The model directly returns a fixed effect
 of the statistics across the two runs.
 
-.. seealso::
+.. admonition:: dataset
 
-    See the :ref:`dataset description <fiac_dataset>`
+    See the :ref:`dataset description <fiac>`
     for more information on the data used in this example.
 
-.. GENERATED FROM PYTHON SOURCE LINES 28-29
-
-Create an output ``results`` in the current working directory.
-
-.. GENERATED FROM PYTHON SOURCE LINES 29-36
-
-.. code-block:: Python
-
-    from pathlib import Path
-
-    output_dir = Path.cwd() / "results" / "plot_two_runs_model"
-    output_dir.mkdir(exist_ok=True, parents=True)
-    print(f"Output will be saved to: {output_dir}")
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Output will be saved to: /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/results/plot_two_runs_model
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 37-41
+.. GENERATED FROM PYTHON SOURCE LINES 28-32
 
 Set up the GLM
 --------------
 Inspecting 'data', we note that there are two runs.
 We will retain those two runs in a list of 4D img objects.
 
-.. GENERATED FROM PYTHON SOURCE LINES 41-46
+.. GENERATED FROM PYTHON SOURCE LINES 32-38
 
 .. code-block:: Python
 
     from nilearn.datasets.func import fetch_fiac_first_level
 
     data = fetch_fiac_first_level()
-    fmri_imgs = [data["func1"], data["func2"]]
+    print(data.description.content.func1)
+    print(data.description.content.func2)
 
 
 
@@ -95,20 +68,23 @@ We will retain those two runs in a list of 4D img objects.
  .. code-block:: none
 
     [fetch_fiac_first_level] Dataset directory found: /home/runner/work/nilearn/nilearn/nilearn_data/fiac_nilearn.glm
+    {'type': <class 'str'>, 'desc': 'Full path to 4D nifti file of run 1.'}
+    {'type': <class 'str'>, 'desc': 'Full path to 4D nifti file of run 2.'}
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-48
+.. GENERATED FROM PYTHON SOURCE LINES 39-40
 
 Create a mean image for plotting purpose.
 
-.. GENERATED FROM PYTHON SOURCE LINES 48-52
+.. GENERATED FROM PYTHON SOURCE LINES 40-45
 
 .. code-block:: Python
 
     from nilearn.image import mean_img
 
+    fmri_imgs = [data["func1"], data["func2"]]
     mean_img_ = mean_img(fmri_imgs[0])
 
 
@@ -118,12 +94,12 @@ Create a mean image for plotting purpose.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-55
+.. GENERATED FROM PYTHON SOURCE LINES 46-48
 
 The design matrices were pre-computed,
 we simply put them in a list of DataFrames.
 
-.. GENERATED FROM PYTHON SOURCE LINES 55-60
+.. GENERATED FROM PYTHON SOURCE LINES 48-53
 
 .. code-block:: Python
 
@@ -139,7 +115,7 @@ we simply put them in a list of DataFrames.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-67
+.. GENERATED FROM PYTHON SOURCE LINES 54-60
 
 Initialize and run the GLM
 --------------------------
@@ -148,7 +124,7 @@ before fitting it to the data.
 Note that a brain mask was provided in the dataset,
 so that is what we will use.
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-73
+.. GENERATED FROM PYTHON SOURCE LINES 60-66
 
 .. code-block:: Python
 
@@ -165,7 +141,7 @@ so that is what we will use.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-79
+.. GENERATED FROM PYTHON SOURCE LINES 67-72
 
 Compare run-specific and fixed effects contrasts
 ------------------------------------------------
@@ -173,7 +149,7 @@ We can then compare run-specific and fixed effects.
 Here, we compare the activation produced from each run separately
 and then the fixed effects version.
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-81
+.. GENERATED FROM PYTHON SOURCE LINES 72-74
 
 .. code-block:: Python
 
@@ -186,14 +162,14 @@ and then the fixed effects version.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-86
+.. GENERATED FROM PYTHON SOURCE LINES 75-79
 
 Compute the statistics for the first run.
 
 Here, we define the contrast of interest for the first run.
 This may differ across runs depending on if the design matrices vary.
 
-.. GENERATED FROM PYTHON SOURCE LINES 86-112
+.. GENERATED FROM PYTHON SOURCE LINES 79-105
 
 .. code-block:: Python
 
@@ -236,17 +212,17 @@ This may differ across runs depending on if the design matrices vary.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:90: RuntimeWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:83: RuntimeWarning:
 
     [MultiNiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
 
     [FirstLevelModel.fit] Computing run 1 out of 1 runs (go take a coffee, a big one).
     [FirstLevelModel.fit] Performing mask computation.
-    [FirstLevelModel.fit] Masking took 0 seconds.
+    [FirstLevelModel.fit] Masking took 1 seconds.
     [FirstLevelModel.fit] Performing GLM computation.
     [FirstLevelModel.fit] GLM took 0 seconds.
     [FirstLevelModel.fit] Computation of 1 runs done in 00 HR 00 MIN 02 SEC.
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:91: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:84: UserWarning:
 
     t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
 
@@ -254,11 +230,11 @@ This may differ across runs depending on if the design matrices vary.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 113-114
+.. GENERATED FROM PYTHON SOURCE LINES 106-107
 
 Compute the statistics for the second run.
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-133
+.. GENERATED FROM PYTHON SOURCE LINES 107-126
 
 .. code-block:: Python
 
@@ -294,7 +270,7 @@ Compute the statistics for the second run.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:114: RuntimeWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:107: RuntimeWarning:
 
     [MultiNiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
 
@@ -304,7 +280,7 @@ Compute the statistics for the second run.
     [FirstLevelModel.fit] Performing GLM computation.
     [FirstLevelModel.fit] GLM took 0 seconds.
     [FirstLevelModel.fit] Computation of 1 runs done in 00 HR 00 MIN 02 SEC.
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:118: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:111: UserWarning:
 
     t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
 
@@ -312,7 +288,7 @@ Compute the statistics for the second run.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-140
+.. GENERATED FROM PYTHON SOURCE LINES 127-133
 
 Compute the fixed effects statistics
 using the statistical maps of both runs.
@@ -321,7 +297,7 @@ We can use :func:`~nilearn.glm.compute_fixed_effects` to compute
 the fixed effects statistics using the outputs
 from the run-specific FirstLevelModel results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 140-166
+.. GENERATED FROM PYTHON SOURCE LINES 133-159
 
 .. code-block:: Python
 
@@ -363,14 +339,14 @@ from the run-specific FirstLevelModel results.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-171
+.. GENERATED FROM PYTHON SOURCE LINES 160-164
 
 Not unexpectedly, the fixed effects version displays higher peaks
 than the input runs.
 Computing fixed effects enhances the signal-to-noise ratio
 of the resulting brain maps.
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-183
+.. GENERATED FROM PYTHON SOURCE LINES 166-176
 
 Compute fixed effects statistics using preprocessed data of both runs
 ---------------------------------------------------------------------
@@ -383,7 +359,7 @@ Since we can assume that the design matrices of both runs
 have the same columns, in the same order,
 we can again reuse the first run's contrast vector.
 
-.. GENERATED FROM PYTHON SOURCE LINES 183-185
+.. GENERATED FROM PYTHON SOURCE LINES 176-178
 
 .. code-block:: Python
 
@@ -397,18 +373,18 @@ we can again reuse the first run's contrast vector.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:183: RuntimeWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:176: RuntimeWarning:
 
     [MultiNiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
 
     [FirstLevelModel.fit] Computing run 1 out of 2 runs (go take a coffee, a big one).
     [FirstLevelModel.fit] Performing mask computation.
-    [FirstLevelModel.fit] Masking took 0 seconds.
+    [FirstLevelModel.fit] Masking took 1 seconds.
     [FirstLevelModel.fit] Performing GLM computation.
     [FirstLevelModel.fit] GLM took 0 seconds.
     [FirstLevelModel.fit] Computing run 2 out of 2 runs (00 HR 00 MIN 02 SEC remaining).
     [FirstLevelModel.fit] Performing mask computation.
-    [FirstLevelModel.fit] Masking took 0 seconds.
+    [FirstLevelModel.fit] Masking took 1 seconds.
     [FirstLevelModel.fit] Performing GLM computation.
     [FirstLevelModel.fit] GLM took 0 seconds.
     [FirstLevelModel.fit] Computation of 2 runs done in 00 HR 00 MIN 03 SEC.
@@ -416,14 +392,14 @@ we can again reuse the first run's contrast vector.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 186-190
+.. GENERATED FROM PYTHON SOURCE LINES 179-183
 
 We can just define the contrast array for one run and assume
 that the design matrix is the same for the other.
 However, if we want to be safe, we should define each contrast separately,
 and provide it as a list.
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-210
+.. GENERATED FROM PYTHON SOURCE LINES 183-203
 
 .. code-block:: Python
 
@@ -460,7 +436,7 @@ and provide it as a list.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:195: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:188: UserWarning:
 
     t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
 
@@ -468,12 +444,12 @@ and provide it as a list.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 211-213
+.. GENERATED FROM PYTHON SOURCE LINES 204-206
 
 You may note that the results are the same as the first fixed effects
 analysis, but with a lot less code.
 
-.. GENERATED FROM PYTHON SOURCE LINES 215-220
+.. GENERATED FROM PYTHON SOURCE LINES 208-213
 
 Compute a range of contrasts across both runs
 ---------------------------------------------
@@ -481,11 +457,11 @@ It may be useful to investigate a number of contrasts.
 Therefore, we will move beyond the original contrast of interest
 and both define and compute several.
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-223
+.. GENERATED FROM PYTHON SOURCE LINES 215-216
 
 Contrast specification
 
-.. GENERATED FROM PYTHON SOURCE LINES 223-235
+.. GENERATED FROM PYTHON SOURCE LINES 216-228
 
 .. code-block:: Python
 
@@ -508,11 +484,11 @@ Contrast specification
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 236-237
+.. GENERATED FROM PYTHON SOURCE LINES 229-230
 
 Next, we compute and plot the statistics for these new contrasts.
 
-.. GENERATED FROM PYTHON SOURCE LINES 237-248
+.. GENERATED FROM PYTHON SOURCE LINES 230-237
 
 .. code-block:: Python
 
@@ -522,10 +498,6 @@ Next, we compute and plot the statistics for these new contrasts.
         print(f"  Contrast {index + 1:02g} out of {len(contrasts)}: {contrast_id}")
         # Estimate the contasts.
         z_map = fmri_glm.compute_contrast(contrast_val, output_type="z_score")
-
-        # Write the resulting stat images to file.
-        z_image_path = output_dir / f"{contrast_id}_z_map.nii.gz"
-        z_map.to_filename(z_image_path)
 
 
 
@@ -537,11 +509,11 @@ Next, we compute and plot the statistics for these new contrasts.
 
     Computing contrasts...
       Contrast 01 out of 8: SStSSp_minus_DStDSp
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:242: RuntimeWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:235: RuntimeWarning:
 
     The same contrast will be used for all 2 runs. If the design matrices are not the same for all runs, (for example with different column names or column order across runs) you should pass contrast as an expression using the name of the conditions as they appear in the design matrices.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:242: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:235: UserWarning:
 
     t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
 
@@ -551,12 +523,12 @@ Next, we compute and plot the statistics for these new contrasts.
       Contrast 05 out of 8: DSt_minus_SSt_for_DSp
       Contrast 06 out of 8: DSp_minus_SSp_for_DSt
       Contrast 07 out of 8: Deactivation
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:242: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:235: UserWarning:
 
     t contrasts should be of length P=13, but it has length 5. The rest of the contrast was padded with zeros.
 
       Contrast 08 out of 8: Effects_of_interest
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:242: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:235: UserWarning:
 
     Running approximate fixed effects on F statistics.
 
@@ -564,7 +536,7 @@ Next, we compute and plot the statistics for these new contrasts.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 249-254
+.. GENERATED FROM PYTHON SOURCE LINES 238-243
 
 Generating a report
 -------------------
@@ -572,7 +544,7 @@ Since we have already computed the FirstLevelModel
 and have a number of contrasts,
 we can quickly create a summary report.
 
-.. GENERATED FROM PYTHON SOURCE LINES 254-260
+.. GENERATED FROM PYTHON SOURCE LINES 243-249
 
 .. code-block:: Python
 
@@ -590,75 +562,75 @@ we can quickly create a summary report.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: RuntimeWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: RuntimeWarning:
 
     The same contrast will be used for all 2 runs. If the design matrices are not the same for all runs, (for example with different column names or column order across runs) you should pass contrast as an expression using the name of the conditions as they appear in the design matrices.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     t contrasts should be of length P=13, but it has length 4. The rest of the contrast was padded with zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     t contrasts should be of length P=13, but it has length 5. The rest of the contrast was padded with zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Running approximate fixed effects on F statistics.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 9 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 9 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 9 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 9 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 9 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 9 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 8 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 9 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 9 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 9 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 9 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 9 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 9 column(s) of zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:254: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_two_runs_model.py:243: UserWarning:
 
     Contrasts will be padded with 8 column(s) of zeros.
 
@@ -666,12 +638,12 @@ we can quickly create a summary report.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 261-263
+.. GENERATED FROM PYTHON SOURCE LINES 250-252
 
 .. include:: ../../../examples/report_note.rst
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 264-265
+.. GENERATED FROM PYTHON SOURCE LINES 253-254
 
 .. code-block:: Python
 
@@ -1159,10 +1131,10 @@ we can quickly create a summary report.
 
     <!-- Adapted from Pure CSS navbar : https://purecss.io/layouts/tucked-menu-vertical/ -->
     <nav class="navbar pure-g fw-bold" id="menu">
-        <script>var unique_id = "UUID-8c9fb567b06d421da01c5831c578fe20";</script>
+        <script>var unique_id = "UUID-19136ff5542b411c9d1ea778ce094b4c";</script>
         <div class="pure-u-1 pure-u-lg-1-8">
             <div class="pure-menu">
-                <a href="#model-details-UUID-8c9fb567b06d421da01c5831c578fe20"
+                <a href="#model-details-UUID-19136ff5542b411c9d1ea778ce094b4c"
                    class="pure-menu-heading">Home</a>
                 <a href="#"
                    class="custom-toggle"
@@ -1173,29 +1145,29 @@ we can quickly create a summary report.
             <div class="pure-menu pure-menu-horizontal custom-can-transform">
                 <ul class="pure-menu-list">
                     <li class="pure-menu-item">
-                        <a href="#model-details-UUID-8c9fb567b06d421da01c5831c578fe20"
+                        <a href="#model-details-UUID-19136ff5542b411c9d1ea778ce094b4c"
                            class="pure-menu-link">Model details</a>
                     </li>
                         <li class="pure-menu-item">
-                            <a id="navbar-matrix-link-UUID-8c9fb567b06d421da01c5831c578fe20"
-                               href="#design-matrix-UUID-8c9fb567b06d421da01c5831c578fe20"
+                            <a id="navbar-matrix-link-UUID-19136ff5542b411c9d1ea778ce094b4c"
+                               href="#design-matrix-UUID-19136ff5542b411c9d1ea778ce094b4c"
                                class="pure-menu-link">Design Matrix</a>
                         </li>
                         <li class="pure-menu-item">
-                            <a id="navbar-contrasts-link-UUID-8c9fb567b06d421da01c5831c578fe20"
-                               href="#contrasts-UUID-8c9fb567b06d421da01c5831c578fe20"
+                            <a id="navbar-contrasts-link-UUID-19136ff5542b411c9d1ea778ce094b4c"
+                               href="#contrasts-UUID-19136ff5542b411c9d1ea778ce094b4c"
                                class="pure-menu-link">Contrasts</a>
                         </li>
                     <li class="pure-menu-item">
-                        <a href="#mask-UUID-8c9fb567b06d421da01c5831c578fe20"
+                        <a href="#mask-UUID-19136ff5542b411c9d1ea778ce094b4c"
                            class="pure-menu-link">Mask</a>
                     </li>
                         <li class="pure-menu-item">
-                            <a href="#statistical-maps-UUID-8c9fb567b06d421da01c5831c578fe20"
+                            <a href="#statistical-maps-UUID-19136ff5542b411c9d1ea778ce094b4c"
                                class="pure-menu-link">Statistical Maps</a>
                         </li>
                     <li class="pure-menu-item">
-                        <a href="#about-UUID-8c9fb567b06d421da01c5831c578fe20"
+                        <a href="#about-UUID-19136ff5542b411c9d1ea778ce094b4c"
                            class="pure-menu-link">About</a>
                     </li>
                 </ul>
@@ -1275,7 +1247,7 @@ we can quickly create a summary report.
             (full-width at half maximum=5 mm).
         </p>
             </section>
-            <section id="model-details-UUID-8c9fb567b06d421da01c5831c578fe20">
+            <section id="model-details-UUID-19136ff5542b411c9d1ea778ce094b4c">
                 <h2>Model details</h2>
                 <div class="table-container"><table class="pure-table">
       <thead>
@@ -1320,23 +1292,23 @@ we can quickly create a summary report.
       </tbody>
     </table></div>
             </section>
-            <div id="carousel-container-UUID-8c9fb567b06d421da01c5831c578fe20"class="border border-1 rounded-1">
+            <div id="carousel-container-UUID-19136ff5542b411c9d1ea778ce094b4c"class="border border-1 rounded-1">
                     <div class="pure-g d-flex justify-content-center align-items-stretch mt-1"
                          id="carousel-navbar">
                         <button class="btn pure-u-1-3 text-center rounded-2 carousel-navbar-element"
                                 type="button"
-                                id="prev-btn-UUID-8c9fb567b06d421da01c5831c578fe20">
+                                id="prev-btn-UUID-19136ff5542b411c9d1ea778ce094b4c">
                             Previous Run
                         </button>
                         <!-- the content will be injected by javascript -->
                         <h2 class="pure-u-1-4 py-3 text-center carousel-navbar-element"
                             style="margin: 0px;
                                    padding: 0px">
-                            Run <span id="comp-UUID-8c9fb567b06d421da01c5831c578fe20"></span>
+                            Run <span id="comp-UUID-19136ff5542b411c9d1ea778ce094b4c"></span>
                         </h2>
                         <button class="btn pure-u-1-3 text-center rounded-2 carousel-navbar-element"
                                 type="button"
-                                id="next-btn-UUID-8c9fb567b06d421da01c5831c578fe20">
+                                id="next-btn-UUID-19136ff5542b411c9d1ea778ce094b4c">
                             Next Run
                         </button>
                     </div>
@@ -1346,8 +1318,8 @@ we can quickly create a summary report.
                             using your left and right arrow keys.
                         </p>
                     </div>
-                    <div style="display: none"                     id="carousel-obj-UUID-8c9fb567b06d421da01c5831c578fe20-0">
-                        <section id="design-matrix-UUID-8c9fb567b06d421da01c5831c578fe20-0">
+                    <div style="display: none"                     id="carousel-obj-UUID-19136ff5542b411c9d1ea778ce094b4c-0">
+                        <section id="design-matrix-UUID-19136ff5542b411c9d1ea778ce094b4c-0">
                             <h3>Design Matrix</h3>
                                 <div class="scroll-y">
 
@@ -1367,7 +1339,7 @@ we can quickly create a summary report.
                                              style="min-width: 600px" />
                                     </div>
                         </section>
-                        <section id="contrasts-UUID-8c9fb567b06d421da01c5831c578fe20-0">
+                        <section id="contrasts-UUID-19136ff5542b411c9d1ea778ce094b4c-0">
                             <h3>Contrasts</h3>
                             <div class="d-flex flex-column">
                                         <div class="scroll-y">
@@ -1437,8 +1409,8 @@ we can quickly create a summary report.
                             </div>
                         </section>
                     </div>
-                    <div style="display: none"                     id="carousel-obj-UUID-8c9fb567b06d421da01c5831c578fe20-1">
-                        <section id="design-matrix-UUID-8c9fb567b06d421da01c5831c578fe20-1">
+                    <div style="display: none"                     id="carousel-obj-UUID-19136ff5542b411c9d1ea778ce094b4c-1">
+                        <section id="design-matrix-UUID-19136ff5542b411c9d1ea778ce094b4c-1">
                             <h3>Design Matrix</h3>
                                 <div class="scroll-y">
 
@@ -1458,7 +1430,7 @@ we can quickly create a summary report.
                                              style="min-width: 600px" />
                                     </div>
                         </section>
-                        <section id="contrasts-UUID-8c9fb567b06d421da01c5831c578fe20-1">
+                        <section id="contrasts-UUID-19136ff5542b411c9d1ea778ce094b4c-1">
                             <h3>Contrasts</h3>
                             <div class="d-flex flex-column">
                                         <div class="scroll-y">
@@ -1529,7 +1501,7 @@ we can quickly create a summary report.
                         </section>
                     </div>
             </div>
-            <section id="mask-UUID-8c9fb567b06d421da01c5831c578fe20">
+            <section id="mask-UUID-19136ff5542b411c9d1ea778ce094b4c">
                 <h2>Mask</h2>
                     <div class="scroll-y">
                         <img class="pure-img"
@@ -1544,7 +1516,7 @@ we can quickly create a summary report.
                         </p>
                     </div>
             </section>
-            <section id="statistical-maps-UUID-8c9fb567b06d421da01c5831c578fe20">
+            <section id="statistical-maps-UUID-19136ff5542b411c9d1ea778ce094b4c">
                 <h2>Statistical Maps</h2>
                 <div class="pure-g">
                             <div class="pure-u-1">
@@ -6861,11 +6833,11 @@ we can quickly create a summary report.
                             </div>
                 </div>
             </section>
-            <section id="about-UUID-8c9fb567b06d421da01c5831c578fe20" style="text-align: left">
+            <section id="about-UUID-19136ff5542b411c9d1ea778ce094b4c" style="text-align: left">
                 <h2>About</h2>
                 <ul>
                     <li>
-                        Date preprocessed: <time>2026-10-14T10:42:48</time>
+                        Date preprocessed: <time>2026-10-27T15:28:36</time>
                     </li>
                 </ul>
             </section>
@@ -6995,7 +6967,7 @@ we can quickly create a summary report.
         })
       }
     }            document.addEventListener("DOMContentLoaded", function () {
-                    new Carousel("8c9fb567b06d421da01c5831c578fe20", [0, 1], false);
+                    new Carousel("19136ff5542b411c9d1ea778ce094b4c", [0, 1], false);
                 }
                 );
             </script>
@@ -7009,9 +6981,9 @@ we can quickly create a summary report.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 31.149 seconds)
+   **Total running time of the script:** (0 minutes 31.062 seconds)
 
-**Estimated memory usage:**  673 MB
+**Estimated memory usage:**  652 MB
 
 
 .. _sphx_glr_download_auto_examples_04_glm_first_level_plot_two_runs_model.py:

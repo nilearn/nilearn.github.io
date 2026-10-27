@@ -23,16 +23,25 @@
 
 Here we discover how to work with 3D and 4D niimgs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 9-15
+.. admonition:: dataset
+
+    This example uses:
+
+    - the :ref:`Smith 2009 atlas <smith_2009_atlas>`
+    - a sample motor activation statistical map (`image 10426
+      <https://neurovault.org/images/10426/>`_ from :ref:`Neurovault
+      <neurovault_dataset>`)
+
+.. GENERATED FROM PYTHON SOURCE LINES 18-24
 
 Downloading tutorial datasets from Internet
 -------------------------------------------
 
-Nilearn comes with functions that download public data from Internet
+Nilearn comes with functions that download public data from Internet.
 
 Let's first check where the data is downloaded on our disk:
 
-.. GENERATED FROM PYTHON SOURCE LINES 15-21
+.. GENERATED FROM PYTHON SOURCE LINES 24-30
 
 .. code-block:: Python
 
@@ -55,7 +64,7 @@ Let's first check where the data is downloaded on our disk:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 22-27
+.. GENERATED FROM PYTHON SOURCE LINES 31-36
 
 Visualizing a 3D file
 ---------------------
@@ -63,7 +72,7 @@ Visualizing a 3D file
 The file contains a 3D volume, we can easily visualize it as a
 statistical map:
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-31
+.. GENERATED FROM PYTHON SOURCE LINES 36-40
 
 .. code-block:: Python
 
@@ -85,17 +94,17 @@ statistical map:
  .. code-block:: none
 
 
-    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7fcf78422e50>
+    <nilearn.plotting.displays._slicers.OrthoSlicer object at 0x7f28f28a9c90>
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 32-35
+.. GENERATED FROM PYTHON SOURCE LINES 41-44
 
 Calling ``show`` function
 from :mod:`nilearn.plotting` package is necessary to display the figure
 when running as a script outside IPython.
 
-.. GENERATED FROM PYTHON SOURCE LINES 35-39
+.. GENERATED FROM PYTHON SOURCE LINES 44-48
 
 .. code-block:: Python
 
@@ -110,11 +119,11 @@ when running as a script outside IPython.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-41
+.. GENERATED FROM PYTHON SOURCE LINES 49-50
 
 Visualizing works better with a threshold
 
-.. GENERATED FROM PYTHON SOURCE LINES 41-46
+.. GENERATED FROM PYTHON SOURCE LINES 50-55
 
 .. code-block:: Python
 
@@ -135,7 +144,7 @@ Visualizing works better with a threshold
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-52
+.. GENERATED FROM PYTHON SOURCE LINES 56-61
 
 Visualizing one volume in a 4D file
 -----------------------------------
@@ -143,14 +152,13 @@ Visualizing one volume in a 4D file
 We can download :term:`resting-state` networks from the Smith 2009 study on
 correspondence between rest and task.
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-57
+.. GENERATED FROM PYTHON SOURCE LINES 61-65
 
 .. code-block:: Python
 
     from nilearn.datasets import fetch_atlas_smith_2009
 
-    rsn = fetch_atlas_smith_2009(resting=True, dimension=10)["maps"]
-    print(rsn)
+    rsn = fetch_atlas_smith_2009(resting=True, dimension=10)
 
 
 
@@ -160,30 +168,49 @@ correspondence between rest and task.
 
  .. code-block:: none
 
-    [fetch_atlas_smith_2009] Dataset directory found: /home/runner/work/nilearn/nilearn/nilearn_data/smith_2009
+    [fetch_atlas_smith_2009] Dataset directory found: /home/runner/work/nilearn/nilearn/nilearn_data/smith_2009_atlas
     [fetch_atlas_smith_2009] Downloading data from https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/PNAS_Smith09_rsn10.nii.gz ...
-    Downloading PNAS_Smith09_rsn10.nii.gz ━━━━━━━━━━━━━━ 7.6/7.6 MB 3.9 MB/s 0:00:00
-    [fetch_atlas_smith_2009]  ...done. (5 seconds, 0 min)
-
-    /home/runner/work/nilearn/nilearn/nilearn_data/smith_2009/PNAS_Smith09_rsn10.nii.gz
+    Downloading PNAS_Smith09_rsn10.nii.gz ━━━━━━━━━━━━━━ 7.6/7.6 MB 6.6 MB/s 0:00:00
+    [fetch_atlas_smith_2009]  ...done. (3 seconds, 0 min)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-62
 
-It is a 4D nifti file.
-the :mod:`nilearn.image` package
+.. GENERATED FROM PYTHON SOURCE LINES 66-69
+
+.. code-block:: Python
+
+    print(rsn.description.content.maps)
+    print(rsn.maps)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    {'type': <class 'str'>, 'desc': 'Full path to 4D nifti file containing the requested resting fMRI or BrainMap components (depending on the value passed to ``resting``) image with the number of requested dimensions. The shape of the image is ``(91, 109, 91, dimension)`` where dimension is the value passed to ``dimension``.'}
+    /home/runner/work/nilearn/nilearn/nilearn_data/smith_2009_atlas/PNAS_Smith09_rsn10.nii.gz
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 70-73
+
+The :mod:`nilearn.image` package
 provides some utility functions to work with image files.
 We can load it into the memory to print its shape.
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-66
+.. GENERATED FROM PYTHON SOURCE LINES 73-77
 
 .. code-block:: Python
 
     from nilearn.image import load_img
 
-    print(load_img(rsn).shape)
+    print(load_img(rsn.maps).shape)
 
 
 
@@ -198,19 +225,19 @@ We can load it into the memory to print its shape.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-68
+.. GENERATED FROM PYTHON SOURCE LINES 78-79
 
 We can retrieve the first volume (note that Python indexing starts at 0):
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-75
+.. GENERATED FROM PYTHON SOURCE LINES 79-86
 
 .. code-block:: Python
 
     from nilearn.image import index_img
 
-    first_rsn = index_img(rsn, 0)
+    first_rsn = index_img(rsn.maps, 0)
 
-    first_rsn = index_img(rsn, 0)
+    first_rsn = index_img(rsn.maps, 0)
     print(first_rsn.shape)
 
 
@@ -226,13 +253,13 @@ We can retrieve the first volume (note that Python indexing starts at 0):
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 76-79
+.. GENERATED FROM PYTHON SOURCE LINES 87-90
 
 first_rsn is a 3D image.
 
 We can then plot it
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-84
+.. GENERATED FROM PYTHON SOURCE LINES 90-95
 
 .. code-block:: Python
 
@@ -253,7 +280,7 @@ We can then plot it
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-93
+.. GENERATED FROM PYTHON SOURCE LINES 96-104
 
 Looping on all volumes in a 4D file
 -----------------------------------
@@ -264,13 +291,13 @@ to loop on them.
 Then we give a few arguments to plot_stat_map in order to have a more
 compact display.
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-103
+.. GENERATED FROM PYTHON SOURCE LINES 104-114
 
 .. code-block:: Python
 
     from nilearn.image import iter_img
 
-    for img in iter_img(rsn):
+    for img in iter_img(rsn.maps):
         # img is now an in-memory 3D img
         plot_stat_map(
             img, threshold=3, display_mode="z", cut_coords=1, colorbar=False
@@ -358,7 +385,7 @@ compact display.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-112
+.. GENERATED FROM PYTHON SOURCE LINES 115-123
 
 Looping through selected volumes in a 4D file
 ---------------------------------------------
@@ -369,11 +396,11 @@ with the `slice` constructor to select the desired volumes.
 Afterwards, we'll use iter_img to loop through them following the same
 formula as before.
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-114
+.. GENERATED FROM PYTHON SOURCE LINES 123-125
 
 .. code-block:: Python
 
-    selected_volumes = index_img(rsn, slice(3, 5))
+    selected_volumes = index_img(rsn.maps, slice(3, 5))
 
 
 
@@ -382,13 +409,13 @@ formula as before.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-118
+.. GENERATED FROM PYTHON SOURCE LINES 126-129
 
 If you're new to Python, one thing to note is that the slice constructor
 uses 0-based indexing. You can confirm this by matching these slices
 to the previous plot above.
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-124
+.. GENERATED FROM PYTHON SOURCE LINES 129-135
 
 .. code-block:: Python
 
@@ -422,7 +449,7 @@ to the previous plot above.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-139
+.. GENERATED FROM PYTHON SOURCE LINES 136-150
 
 To recap, neuroimaging images (niimgs as we call them) come in
 different flavors:
@@ -442,9 +469,9 @@ image.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 13.136 seconds)
+   **Total running time of the script:** (0 minutes 11.066 seconds)
 
-**Estimated memory usage:**  276 MB
+**Estimated memory usage:**  401 MB
 
 
 .. _sphx_glr_download_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py:

@@ -27,7 +27,7 @@ in experimental data and visualizing the results
 
 More specifically:
 
-1. A sample of n=16 visual activity fMRIs are downloaded.
+1. A list of subject-level :term:`fMRI` contrasts is downloaded.
 
 2. An unpaired, two-sample t-test is applied to the brain maps in order to
 see the effect of the contrast difference across subjects.
@@ -36,15 +36,22 @@ see the effect of the contrast difference across subjects.
 the effect of the contrast difference across subjects,
 considering subject intercepts
 
-The contrast is between responses to retinotopically distinct
-vertical versus horizontal checkerboards. At the individual level,
-these stimuli are sometimes used to map the borders of primary visual areas.
-At the group level, such a mapping is not possible. Yet, we may
-observe some significant effects in these areas.
+.. admonition:: dataset
 
-.. GENERATED FROM PYTHON SOURCE LINES 29-34
+    This example uses contrasts for responses to retinotopically distinct
+    vertical versus horizontal checkerboards
+    from the :ref:`Brainomics Localizer dataset <brainomics_maps>`.
+
+    At the individual level,
+    these stimuli are sometimes used to map
+    the borders of primary visual areas.
+    At the group level, such a mapping is not possible.
+    Yet, we may observe some significant effects in these areas.
+
+.. GENERATED FROM PYTHON SOURCE LINES 32-38
 
 .. code-block:: Python
+
 
     import pandas as pd
 
@@ -58,14 +65,13 @@ observe some significant effects in these areas.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 35-39
+.. GENERATED FROM PYTHON SOURCE LINES 39-42
 
 Fetch dataset
 -------------
-We download a list of left vs right button press contrasts from a
-localizer dataset.
+We download the first-level contrasts from a 16 subjects.
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-53
+.. GENERATED FROM PYTHON SOURCE LINES 42-56
 
 .. code-block:: Python
 
@@ -97,14 +103,14 @@ localizer dataset.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-58
+.. GENERATED FROM PYTHON SOURCE LINES 57-61
 
 Estimate second level models
 ----------------------------
 We define the input maps and the design matrix for the second level model
 and fit it.
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-60
+.. GENERATED FROM PYTHON SOURCE LINES 61-63
 
 .. code-block:: Python
 
@@ -117,11 +123,11 @@ and fit it.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 61-62
+.. GENERATED FROM PYTHON SOURCE LINES 64-65
 
 Next, we model the effect of conditions (sample 1 vs sample 2).
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-66
+.. GENERATED FROM PYTHON SOURCE LINES 65-69
 
 .. code-block:: Python
 
@@ -136,12 +142,12 @@ Next, we model the effect of conditions (sample 1 vs sample 2).
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-69
+.. GENERATED FROM PYTHON SOURCE LINES 70-72
 
 The design matrix for the unpaired test needs to add an intercept,
 For the paired test, we include an intercept for each subject.
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-72
+.. GENERATED FROM PYTHON SOURCE LINES 72-75
 
 .. code-block:: Python
 
@@ -155,11 +161,11 @@ For the paired test, we include an intercept for each subject.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-74
+.. GENERATED FROM PYTHON SOURCE LINES 76-77
 
 We then assemble those into design matrices
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-86
+.. GENERATED FROM PYTHON SOURCE LINES 77-89
 
 .. code-block:: Python
 
@@ -182,11 +188,11 @@ We then assemble those into design matrices
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-88
+.. GENERATED FROM PYTHON SOURCE LINES 90-91
 
 and plot the designs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 88-105
+.. GENERATED FROM PYTHON SOURCE LINES 91-108
 
 .. code-block:: Python
 
@@ -219,23 +225,26 @@ and plot the designs.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-107
+.. GENERATED FROM PYTHON SOURCE LINES 109-113
 
 We specify the analysis models and fit them.
+We instantiate the models with ``minimize_memory=False``
+because this is required to use ``plot_predicted_signal_and_residuals``
+to visualize the residuals time series.
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-117
+.. GENERATED FROM PYTHON SOURCE LINES 113-123
 
 .. code-block:: Python
 
     from nilearn.glm.second_level import SecondLevelModel
 
-    second_level_model_unpaired = SecondLevelModel(n_jobs=2, verbose=1).fit(
-        second_level_input, design_matrix=unpaired_design_matrix
-    )
+    second_level_model_unpaired = SecondLevelModel(
+        n_jobs=2, verbose=1, minimize_memory=False
+    ).fit(second_level_input, design_matrix=unpaired_design_matrix)
 
-    second_level_model_paired = SecondLevelModel(n_jobs=2, verbose=1).fit(
-        second_level_input, design_matrix=paired_design_matrix
-    )
+    second_level_model_paired = SecondLevelModel(
+        n_jobs=2, verbose=1, minimize_memory=False
+    ).fit(second_level_input, design_matrix=paired_design_matrix)
 
 
 
@@ -257,14 +266,14 @@ We specify the analysis models and fit them.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-122
+.. GENERATED FROM PYTHON SOURCE LINES 124-128
 
 Estimating the :term:`contrast` is simple. To do so, we provide the column
 name of the design matrix. The argument 'output_type' is set to return all
 available outputs so that we can compare differences in the effect size,
 variance, and z-score.
 
-.. GENERATED FROM PYTHON SOURCE LINES 122-130
+.. GENERATED FROM PYTHON SOURCE LINES 128-136
 
 .. code-block:: Python
 
@@ -283,14 +292,14 @@ variance, and z-score.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-135
+.. GENERATED FROM PYTHON SOURCE LINES 137-141
 
 Plot the results
 ----------------
 The two :term:`'effect_size'<Parameter Estimate>` images are essentially
 identical.
 
-.. GENERATED FROM PYTHON SOURCE LINES 135-140
+.. GENERATED FROM PYTHON SOURCE LINES 141-146
 
 .. code-block:: Python
 
@@ -312,11 +321,11 @@ identical.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 141-142
+.. GENERATED FROM PYTHON SOURCE LINES 147-148
 
 But the variance in the unpaired image is larger.
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-160
+.. GENERATED FROM PYTHON SOURCE LINES 148-166
 
 .. code-block:: Python
 
@@ -362,12 +371,12 @@ But the variance in the unpaired image is larger.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 161-163
+.. GENERATED FROM PYTHON SOURCE LINES 167-169
 
 Together, this makes the z_scores from the paired test larger.
 We threshold the second level :term:`contrast` and plot it.
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-182
+.. GENERATED FROM PYTHON SOURCE LINES 169-188
 
 .. code-block:: Python
 
@@ -414,17 +423,103 @@ We threshold the second level :term:`contrast` and plot it.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 183-185
+.. GENERATED FROM PYTHON SOURCE LINES 189-191
 
 Unsurprisingly, we see activity in the primary visual cortex, both positive
 and negative.
 
+.. GENERATED FROM PYTHON SOURCE LINES 193-200
+
+Plot predicted and time series of the most significant clusters
+---------------------------------------------------------------
+The model mispecification with an unpaired design can also be seen
+in the distribution of the residuals.
+Here we will plot it for both models
+in the around the the coordinates of the main peak
+in the most significant cluster.
+
+.. GENERATED FROM PYTHON SOURCE LINES 200-210
+
+.. code-block:: Python
+
+    from nilearn.reporting import get_clusters_table
+
+    table, _ = get_clusters_table(
+        stat_maps_paired["z_score"],
+        stat_threshold=threshold,
+        return_label_maps=True,
+    )
+    main_peak_main_cluster = table["Cluster ID"] == 1
+    coords = table.loc[main_peak_main_cluster, ["X", "Y", "Z"]].to_numpy()
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 211-213
+
+The unpaired model shows that there is systematic error
+between predicted and observed values.
+
+.. GENERATED FROM PYTHON SOURCE LINES 213-221
+
+.. code-block:: Python
+
+    time_series_dfs, figs = (
+        second_level_model_unpaired.plot_predicted_signal_and_residuals(
+            coords=coords
+        )
+    )
+    show()
+
+
+
+
+
+.. image-sg:: /auto_examples/05_glm_second_level/images/sphx_glr_plot_second_level_two_sample_test_006.png
+   :alt: Observed vs Predicted Signal, Histogram of Residuals
+   :srcset: /auto_examples/05_glm_second_level/images/sphx_glr_plot_second_level_two_sample_test_006.png
+   :class: sphx-glr-single-img
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 222-223
+
+Such error is not observed for the paired model.
+
+.. GENERATED FROM PYTHON SOURCE LINES 223-229
+
+.. code-block:: Python
+
+    time_series_dfs, figs = (
+        second_level_model_paired.plot_predicted_signal_and_residuals(
+            coords=coords
+        )
+    )
+    show()
+
+
+
+.. image-sg:: /auto_examples/05_glm_second_level/images/sphx_glr_plot_second_level_two_sample_test_007.png
+   :alt: Observed vs Predicted Signal, Histogram of Residuals
+   :srcset: /auto_examples/05_glm_second_level/images/sphx_glr_plot_second_level_two_sample_test_007.png
+   :class: sphx-glr-single-img
+
+
+
+
+
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 9.932 seconds)
+   **Total running time of the script:** (0 minutes 20.105 seconds)
 
-**Estimated memory usage:**  144 MB
+**Estimated memory usage:**  275 MB
 
 
 .. _sphx_glr_download_auto_examples_05_glm_second_level_plot_second_level_two_sample_test.py:

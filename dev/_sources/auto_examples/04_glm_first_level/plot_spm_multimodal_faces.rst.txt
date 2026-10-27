@@ -27,18 +27,17 @@ with two conditions: viewing a face image or a scrambled face image.
 This example takes a lot of time because the input are lists of 3D images
 sampled in different positions (encoded by different affine functions).
 
-.. seealso::
+.. admonition:: dataset
 
-    For more information
-    see the :ref:`dataset description <spm_multimodal_dataset>`.
+   This example uses the :ref:`SPM multimodal dataset <spm_multimodal>`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 18-21
+.. GENERATED FROM PYTHON SOURCE LINES 17-20
 
 Fetch and inspect the data
 --------------------------
 Fetch the :term:`SPM` multimodal_faces data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 21-25
+.. GENERATED FROM PYTHON SOURCE LINES 20-24
 
 .. code-block:: Python
 
@@ -54,16 +53,39 @@ Fetch the :term:`SPM` multimodal_faces data.
 
  .. code-block:: none
 
-    [fetch_spm_multimodal_fmri] Dataset directory found: /home/runner/work/nilearn/nilearn/nilearn_data/spm_multimodal_fmri
+    [wrapper] Dataset directory found: /home/runner/work/nilearn/nilearn/nilearn_data/spm_multimodal_fmri
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-27
+.. GENERATED FROM PYTHON SOURCE LINES 25-29
+
+.. code-block:: Python
+
+    print(subject_data.description.content.events1)
+    print(subject_data.description.content.func1)
+    print(subject_data.description.content.t_r)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    {'type': <class 'str'>, 'desc': 'Full path to a TSV file describing the paradigm of the run 1.'}
+    {'type': list[str], 'desc': 'List of full paths to 3D nifti image (in .img format) for the functional image of the run 1 (one file per time point).'}
+    {'type': <class 'float'>, 'desc': 'Repetition time in seconds.'}
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 30-31
 
 Let's inspect one of the event files before using them.
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-34
+.. GENERATED FROM PYTHON SOURCE LINES 31-38
 
 .. code-block:: Python
 
@@ -90,12 +112,12 @@ Let's inspect one of the event files before using them.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 35-37
+.. GENERATED FROM PYTHON SOURCE LINES 39-41
 
 We can confirm there are only 2 conditions in the dataset.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 37-43
+.. GENERATED FROM PYTHON SOURCE LINES 41-47
 
 .. code-block:: Python
 
@@ -117,18 +139,20 @@ We can confirm there are only 2 conditions in the dataset.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 44-46
+.. GENERATED FROM PYTHON SOURCE LINES 48-50
 
 Resample the images:
 this is achieved by the ``concat_imgs`` function of Nilearn.
 
-.. GENERATED FROM PYTHON SOURCE LINES 46-61
+.. GENERATED FROM PYTHON SOURCE LINES 50-66
 
 .. code-block:: Python
 
     import warnings
 
     from nilearn.image import concat_imgs, mean_img, resample_img
+
+    print("Concatenating and resampling images (this takes time)...")
 
     # Avoid getting too many warnings due to resampling
     with warnings.catch_warnings():
@@ -138,7 +162,6 @@ this is achieved by the ``concat_imgs`` function of Nilearn.
             concat_imgs(subject_data.func2, auto_resample=True),
         ]
     affine, shape = fmri_img[0].affine, fmri_img[0].shape
-    print("Resampling the second image (this takes time)...")
     fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
 
 
@@ -149,16 +172,16 @@ this is achieved by the ``concat_imgs`` function of Nilearn.
 
  .. code-block:: none
 
-    Resampling the second image (this takes time)...
+    Concatenating and resampling images (this takes time)...
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-63
+.. GENERATED FROM PYTHON SOURCE LINES 67-68
 
 Let's create mean image for display purposes.
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-65
+.. GENERATED FROM PYTHON SOURCE LINES 68-70
 
 .. code-block:: Python
 
@@ -171,14 +194,14 @@ Let's create mean image for display purposes.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-70
+.. GENERATED FROM PYTHON SOURCE LINES 71-75
 
 Fit the model
 -------------
 Fit the :term:`GLM` for the 2 runs
 by specifying a FirstLevelModel and then fitting it.
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-95
+.. GENERATED FROM PYTHON SOURCE LINES 75-99
 
 .. code-block:: Python
 
@@ -194,7 +217,6 @@ by specifying a FirstLevelModel and then fitting it.
 
     from nilearn.glm.first_level import FirstLevelModel
 
-    print("Fitting a GLM")
     fmri_glm = FirstLevelModel(
         smoothing_fwhm=None,
         t_r=subject_data.t_r,
@@ -215,13 +237,12 @@ by specifying a FirstLevelModel and then fitting it.
 
  .. code-block:: none
 
-    Fitting a GLM
     [FirstLevelModel.fit] Computing run 1 out of 2 runs (go take a coffee, a big one).
     [FirstLevelModel.fit] Performing mask computation.
     [FirstLevelModel.fit] Masking took 0 seconds.
     [FirstLevelModel.fit] Performing GLM computation.
     [FirstLevelModel.fit] GLM took 1 seconds.
-    [FirstLevelModel.fit] Computing run 2 out of 2 runs (00 HR 00 MIN 03 SEC remaining).
+    [FirstLevelModel.fit] Computing run 2 out of 2 runs (00 HR 00 MIN 02 SEC remaining).
     [FirstLevelModel.fit] Performing mask computation.
     [FirstLevelModel.fit] Masking took 0 seconds.
     [FirstLevelModel.fit] Performing GLM computation.
@@ -231,14 +252,14 @@ by specifying a FirstLevelModel and then fitting it.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-100
+.. GENERATED FROM PYTHON SOURCE LINES 100-104
 
 View the results
 ----------------
 Now we can compute contrast-related statistical maps (in z-scale),
 and plot them.
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-104
+.. GENERATED FROM PYTHON SOURCE LINES 104-108
 
 .. code-block:: Python
 
@@ -259,7 +280,7 @@ and plot them.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-110
+.. GENERATED FROM PYTHON SOURCE LINES 109-114
 
 We actually want more interesting contrasts.
 The simplest contrast just makes the difference
@@ -267,7 +288,7 @@ between the two main conditions.
 We define the two opposite versions to run one-tailed t-tests.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-113
+.. GENERATED FROM PYTHON SOURCE LINES 114-117
 
 .. code-block:: Python
 
@@ -281,7 +302,7 @@ We define the two opposite versions to run one-tailed t-tests.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-120
+.. GENERATED FROM PYTHON SOURCE LINES 118-124
 
 Let's store common parameters for all plots.
 
@@ -290,7 +311,7 @@ and we will use the z-score values as transparency,
 with any voxel with | Z-score | > 3 being fully opaque
 and any voxel with 0 < | Z-score | < 1.96 being partly transparent.
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-143
+.. GENERATED FROM PYTHON SOURCE LINES 124-147
 
 .. code-block:: Python
 
@@ -343,12 +364,12 @@ and any voxel with 0 < | Z-score | < 1.96 being partly transparent.
  .. code-block:: none
 
             contrast id: faces - scrambled
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_spm_multimodal_faces.py:134: RuntimeWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_spm_multimodal_faces.py:138: RuntimeWarning:
 
     The same contrast will be used for all 2 runs. If the design matrices are not the same for all runs, (for example with different column names or column order across runs) you should pass contrast as an expression using the name of the conditions as they appear in the design matrices.
 
             contrast id: scrambled - faces
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_spm_multimodal_faces.py:134: RuntimeWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_spm_multimodal_faces.py:138: RuntimeWarning:
 
     The same contrast will be used for all 2 runs. If the design matrices are not the same for all runs, (for example with different column names or column order across runs) you should pass contrast as an expression using the name of the conditions as they appear in the design matrices.
 
@@ -356,13 +377,13 @@ and any voxel with 0 < | Z-score | < 1.96 being partly transparent.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-147
+.. GENERATED FROM PYTHON SOURCE LINES 148-151
 
 We also define the effects of interest contrast,
 a 2-dimensional contrasts spanning the two conditions.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 147-162
+.. GENERATED FROM PYTHON SOURCE LINES 151-166
 
 .. code-block:: Python
 
@@ -394,15 +415,15 @@ a 2-dimensional contrasts spanning the two conditions.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_spm_multimodal_faces.py:151: RuntimeWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_spm_multimodal_faces.py:155: RuntimeWarning:
 
     The same contrast will be used for all 2 runs. If the design matrices are not the same for all runs, (for example with different column names or column order across runs) you should pass contrast as an expression using the name of the conditions as they appear in the design matrices.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_spm_multimodal_faces.py:151: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_spm_multimodal_faces.py:155: UserWarning:
 
     F contrasts should have 20 columns, but it has only 2. The rest of the contrast was padded with zeros.
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_spm_multimodal_faces.py:151: UserWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_spm_multimodal_faces.py:155: UserWarning:
 
     Running approximate fixed effects on F statistics.
 
@@ -410,7 +431,7 @@ a 2-dimensional contrasts spanning the two conditions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-172
+.. GENERATED FROM PYTHON SOURCE LINES 167-176
 
 Based on the resulting maps we observe
 that the analysis results in wide activity
@@ -425,9 +446,9 @@ It also displays some responses in the frontal lobe.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 18.750 seconds)
+   **Total running time of the script:** (1 minutes 19.229 seconds)
 
-**Estimated memory usage:**  1058 MB
+**Estimated memory usage:**  1237 MB
 
 
 .. _sphx_glr_download_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py:

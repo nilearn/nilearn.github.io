@@ -35,12 +35,14 @@ should first run the
 tutorial to get a bit more familiar with the base concepts,
 and only then run this tutorial example.
 
-.. seealso::
+.. admonition:: dataset
 
-    For more information about the dataset
-    see its :ref:`description <localizer_first_level_dataset>`.
+    This example uses:
 
-.. GENERATED FROM PYTHON SOURCE LINES 26-32
+    - the :ref:`ICBM 152 template <icbm152_2009>`
+    - the :ref:`localizer first level dataset <localizer_first_level>`
+
+.. GENERATED FROM PYTHON SOURCE LINES 28-34
 
 Retrieving the data
 -------------------
@@ -49,7 +51,7 @@ We use a so-called localizer dataset, which consists in a 5-minutes
 acquisition of a fast event-related dataset.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 32-37
+.. GENERATED FROM PYTHON SOURCE LINES 34-39
 
 .. code-block:: Python
 
@@ -71,7 +73,7 @@ acquisition of a fast event-related dataset.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-71
+.. GENERATED FROM PYTHON SOURCE LINES 40-73
 
 Define the paradigm that will be used. Here, we just need to get the provided
 file.
@@ -107,7 +109,7 @@ This task comprises 10 conditions:
 * visual_computation: Mental subtraction, indicated by visual instruction
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-78
+.. GENERATED FROM PYTHON SOURCE LINES 73-80
 
 .. code-block:: Python
 
@@ -224,23 +226,26 @@ This task comprises 10 conditions:
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-86
+.. GENERATED FROM PYTHON SOURCE LINES 81-91
 
 Running a basic model
 ---------------------
 
 First we specify a linear model.
-The .fit() functionality of FirstLevelModel function creates the design
-matrix and the beta maps.
+The ``.fit()`` functionality of FirstLevelModel function
+creates the design matrix and the beta maps.
+We instantiate the model with ``minimize_memory=False``
+because this is required to use ``plot_predicted_signal_and_residuals``
+to visualize the residuals time series.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 86-92
+.. GENERATED FROM PYTHON SOURCE LINES 91-97
 
 .. code-block:: Python
 
     from nilearn.glm.first_level import FirstLevelModel
 
-    first_level_model = FirstLevelModel(t_r)
+    first_level_model = FirstLevelModel(t_r, minimize_memory=False)
     first_level_model = first_level_model.fit(fmri_img, events=events)
     design_matrix = first_level_model.design_matrices_[0]
 
@@ -251,13 +256,13 @@ matrix and the beta maps.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-96
+.. GENERATED FROM PYTHON SOURCE LINES 98-101
 
 Let us take a look at the design matrix: it has 10 main columns corresponding
 to 10 experimental conditions, followed by 3 columns describing low-frequency
 signals (drifts) and a constant regressor.
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-103
+.. GENERATED FROM PYTHON SOURCE LINES 101-108
 
 .. code-block:: Python
 
@@ -280,7 +285,7 @@ signals (drifts) and a constant regressor.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-109
+.. GENERATED FROM PYTHON SOURCE LINES 109-114
 
 Specification of the contrasts.
 
@@ -288,7 +293,7 @@ For this, let's create a function that, given the design matrix, generates
 the corresponding contrasts.  This will be useful to repeat contrast
 specification when we change the design matrix.
 
-.. GENERATED FROM PYTHON SOURCE LINES 109-166
+.. GENERATED FROM PYTHON SOURCE LINES 114-171
 
 .. code-block:: Python
 
@@ -356,7 +361,7 @@ specification when we change the design matrix.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-180
+.. GENERATED FROM PYTHON SOURCE LINES 172-185
 
 Let's look at these computed contrasts:
 
@@ -372,7 +377,7 @@ Let's look at these computed contrasts:
   versus simply reading sentences.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 180-190
+.. GENERATED FROM PYTHON SOURCE LINES 185-195
 
 .. code-block:: Python
 
@@ -424,7 +429,7 @@ Let's look at these computed contrasts:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 191-197
+.. GENERATED FROM PYTHON SOURCE LINES 196-202
 
 A first contrast estimation and plotting
 ----------------------------------------
@@ -433,7 +438,7 @@ As this script will be repeated several times, we encapsulate model
 fitting and plotting in a function that we call when needed.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-224
+.. GENERATED FROM PYTHON SOURCE LINES 202-237
 
 .. code-block:: Python
 
@@ -442,6 +447,7 @@ fitting and plotting in a function that we call when needed.
 
     def plot_contrast(first_level_model):
         """Specify, estimate and plot the main contrasts \
+            and reresidual time series \
             for given a first model.
         """
         design_matrix = first_level_model.design_matrices_[0]
@@ -463,6 +469,12 @@ fitting and plotting in a function that we call when needed.
                 cut_coords=1,
             )
 
+        # Note that the coordinates were chosen
+        # to be apprximately in the middle of the main cluster
+        # of the main effect on a F contrast of the first model of this example.
+        first_level_model.plot_predicted_signal_and_residuals(
+            coords=[((-60.0, -15.0, 3.0))]
+        )
 
 
 
@@ -471,11 +483,12 @@ fitting and plotting in a function that we call when needed.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-226
+
+.. GENERATED FROM PYTHON SOURCE LINES 238-239
 
 Let's run the model and look at the outcome.
 
-.. GENERATED FROM PYTHON SOURCE LINES 226-230
+.. GENERATED FROM PYTHON SOURCE LINES 239-244
 
 .. code-block:: Python
 
@@ -486,16 +499,29 @@ Let's run the model and look at the outcome.
 
 
 
-.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_006.png
-   :alt: plot first level details
-   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_006.png
-   :class: sphx-glr-single-img
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_006.png
+         :alt: plot first level details
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_006.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_007.png
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_007.png
+         :class: sphx-glr-multi-img
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 231-245
+.. GENERATED FROM PYTHON SOURCE LINES 245-259
 
 Changing the drift model
 ------------------------
@@ -512,12 +538,14 @@ For instance, if the longest period is 32s, the high_pass frequency shall be
 1/64 Hz ~ 0.016 Hz. Note that the design matrix has more columns to model
 drifts in the data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-251
+.. GENERATED FROM PYTHON SOURCE LINES 259-267
 
 .. code-block:: Python
 
 
-    first_level_model = FirstLevelModel(t_r, high_pass=0.016)
+    first_level_model = FirstLevelModel(
+        t_r, high_pass=0.016, minimize_memory=False
+    )
     first_level_model = first_level_model.fit(fmri_img, events=events)
     design_matrix = first_level_model.design_matrices_[0]
     plot_design_matrix(design_matrix)
@@ -525,9 +553,9 @@ drifts in the data.
 
 
 
-.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_007.png
+.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_008.png
    :alt: plot first level details
-   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_007.png
+   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_008.png
    :class: sphx-glr-single-img
 
 
@@ -540,46 +568,15 @@ drifts in the data.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 252-253
+.. GENERATED FROM PYTHON SOURCE LINES 268-269
 
 Does the model perform worse or better ?
 
-.. GENERATED FROM PYTHON SOURCE LINES 253-257
+.. GENERATED FROM PYTHON SOURCE LINES 269-273
 
 .. code-block:: Python
 
 
-    plot_contrast(first_level_model)
-    plt.show()
-
-
-
-
-.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_008.png
-   :alt: plot first level details
-   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_008.png
-   :class: sphx-glr-single-img
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 258-262
-
-We notice however that this model performs rather poorly.
-
-Another solution is to remove these drift terms. Maybe they're simply
-useless. This is done by setting drift_model to None.
-
-.. GENERATED FROM PYTHON SOURCE LINES 262-270
-
-.. code-block:: Python
-
-
-    first_level_model = FirstLevelModel(t_r, drift_model=None)
-    first_level_model = first_level_model.fit(fmri_img, events=events)
-    design_matrix = first_level_model.design_matrices_[0]
-    plot_design_matrix(design_matrix)
     plot_contrast(first_level_model)
     plt.show()
 
@@ -599,7 +596,7 @@ useless. This is done by setting drift_model to None.
     *
 
       .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_010.png
-         :alt: plot first level details
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
          :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_010.png
          :class: sphx-glr-multi-img
 
@@ -607,15 +604,12 @@ useless. This is done by setting drift_model to None.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 271-278
+.. GENERATED FROM PYTHON SOURCE LINES 274-278
 
-Is it better than the original? No!
+We notice however that this model performs rather poorly.
 
-Note that the design matrix has changed with no drift columns.
-the event columns, on the other hand, haven't changed.
-
-Another alternative to get a drift model is to specify a set of polynomials.
-Let's take a basis of 5 polynomials.
+Another solution is to remove these drift terms. Maybe they're simply
+useless. This is done by setting drift_model to None.
 
 .. GENERATED FROM PYTHON SOURCE LINES 278-288
 
@@ -623,7 +617,7 @@ Let's take a basis of 5 polynomials.
 
 
     first_level_model = FirstLevelModel(
-        t_r, drift_model="polynomial", drift_order=5
+        t_r, drift_model=None, minimize_memory=False
     )
     first_level_model = first_level_model.fit(fmri_img, events=events)
     design_matrix = first_level_model.design_matrices_[0]
@@ -651,32 +645,35 @@ Let's take a basis of 5 polynomials.
          :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_012.png
          :class: sphx-glr-multi-img
 
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_013.png
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_013.png
+         :class: sphx-glr-multi-img
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 289-290
 
-Is it good? No better, no worse. Let's turn to another parameter.
+.. GENERATED FROM PYTHON SOURCE LINES 289-296
 
-.. GENERATED FROM PYTHON SOURCE LINES 292-301
+Is it better than the original? No!
 
-Changing the hemodynamic response model
----------------------------------------
+Note that the design matrix has changed with no drift columns.
+the event columns, on the other hand, haven't changed.
 
-This is the filter used to convert the event sequence into a
-reference :term:`BOLD` signal for the design matrix.
+Another alternative to get a drift model is to specify a set of polynomials.
+Let's take a basis of 5 polynomials.
 
-The first thing that we can do is to change the default model (the
-so-called Glover hrf) for the so-called canonical model of SPM
---which has a slightly weaker undershoot component.
-
-.. GENERATED FROM PYTHON SOURCE LINES 301-309
+.. GENERATED FROM PYTHON SOURCE LINES 296-306
 
 .. code-block:: Python
 
 
-    first_level_model = FirstLevelModel(t_r, hrf_model="spm")
+    first_level_model = FirstLevelModel(
+        t_r, drift_model="polynomial", drift_order=5, minimize_memory=False
+    )
     first_level_model = first_level_model.fit(fmri_img, events=events)
     design_matrix = first_level_model.design_matrices_[0]
     plot_design_matrix(design_matrix)
@@ -688,13 +685,6 @@ so-called Glover hrf) for the so-called canonical model of SPM
 
 .. rst-class:: sphx-glr-horizontal
 
-
-    *
-
-      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_013.png
-         :alt: plot first level details
-         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_013.png
-         :class: sphx-glr-multi-img
 
     *
 
@@ -702,46 +692,6 @@ so-called Glover hrf) for the so-called canonical model of SPM
          :alt: plot first level details
          :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_014.png
          :class: sphx-glr-multi-img
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 310-311
-
-No strong --positive or negative-- effect.
-
-.. GENERATED FROM PYTHON SOURCE LINES 313-324
-
-Adding a time derivative to the design
-......................................
-
-There seems to be something here. Maybe we could try to go one step further:
-using not only the so-called canonical hrf, but also its time derivative.
-Note that in that case, we still perform the contrasts and obtain statistical
-significance for the main effect --- not the time derivative. This means that
-the inclusion of a time derivative in the design matrix has the sole effect
-of discounting timing misspecification from the error term, which would
-decrease the estimated variance and enhance the statistical significance of
-the effect. Is that the case?
-
-.. GENERATED FROM PYTHON SOURCE LINES 324-332
-
-.. code-block:: Python
-
-
-    first_level_model = FirstLevelModel(t_r, hrf_model="spm + derivative")
-    first_level_model = first_level_model.fit(fmri_img, events=events)
-    design_matrix = first_level_model.design_matrices_[0]
-    plot_design_matrix(design_matrix)
-    plot_contrast(first_level_model)
-    plt.show()
-
-
-
-
-.. rst-class:: sphx-glr-horizontal
-
 
     *
 
@@ -753,7 +703,7 @@ the effect. Is that the case?
     *
 
       .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_016.png
-         :alt: plot first level details
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
          :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_016.png
          :class: sphx-glr-multi-img
 
@@ -761,27 +711,34 @@ the effect. Is that the case?
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 333-339
+.. GENERATED FROM PYTHON SOURCE LINES 307-308
 
-Not a huge effect, but rather positive overall. We could keep that one.
+Is it good? No better, no worse. Let's turn to another parameter.
 
-Note that a benefit of this approach is that we can test which voxels are
-well explained by the derivative term, hinting at misfit regions, a
-possibly valuable information. This is implemented by an F-test on
-the time derivative regressors.
+.. GENERATED FROM PYTHON SOURCE LINES 310-319
 
-.. GENERATED FROM PYTHON SOURCE LINES 339-349
+Changing the hemodynamic response model
+---------------------------------------
+
+This is the filter used to convert the event sequence into a
+reference :term:`BOLD` signal for the design matrix.
+
+The first thing that we can do is to change the default model (the
+so-called Glover hrf) for the so-called canonical model of SPM
+--which has a slightly weaker undershoot component.
+
+.. GENERATED FROM PYTHON SOURCE LINES 319-329
 
 .. code-block:: Python
 
 
-    contrast_val = np.eye(design_matrix.shape[1])[1:21:2]
-    plot_contrast_matrix(contrast_val, design_matrix)
-
-    z_map = first_level_model.compute_contrast(contrast_val, output_type="z_score")
-    plotting.plot_stat_map(
-        z_map, display_mode="z", threshold=3.0, title="effect of time derivatives"
+    first_level_model = FirstLevelModel(
+        t_r, hrf_model="spm", minimize_memory=False
     )
+    first_level_model = first_level_model.fit(fmri_img, events=events)
+    design_matrix = first_level_model.design_matrices_[0]
+    plot_design_matrix(design_matrix)
+    plot_contrast(first_level_model)
     plt.show()
 
 
@@ -804,66 +761,42 @@ the time derivative regressors.
          :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_018.png
          :class: sphx-glr-multi-img
 
+    *
 
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 350-354
-
-There seems to be something here. Maybe we could adjust the
-timing, by increasing the slice_time_ref parameter from 0 to 0.5. Now the
-reference for model sampling is not the beginning of the volume
-acquisition, but the middle of it.
-
-.. GENERATED FROM PYTHON SOURCE LINES 354-368
-
-.. code-block:: Python
-
-
-    first_level_model = FirstLevelModel(
-        t_r, hrf_model="spm + derivative", slice_time_ref=0.5
-    )
-    first_level_model = first_level_model.fit(fmri_img, events=events)
-    z_map = first_level_model.compute_contrast(contrast_val, output_type="z_score")
-    plotting.plot_stat_map(
-        z_map,
-        display_mode="z",
-        threshold=3.0,
-        title="effect of time derivatives after model shift",
-    )
-    plt.show()
-
-
-
-
-.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_019.png
-   :alt: plot first level details
-   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_019.png
-   :class: sphx-glr-single-img
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_019.png
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_019.png
+         :class: sphx-glr-multi-img
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 369-370
+.. GENERATED FROM PYTHON SOURCE LINES 330-331
 
-The time derivatives regressors capture less signal: it's better like that.
+No strong --positive or negative-- effect.
 
-.. GENERATED FROM PYTHON SOURCE LINES 372-377
+.. GENERATED FROM PYTHON SOURCE LINES 333-344
 
-We can also consider adding the so-called dispersion derivative to
-capture some mis-specification in the shape of the hrf.
+Adding a time derivative to the design
+......................................
 
-This is done by specifying `hrf_model='spm + derivative + dispersion'`.
+There seems to be something here. Maybe we could try to go one step further:
+using not only the so-called canonical hrf, but also its time derivative.
+Note that in that case, we still perform the contrasts and obtain statistical
+significance for the main effect --- not the time derivative. This means that
+the inclusion of a time derivative in the design matrix has the sole effect
+of discounting timing misspecification from the error term, which would
+decrease the estimated variance and enhance the statistical significance of
+the effect. Is that the case?
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 377-387
+.. GENERATED FROM PYTHON SOURCE LINES 344-354
 
 .. code-block:: Python
 
 
     first_level_model = FirstLevelModel(
-        t_r, slice_time_ref=0.5, hrf_model="spm + derivative + dispersion"
+        t_r, hrf_model="spm + derivative", minimize_memory=False
     )
     first_level_model = first_level_model.fit(fmri_img, events=events)
     design_matrix = first_level_model.design_matrices_[0]
@@ -891,16 +824,170 @@ This is done by specifying `hrf_model='spm + derivative + dispersion'`.
          :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_021.png
          :class: sphx-glr-multi-img
 
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_022.png
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_022.png
+         :class: sphx-glr-multi-img
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 388-390
+
+.. GENERATED FROM PYTHON SOURCE LINES 355-361
+
+Not a huge effect, but rather positive overall. We could keep that one.
+
+Note that a benefit of this approach is that we can test which voxels are
+well explained by the derivative term, hinting at misfit regions, a
+possibly valuable information. This is implemented by an F-test on
+the time derivative regressors.
+
+.. GENERATED FROM PYTHON SOURCE LINES 361-371
+
+.. code-block:: Python
+
+
+    contrast_val = np.eye(design_matrix.shape[1])[1:21:2]
+    plot_contrast_matrix(contrast_val, design_matrix)
+
+    z_map = first_level_model.compute_contrast(contrast_val, output_type="z_score")
+    plotting.plot_stat_map(
+        z_map, display_mode="z", threshold=3.0, title="effect of time derivatives"
+    )
+    plt.show()
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_023.png
+         :alt: plot first level details
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_023.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_024.png
+         :alt: plot first level details
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_024.png
+         :class: sphx-glr-multi-img
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 372-376
+
+There seems to be something here. Maybe we could adjust the
+timing, by increasing the slice_time_ref parameter from 0 to 0.5. Now the
+reference for model sampling is not the beginning of the volume
+acquisition, but the middle of it.
+
+.. GENERATED FROM PYTHON SOURCE LINES 376-393
+
+.. code-block:: Python
+
+
+    first_level_model = FirstLevelModel(
+        t_r,
+        hrf_model="spm + derivative",
+        slice_time_ref=0.5,
+        minimize_memory=False,
+    )
+    first_level_model = first_level_model.fit(fmri_img, events=events)
+    z_map = first_level_model.compute_contrast(contrast_val, output_type="z_score")
+    plotting.plot_stat_map(
+        z_map,
+        display_mode="z",
+        threshold=3.0,
+        title="effect of time derivatives after model shift",
+    )
+    plt.show()
+
+
+
+
+.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_025.png
+   :alt: plot first level details
+   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_025.png
+   :class: sphx-glr-single-img
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 394-395
+
+The time derivatives regressors capture less signal: it's better like that.
+
+.. GENERATED FROM PYTHON SOURCE LINES 397-402
+
+We can also consider adding the so-called dispersion derivative to
+capture some mis-specification in the shape of the hrf.
+
+This is done by specifying `hrf_model='spm + derivative + dispersion'`.
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 402-415
+
+.. code-block:: Python
+
+
+    first_level_model = FirstLevelModel(
+        t_r,
+        slice_time_ref=0.5,
+        hrf_model="spm + derivative + dispersion",
+        minimize_memory=False,
+    )
+    first_level_model = first_level_model.fit(fmri_img, events=events)
+    design_matrix = first_level_model.design_matrices_[0]
+    plot_design_matrix(design_matrix)
+    plot_contrast(first_level_model)
+    plt.show()
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_026.png
+         :alt: plot first level details
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_026.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_027.png
+         :alt: plot first level details
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_027.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_028.png
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_028.png
+         :class: sphx-glr-multi-img
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 416-418
 
 Not a huge effect. For the sake of simplicity and readability, we
 can drop that one.
 
-.. GENERATED FROM PYTHON SOURCE LINES 392-405
+.. GENERATED FROM PYTHON SOURCE LINES 420-433
 
 The noise model: ar(1), ols, or higher order ar?
 ------------------------------------------------
@@ -916,13 +1003,17 @@ First we recompute using the `spm + derivative` :term:`HRF` model,
 the slice_time_ref parameter chosen above,
 and explicitly set the noise model to be ar(1).
 
-.. GENERATED FROM PYTHON SOURCE LINES 405-414
+.. GENERATED FROM PYTHON SOURCE LINES 433-446
 
 .. code-block:: Python
 
 
     first_level_model = FirstLevelModel(
-        t_r, slice_time_ref=0.5, hrf_model="spm + derivative", noise_model="ar1"
+        t_r,
+        slice_time_ref=0.5,
+        hrf_model="spm + derivative",
+        noise_model="ar1",
+        minimize_memory=False,
     )
     first_level_model = first_level_model.fit(fmri_img, events=events)
     plot_contrast(first_level_model)
@@ -932,27 +1023,43 @@ and explicitly set the noise model to be ar(1).
 
 
 
-.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_022.png
-   :alt: plot first level details
-   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_022.png
-   :class: sphx-glr-single-img
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_029.png
+         :alt: plot first level details
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_029.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_030.png
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_030.png
+         :class: sphx-glr-multi-img
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 415-417
+.. GENERATED FROM PYTHON SOURCE LINES 447-449
 
 Next we change the noise model to ols and observe the difference
 relative to the ar(1) model.
 
-.. GENERATED FROM PYTHON SOURCE LINES 417-425
+.. GENERATED FROM PYTHON SOURCE LINES 449-461
 
 .. code-block:: Python
 
 
     first_level_model = FirstLevelModel(
-        t_r, slice_time_ref=0.5, hrf_model="spm + derivative", noise_model="ols"
+        t_r,
+        slice_time_ref=0.5,
+        hrf_model="spm + derivative",
+        noise_model="ols",
+        minimize_memory=False,
     )
     first_level_model = first_level_model.fit(fmri_img, events=events)
     plot_contrast(first_level_model)
@@ -961,16 +1068,28 @@ relative to the ar(1) model.
 
 
 
-.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_023.png
-   :alt: plot first level details
-   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_023.png
-   :class: sphx-glr-single-img
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_031.png
+         :alt: plot first level details
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_031.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_032.png
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_032.png
+         :class: sphx-glr-multi-img
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 426-431
+.. GENERATED FROM PYTHON SOURCE LINES 462-467
 
 While the difference is not obvious you should rather stick to the
 ar(1) model, which is arguably more accurate.
@@ -978,13 +1097,17 @@ ar(1) model, which is arguably more accurate.
 Alternatively we can include more terms in the autoregressive model to
 account for greater temporal complexity in the noise structure.
 
-.. GENERATED FROM PYTHON SOURCE LINES 431-439
+.. GENERATED FROM PYTHON SOURCE LINES 467-479
 
 .. code-block:: Python
 
 
     first_level_model = FirstLevelModel(
-        t_r, slice_time_ref=0.5, hrf_model="spm + derivative", noise_model="ar3"
+        t_r,
+        slice_time_ref=0.5,
+        hrf_model="spm + derivative",
+        noise_model="ar3",
+        minimize_memory=False,
     )
     first_level_model = first_level_model.fit(fmri_img, events=events)
     plot_contrast(first_level_model)
@@ -993,22 +1116,34 @@ account for greater temporal complexity in the noise structure.
 
 
 
-.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_024.png
-   :alt: plot first level details
-   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_024.png
-   :class: sphx-glr-single-img
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_033.png
+         :alt: plot first level details
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_033.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_034.png
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_034.png
+         :class: sphx-glr-multi-img
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 440-443
+.. GENERATED FROM PYTHON SOURCE LINES 480-483
 
 This noise model arguably reduces the amount of spurious activity.
 However, as the difference is not obvious you may wish to stick to the
 ar(1) model, which is computationally more efficient.
 
-.. GENERATED FROM PYTHON SOURCE LINES 445-459
+.. GENERATED FROM PYTHON SOURCE LINES 485-499
 
 Removing confounds
 ------------------
@@ -1025,7 +1160,7 @@ the CompCor approach, and take those into account in the model.
 For this we rely on the so-called
 :func:`~nilearn.image.high_variance_confounds` routine of Nilearn.
 
-.. GENERATED FROM PYTHON SOURCE LINES 459-473
+.. GENERATED FROM PYTHON SOURCE LINES 499-516
 
 .. code-block:: Python
 
@@ -1033,7 +1168,10 @@ For this we rely on the so-called
 
     confounds = pd.DataFrame(high_variance_confounds(fmri_img, percentile=1))
     first_level_model = FirstLevelModel(
-        t_r, hrf_model="spm + derivative", slice_time_ref=0.5
+        t_r,
+        hrf_model="spm + derivative",
+        slice_time_ref=0.5,
+        minimize_memory=False,
     )
     first_level_model = first_level_model.fit(
         fmri_img, events=events, confounds=confounds
@@ -1051,23 +1189,30 @@ For this we rely on the so-called
 
     *
 
-      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_025.png
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_035.png
          :alt: plot first level details
-         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_025.png
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_035.png
          :class: sphx-glr-multi-img
 
     *
 
-      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_026.png
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_036.png
          :alt: plot first level details
-         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_026.png
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_036.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_037.png
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_037.png
          :class: sphx-glr-multi-img
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 474-480
+.. GENERATED FROM PYTHON SOURCE LINES 517-523
 
 Note the five additional columns in the design matrix.
 
@@ -1076,7 +1221,7 @@ killed, probably because they were somewhat collinear to the confounds. On
 the other hand, some of the maps become cleaner (horizontal-vertical,
 computation) after this addition.
 
-.. GENERATED FROM PYTHON SOURCE LINES 482-495
+.. GENERATED FROM PYTHON SOURCE LINES 525-538
 
 Volume censoring
 ----------------
@@ -1092,14 +1237,17 @@ For non-fMRIPrep output, we can still define a sample mask. Here we apply a
 sample mask that removes the first 50 volumes.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 495-507
+.. GENERATED FROM PYTHON SOURCE LINES 538-553
 
 .. code-block:: Python
 
 
     sample_masks = np.arange(events.shape[0])[50:]
     first_level_model = FirstLevelModel(
-        t_r, hrf_model="spm + derivative", slice_time_ref=0.5
+        t_r,
+        hrf_model="spm + derivative",
+        slice_time_ref=0.5,
+        minimize_memory=False,
     )
     first_level_model = first_level_model.fit(
         fmri_img, events=events, sample_masks=sample_masks
@@ -1111,21 +1259,21 @@ sample mask that removes the first 50 volumes.
 
 
 
-.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_027.png
+.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_038.png
    :alt: plot first level details
-   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_027.png
+   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_038.png
    :class: sphx-glr-single-img
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 508-510
+.. GENERATED FROM PYTHON SOURCE LINES 554-556
 
 Note the significantly shorter design matrix compared to the previous
 examples.
 
-.. GENERATED FROM PYTHON SOURCE LINES 512-521
+.. GENERATED FROM PYTHON SOURCE LINES 558-567
 
 Smoothing
 ---------
@@ -1137,13 +1285,17 @@ position of activation. Here, we simply illustrate the statistical
 gains.  We use a mild smoothing of 5mm
 :term:`full-width at half maximum<FWHM>` (:term:`FWHM`).
 
-.. GENERATED FROM PYTHON SOURCE LINES 521-530
+.. GENERATED FROM PYTHON SOURCE LINES 567-580
 
 .. code-block:: Python
 
 
     first_level_model = FirstLevelModel(
-        t_r, hrf_model="spm + derivative", smoothing_fwhm=5, slice_time_ref=0.5
+        t_r,
+        hrf_model="spm + derivative",
+        smoothing_fwhm=5,
+        slice_time_ref=0.5,
+        minimize_memory=False,
     ).fit(fmri_img, events=events, confounds=confounds)
     design_matrix = first_level_model.design_matrices_[0]
     plot_design_matrix(design_matrix)
@@ -1158,28 +1310,35 @@ gains.  We use a mild smoothing of 5mm
 
     *
 
-      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_028.png
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_039.png
          :alt: plot first level details
-         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_028.png
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_039.png
          :class: sphx-glr-multi-img
 
     *
 
-      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_029.png
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_040.png
          :alt: plot first level details
-         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_029.png
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_040.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_041.png
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_041.png
          :class: sphx-glr-multi-img
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 531-533
+.. GENERATED FROM PYTHON SOURCE LINES 581-583
 
 The design is unchanged but the maps are smoother and more contrasted.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 535-548
+.. GENERATED FROM PYTHON SOURCE LINES 585-598
 
 Masking
 -------
@@ -1195,7 +1354,7 @@ comparisons easier across subjects and datasets, and removes
 non-grey matter regions, in which no :term:`BOLD` signal is expected.
 The downside is that the mask may not fit very well this particular data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 548-562
+.. GENERATED FROM PYTHON SOURCE LINES 598-612
 
 .. code-block:: Python
 
@@ -1216,9 +1375,9 @@ The downside is that the mask may not fit very well this particular data.
 
 
 
-.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_030.png
+.. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_042.png
    :alt: plot first level details
-   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_030.png
+   :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_042.png
    :class: sphx-glr-single-img
 
 
@@ -1231,13 +1390,13 @@ The downside is that the mask may not fit very well this particular data.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 563-566
+.. GENERATED FROM PYTHON SOURCE LINES 613-616
 
 For the sake of time saving, we resample icbm_mask to our data.
 For this we call the resample_to_img routine of Nilearn.
 We use interpolation = 'nearest' to keep the mask as a binary image.
 
-.. GENERATED FROM PYTHON SOURCE LINES 566-574
+.. GENERATED FROM PYTHON SOURCE LINES 616-624
 
 .. code-block:: Python
 
@@ -1256,11 +1415,11 @@ We use interpolation = 'nearest' to keep the mask as a binary image.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 575-576
+.. GENERATED FROM PYTHON SOURCE LINES 625-626
 
 Impact on the first-level model.
 
-.. GENERATED FROM PYTHON SOURCE LINES 576-588
+.. GENERATED FROM PYTHON SOURCE LINES 626-639
 
 .. code-block:: Python
 
@@ -1270,6 +1429,7 @@ Impact on the first-level model.
         smoothing_fwhm=5,
         slice_time_ref=0.5,
         mask_img=resampled_icbm_mask,
+        minimize_memory=False,
     ).fit(fmri_img, events=events, confounds=confounds)
     design_matrix = first_level_model.design_matrices_[0]
     plot_design_matrix(design_matrix)
@@ -1284,16 +1444,23 @@ Impact on the first-level model.
 
     *
 
-      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_031.png
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_043.png
          :alt: plot first level details
-         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_031.png
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_043.png
          :class: sphx-glr-multi-img
 
     *
 
-      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_032.png
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_044.png
          :alt: plot first level details
-         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_032.png
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_044.png
+         :class: sphx-glr-multi-img
+
+    *
+
+      .. image-sg:: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_045.png
+         :alt: Observed vs Predicted Signal, Residuals Over Time, Histogram of Residuals
+         :srcset: /auto_examples/04_glm_first_level/images/sphx_glr_plot_first_level_details_045.png
          :class: sphx-glr-multi-img
 
 
@@ -1301,7 +1468,7 @@ Impact on the first-level model.
 
  .. code-block:: none
 
-    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_first_level_details.py:582: RuntimeWarning:
+    /home/runner/work/nilearn/nilearn/examples/04_glm_first_level/plot_first_level_details.py:633: RuntimeWarning:
 
     [MultiNiftiMasker.fit] Generation of a mask has been requested (imgs != None) while a mask was given at masker creation. Given mask will be used.
 
@@ -1309,11 +1476,11 @@ Impact on the first-level model.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 589-590
+.. GENERATED FROM PYTHON SOURCE LINES 640-641
 
 Note that it removed spurious spots in the white matter.
 
-.. GENERATED FROM PYTHON SOURCE LINES 592-600
+.. GENERATED FROM PYTHON SOURCE LINES 643-651
 
 Conclusion
 ----------
@@ -1327,9 +1494,9 @@ are specific to this dataset and may vary with other ones.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (1 minutes 18.957 seconds)
+   **Total running time of the script:** (2 minutes 8.777 seconds)
 
-**Estimated memory usage:**  453 MB
+**Estimated memory usage:**  934 MB
 
 
 .. _sphx_glr_download_auto_examples_04_glm_first_level_plot_first_level_details.py:
